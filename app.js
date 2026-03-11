@@ -1,5 +1,6 @@
 const PAGE_FILE_MAP = {
     "landing-page": "landing-page.html",
+    "landing-page-2": "landing-page-2.html",
     "home": "home.html",
     "home-auth": "home-auth.html",
     "search": "search.html",
@@ -25,6 +26,7 @@ const PAGE_FILE_MAP = {
 };
 const PAGE_LABELS = {
     "landing-page": "FareBites Landing Page",
+    "landing-page-2": "FareBites Landing Page 2",
     "home": "FareBites Homepage (Logged In)",
     "home-auth": "Homepage (Sign In/Sign Up Modal)",
     "search": "Restaurant Search",
@@ -110,6 +112,7 @@ const assets = {
             const menu = document.getElementById('dropdown-menu');
             if (menu) menu.classList.remove('show');
         });
+
 
         const routes = {
             'landing-page': () => `
@@ -1537,6 +1540,7 @@ const assets = {
         
 
 routes['bobs-boba-auth'] = routes['restaurant-homepage'];
+routes['landing-page-2'] = routes['landing-page'];
 
 function applyViewport() {
     const wrapper = document.getElementById('preview-wrapper');
@@ -1623,7 +1627,52 @@ function setViewport(size) {
     renderPage();
 }
 
+function renderDropdownMenu() {
+    const menuHTML = `
+        <div>
+            <div class="dropdown-column-title">Core Flow</div>
+            <div class="dropdown-item" onclick="navigateTo('landing-page')">FareBites Landing Page</div>
+            <div class="dropdown-item" onclick="navigateTo('landing-page-2')">FareBites Landing Page 2</div>
+            <div class="dropdown-item" onclick="navigateTo('home')">FareBites Homepage (Logged In)</div>
+            <div class="dropdown-item" onclick="navigateTo('home-auth')">Homepage (Sign In/Sign Up Modal)</div>
+            <div class="dropdown-item" onclick="navigateTo('search')">Restaurant Search</div>
+            <div class="dropdown-item" onclick="navigateTo('cart')">Cart / Review</div>
+            <div class="dropdown-item" onclick="navigateTo('order-details')">Order Details (Customization)</div>
+            <div class="dropdown-item" onclick="navigateTo('payment')">Payment Page</div>
+            <div class="dropdown-item" onclick="navigateTo('confirmation')">Confirmation</div>
+            <div class="dropdown-item" onclick="navigateTo('status')">Order Status</div>
+        </div>
+        <div>
+            <div class="dropdown-column-title">Restaurant Pages</div>
+            <div class="dropdown-item" onclick="navigateTo('restaurant-homepage')">Bob's Boba Homepage (Standard)</div>
+            <div class="dropdown-item" onclick="navigateTo('bobs-boba-auth')">Bob's Boba (Sign In Sign Up)</div>
+            <div class="dropdown-item" onclick="navigateTo('bobs-fulfillment-select')">Bob's Boba (Order Type Select)</div>
+            <div class="dropdown-item" onclick="navigateTo('bobs-dine-in-instruction')">Bob's Boba (Dine-In Instruction)</div>
+            <div class="dropdown-item" onclick="navigateTo('menu')">Restaurant Menu</div>
+            <div class="dropdown-item" onclick="navigateTo('location-selection')">Location Selection</div>
+            <div class="dropdown-item" onclick="navigateTo('location-favorites')">Location Favorites</div>
+            <div class="dropdown-item" onclick="navigateTo('genre')">Browse by Genre</div>
+        </div>
+        <div>
+            <div class="dropdown-column-title">Authentication & Account</div>
+            <div class="dropdown-item" onclick="navigateTo('login')">Login (Phone)</div>
+            <div class="dropdown-item" onclick="navigateTo('register')">Registration</div>
+            <div class="dropdown-item" onclick="navigateTo('my-account')">My Account</div>
+            <div class="dropdown-item" onclick="navigateTo('privacy')">Privacy Policy</div>
+        </div>
+        <div>
+            <div class="dropdown-column-title">Merchant Portal</div>
+            <div class="dropdown-item" onclick="navigateTo('merchant-dashboard')">Merchant Dashboard</div>
+        </div>
+    `;
+    const menuContainer = document.getElementById('dropdown-menu');
+    if (menuContainer) {
+        menuContainer.innerHTML = menuHTML;
+    }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     applyViewport();
     renderPage();
+    renderDropdownMenu();
 });
