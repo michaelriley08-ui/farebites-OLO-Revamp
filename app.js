@@ -334,7 +334,7 @@ const routes = {
                     <!-- Titles & CTA -->
                     <div class="text-center pt-2 relative z-10 shrink-0">
                         <div class="text-violet-600 text-[11px] font-black tracking-[0.2em] uppercase mb-1">Limited Time Only</div>
-                        <h1 class="text-5xl font-black text-violet-600 uppercase tracking-tighter leading-[0.9] font-sans scale-y-110 mt-2 ${isDesktop ? 'mb-4' : 'mb-2'}">BOB'S<br>BOBA TEA</h1>
+                        <h1 class="text-5xl font-black text-violet-600 uppercase tracking-tighter leading-[0.9] font-sans scale-y-110 mt-2 ${isDesktop ? 'mb-4' : 'mb-2'}">I-TEA<br>MENU</h1>
                         ${isDesktop ? `<button onclick="navigateTo('bobs-fulfillment-select')" class="bg-violet-600 text-white px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider inline-block">Order Now</button>` : ''}
                     </div>
                     
@@ -347,33 +347,37 @@ const routes = {
                             <!-- Card 1 -->
                             <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
                                 <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
-                                <div class="p-5 text-center bg-white">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New</div>
-                                    <div class="text-lg font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight">Double High Protein Bowl</div>
+                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
+                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
+                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
                                 </div>
                             </div>
                             <!-- Card 2 -->
                             <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
                                 <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
-                                <div class="p-5 text-center bg-white">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Featured</div>
-                                    <div class="text-lg font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight">Brown Sugar Pearl</div>
+                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
+                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
+                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
                                 </div>
                             </div>
                             <!-- Card 3 -->
                             <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
                                 <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
-                                <div class="p-5 text-center bg-white">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Seasonal</div>
-                                    <div class="text-lg font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight">Taro Milk Tea</div>
+                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
+                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
+                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
                                 </div>
                             </div>
                             <!-- Card 4 -->
                             <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
                                 <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
-                                <div class="p-5 text-center bg-white">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Classic</div>
-                                    <div class="text-lg font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight">Matcha Latte</div>
+                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
+                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
+                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.95</div>
                                 </div>
                             </div>
                         </div>
@@ -453,12 +457,11 @@ const routes = {
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="navigateTo('bobs-fulfillment-select')">
+                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); navigateTo('bobs-fulfillment-select')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Office</span>' : ''}
                                         <h3 class="font-bold text-base tracking-tight uppercase italic flex items-center gap-2 text-gray-900">${s.name} ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-xs"></i>' : ''}</h3>
-                                        <p class="text-xs text-gray-500 italic mt-1.5 leading-relaxed">${s.address}</p>
                                         <p class="text-[10px] font-bold text-gray-400 mt-1.5 uppercase tracking-widest"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
                                         <div class="flex gap-4 mt-4">
                                             <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500"><i class="fa-solid fa-shop"></i> In store</span>
@@ -600,7 +603,7 @@ const routes = {
             const isActive = mockupState.fulfillmentMode === label;
             const clickHandler = label === 'Dine In' ? `navigateTo('bobs-dine-in-instruction')` : `updateMockupState('fulfillmentMode', '${label}')`;
             return `
-                    <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-2 py-4 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-800 border-gray-100'}">
+                    <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-1 py-3 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-800 border-gray-100'}">
                         <i class="fa-solid ${icon} text-xl ${isActive ? 'text-white' : 'text-violet-600'}"></i>
                         <span class="text-[11px] font-black uppercase">${label}</span>
                     </button>`;
@@ -628,22 +631,27 @@ const routes = {
                 const monthNameShort = currentMonth.name.split(' ')[0].substring(0, 3);
                 let label = (i === 8 && monthOffset === 0) ? 'Today' : ((i === 9 && monthOffset === 0) ? 'Tomorrow' : `${dayName}, ${monthNameShort} ${i}`);
                 let isSelected = mockupState.selectedDay === label;
-                calendarCells += `<button onclick="mockupState.modalOpen = null; updateMockupState('selectedDay', '${label}')" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? 'bg-violet-600 text-white shadow-md' : 'text-gray-800 hover:bg-violet-100 transition-colors'}">${i}</button>`;
+                calendarCells += `<button onclick="updateMockupState('selectedDay', '${label}'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? 'bg-violet-600 text-white shadow-md flex items-center justify-center shrink-0 w-8 h-8 mx-auto' : 'text-gray-800 hover:bg-violet-100 transition-colors flex items-center justify-center shrink-0 w-8 h-8 mx-auto'}">${i}</button>`;
             }
         }
 
         const dateModalClass = mockupState.modalOpen === 'date' ? 'flex' : 'hidden';
         const timeModalClass = mockupState.modalOpen === 'time' ? 'flex' : 'hidden';
+        const warningModalClass = mockupState.modalOpen === 'warning' ? 'flex' : 'hidden';
 
+        const times15 = ['11:30 AM', '11:45 AM', '12:00 PM', '12:15 PM', '12:30 PM', '12:45 PM', '1:00 PM', '1:15 PM', '1:30 PM', '1:45 PM', '2:00 PM', '2:15 PM', '2:30 PM', '2:45 PM', '3:00 PM', '3:15 PM', '3:30 PM', '3:45 PM', '4:00 PM', '4:15 PM', '4:30 PM', '4:45 PM', '5:00 PM', '5:15 PM', '5:30 PM', '5:45 PM', '6:00 PM', '6:15 PM', '6:30 PM', '6:45 PM', '7:00 PM', '7:15 PM', '7:30 PM', '7:45 PM', '8:00 PM', '8:15 PM', '8:30 PM', '8:45 PM', '9:00 PM'];
+        
         // Proximity to close check
-        const isNearClose = ['8:00 PM', '8:30 PM', '9:00 PM'].includes(mockupState.selectedTimeSlot);
+        const isNearClose = mockupState.selectedTimeSlot.includes('8:') || mockupState.selectedTimeSlot.includes('9:');
+
+        const locationTitle = mockupState.selectedLocation || "BOB'S BOBA";
 
         return `
                 <div class="flex flex-col h-full bg-[#FAF9F6] relative overflow-hidden">
-                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic"><button onclick="navigateTo('location-selection')" class="mr-4"><i class="fa-solid fa-chevron-left text-xl text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">BOB'S BOBA</span><div class="w-6"></div></header>
-                    <div class="flex-1 overflow-y-auto px-6 pt-8 pb-32">
+                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic"><button onclick="navigateTo('location-selection')" class="mr-4"><i class="fa-solid fa-chevron-left text-xl text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">${locationTitle}</span><div class="w-6"></div></header>
+                    <div class="flex-1 overflow-y-auto px-6 pt-5 pb-32">
                         <!-- Location Info Card -->
-                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-8">
+                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5">
                             <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
                                 <i class="fa-solid fa-location-dot text-xl"></i>
                             </div>
@@ -653,7 +661,7 @@ const routes = {
                             </div>
                         </div>
 
-                        <h1 class="text-3xl font-black text-gray-900 leading-tight mb-8 tracking-tighter uppercase font-black italic">Order Type</h1>
+                        <h1 class="text-2xl font-black text-gray-900 leading-tight mb-4 tracking-tighter uppercase font-black italic">Order Type</h1>
                         <div class="grid grid-cols-2 gap-3">
                             ${btn('fa-shop', 'In-store')}
                             ${btn('fa-car', 'Drive Through')}
@@ -661,45 +669,56 @@ const routes = {
                             ${btn('fa-mobile-screen-button', 'Dine In')}
                         </div>
                         <div class="mt-4 pt-4 border-t border-gray-100">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 font-black">Ordering For</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 font-black">Ordering For</p>
                             <div class="grid grid-cols-2 gap-3">
-                                <button onclick="updateMockupState('orderTime', 'ASAP')" class="py-4 border-2 rounded-xl font-bold flex flex-col items-center gap-2 ${mockupState.orderTime === 'ASAP' ? 'bg-violet-600 text-white' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase italic"><i class="fa-solid fa-bolt"></i>ASAP</button>
-                                <button onclick="updateMockupState('orderTime', 'Later')" class="py-4 border-2 rounded-xl font-bold flex flex-col items-center gap-2 ${mockupState.orderTime === 'Later' ? 'bg-violet-600 text-white' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase italic"><i class="fa-solid fa-calendar-day"></i>Later</button>
+                                <button onclick="updateMockupState('orderTime', 'ASAP')" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === 'ASAP' ? 'bg-violet-600 text-white' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase italic"><i class="fa-solid fa-bolt text-lg mb-0.5"></i>ASAP</button>
+                                <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'date'; updateMockupState('acknowledgedClose', false); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === 'Later' ? 'bg-violet-600 text-white' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase italic"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i>Later</button>
                             </div>
                             
                             ${mockupState.orderTime === 'Later' ? `
-                            <div class="mt-4 p-5 bg-white rounded-2xl border border-gray-100 shadow-sm transition-all animate-[fadeIn_0.3s_ease-out]">
-                                <p class="text-[10px] font-black text-violet-600 uppercase tracking-widest mb-3 italic">Select Pickup Time</p>
+                            <div class="mt-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm transition-all animate-[fadeIn_0.3s_ease-out]">
+                                <div class="flex justify-between items-center mb-3">
+                                    <p class="text-[10px] font-black text-violet-600 uppercase tracking-widest italic">Scheduled Pickup</p>
+                                </div>
                                 <div class="flex gap-3">
-                                    <button onclick="mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-gray-100 hover:border-violet-300 rounded-xl font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left">${mockupState.selectedDay}</span></span>
-                                        <i class="fa-solid fa-chevron-down text-[10px] text-gray-400 shrink-0 ml-2"></i>
+                                    <button onclick="mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-xl font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
+                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay}</span></span>
+                                        <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-md shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
                                     </button>
-                                    <button onclick="mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-gray-100 hover:border-violet-300 rounded-xl font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left">${mockupState.selectedTimeSlot}</span></span>
-                                        <i class="fa-solid fa-chevron-down text-[10px] text-gray-400 shrink-0 ml-2"></i>
+                                    <button onclick="mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-xl font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
+                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedTimeSlot}</span></span>
+                                        <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-md shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
                                     </button>
                                 </div>
                             </div>
-                            ` : ''}
+                            ` : `
+                            <div class="mt-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm transition-all animate-[fadeIn_0.3s_ease-out]">
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="text-[10px] font-black text-violet-600 uppercase tracking-widest italic">Estimated Pickup Time</p>
+                                </div>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <i class="fa-regular fa-clock text-violet-600 border border-violet-100 rounded p-1"></i>
+                                    <p class="font-black text-gray-800 text-sm tracking-tight">Today at ${times15[0]}</p>
+                                </div>
+                            </div>
+                            `}
                         </div>
                     </div>
                     <div class="p-6 bg-white border-t border-gray-100 absolute bottom-0 left-0 right-0 z-50 shadow-lg"><button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all uppercase tracking-widest font-black italic">Start Order</button></div>
 
                     <!-- Date Modal -->
-                    <div id="date-modal" class="absolute inset-0 bg-black/60 z-[100] ${dateModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4">
-                        <div class="bg-white w-full sm:w-[380px] max-w-full rounded-3xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[85vh]">
-                            <div class="flex justify-between items-center mb-6 shrink-0">
+                    <div id="date-modal" class="absolute inset-0 bg-black/60 z-[100] ${dateModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                        <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[85vh]">
+                            <div class="flex justify-between items-center mb-5 shrink-0">
                                 <h3 class="font-black text-xl uppercase italic text-gray-900">Choose Day</h3>
                                 <button onclick="mockupState.modalOpen = null; navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
                             </div>
-                            
                             <!-- Stylized Calendar -->
-                            <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm overflow-y-auto scrollbar-hide">
-                                <div class="flex justify-between items-center mb-4 px-2">
-                                    <button onclick="mockupState.monthOffset = Math.max(0, (mockupState.monthOffset||0) - 1); navigateTo(currentPage);" class="${monthOffset === 0 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-500 hover:text-violet-600 transition-colors'}"><i class="fa-solid fa-chevron-left text-sm"></i></button>
+                            <div class="bg-white rounded-2xl p-4 border border-violet-100 shadow-sm overflow-y-auto scrollbar-hide">
+                                <div class="flex justify-between items-center mb-3 px-1">
+                                    <button onclick="mockupState.monthOffset = Math.max(0, (mockupState.monthOffset||0) - 1); navigateTo(currentPage);" class="${monthOffset === 0 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-500 hover:text-violet-600 transition-colors'} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-left text-sm"></i></button>
                                     <span class="font-black text-sm uppercase tracking-widest text-gray-800">${currentMonth.name}</span>
-                                    <button onclick="mockupState.monthOffset = Math.min(2, (mockupState.monthOffset||0) + 1); navigateTo(currentPage);" class="${monthOffset === 2 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-500 hover:text-violet-600 transition-colors'}"><i class="fa-solid fa-chevron-right text-sm"></i></button>
+                                    <button onclick="mockupState.monthOffset = Math.min(2, (mockupState.monthOffset||0) + 1); navigateTo(currentPage);" class="${monthOffset === 2 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-500 hover:text-violet-600 transition-colors'} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-right text-sm"></i></button>
                                 </div>
                                 <div class="grid grid-cols-7 gap-1 text-center mb-2">
                                     ${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="text-[10px] font-black text-gray-400">${d}</div>`).join('')}
@@ -712,28 +731,74 @@ const routes = {
                     </div>
 
                     <!-- Time Modal -->
-                    <div id="time-modal" class="absolute inset-0 bg-black/60 z-[100] ${timeModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4">
-                        <div class="bg-white w-full sm:w-[380px] max-w-full rounded-3xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[85vh]">
-                            <div class="flex justify-between items-center mb-6 shrink-0">
+                    <div id="time-modal" class="absolute inset-0 bg-black/60 z-[100] ${timeModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                        <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col h-[85vh] sm:max-h-[85vh]">
+                            <div class="flex justify-between items-center mb-5 shrink-0">
                                 <h3 class="font-black text-xl uppercase italic text-gray-900">Choose Time</h3>
                                 <button onclick="mockupState.modalOpen = null; navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
                             </div>
                             
-                            <div class="overflow-y-auto scrollbar-hide grid grid-cols-2 gap-3 pr-2 pb-4">
-                                ${['12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM', '5:00 PM', '5:30 PM', '6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM'].map(time => `
-                                    <button onclick="updateMockupState('selectedTimeSlot', '${time}')" class="py-3.5 rounded-xl border-2 ${mockupState.selectedTimeSlot === time ? 'border-violet-600 bg-violet-50 text-violet-700 shadow-sm' : 'border-gray-100 text-gray-600 hover:border-violet-200'} font-black text-sm transition-all">${time}</button>
-                                `).join('')}
-                            </div>
+                            <div class="flex-1 flex flex-col min-h-0">
+                                <div class="overflow-y-auto scrollbar-hide flex-1 pb-4">
+                                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                        ${times15.map(time => {
+                                            const isThisTimeNearClose = time.includes('8:') || time.includes('9:');
+                                            const clickAction = isThisTimeNearClose && !mockupState.acknowledgedClose 
+                                                ? `updateMockupState('selectedTimeSlot', '${time}'); mockupState.modalOpen = 'warning'; navigateTo(currentPage);` 
+                                                : `updateMockupState('selectedTimeSlot', '${time}'); navigateTo(currentPage);`;
+                                            
+                                            return `
+                                            <button onclick="${clickAction}" class="py-2.5 rounded-xl border-2 ${mockupState.selectedTimeSlot === time ? 'border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200' : 'border-gray-100 text-gray-600 hover:border-violet-200 bg-white'} font-black text-[13px] transition-all tracking-tight">${time}</button>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
 
-                            <div class="mt-4 space-y-2 text-center shrink-0">
-                                ${isNearClose ? `<p class="text-[11px] font-bold text-amber-600 uppercase tracking-tight leading-tight">Order is within an hour of close time.<br>Please pick up orders before close.</p>` : ''}
-                                <p class="text-[11px] font-black text-red-600 uppercase tracking-widest italic">Store Closes at 9:00pm</p>
-                            </div>
+                                <div class="mt-2 pt-4 border-t border-gray-100 shrink-0">
+                                    <label class="block text-[10px] font-black text-violet-600 uppercase tracking-widest mb-3 italic">Or enter a custom pickup time</label>
+                                    <div class="flex items-center gap-3">
+                                        <div class="relative flex-1">
+                                            <i class="fa-regular fa-clock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                            <input type="time" class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-violet-600 focus:ring-0 font-bold text-gray-800 outline-none transition-colors" onchange="let val = this.value; let parts = val.split(':'); let h = parseInt(parts[0]); let ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12; h = h || 12; let formatted = h + ':' + parts[1] + ' ' + ampm; updateMockupState('selectedTimeSlot', formatted); if(h >= 8 && ampm === 'PM') { mockupState.modalOpen = 'warning'; mockupState.acknowledgedClose = false; } navigateTo(currentPage);" />
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <div class="flex gap-3 mt-6 shrink-0 pb-2">
-                                <button onclick="mockupState.modalOpen = null; navigateTo(currentPage);" class="flex-1 py-3 rounded-xl border-2 border-gray-100 text-gray-400 font-black uppercase text-[11px] tracking-wider transition-colors hover:bg-gray-50 active:scale-95">Cancel</button>
-                                <button onclick="mockupState.modalOpen = null; navigateTo(currentPage);" class="flex-1 py-3 rounded-xl bg-violet-600 text-white font-black uppercase text-[11px] tracking-wider shadow-md transition-all active:scale-95">Next</button>
                             </div>
+                            
+                            <div class="pt-5 mt-auto bg-white border-t border-gray-50 shrink-0">
+                                <button onclick="
+                                    if(isNearClose && !mockupState.acknowledgedClose) {
+                                        mockupState.modalOpen = 'warning';
+                                    } else {
+                                        mockupState.modalOpen = null;
+                                    }
+                                    navigateTo(currentPage);
+                                " class="w-full py-4 rounded-xl bg-violet-600 text-white font-black uppercase text-sm tracking-widest shadow-xl shadow-violet-200 transition-all active:scale-95">Confirm Time</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Warning Modal -->
+                    <div id="warning-modal" class="absolute inset-0 bg-black/60 z-[110] ${warningModalClass} flex-col justify-center items-center backdrop-blur-sm p-4">
+                        <div class="bg-red-600 w-full sm:w-[380px] max-w-full rounded-3xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col items-center text-center">
+                            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
+                                <i class="fa-solid fa-clock text-red-600 text-3xl"></i>
+                            </div>
+                            
+                            <h3 class="font-black text-2xl uppercase italic text-white mb-2 leading-tight">Store Closes<br>at 9:00 PM</h3>
+                            
+                            <p class="text-red-100 font-bold mb-8 px-2">
+                                ${isNearClose ? "You have selected a pickup time within an hour of close. Please ensure you pick up your order before our doors close." : "Please ensure you pick up your order before our doors close."}
+                            </p>
+                            
+                            <button onclick="updateMockupState('acknowledgedClose', true); mockupState.modalOpen = null; navigateTo('menu');" class="w-full py-4 rounded-xl bg-white text-red-600 font-black uppercase text-sm tracking-widest shadow-xl hover:bg-gray-50 transition-colors active:scale-95 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-check text-lg"></i> I Understand
+                            </button>
+                            
+                            <button onclick="mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="mt-4 text-red-200 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">Go Back</button>
+                        </div>
+                    </div>
                         </div>
                     </div>
 
@@ -763,10 +828,9 @@ const routes = {
         return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
                 <!-- Header Component -->
-                <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 border-b border-gray-100">
-                    <button onclick="navigateTo('restaurant-homepage')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4 hover:bg-gray-50 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 border-b border-gra                    <button onclick="navigateTo('restaurant-homepage')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4 hover:bg-gray-50 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button>
                     <div class="flex-1">
-                        <h1 class="text-xl font-black tracking-tight uppercase italic text-gray-900">Bob's Boba Menu</h1>
+                        <h1 class="text-xl font-black tracking-tight uppercase italic text-gray-900">I-TEA Menu</h1>
                     </div>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 rounded-full transition-colors">
                         <i class="fa-solid fa-bag-shopping text-xl"></i>
@@ -786,13 +850,13 @@ const routes = {
                         <div class="flex-1 space-y-8">
                             <!-- Hero Special Card -->
                             <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[300px] flex flex-col justify-end p-8">
-                                <img src="${assets.menuHero}" class="absolute inset-0 w-full h-full object-cover">
+                                <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
                                 <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
                                 
                                 <div class="relative z-10 w-full max-w-md">
-                                    <span class="bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Seasonal Special</span>
-                                    <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4">Chicken Al<br>Pastor</h2>
-                                    <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">Marinated in achiote and pineapple, charred to perfection. Limited time only.</p>
+                                    <span class="bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Popular</span>
+                                    <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4">Brown Sugar<br>Boba Latte</h2>
+                                    <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P4 • 356 to 478 calories. A perfectly sweet and creamy favorite.</p>
                                     <button onclick="navigateTo('order-details')" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Start Order</button>
                                 </div>
                             </div>
@@ -800,33 +864,33 @@ const routes = {
                             <!-- Seasonal Specials Grid -->
                             <div>
                                 <div class="flex justify-between items-end mb-4 px-1">
-                                    h3 class="text-2xl font-black text-gray-900 tracking-tight">Seasonal Specials</h3>
+                                    <h3 class="text-2xl font-black text-gray-900 tracking-tight">New Items</h3>als</h3>
                                     <button class="text-violet-600 font-bold text-sm hover:underline tracking-tight">View All</button>
                                 </div>
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <!-- Summer Cobb Salad -->
+                                    <!-- Item 1 -->
                                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                         <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative">
-                                            <img src="${assets.cobbSalad}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                                            <img src="${assets.boba1}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
                                         </div>
                                         <div class="flex justify-between items-start mb-2">
-                                            <h4 class="font-black text-gray-900 text-lg leading-tight w-2/3 tracking-tight">Summer Cobb Salad</h4>
-                                            <span class="font-black text-violet-600">$14.50</span>
+                                            <h4 class="font-black text-gray-900 text-lg leading-tight w-2/3 tracking-tight">M7 Crème Brûlée Boba Milk Tea</h4>
+                                            <span class="font-black text-violet-600">$5.75</span>
                                         </div>
-                                        <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed">Fresh garden greens, grilled corn, heirloom tomatoes, and creamy cilantro lime dressing.</p>
+                                        <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed">377 calories to 549 calories</p>
                                         <button onclick="navigateTo('order-details')" class="w-full py-3 rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black text-sm uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide">+ Add to Order</button>
                                     </div>
-                                    <!-- Firecracker Shrimp Tacos -->
+                                    <!-- Item 2 -->
                                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                         <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative">
-                                            <img src="${assets.shrimpTacos}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                                            <img src="${assets.boba2}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
                                         </div>
                                         <div class="flex justify-between items-start mb-2">
-                                            <h4 class="font-black text-gray-900 text-lg leading-tight w-2/3 tracking-tight">Firecracker Shrimp Tacos</h4>
-                                            <span class="font-black text-violet-600">$16.00</span>
+                                            <h4 class="font-black text-gray-900 text-lg leading-tight w-2/3 tracking-tight">M8 Taro Boba Purée Latte</h4>
+                                            <span class="font-black text-violet-600">$5.75</span>
                                         </div>
-                                        <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed">Three crispy shrimp tacos topped with spicy mayo slaw and pickled red onions.</p>
+                                        <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed">Come With Fresh Taro Puree, Freshly Made Taro Boba</p>
                                         <button onclick="navigateTo('order-details')" class="w-full py-3 rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black text-sm uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide">+ Add to Order</button>
                                     </div>
                                 </div>
@@ -863,9 +927,9 @@ const routes = {
                                     <!-- Fav 1 -->
                                     <div class="flex items-center justify-between group">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.burger}" class="w-full h-full object-cover"></div>
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba3}" class="w-full h-full object-cover"></div>
                                             <div>
-                                                <div class="font-black text-sm text-gray-900 leading-tight">Classic Beef Burger</div>
+                                                <div class="font-black text-sm text-gray-900 leading-tight w-40 truncate">P1 Super Fruit Tea</div>
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 3 days ago</div>
                                             </div>
                                         </div>
@@ -874,9 +938,9 @@ const routes = {
                                     <!-- Fav 2 -->
                                     <div class="flex items-center justify-between group">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.burritoBowl}" class="w-full h-full object-cover"></div>
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba4}" class="w-full h-full object-cover"></div>
                                             <div>
-                                                <div class="font-black text-sm text-gray-900 leading-tight">Veggie Burrito Bowl</div>
+                                                <div class="font-black text-sm text-gray-900 leading-tight w-40 truncate">P2 Super Lime Sijichun</div>
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 1 week ago</div>
                                             </div>
                                         </div>
@@ -885,9 +949,9 @@ const routes = {
                                     <!-- Fav 3 -->
                                     <div class="flex items-center justify-between group">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.icedMatcha}" class="w-full h-full object-cover"></div>
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba1}" class="w-full h-full object-cover"></div>
                                             <div>
-                                                <div class="font-black text-sm text-gray-900 leading-tight">Iced Matcha Latte</div>
+                                                <div class="font-black text-sm text-gray-900 leading-tight w-40 truncate">P3 Super Grapefruit</div>
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: Yesterday</div>
                                             </div>
                                         </div>
@@ -1461,20 +1525,25 @@ const routes = {
                     </div>` : mockupState.paymentMethod === 'gift' ? `
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mt-6 animate-[fadeIn_0.3s_ease-out]">
                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-4">Redeem Gift Card</h3>
-                        <div class="flex p-1 bg-gray-50 border border-gray-200 rounded-xl focus-within:border-violet-600 transition-colors">
-                            <input type="text" placeholder="Gift Card Number" class="flex-1 bg-transparent px-4 py-2 font-bold text-gray-700 outline-none">
-                            <button class="bg-violet-600 text-white px-6 py-2 rounded-lg font-black uppercase text-xs active:scale-95 transition-transform">Apply</button>
+                        <div class="space-y-3">
+                            <input type="text" placeholder="Gift Card Number" class="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl font-bold text-gray-700 outline-none focus:border-violet-600 transition-colors">
+                            <button class="w-full bg-violet-600 text-white px-6 py-3 rounded-xl font-black uppercase text-sm tracking-widest active:scale-95 transition-transform shadow-sm">Apply Gift Card</button>
                         </div>
                     </div>` : mockupState.paymentMethod === 'rewards' ? `
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mt-6 animate-[fadeIn_0.3s_ease-out]">
                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-4">Your Punch Card</h3>
                         <div class="bg-violet-50 rounded-2xl p-5 border border-violet-100">
                             <div class="grid grid-cols-5 gap-3 mb-6">
-                                ${Array.from({ length: 10 }).map((_, i) => `
-                                    <div class="aspect-square rounded-full border-2 flex items-center justify-center ${i < 7 ? 'bg-violet-600 border-violet-600 text-white shadow-sm' : 'bg-white border-violet-100 text-violet-100'}">
+                                ${Array.from({ length: 10 }).map((_, i) => {
+                                    let stampClass = 'bg-white border-violet-100 text-violet-100';
+                                    if (i < 6) stampClass = 'bg-violet-600 border-violet-600 text-white shadow-sm';
+                                    if (i === 6) stampClass = 'bg-emerald-500 border-emerald-500 text-white shadow-sm ring-2 ring-emerald-200'; // Newest stamp today
+                                    return `
+                                    <div class="aspect-square rounded-full border-2 flex items-center justify-center ${stampClass}">
                                         <i class="fa-solid fa-mug-hot text-lg"></i>
                                     </div>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                             </div>
                             <div class="text-center">
                                 <p class="text-xs font-black text-violet-600 uppercase tracking-widest mb-1 italic">3 More Bobas Left!</p>
@@ -1484,8 +1553,12 @@ const routes = {
                         <button class="w-full mt-6 bg-gray-50 text-gray-400 py-3 rounded-xl font-black uppercase text-xs tracking-widest cursor-not-allowed">Apply Free Drink (Locked)</button>
                     </div>` : ''}
                 </div>
-                <div class="p-6 bg-white border-t border-gray-100 shrink-0 sticky bottom-0">
-                    <button onclick="navigateTo('confirmation')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider italic">Complete Purchase</button>
+                </div>
+
+                <!-- Footer Action Buttons -->
+                <div class="p-6 bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-50 flex justify-between gap-4">
+                    <button onclick="navigateTo('cart')" class="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 shadow-sm transition-all active:scale-95 shrink-0 border border-gray-100"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                    <button onclick="navigateTo('confirmation')" class="flex-1 bg-violet-600 text-white rounded-xl font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider italic">Purchase Order</button>
                 </div>
             </div>`,
     'location-favorites': () => `
