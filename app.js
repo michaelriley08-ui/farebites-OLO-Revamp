@@ -1,6 +1,5 @@
 const PAGE_FILE_MAP = {
     "landing-page": "landing-page.html",
-    "landing-page-2": "landing-page-2.html",
     "home": "home.html",
     "home-auth": "home-auth.html",
     "search": "search.html",
@@ -26,7 +25,6 @@ const PAGE_FILE_MAP = {
 };
 const PAGE_LABELS = {
     "landing-page": "FareBites Landing Page",
-    "landing-page-2": "FareBites Landing Page 2",
     "home": "FareBites Homepage (Logged In)",
     "home-auth": "Homepage (Sign In/Sign Up Modal)",
     "search": "Restaurant Search",
@@ -87,35 +85,35 @@ function persistAllState() {
 }
 
 const assets = {
-            featured: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80",
-            steak: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80",
-            bobaHero: "https://images.unsplash.com/photo-1525385133512-2f3bdd039054?auto=format&fit=crop&w=1200&q=80",
-            boba1: "https://images.unsplash.com/photo-1596803244618-8dbee441d70b?auto=format&fit=crop&w=800&q=80",
-            boba2: "https://images.unsplash.com/photo-1589396575653-c09c794ff6a6?auto=format&fit=crop&w=800&q=80",
-            boba3: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=800&q=80",
-            boba4: "https://images.unsplash.com/photo-1577805947697-89e18249d767?auto=format&fit=crop&w=800&q=80",
-            menuHero: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1200&q=80",
-            cobbSalad: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
-            shrimpTacos: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=800&q=80",
-            burger: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80",
-            burritoBowl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&getSet=80",
-            icedMatcha: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=400&q=80",
-            googleMapsEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d106518.42371900132!2d-112.4414169904297!3d33.4571167448373!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b394142f9b23b%3A0xc3f92d47101783e4!2sGoodyear%2C%20AZ!5e0!3m2!1sen!2sus!4v1709854800000!5m2!1sen!2sus"
-        };
+    featured: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80",
+    steak: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80",
+    bobaHero: "https://images.unsplash.com/photo-1525385133512-2f3bdd039054?auto=format&fit=crop&w=1200&q=80",
+    boba1: "https://images.unsplash.com/photo-1596803244618-8dbee441d70b?auto=format&fit=crop&w=800&q=80",
+    boba2: "https://images.unsplash.com/photo-1589396575653-c09c794ff6a6?auto=format&fit=crop&w=800&q=80",
+    boba3: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=800&q=80",
+    boba4: "https://images.unsplash.com/photo-1577805947697-89e18249d767?auto=format&fit=crop&w=800&q=80",
+    menuHero: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1200&q=80",
+    cobbSalad: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
+    shrimpTacos: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=800&q=80",
+    burger: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80",
+    burritoBowl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&getSet=80",
+    icedMatcha: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=400&q=80",
+    googleMapsEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d106518.42371900132!2d-112.4414169904297!3d33.4571167448373!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b394142f9b23b%3A0xc3f92d47101783e4!2sGoodyear%2C%20AZ!5e0!3m2!1sen!2sus!4v1709854800000!5m2!1sen!2sus"
+};
 
-        function toggleMenu(e) {
-            e.stopPropagation();
-            document.getElementById('dropdown-menu').classList.toggle('show');
-        }
+function toggleMenu(e) {
+    e.stopPropagation();
+    document.getElementById('dropdown-menu').classList.toggle('show');
+}
 
-        document.addEventListener('click', () => {
-            const menu = document.getElementById('dropdown-menu');
-            if (menu) menu.classList.remove('show');
-        });
+document.addEventListener('click', () => {
+    const menu = document.getElementById('dropdown-menu');
+    if (menu) menu.classList.remove('show');
+});
 
 
-        const routes = {
-            'landing-page': () => `
+const routes = {
+    'landing-page': () => `
             <div class="flex flex-col h-full relative overflow-hidden bg-black">
                 <div class="absolute inset-0 z-0">
                     <img src="${assets.featured}" class="w-full h-full object-cover opacity-80">
@@ -131,7 +129,7 @@ const assets = {
                     <button onclick="navigateTo('home-auth')" class="w-full bg-red-600 text-white py-4 rounded-full font-black text-lg shadow-[0_10px_30px_rgba(220,38,38,0.4)] active:scale-95 transition-transform uppercase tracking-wider italic">Log In</button>
                 </div>
             </div>`,
-            'merchant-dashboard': () => `
+    'merchant-dashboard': () => `
             <div class="flex flex-col h-full bg-[#f0f2f5] relative">
                 <header class="bg-[#1a1a1a] px-6 py-4 flex justify-between items-center z-50 shrink-0 shadow-md">
                     <div class="flex flex-col text-left">
@@ -206,9 +204,9 @@ const assets = {
                     </div>
                 </div>
             </div>`,
-            'home': () => {
-                if (currentViewport === 'desktop') {
-                    return `
+    'home': () => {
+        if (currentViewport === 'desktop') {
+            return `
                 <div class="flex flex-col w-full min-h-full">
                     <nav class="flex justify-between items-center px-16 py-6 bg-white sticky top-0 z-50 shadow-sm">
                         <div class="flex items-center gap-8"><span class="text-3xl font-black text-red-600 tracking-tighter cursor-pointer" onclick="navigateTo('home')">FAREBITES</span></div>
@@ -224,8 +222,8 @@ const assets = {
                         </div>
                     </div>
                 </div>`;
-                } else {
-                    return `
+        } else {
+            return `
                 <div class="flex flex-col h-full bg-white relative">
                     <div class="flex-shrink-0 bg-white px-6 pt-10 pb-4">
                         <div class="bg-gray-100 flex items-center gap-3 px-5 py-3.5 rounded-full shadow-sm">
@@ -272,9 +270,9 @@ const assets = {
                         </div>
                     </div>
                 </div>`;
-                }
-            },
-            'home-auth': () => `
+        }
+    },
+    'home-auth': () => `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.featured}')"></div>
             <div class="modal-overlay" onclick="navigateTo('home')">
                 <div class="modal-content" onclick="event.stopPropagation()">
@@ -308,10 +306,10 @@ const assets = {
                     </div>
                 </div>
             </div>`,
-            'restaurant-homepage': () => {
-                const cardWidth = currentViewport === 'desktop' ? 'w-[24%] min-w-[240px] max-w-[300px]' : (currentViewport === 'tablet' ? 'w-[45%]' : 'w-[85%]');
-                const isDesktop = currentViewport === 'desktop';
-                return `
+    'restaurant-homepage': () => {
+        const cardWidth = currentViewport === 'desktop' ? 'w-[24%] min-w-[240px] max-w-[300px]' : (currentViewport === 'tablet' ? 'w-[45%]' : 'w-full');
+        const isDesktop = currentViewport === 'desktop';
+        return `
             <div class="flex flex-col h-full relative overflow-hidden">
                 <!-- Full Viewport Background Image -->
                 <div class="absolute inset-0 z-0">
@@ -344,38 +342,38 @@ const assets = {
                     <div class="w-full flex-1 min-h-[140px]"></div>
                     
                     <!-- Carousel Container -->
-                    <div class="relative z-20 px-0 pl-6 mt-auto shrink-0">
-                        <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 pr-6">
+                    <div class="relative z-20 w-full mt-auto shrink-0 pb-2">
+                        <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-6 before:content-[''] before:w-0 before:shrink-0 after:content-[''] after:w-2 after:shrink-0 ${isDesktop ? 'justify-center' : ''}">
                             <!-- Card 1 -->
-                            <div class="snap-center shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
-                                <div class="h-40 relative px-3 pt-3"><img src="${assets.boba1}" class="w-full h-full object-cover"></div>
+                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
+                                <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
                                 <div class="p-5 text-center bg-white">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New</div>
-                                    <div class="text-xl font-black text-[#3A2218] uppercase tracking-tight scale-y-110">Double High Protein Bowl</div>
+                                    <div class="text-lg font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight">Double High Protein Bowl</div>
                                 </div>
                             </div>
                             <!-- Card 2 -->
-                            <div class="snap-center shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
-                                <div class="h-40 relative px-3 pt-3"><img src="${assets.boba2}" class="w-full h-full object-cover"></div>
+                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
+                                <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
                                 <div class="p-5 text-center bg-white">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Featured</div>
-                                    <div class="text-xl font-black text-[#3A2218] uppercase tracking-tight scale-y-110">Brown Sugar Pearl</div>
+                                    <div class="text-lg font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight">Brown Sugar Pearl</div>
                                 </div>
                             </div>
                             <!-- Card 3 -->
-                            <div class="snap-center shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
-                                <div class="h-40 relative px-3 pt-3"><img src="${assets.boba3}" class="w-full h-full object-cover"></div>
+                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
+                                <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
                                 <div class="p-5 text-center bg-white">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Seasonal</div>
-                                    <div class="text-xl font-black text-[#3A2218] uppercase tracking-tight scale-y-110">Taro Milk Tea</div>
+                                    <div class="text-lg font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight">Taro Milk Tea</div>
                                 </div>
                             </div>
                             <!-- Card 4 -->
-                            <div class="snap-center shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
-                                <div class="h-40 relative px-3 pt-3"><img src="${assets.boba4}" class="w-full h-full object-cover"></div>
+                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
+                                <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
                                 <div class="p-5 text-center bg-white">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Classic</div>
-                                    <div class="text-xl font-black text-[#3A2218] uppercase tracking-tight scale-y-110">Matcha Latte</div>
+                                    <div class="text-lg font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight">Matcha Latte</div>
                                 </div>
                             </div>
                         </div>
@@ -405,17 +403,37 @@ const assets = {
                     <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('bobs-dine-in-instruction')">SCAN</button>
                 </div>
             </div>`;
-            },
-            'location-selection': () => {
-                const getSet = () => {
-                    if (mockupState.locationFilter === 'Nearby') return [{ name: "McDowell Rd", address: "8738 S. Emerald Dr", dist: "0.8 mi", fav: true }, { name: "Camelback & Litchfield", address: "13802 W Camelback Rd", dist: "2.4 mi", fav: true }];
-                    if (mockupState.locationFilter === 'Favorites') return [{ name: "near home", address: "8738 S. Emerald Dr", dist: "0.2 mi", fav: true }, { name: "near office", address: "McDowell Rd & 7th Ave", dist: "0.8 mi", fav: true }];
-                    if (mockupState.locationFilter === 'Previous') return [{ name: "Camelback & Litchfield", address: "13802 W Camelback Rd", dist: "2.4 mi", fav: false }];
-                    return [{ name: "McDowell Rd", address: "8738 S. Emerald Dr", dist: "0.8 mi", fav: true }, { name: "Camelback & Litchfield", address: "13802 W Camelback Rd", dist: "2.4 mi", fav: true }];
-                };
+    },
+    'location-selection': () => {
+        const getSet = () => {
+            const allLocations = [
+                { name: "I-TEA - TEMPE", address: "825 W UNIVERSITY, Tempe, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM" },
+                { name: "I-TEA - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "12.4 mi", fav: false, hours: "12:00 PM to 9:30 PM" },
+                { name: "I-TEA - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM" },
+                { name: "I-TEA - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM" },
+                { name: "I-TEA - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM" },
+                { name: "I-TEA - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM" },
+                { name: "I-TEA - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM" },
+                { name: "I-TEA - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM" },
+                { name: "I-TEA - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM" },
+                { name: "I-TEA - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM" },
+                { name: "I-TEA - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM" },
+                { name: "I-TEA - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM" },
+                { name: "I-TEA - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM" },
+                { name: "I-TEA - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM" },
+                { name: "I-TEA - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM" },
+                { name: "I-TEA - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours" }
+            ];
 
-                if (currentViewport === 'desktop') {
-                    return `
+            if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return allLocations;
+            if (mockupState.locationFilter === 'Favorites') return allLocations.filter(loc => loc.fav);
+            if (mockupState.locationFilter === 'Previous') return [allLocations[13], allLocations[0], allLocations[9]]; // TEARAY, TEMPE, OAKLAND
+            
+            return allLocations;
+        };
+
+        if (currentViewport === 'desktop') {
+            return `
                 <div class="flex flex-row h-full bg-white">
                     <div class="w-[450px] flex flex-col shrink-0 border-r border-gray-200 z-10 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.05)]">
                         <header class="p-4 border-b border-gray-100 flex items-center bg-white">
@@ -428,7 +446,7 @@ const assets = {
                                 <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
                             </div>
                             <div class="flex gap-2 overflow-x-auto scrollbar-hide">
-                                <button onclick="updateMockupState('locationFilter', 'Nearby')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Nearby' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}">Favorites</button>
+                                <button onclick="updateMockupState('locationFilter', 'Near Me')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}">Near Me</button>
                                 <button onclick="updateMockupState('locationFilter', 'Previous')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Previous' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}">Previous</button>
                                 <button onclick="updateMockupState('locationFilter', 'Favorites')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Favorites' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}">Favorites</button>
                             </div>
@@ -441,6 +459,7 @@ const assets = {
                                         ${idx === 1 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Office</span>' : ''}
                                         <h3 class="font-bold text-base tracking-tight uppercase italic flex items-center gap-2 text-gray-900">${s.name} ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-xs"></i>' : ''}</h3>
                                         <p class="text-xs text-gray-500 italic mt-1.5 leading-relaxed">${s.address}</p>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1.5 uppercase tracking-widest"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
                                         <div class="flex gap-4 mt-4">
                                             <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500"><i class="fa-solid fa-shop"></i> In store</span>
                                             <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500"><i class="fa-solid fa-car"></i> Drive-thru</span>
@@ -458,8 +477,8 @@ const assets = {
                         <iframe src="${assets.googleMapsEmbed}" class="absolute inset-0 w-full h-full border-0" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                     </div>
                 </div>`;
-                } else {
-                    return `
+        } else {
+            return `
                 <div class="flex flex-col h-full bg-[#f4f4f2] relative">
                     <header class="p-4 flex items-center bg-white z-20 shrink-0 shadow-sm relative">
                         <button onclick="navigateTo('restaurant-homepage')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
@@ -478,7 +497,7 @@ const assets = {
                                 <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
                             </div>
                             <div class="flex gap-2 overflow-x-auto scrollbar-hide">
-                                <button onclick="updateMockupState('locationFilter', 'Nearby')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Nearby' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500'}">Favorites</button>
+                                <button onclick="updateMockupState('locationFilter', 'Near Me')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500'}">Near Me</button>
                                 <button onclick="updateMockupState('locationFilter', 'Previous')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Previous' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500'}">Previous</button>
                                 <button onclick="updateMockupState('locationFilter', 'Favorites')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Favorites' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500'}">Favorites</button>
                             </div>
@@ -492,7 +511,8 @@ const assets = {
                                         ${idx === 1 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Office</span>' : ''}
                                         <h3 class="font-bold text-base tracking-tight uppercase italic flex items-center gap-2 text-gray-900">${s.name} ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-xs"></i>' : ''}</h3>
                                         <p class="text-xs text-gray-500 italic mt-1.5">${s.address}</p>
-                                        <div class="flex gap-4 mt-4">
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
+                                        <div class="flex gap-4 mt-3">
                                             <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500"><i class="fa-solid fa-shop text-[13px]"></i> In store</span>
                                             <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500"><i class="fa-solid fa-car text-[13px]"></i> Drive-thru</span>
                                             <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500"><i class="fa-solid fa-square-parking text-[13px]"></i> Curbside</span>
@@ -506,9 +526,9 @@ const assets = {
                         </div>
                     </div>
                 </div>`;
-                }
-            },
-            'location-favorites': () => `
+        }
+    },
+    'location-favorites': () => `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 border-b border-gray-100">
                     <button onclick="navigateTo('location-selection')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4 hover:bg-gray-50 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button>
@@ -575,50 +595,50 @@ const assets = {
                 </div>
             </div>
         `,
-            'bobs-fulfillment-select': () => {
-                const btn = (icon, label) => {
-                    const isActive = mockupState.fulfillmentMode === label;
-                    const clickHandler = label === 'Dine In' ? `navigateTo('bobs-dine-in-instruction')` : `updateMockupState('fulfillmentMode', '${label}')`;
-                    return `
+    'bobs-fulfillment-select': () => {
+        const btn = (icon, label) => {
+            const isActive = mockupState.fulfillmentMode === label;
+            const clickHandler = label === 'Dine In' ? `navigateTo('bobs-dine-in-instruction')` : `updateMockupState('fulfillmentMode', '${label}')`;
+            return `
                     <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-2 py-4 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-800 border-gray-100'}">
                         <i class="fa-solid ${icon} text-xl ${isActive ? 'text-white' : 'text-violet-600'}"></i>
                         <span class="text-[11px] font-black uppercase">${label}</span>
                     </button>`;
-                };
+        };
 
-                const monthOffset = mockupState.monthOffset || 0;
-                const months = [
-                    { name: 'March 2026', days: 31, startDay: 0 },
-                    { name: 'April 2026', days: 30, startDay: 3 },
-                    { name: 'May 2026', days: 31, startDay: 5 }
-                ];
-                const currentMonth = months[monthOffset];
+        const monthOffset = mockupState.monthOffset || 0;
+        const months = [
+            { name: 'March 2026', days: 31, startDay: 0 },
+            { name: 'April 2026', days: 30, startDay: 3 },
+            { name: 'May 2026', days: 31, startDay: 5 }
+        ];
+        const currentMonth = months[monthOffset];
 
-                let calendarCells = '';
-                for (let i = 0; i < currentMonth.startDay; i++) {
-                    calendarCells += `<div></div>`;
-                }
-                for (let i = 1; i <= currentMonth.days; i++) {
-                    let isPast = monthOffset === 0 && i < 8; // Assuming the 8th is "Today" based on previous mockup
-                    if (isPast) {
-                        calendarCells += `<div class="py-2 text-gray-300 font-bold text-sm text-center">${i}</div>`;
-                    } else {
-                        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                        const dayName = dayNames[(currentMonth.startDay + i - 1) % 7];
-                        const monthNameShort = currentMonth.name.split(' ')[0].substring(0, 3);
-                        let label = (i === 8 && monthOffset === 0) ? 'Today' : ((i === 9 && monthOffset === 0) ? 'Tomorrow' : `${dayName}, ${monthNameShort} ${i}`);
-                        let isSelected = mockupState.selectedDay === label;
-                        calendarCells += `<button onclick="mockupState.modalOpen = null; updateMockupState('selectedDay', '${label}')" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? 'bg-violet-600 text-white shadow-md' : 'text-gray-800 hover:bg-violet-100 transition-colors'}">${i}</button>`;
-                    }
-                }
+        let calendarCells = '';
+        for (let i = 0; i < currentMonth.startDay; i++) {
+            calendarCells += `<div></div>`;
+        }
+        for (let i = 1; i <= currentMonth.days; i++) {
+            let isPast = monthOffset === 0 && i < 8; // Assuming the 8th is "Today" based on previous mockup
+            if (isPast) {
+                calendarCells += `<div class="py-2 text-gray-300 font-bold text-sm text-center">${i}</div>`;
+            } else {
+                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const dayName = dayNames[(currentMonth.startDay + i - 1) % 7];
+                const monthNameShort = currentMonth.name.split(' ')[0].substring(0, 3);
+                let label = (i === 8 && monthOffset === 0) ? 'Today' : ((i === 9 && monthOffset === 0) ? 'Tomorrow' : `${dayName}, ${monthNameShort} ${i}`);
+                let isSelected = mockupState.selectedDay === label;
+                calendarCells += `<button onclick="mockupState.modalOpen = null; updateMockupState('selectedDay', '${label}')" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? 'bg-violet-600 text-white shadow-md' : 'text-gray-800 hover:bg-violet-100 transition-colors'}">${i}</button>`;
+            }
+        }
 
-                const dateModalClass = mockupState.modalOpen === 'date' ? 'flex' : 'hidden';
-                const timeModalClass = mockupState.modalOpen === 'time' ? 'flex' : 'hidden';
+        const dateModalClass = mockupState.modalOpen === 'date' ? 'flex' : 'hidden';
+        const timeModalClass = mockupState.modalOpen === 'time' ? 'flex' : 'hidden';
 
-                // Proximity to close check
-                const isNearClose = ['8:00 PM', '8:30 PM', '9:00 PM'].includes(mockupState.selectedTimeSlot);
+        // Proximity to close check
+        const isNearClose = ['8:00 PM', '8:30 PM', '9:00 PM'].includes(mockupState.selectedTimeSlot);
 
-                return `
+        return `
                 <div class="flex flex-col h-full bg-[#FAF9F6] relative overflow-hidden">
                     <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic"><button onclick="navigateTo('location-selection')" class="mr-4"><i class="fa-solid fa-chevron-left text-xl text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">BOB'S BOBA</span><div class="w-6"></div></header>
                     <div class="flex-1 overflow-y-auto px-6 pt-8 pb-32">
@@ -718,8 +738,8 @@ const assets = {
                     </div>
 
                 </div>`;
-            },
-            'bobs-dine-in-instruction': () => `
+    },
+    'bobs-dine-in-instruction': () => `
             <div class="flex flex-col h-full bg-white relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic"><button onclick="navigateTo('bobs-fulfillment-select')" class="mr-4"><i class="fa-solid fa-chevron-left text-xl text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">BOB'S BOBA</span><div class="w-6"></div></header>
                 <div class="flex-1 flex flex-col items-center justify-center px-8 text-center">
@@ -738,9 +758,9 @@ const assets = {
                 </div>
                 <div class="p-6 border-t sticky bottom-0 bg-white"><button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all uppercase shadow-violet-100 font-black italic"><i class="fa-solid fa-camera"></i><span>SCAN TABLE QR</span></button></div>
             </div>`,
-            'menu': () => {
-                const isDesktop = currentViewport === 'desktop';
-                return `
+    'menu': () => {
+        const isDesktop = currentViewport === 'desktop';
+        return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
                 <!-- Header Component -->
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 border-b border-gray-100">
@@ -931,12 +951,12 @@ const assets = {
                     </div>
                 </div>
             </div>`;
-            },
-            'order-details': () => {
-                const isDesktop = currentViewport === 'desktop';
-                const basePrice = 5.75;
-                const totalPrice = (basePrice * mockupState.itemQuantity).toFixed(2);
-                const content = `
+    },
+    'order-details': () => {
+        const isDesktop = currentViewport === 'desktop';
+        const basePrice = 5.75;
+        const totalPrice = (basePrice * mockupState.itemQuantity).toFixed(2);
+        const content = `
                 <div class="${isDesktop ? 'modal-content max-w-xl p-0 overflow-hidden' : 'flex flex-col h-full bg-white'}">
                     ${!isDesktop ? `
                     <header class="bg-white px-6 py-4 flex items-center justify-between shadow-sm shrink-0 sticky top-0 z-50">
@@ -1004,12 +1024,12 @@ const assets = {
                                     </div>
                                     <div class="space-y-3">
                                         ${[
-                        { name: 'AGAR BOBA', price: '+$0.75' },
-                        { name: 'ALMOND MILK', price: '+$0.75' },
-                        { name: 'ALOE VERA', price: '+$0.50' },
-                        { name: 'BOBA', price: '+$0.00' },
-                        { name: 'CHIA SEED', price: '+$0.00' }
-                    ].map(t => `
+                { name: 'AGAR BOBA', price: '+$0.75' },
+                { name: 'ALMOND MILK', price: '+$0.75' },
+                { name: 'ALOE VERA', price: '+$0.50' },
+                { name: 'BOBA', price: '+$0.00' },
+                { name: 'CHIA SEED', price: '+$0.00' }
+            ].map(t => `
                                             <div class="w-full flex justify-between items-center">
                                                 <div class="flex flex-col text-left">
                                                     <span class="text-sm font-black text-gray-700 uppercase tracking-tight">${t.name}</span>
@@ -1053,18 +1073,18 @@ const assets = {
                 </div>
             `;
 
-                return isDesktop ? `<div class="modal-overlay">${content}</div>` : content;
-            },
-            'cart': () => {
-                const bagFee = (mockupState.bagQuantity * 0.10);
-                const subtotal = 19.00;
-                const taxes = 2.45;
-                const finalTotal = (subtotal + taxes + bagFee).toFixed(2);
+        return isDesktop ? `<div class="modal-overlay">${content}</div>` : content;
+    },
+    'cart': () => {
+        const bagFee = (mockupState.bagQuantity * 0.10);
+        const subtotal = 19.00;
+        const taxes = 2.45;
+        const finalTotal = (subtotal + taxes + bagFee).toFixed(2);
 
-                const selectionNotMade = mockupState.bagQuantity === 0 && !mockupState.noBagsSelected;
-                const paymentAction = selectionNotMade ? `updateMockupState('modalOpen', 'bag-alert')` : `navigateTo('payment')`;
+        const selectionNotMade = mockupState.bagQuantity === 0 && !mockupState.noBagsSelected;
+        const paymentAction = selectionNotMade ? `updateMockupState('modalOpen', 'bag-alert')` : `navigateTo('payment')`;
 
-                return `
+        return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center justify-between shadow-sm z-50 shrink-0 sticky top-0">
                     <button onclick="navigateTo('restaurant-homepage')" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 rounded-full transition-colors shrink-0"><i class="fa-solid fa-arrow-left text-xl"></i></button>
@@ -1118,7 +1138,7 @@ const assets = {
                                     <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('order-details')"><img src="${assets.boba2}" class="w-full h-full object-cover"></div>
                                     <div>
                                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight cursor-pointer" onclick="navigateTo('order-details')">Brown Sugar Pearl</h3>
-                                        <p class="text-xs text-gray-500 font-medium mb-3">Large, Less Ice</p>
+                                        <p class="text-[11px] text-gray-500 font-medium mb-3 cursor-pointer line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed" onclick="this.classList.toggle('line-clamp-2')" title="Click to expand/collapse customizations">Large, Less Ice, Extra Boba, Oat Milk, 50% Sweetness, No Foam, Double Pearl, Less Sweet, Extra Ice, Cheese Foam, Lychee Jelly</p>
                                         
                                         <!-- Quantity Selector Pill -->
                                         <div class="flex items-center bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-50 px-3 py-1.5 gap-5 w-fit">
@@ -1257,20 +1277,20 @@ const assets = {
                             
                             <div class="w-full space-y-3">
                                 ${mockupState.bagQuantity > 0 ?
-                            `<button onclick="mockupState.modalOpen = null; navigateTo('payment');" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase italic tracking-wide active:scale-95 transition-all shadow-md">Continue with ${mockupState.bagQuantity} bag(s)</button>` :
-                            `<button onclick="mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('payment');" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase italic tracking-wide active:scale-95 transition-all shadow-md">I don't need bags</button>`
-                        }
+                    `<button onclick="mockupState.modalOpen = null; navigateTo('payment');" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase italic tracking-wide active:scale-95 transition-all shadow-md">Continue with ${mockupState.bagQuantity} bag(s)</button>` :
+                    `<button onclick="mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('payment');" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase italic tracking-wide active:scale-95 transition-all shadow-md">I don't need bags</button>`
+                }
                             </div>
                         </div>
                     </div>
                 </div>` : ''}
 
             </div>`;
-            },
-            'search': () => `<div class="p-10 text-center uppercase font-black font-2xl italic">Search View</div>`,
-            'genre': () => `<div class="p-10 text-center uppercase font-black font-2xl italic">Browse Genre</div>`,
-            'my-account': () => `<div class="p-10 text-center uppercase font-black italic h-full flex flex-col items-center justify-center"><h1>My Account</h1><button onclick="navigateTo('home')" class="underline mt-4">Logout</button></div>`,
-            'status': () => `
+    },
+    'search': () => `<div class="p-10 text-center uppercase font-black font-2xl italic">Search View</div>`,
+    'genre': () => `<div class="p-10 text-center uppercase font-black font-2xl italic">Browse Genre</div>`,
+    'my-account': () => `<div class="p-10 text-center uppercase font-black italic h-full flex flex-col items-center justify-center"><h1>My Account</h1><button onclick="navigateTo('home')" class="underline mt-4">Logout</button></div>`,
+    'status': () => `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0">
                     <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4"><i class="fa-solid fa-arrow-left text-xl"></i></button>
@@ -1340,10 +1360,10 @@ const assets = {
                     </button>
                 </div>
             </div>`,
-            'register': () => `<div class="p-10 text-center uppercase font-black italic">Registration</div>`,
-            'login': () => `<div class="p-10 text-center uppercase font-black italic">Login View</div>`,
-            'privacy': () => `<div class="p-10 text-center uppercase font-black italic">Privacy Policy</div>`,
-            'confirmation': () => `
+    'register': () => `<div class="p-10 text-center uppercase font-black italic">Registration</div>`,
+    'login': () => `<div class="p-10 text-center uppercase font-black italic">Login View</div>`,
+    'privacy': () => `<div class="p-10 text-center uppercase font-black italic">Privacy Policy</div>`,
+    'confirmation': () => `
             <div class="flex flex-col h-full bg-white relative items-center justify-center p-8 text-center">
                 <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 shadow-inner">
                     <i class="fa-solid fa-check text-5xl"></i>
@@ -1361,7 +1381,7 @@ const assets = {
                     <button onclick="navigateTo('home')" class="w-full bg-white border-2 border-gray-100 text-gray-700 py-4 rounded-full font-black text-lg active:scale-95 transition-all uppercase tracking-wider italic hover:bg-gray-50">Back to Home</button>
                 </div>
             </div>`,
-            'payment': () => `
+    'payment': () => `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0">
                     <button onclick="navigateTo('cart')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4"><i class="fa-solid fa-arrow-left text-xl"></i></button>
@@ -1468,7 +1488,7 @@ const assets = {
                     <button onclick="navigateTo('confirmation')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider italic">Complete Purchase</button>
                 </div>
             </div>`,
-            'location-favorites': () => `
+    'location-favorites': () => `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 border-b border-gray-100">
                     <button onclick="navigateTo('location-selection')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4 hover:bg-gray-50 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button>
@@ -1535,27 +1555,11 @@ const assets = {
                 </div>
             </div>
         `
-        };
+};
 
-        
+
 
 routes['bobs-boba-auth'] = routes['restaurant-homepage'];
-routes['landing-page-2'] = () => {
-    return `
-    <div class="flex flex-col h-full relative overflow-hidden bg-white">
-        <!-- New distinct look for landing-page-2 -->
-        <div class="absolute inset-0 z-0 bg-violet-50"></div>
-        
-        <div class="relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center mt-12">
-            <h1 class="text-6xl font-black text-violet-600 tracking-tighter uppercase italic drop-shadow-sm">FAREBITES 2</h1>
-            <p class="text-gray-800 font-bold tracking-widest uppercase mt-4 text-sm drop-shadow-md">The New Food Experience.</p>
-        </div>
-
-        <div class="relative z-10 px-6 pb-12 w-full shrink-0">
-            <button onclick="navigateTo('home-auth')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_10px_30px_rgba(139,92,246,0.3)] active:scale-95 transition-transform uppercase tracking-wider italic">Log In (V2)</button>
-        </div>
-    </div>`;
-};
 
 function applyViewport() {
     const wrapper = document.getElementById('preview-wrapper');
@@ -1647,7 +1651,6 @@ function renderDropdownMenu() {
         <div>
             <div class="dropdown-column-title">Core Flow</div>
             <div class="dropdown-item" onclick="navigateTo('landing-page')">FareBites Landing Page</div>
-            <div class="dropdown-item" onclick="navigateTo('landing-page-2')">FareBites Landing Page 2</div>
             <div class="dropdown-item" onclick="navigateTo('home')">FareBites Homepage (Logged In)</div>
             <div class="dropdown-item" onclick="navigateTo('home-auth')">Homepage (Sign In/Sign Up Modal)</div>
             <div class="dropdown-item" onclick="navigateTo('search')">Restaurant Search</div>
