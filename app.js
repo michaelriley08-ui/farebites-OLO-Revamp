@@ -1540,7 +1540,22 @@ const assets = {
         
 
 routes['bobs-boba-auth'] = routes['restaurant-homepage'];
-routes['landing-page-2'] = routes['landing-page'];
+routes['landing-page-2'] = () => {
+    return `
+    <div class="flex flex-col h-full relative overflow-hidden bg-white">
+        <!-- New distinct look for landing-page-2 -->
+        <div class="absolute inset-0 z-0 bg-violet-50"></div>
+        
+        <div class="relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center mt-12">
+            <h1 class="text-6xl font-black text-violet-600 tracking-tighter uppercase italic drop-shadow-sm">FAREBITES 2</h1>
+            <p class="text-gray-800 font-bold tracking-widest uppercase mt-4 text-sm drop-shadow-md">The New Food Experience.</p>
+        </div>
+
+        <div class="relative z-10 px-6 pb-12 w-full shrink-0">
+            <button onclick="navigateTo('home-auth')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_10px_30px_rgba(139,92,246,0.3)] active:scale-95 transition-transform uppercase tracking-wider italic">Log In (V2)</button>
+        </div>
+    </div>`;
+};
 
 function applyViewport() {
     const wrapper = document.getElementById('preview-wrapper');
