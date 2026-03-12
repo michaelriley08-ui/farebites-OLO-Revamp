@@ -2,20 +2,20 @@ const PAGE_FILE_MAP = {
     "landing-page": "landing-page.html",
     "home": "home.html",
     "home-auth": "home-auth.html",
-    "search": "search.html",
     "cart": "cart.html",
     "order-details": "order-details.html",
     "payment": "payment.html",
     "confirmation": "confirmation.html",
     "status": "status.html",
     "restaurant-homepage": "restaurant-homepage.html",
-    "bobs-boba-auth": "bobs-boba-auth.html",
-    "bobs-fulfillment-select": "bobs-fulfillment-select.html",
+    "bobs-landing": "restaurant-home-auth.html",
+    "bobs-auth": "bobs-auth-modal.html",
+    "order-type": "order-type.html",
+    "bobs-fulfillment-select": "order-type.html",
     "bobs-dine-in-instruction": "bobs-dine-in-instruction.html",
     "menu": "menu.html",
     "location-selection": "location-selection.html",
     "location-favorites": "location-favorites.html",
-    "genre": "genre.html",
     "login": "login.html",
     "register": "register.html",
     "my-account": "my-account.html",
@@ -27,20 +27,20 @@ const PAGE_LABELS = {
     "landing-page": "FareBites Landing Page",
     "home": "FareBites Homepage (Logged In)",
     "home-auth": "Homepage (Sign In/Sign Up Modal)",
-    "search": "Restaurant Search",
     "cart": "Cart / Review",
     "order-details": "Order Details (Customization)",
     "payment": "Payment Page",
     "confirmation": "Confirmation",
     "status": "Order Status",
     "restaurant-homepage": "Bob's Boba Homepage (Standard)",
-    "bobs-boba-auth": "Bob's Boba (Sign In Sign Up)",
-    "bobs-fulfillment-select": "Bob's Boba (Order Type Select)",
+    "bobs-landing": "Bob's Boba Landing Page",
+    "bobs-auth": "Bob's Boba (Sign In Sign Up)",
+    "order-type": "Bob's Boba (Order Type Select)",
+    "bobs-fulfillment-select": "order-type",
     "bobs-dine-in-instruction": "Bob's Boba (Dine-In Instruction)",
     "menu": "Restaurant Menu",
     "location-selection": "Location Selection",
     "location-favorites": "Location Favorites",
-    "genre": "Browse by Genre",
     "login": "Login (Phone)",
     "register": "Registration",
     "my-account": "My Account",
@@ -90,7 +90,7 @@ const assets = {
     bobaHero: "https://images.unsplash.com/photo-1525385133512-2f3bdd039054?auto=format&fit=crop&w=1200&q=80",
     boba1: "https://images.unsplash.com/photo-1596803244618-8dbee441d70b?auto=format&fit=crop&w=800&q=80",
     boba2: "https://images.unsplash.com/photo-1589396575653-c09c794ff6a6?auto=format&fit=crop&w=800&q=80",
-    boba3: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=800&q=80",
+    boba3: "https://olodev.azurewebsites.net/imagesmenu/M8_Fresh-Taro-Puree-Boba-Latte.jpg",
     boba4: "https://images.unsplash.com/photo-1577805947697-89e18249d767?auto=format&fit=crop&w=800&q=80",
     menuHero: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1200&q=80",
     cobbSalad: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
@@ -282,9 +282,10 @@ const routes = {
                     <div class="space-y-4">
                         <div class="flex gap-2">
                             <div class="bg-gray-100 px-4 py-4 rounded-xl font-bold text-gray-700 min-w-[100px] flex items-center justify-center">+1 <i class="fa-solid fa-chevron-down text-[10px] ml-2"></i></div>
-                            <input type="tel" placeholder="Mobile Number" class="flex-1 min-w-0 bg-gray-100 px-4 py-4 rounded-xl border-2 border-transparent focus:border-black outline-none font-bold text-lg">
+                            <input type="tel" id="auth-mobile-input" placeholder="Mobile Number" class="flex-1 min-w-0 bg-gray-100 px-4 py-4 rounded-xl border-2 border-transparent focus:border-black outline-none font-bold text-lg">
                         </div>
-                        <button onclick="navigateTo('home')" class="w-full bg-red-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase font-black italic">Continue</button>
+                        <div id="auth-error" class="text-xs font-bold text-red-500 px-2 h-4 transition-all opacity-0">Invalid passcode. Please try again.</div>
+                        <button onclick="checkAuthPasscode()" class="w-full bg-red-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase font-black italic">Continue</button>
                         
                         <div class="flex items-center gap-4 py-2">
                             <div class="flex-1 h-px bg-gray-200"></div>
@@ -303,6 +304,71 @@ const routes = {
                                 <i class="fa-brands fa-facebook text-lg text-[#1877F2]"></i> Continue with Facebook
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>`,
+    'bobs-landing': () => `
+            <div class="flex flex-col h-full relative overflow-hidden bg-white">
+                <div class="absolute inset-0 z-0">
+                    <img src="${assets.bobaHero}" class="w-full h-full object-cover">
+                    <!-- White overlay/gradient for Bob's Boba branding -->
+                    <div class="absolute inset-0 bg-white/60"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-white/90 via-white/20 to-white/60"></div>
+                </div>
+                
+                <div class="relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center mt-12">
+                    <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-xl mb-6 border-4 border-violet-100">
+                        <i class="fa-solid fa-ice-cream text-4xl text-violet-600"></i>
+                    </div>
+                    <h1 class="text-6xl font-black text-violet-600 tracking-tighter uppercase italic drop-shadow-sm">BOB'S BOBA</h1>
+                    <p class="text-gray-800 font-bold tracking-widest uppercase mt-4 text-xs">Premium Boba Tea & more.</p>
+                </div>
+
+                <div class="relative z-10 px-6 pb-12 w-full shrink-0">
+                    <button onclick="navigateTo('bobs-auth')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_10px_30px_rgba(124,58,237,0.4)] active:scale-95 transition-transform uppercase tracking-wider italic">Log In</button>
+                </div>
+            </div>`,
+    'bobs-auth': () => `
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.bobaHero}')"></div>
+            <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
+            <div class="modal-overlay" onclick="navigateTo('bobs-landing')">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <button class="absolute top-6 left-6 text-gray-500" onclick="navigateTo('bobs-landing')"><i class="fa-solid fa-xmark text-2xl"></i></button>
+                    <div class="text-center mb-6 mt-6 uppercase">
+                        <div class="flex items-center justify-center gap-2">
+                             <i class="fa-solid fa-ice-cream text-xl text-violet-600"></i>
+                             <span class="text-2xl font-black text-violet-600 tracking-tighter uppercase font-black italic">BOB'S BOBA</span>
+                        </div>
+                    </div>
+                    <h2 class="text-3xl font-black text-center mb-8 uppercase tracking-tight text-gray-900">Sign in / Sign up</h2>
+                    <div class="space-y-4">
+                        <div class="flex gap-2">
+                            <div class="bg-violet-50 px-4 py-4 rounded-xl font-bold text-violet-600 min-w-[100px] flex items-center justify-center border border-violet-100">+1 <i class="fa-solid fa-chevron-down text-[10px] ml-2"></i></div>
+                            <input type="tel" id="auth-mobile-input" placeholder="Mobile Number" class="flex-1 min-w-0 bg-gray-50 px-4 py-4 rounded-xl border-2 border-transparent focus:border-violet-600 outline-none font-bold text-lg text-gray-900">
+                        </div>
+                        <div id="auth-error" class="text-xs font-bold text-red-500 px-2 h-4 transition-all opacity-0">Invalid passcode. Please try again.</div>
+                        <button onclick="checkAuthPasscode()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase font-black italic">Continue</button>
+                        
+                        <div class="flex items-center gap-4 py-2">
+                            <div class="flex-1 h-px bg-gray-100"></div>
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">or</span>
+                            <div class="flex-1 h-px bg-gray-100"></div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-violet-50/30 active:scale-95 transition-all">
+                                <i class="fa-brands fa-google text-lg text-red-500"></i> Continue with Google
+                            </button>
+                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-violet-50/30 active:scale-95 transition-all">
+                                <i class="fa-brands fa-apple text-lg text-black"></i> Continue with Apple
+                            </button>
+                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-violet-50/30 active:scale-95 transition-all">
+                                <i class="fa-brands fa-facebook text-lg text-[#1877F2]"></i> Continue with Facebook
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-8 text-center px-4">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">By continuing, you agree to Bob's Boba Terms & Privacy Policy</p>
                     </div>
                 </div>
             </div>`,
@@ -335,7 +401,7 @@ const routes = {
                     <div class="text-center pt-2 relative z-10 shrink-0">
                         <div class="text-violet-600 text-[11px] font-black tracking-[0.2em] uppercase mb-1">Limited Time Only</div>
                         <h1 class="text-5xl font-black text-violet-600 uppercase tracking-tighter leading-[0.9] font-sans scale-y-110 mt-2 ${isDesktop ? 'mb-4' : 'mb-2'}">I-TEA<br>MENU</h1>
-                        ${isDesktop ? `<button onclick="navigateTo('bobs-fulfillment-select')" class="bg-violet-600 text-white px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider inline-block">Order Now</button>` : ''}
+                        ${isDesktop ? `<button onclick="navigateTo('location-selection')" class="bg-violet-600 text-white px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider inline-block">Order Now</button>` : ''}
                     </div>
                     
                     <!-- Spacer so background image can be seen before the carousel -->
@@ -395,7 +461,7 @@ const routes = {
                 ${!isDesktop ? `
                 <!-- Order Now Button (Fixed above bottom nav on mobile/tablet) -->
                 <div class="px-6 pb-4 pt-2 relative z-20 shrink-0">
-                    <button onclick="navigateTo('bobs-fulfillment-select')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
+                    <button onclick="navigateTo('location-selection')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
                 </div>` : ''}
 
                 <!-- Bottom Navigation -->
@@ -457,7 +523,7 @@ const routes = {
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); navigateTo('bobs-fulfillment-select')">
+                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); navigateTo('order-type')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Office</span>' : ''}
@@ -508,12 +574,11 @@ const routes = {
 
                         <div class="p-4 space-y-3 flex-1 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="navigateTo('bobs-fulfillment-select')">
+                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); navigateTo('bobs-fulfillment-select')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Office</span>' : ''}
                                         <h3 class="font-bold text-base tracking-tight uppercase italic flex items-center gap-2 text-gray-900">${s.name} ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-xs"></i>' : ''}</h3>
-                                        <p class="text-xs text-gray-500 italic mt-1.5">${s.address}</p>
                                         <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
                                         <div class="flex gap-4 mt-3">
                                             <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500"><i class="fa-solid fa-shop text-[13px]"></i> In store</span>
@@ -598,7 +663,7 @@ const routes = {
                 </div>
             </div>
         `,
-    'bobs-fulfillment-select': () => {
+    'order-type': () => {
         const btn = (icon, label) => {
             const isActive = mockupState.fulfillmentMode === label;
             const clickHandler = label === 'Dine In' ? `navigateTo('bobs-dine-in-instruction')` : `updateMockupState('fulfillmentMode', '${label}')`;
@@ -651,14 +716,15 @@ const routes = {
                     <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic"><button onclick="navigateTo('location-selection')" class="mr-4"><i class="fa-solid fa-chevron-left text-xl text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">${locationTitle}</span><div class="w-6"></div></header>
                     <div class="flex-1 overflow-y-auto px-6 pt-5 pb-32">
                         <!-- Location Info Card -->
-                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5">
+                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('location-selection')">
                             <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
                                 <i class="fa-solid fa-location-dot text-xl"></i>
                             </div>
-                            <div>
-                                <h3 class="font-black text-[#33424A] uppercase tracking-tight text-sm leading-tight">Bob's Boba Tea</h3>
-                                <p class="text-[12px] font-medium text-gray-500 mt-0.5">4728 E Ray Rd, Phoenix, AZ 85044</p>
+                            <div class="flex-1">
+                                <h3 class="font-black text-[#33424A] uppercase tracking-tight text-sm leading-tight">${locationTitle}</h3>
+                                <p class="text-[10px] font-bold text-violet-600 mt-1 uppercase tracking-widest italic">Change Location</p>
                             </div>
+                            <i class="fa-solid fa-chevron-right text-gray-300 text-sm"></i>
                         </div>
 
                         <h1 class="text-2xl font-black text-gray-900 leading-tight mb-4 tracking-tighter uppercase font-black italic">Order Type</h1>
@@ -806,14 +872,11 @@ const routes = {
     },
     'bobs-dine-in-instruction': () => `
             <div class="flex flex-col h-full bg-white relative">
-                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic"><button onclick="navigateTo('bobs-fulfillment-select')" class="mr-4"><i class="fa-solid fa-chevron-left text-xl text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">BOB'S BOBA</span><div class="w-6"></div></header>
-                <div class="flex-1 flex flex-col items-center justify-center px-8 text-center">
-                    <svg class="w-64 h-64 text-violet-600 mb-12" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <!-- Custom illustration: Hand holding phone over QR Table Tent -->
-                        <rect x="35" y="10" width="45" height="80" rx="6" /><path d="M45 35h-3v3"/><path d="M73 35h3v3"/><path d="M42 57v3h3"/><path d="M76 57v-3h-3"/>
-                        <path d="M35 70c-10 0-14 10-14 18 0 10 6 12 14 12" stroke-width="2.5"/><path d="M35 70c-2-8-3-15 3-20 4-3 8-2 10 3L45 60" stroke-width="2.5"/><path d="M35 95c10 0 15-2 15-5" stroke-width="2.5"/>
-                        <rect x="49" y="40" width="17" height="17" fill="currentColor" opacity="0.1"/>
-                    </svg>
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic"><button onclick="navigateTo('order-type')" class="mr-4"><i class="fa-solid fa-chevron-left text-xl text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">BOB'S BOBA</span><div class="w-6"></div></header>
+                <div class="flex-1 flex flex-col items-center justify-center px-6 text-center">
+                    <div class="w-full aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-12">
+                        <img src="images/qr-instruction.jpg" class="w-full h-full object-cover">
+                    </div>
                     <h2 class="text-2xl font-black mb-6 uppercase tracking-tight font-black italic text-gray-900 leading-tight">Ready to Dine In?</h2>
                     <div class="space-y-4 text-left italic uppercase font-black text-gray-600">
                         <p class="text-sm">1. Find the QR code on your table.</p>
@@ -884,7 +947,7 @@ const routes = {
                                     <!-- Item 2 -->
                                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                         <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative">
-                                            <img src="${assets.boba2}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                                            <img src="${assets.boba3}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
                                         </div>
                                         <div class="flex justify-between items-start mb-2">
                                             <h4 class="font-black text-gray-900 text-lg leading-tight w-2/3 tracking-tight">M8 Taro Boba Purée Latte</h4>
@@ -964,7 +1027,7 @@ const routes = {
                             <!-- Promo Card -->
                             <div class="bg-[#0b132b] rounded-2xl p-6 relative overflow-hidden text-white shadow-xl">
                                 <i class="fa-solid fa-tag absolute -right-3 -top-3 text-7xl text-white/5 rotate-12"></i>
-                                <h3 class="font-black text-xl tracking-tight mb-2 relative z-10">Free Delivery</h3>
+                                <h3 class="font-black text-xl tracking-tight mb-2 relative z-10">Free Desert</h3>
                                 <p class="text-xs text-blue-100/80 font-medium mb-5 relative z-10 leading-relaxed pr-6">On orders over $35. Valid for your next 3 orders.</p>
                                 <div class="text-[11px] font-black text-violet-500 uppercase tracking-widest relative z-10">CODE: BITESFREE35</div>
                             </div>
@@ -972,35 +1035,37 @@ const routes = {
                     </div>
                     
                     <!-- Footer Area -->
-                    <div class="mt-16 pt-10 border-t border-gray-200">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-                            <div class="col-span-2 md:col-span-1">
-                                <div class="font-black text-violet-600 text-xl tracking-tighter italic mb-4 flex items-center"><i class="fa-solid fa-mug-hot mr-2 text-lg"></i>BOB'S BOBA TEA</div>
-                                <p class="text-xs text-gray-500 font-medium leading-relaxed max-w-xs">Delicious drinks and meals delivered straight to your doorstep.</p>
+                    <div class="mt-16 pt-6 border-t border-gray-200">
+                        <!-- Logo Section (Full Width Row) -->
+                        <div class="mb-6 text-center md:text-left">
+                            <div class="font-black text-violet-600 text-xl tracking-tighter italic flex items-center justify-center md:justify-start whitespace-nowrap leading-none">
+                                <i class="fa-solid fa-mug-hot mr-2 text-lg"></i>BOB'S BOBA TEA
                             </div>
+                        </div>
+                        
+                        <!-- Links Section (3 Columns) -->
+                        <div class="grid grid-cols-3 gap-4 md:gap-8 text-left pb-10">
                             <div>
-                                <h4 class="font-black text-gray-900 mb-4 text-sm tracking-tight">Explore</h4>
-                                <ul class="space-y-3 text-xs text-gray-500 font-bold">
+                                <h4 class="font-black text-gray-900 mb-4 text-xs tracking-tight">Explore</h4>
+                                <ul class="space-y-3 text-[10px] text-gray-400 font-bold">
                                     <li><a href="#" class="hover:text-violet-600 transition-colors">Menu</a></li>
                                     <li><a href="#" class="hover:text-violet-600 transition-colors">Locations</a></li>
                                     <li><a href="#" class="hover:text-violet-600 transition-colors">Gift Cards</a></li>
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Nutrition</a></li>
                                 </ul>
                             </div>
                             <div>
-                                <h4 class="font-black text-gray-900 mb-4 text-sm tracking-tight">Support</h4>
-                                <ul class="space-y-3 text-xs text-gray-500 font-bold">
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Contact Us</a></li>
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Help Center</a></li>
+                                <h4 class="font-black text-gray-900 mb-4 text-xs tracking-tight">Support</h4>
+                                <ul class="space-y-3 text-[10px] text-gray-400 font-bold">
+                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Contact</a></li>
+                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Help</a></li>
                                     <li><a href="#" class="hover:text-violet-600 transition-colors">Feedback</a></li>
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Accessibility</a></li>
                                 </ul>
                             </div>
                             <div>
-                                <h4 class="font-black text-gray-900 mb-4 text-sm tracking-tight">Legal</h4>
-                                <ul class="space-y-3 text-xs text-gray-500 font-bold">
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Privacy Policy</a></li>
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Terms of Service</a></li>
+                                <h4 class="font-black text-gray-900 mb-4 text-xs tracking-tight">Legal</h4>
+                                <ul class="space-y-3 text-[10px] text-gray-400 font-bold">
+                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Privacy</a></li>
+                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Terms</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -1181,14 +1246,14 @@ const routes = {
                                     <i class="fa-solid fa-bag-shopping text-violet-600 w-4 text-center text-sm"></i>
                                     <span class="text-[13px] font-medium text-gray-500">Order Type: <span class="font-bold text-gray-700 italic ml-1">${mockupState.fulfillmentMode}</span></span>
                                 </div>
-                                <button onclick="navigateTo('bobs-fulfillment-select')" class="text-[#354E57] font-black text-[11px] uppercase tracking-wide border-b-[1.5px] border-dashed border-[#354E57] pb-0.5 shrink-0 hover:opacity-70 transition-opacity">CHANGE</button>
+                                <button onclick="navigateTo('order-type')" class="text-[#354E57] font-black text-[11px] uppercase tracking-wide border-b-[1.5px] border-dashed border-[#354E57] pb-0.5 shrink-0 hover:opacity-70 transition-opacity">CHANGE</button>
                             </div>
                             <div class="flex justify-between items-center">
                                 <div class="flex gap-3 items-center">
                                     <i class="fa-regular fa-clock text-violet-600 w-4 text-center text-sm"></i>
                                     <span class="text-[13px] font-medium text-gray-500">Order Time: <span class="font-bold text-gray-700 italic ml-1">${mockupState.orderTime === 'Later' ? mockupState.selectedDay + ' @ ' + mockupState.selectedTimeSlot : mockupState.orderTime}</span></span>
                                 </div>
-                                <button onclick="navigateTo('bobs-fulfillment-select')" class="text-[#354E57] font-black text-[11px] uppercase tracking-wide border-b-[1.5px] border-dashed border-[#354E57] pb-0.5 shrink-0 hover:opacity-70 transition-opacity">CHANGE</button>
+                                <button onclick="navigateTo('order-type')" class="text-[#354E57] font-black text-[11px] uppercase tracking-wide border-b-[1.5px] border-dashed border-[#354E57] pb-0.5 shrink-0 hover:opacity-70 transition-opacity">CHANGE</button>
                             </div>
                         </div>
                     </div>
@@ -1334,16 +1399,15 @@ const routes = {
                         <div class="flex flex-col items-center gap-6">
                             <!-- Integrated Quantity Selector (Static Styling for no flicker) -->
                             <div class="flex items-center bg-gray-50 rounded-full border border-gray-100 px-6 py-3 gap-8 shadow-sm">
-                                <button onclick="mockupState.noBagsSelected = false; updateMockupState('bagQuantity', Math.max(0, mockupState.bagQuantity - 1))" class="text-gray-900 hover:text-red-500 transition-colors"><i class="fa-solid fa-minus text-xs"></i></button>
-                                <span class="font-black text-xl text-gray-900 min-w-[24px] text-center">${mockupState.bagQuantity}</span>
-                                <button onclick="mockupState.noBagsSelected = false; updateMockupState('bagQuantity', mockupState.bagQuantity + 1)" class="text-gray-900 hover:text-violet-600 transition-colors"><i class="fa-solid fa-plus text-xs"></i></button>
+                                <button onclick="adjustBagQuantity(-1)" class="text-gray-900 hover:text-red-500 transition-colors"><i class="fa-solid fa-minus text-xs"></i></button>
+                                <span id="bag-count-display" class="font-black text-xl text-gray-900 min-w-[24px] text-center">${mockupState.bagQuantity}</span>
+                                <button onclick="adjustBagQuantity(1)" class="text-gray-900 hover:text-violet-600 transition-colors"><i class="fa-solid fa-plus text-xs"></i></button>
                             </div>
                             
                             <div class="w-full space-y-3">
-                                ${mockupState.bagQuantity > 0 ?
-                    `<button onclick="mockupState.modalOpen = null; navigateTo('payment');" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase italic tracking-wide active:scale-95 transition-all shadow-md">Continue with ${mockupState.bagQuantity} bag(s)</button>` :
-                    `<button onclick="mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('payment');" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase italic tracking-wide active:scale-95 transition-all shadow-md">I don't need bags</button>`
-                }
+                                <button id="bag-continue-btn" onclick="${mockupState.bagQuantity > 0 ? "mockupState.modalOpen = null; navigateTo('payment');" : "mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('payment');"}" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase italic tracking-wide active:scale-95 transition-all shadow-md">
+                                    ${mockupState.bagQuantity > 0 ? `Continue with ${mockupState.bagQuantity} bag(s)` : "I don't need bags"}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1351,8 +1415,7 @@ const routes = {
 
             </div>`;
     },
-    'search': () => `<div class="p-10 text-center uppercase font-black font-2xl italic">Search View</div>`,
-    'genre': () => `<div class="p-10 text-center uppercase font-black font-2xl italic">Browse Genre</div>`,
+
     'my-account': () => `<div class="p-10 text-center uppercase font-black italic h-full flex flex-col items-center justify-center"><h1>My Account</h1><button onclick="navigateTo('home')" class="underline mt-4">Logout</button></div>`,
     'status': () => `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
@@ -1681,6 +1744,27 @@ function renderPage() {
     document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
 }
 
+function adjustBagQuantity(delta) {
+    mockupState.bagQuantity = Math.max(0, mockupState.bagQuantity + delta);
+    mockupState.noBagsSelected = false;
+    persistAllState();
+    
+    // Update DOM directly to avoid flicker
+    const display = document.getElementById('bag-count-display');
+    if (display) display.innerText = mockupState.bagQuantity;
+    
+    const contBtn = document.getElementById('bag-continue-btn');
+    if (contBtn) {
+        if (mockupState.bagQuantity > 0) {
+            contBtn.innerText = `Continue with ${mockupState.bagQuantity} bag(s)`;
+            contBtn.setAttribute('onclick', "mockupState.modalOpen = null; navigateTo('payment');");
+        } else {
+            contBtn.innerText = "I don't need bags";
+            contBtn.setAttribute('onclick', "mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('payment');");
+        }
+    }
+}
+
 function updateMockupState(key, value) {
     mockupState[key] = value;
     persistAllState();
@@ -1700,6 +1784,20 @@ function updateMockupState(key, value) {
         document.querySelector('.overflow-y-auto') ||
         document.getElementById('app-viewport');
     if (newScroller) newScroller.scrollTop = scrollPos;
+}
+
+function checkAuthPasscode() {
+    const input = document.getElementById('auth-mobile-input');
+    const error = document.getElementById('auth-error');
+    const isBobs = !!document.querySelector('.text-violet-600.italic'); // Check if we're on Bob's branded page
+
+    if (input && input.value === '7413') {
+        navigateTo('restaurant-homepage');
+    } else if (error) {
+        error.classList.remove('opacity-0');
+        input.classList.add(isBobs ? 'border-violet-600' : 'border-red-500');
+        input.focus();
+    }
 }
 
 function navigateTo(pageId) {
@@ -1726,7 +1824,6 @@ function renderDropdownMenu() {
             <div class="dropdown-item" onclick="navigateTo('landing-page')">FareBites Landing Page</div>
             <div class="dropdown-item" onclick="navigateTo('home')">FareBites Homepage (Logged In)</div>
             <div class="dropdown-item" onclick="navigateTo('home-auth')">Homepage (Sign In/Sign Up Modal)</div>
-            <div class="dropdown-item" onclick="navigateTo('search')">Restaurant Search</div>
             <div class="dropdown-item" onclick="navigateTo('cart')">Cart / Review</div>
             <div class="dropdown-item" onclick="navigateTo('order-details')">Order Details (Customization)</div>
             <div class="dropdown-item" onclick="navigateTo('payment')">Payment Page</div>
@@ -1736,13 +1833,13 @@ function renderDropdownMenu() {
         <div>
             <div class="dropdown-column-title">Restaurant Pages</div>
             <div class="dropdown-item" onclick="navigateTo('restaurant-homepage')">Bob's Boba Homepage (Standard)</div>
-            <div class="dropdown-item" onclick="navigateTo('bobs-boba-auth')">Bob's Boba (Sign In Sign Up)</div>
-            <div class="dropdown-item" onclick="navigateTo('bobs-fulfillment-select')">Bob's Boba (Order Type Select)</div>
+            <div class="dropdown-item" onclick="navigateTo('bobs-landing')">Bob's Boba Landing Page (White/Purple)</div>
+            <div class="dropdown-item" onclick="navigateTo('bobs-auth')">Bob's Boba (Sign In Sign Up)</div>
+            <div class="dropdown-item" onclick="navigateTo('order-type')">Bob's Boba (Order Type Select)</div>
             <div class="dropdown-item" onclick="navigateTo('bobs-dine-in-instruction')">Bob's Boba (Dine-In Instruction)</div>
             <div class="dropdown-item" onclick="navigateTo('menu')">Restaurant Menu</div>
             <div class="dropdown-item" onclick="navigateTo('location-selection')">Location Selection</div>
             <div class="dropdown-item" onclick="navigateTo('location-favorites')">Location Favorites</div>
-            <div class="dropdown-item" onclick="navigateTo('genre')">Browse by Genre</div>
         </div>
         <div>
             <div class="dropdown-column-title">Authentication & Account</div>
