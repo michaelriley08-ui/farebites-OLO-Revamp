@@ -1,51 +1,49 @@
 const PAGE_FILE_MAP = {
-    "landing-page": "landing-page.html",
+    "landing": "landing.html",
     "home": "home.html",
-    "home-auth": "home-auth.html",
+    "sign-in": "sign-in.html",
     "cart": "cart.html",
-    "order-details": "order-details.html",
-    "payment": "payment.html",
-    "confirmation": "confirmation.html",
-    "status": "status.html",
-    "restaurant-homepage": "restaurant-homepage.html",
-    "bobs-landing": "restaurant-home-auth.html",
-    "bobs-auth": "bobs-auth-modal.html",
+    "customize": "customize.html",
+    "checkout": "checkout.html",
+    "order-confirm": "order-confirm.html",
+    "order-status": "order-status.html",
+    "restaurant-home": "restaurant-home.html",
+    "restaurant-landing": "restaurant-landing.html",
+    "restaurant-sign-in": "restaurant-sign-in.html",
     "order-type": "order-type.html",
-    "bobs-fulfillment-select": "order-type.html",
-    "bobs-dine-in-instruction": "bobs-dine-in-instruction.html",
+    "dine-in-guide": "dine-in-guide.html",
     "menu": "menu.html",
-    "location-selection": "location-selection.html",
+    "location-pick": "location-pick.html",
     "location-favorites": "location-favorites.html",
     "login": "login.html",
-    "register": "register.html",
-    "my-account": "my-account.html",
+    "sign-up": "sign-up.html",
+    "account": "account.html",
     "privacy": "privacy.html",
-    "merchant-dashboard": "merchant-dashboard.html",
+    "dashboard": "dashboard.html",
     "index": "index.html"
 };
 const PAGE_LABELS = {
-    "landing-page": "FareBites Landing Page",
+    "landing": "FareBites Landing Page",
     "home": "FareBites Homepage (Logged In)",
-    "home-auth": "Homepage (Sign In/Sign Up Modal)",
+    "sign-in": "Sign In / Sign Up",
     "cart": "Cart / Review",
-    "order-details": "Order Details (Customization)",
-    "payment": "Payment Page",
-    "confirmation": "Confirmation",
-    "status": "Order Status",
-    "restaurant-homepage": "Bob's Boba Homepage (Standard)",
-    "bobs-landing": "Bob's Boba Landing Page",
-    "bobs-auth": "Bob's Boba (Sign In Sign Up)",
-    "order-type": "Bob's Boba (Order Type Select)",
-    "bobs-fulfillment-select": "order-type",
-    "bobs-dine-in-instruction": "Bob's Boba (Dine-In Instruction)",
-    "menu": "Restaurant Menu",
-    "location-selection": "Location Selection",
-    "location-favorites": "Location Favorites",
+    "customize": "Customize Item",
+    "checkout": "Checkout",
+    "order-confirm": "Order Confirmation",
+    "order-status": "Order Status",
+    "restaurant-home": "I-TEA Homepage",
+    "restaurant-landing": "I-TEA Landing Page",
+    "restaurant-sign-in": "I-TEA Sign In",
+    "order-type": "Order Type",
+    "dine-in-guide": "Dine-In Guide",
+    "menu": "Menu",
+    "location-pick": "Pick a Location",
+    "location-favorites": "Saved Locations",
     "login": "Login (Phone)",
-    "register": "Registration",
-    "my-account": "My Account",
+    "sign-up": "Sign Up",
+    "account": "My Account",
     "privacy": "Privacy Policy",
-    "merchant-dashboard": "Merchant Dashboard"
+    "dashboard": "Merchant Dashboard"
 };
 const STORAGE_KEYS = {
     state: 'farebitesMockupState',
@@ -63,11 +61,14 @@ const DEFAULT_STATE = {
     noBagsSelected: false,
     toppings: ['BOBA'],
     modalOpen: null,
-    paymentMethod: 'card'
+    paymentMethod: 'card',
+    selectedItem: null,
+    tipPercentage: 15,
+    customTipAmount: 0
 };
 
 let currentViewport = sessionStorage.getItem(STORAGE_KEYS.viewport) || 'mobile';
-let currentPage = document.body.dataset.page || 'landing-page';
+let currentPage = document.body.dataset.page || 'restaurant-landing';
 let mockupState = loadMockupState();
 
 function loadMockupState() {
@@ -87,9 +88,9 @@ function persistAllState() {
 const assets = {
     featured: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80",
     steak: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80",
-    bobaHero: "https://images.unsplash.com/photo-1525385133512-2f3bdd039054?auto=format&fit=crop&w=1200&q=80",
-    boba1: "https://images.unsplash.com/photo-1596803244618-8dbee441d70b?auto=format&fit=crop&w=800&q=80",
-    boba2: "https://images.unsplash.com/photo-1589396575653-c09c794ff6a6?auto=format&fit=crop&w=800&q=80",
+    bobaHero: "https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg",
+    boba1: "https://olodev.azurewebsites.net/imagesmenu/M7-Cr%C3%A8me-Br%C3%BBl%C3%A9e-Boba-Milk-Tea.jpg",
+    boba2: "https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg",
     boba3: "https://olodev.azurewebsites.net/imagesmenu/M8_Fresh-Taro-Puree-Boba-Latte.jpg",
     boba4: "https://images.unsplash.com/photo-1577805947697-89e18249d767?auto=format&fit=crop&w=800&q=80",
     menuHero: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1200&q=80",
@@ -100,20 +101,117 @@ const assets = {
     icedMatcha: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=400&q=80",
     googleMapsEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d106518.42371900132!2d-112.4414169904297!3d33.4571167448373!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b394142f9b23b%3A0xc3f92d47101783e4!2sGoodyear%2C%20AZ!5e0!3m2!1sen!2sus!4v1709854800000!5m2!1sen!2sus"
 };
+const LOCATIONS = [
+    { name: "I-TEA - TEMPE", address: "825 W UNIVERSITY, Tempe, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM" },
+    { name: "I-TEA - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "1.2 mi", fav: false, hours: "12:00 PM to 9:30 PM" },
+    { name: "I-TEA - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM" },
+    { name: "I-TEA - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM" },
+    { name: "I-TEA - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM" },
+    { name: "I-TEA - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM" },
+    { name: "I-TEA - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM" },
+    { name: "I-TEA - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM" },
+    { name: "I-TEA - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM" },
+    { name: "I-TEA - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM" },
+    { name: "I-TEA - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM" },
+    { name: "I-TEA - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM" },
+    { name: "I-TEA - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM" },
+    { name: "I-TEA - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM" },
+    { name: "I-TEA - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM" },
+    { name: "I-TEA - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours" }
+];
 
-function toggleMenu(e) {
+const MENU_ITEMS = [
+    {
+        name: "M7 Crème Brûlée Boba Milk Tea",
+        description: "377 calories to 594 calories",
+        price: 5.75,
+        image: "https://olodev.azurewebsites.net/imagesmenu/M7-Cr%C3%A8me-Br%C3%BBl%C3%A9e-Boba-Milk-Tea.jpg"
+    },
+    {
+        name: "M8 Taro Boba Purée Latte",
+        description: "Come With Fresh Taro Puree, Freshly Made Taro Boba",
+        price: 5.75,
+        image: "https://olodev.azurewebsites.net/imagesmenu/M8_Fresh-Taro-Puree-Boba-Latte.jpg"
+    },
+    {
+        name: "M9 3G Fresh Taro Boba Latte",
+        description: "Come With Mashed Taro, Grass Jelly, Red Bean, and Fresh Taro Boba",
+        price: 5.75,
+        image: "https://olodev.azurewebsites.net/imagesmenu/M9_3G-Fresh-Taro-Boba-Latte.jpg"
+    },
+    {
+        name: "P1 Super Fruit Tea",
+        description: "Comes with Pineapple, Passion Fruit, Apple, Lime, and Orange",
+        price: 5.95,
+        image: "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg"
+    },
+    {
+        name: "P2 Super Lime Slushium",
+        description: "276 calories",
+        price: 5.25,
+        image: "https://olodev.azurewebsites.net/imagesmenu/P2-Super-Lime-Sijichun.jpg"
+    },
+    {
+        name: "P3 Super Grapefruit",
+        description: "239 calories to 339 calories",
+        price: 5.25,
+        image: "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg"
+    },
+    {
+        name: "P4 Brown Sugar Boba Latte",
+        description: "356 calories to 478 calories",
+        price: 5.75,
+        image: "https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg"
+    },
+    {
+        name: "P5 Sun Moon Lake Black Tea Cheema",
+        description: "168 calories to 354 calories",
+        price: 6.50,
+        image: "https://olodev.azurewebsites.net/imagesmenu/P5-Sun-Moon-Lake-Cheesma.jpg"
+    },
+    {
+        name: "P7 Fresh Mango Cheema",
+        description: "301 calories to 348 calories",
+        price: 6.50,
+        image: "https://olodev.azurewebsites.net/imagesmenu/P7-Mango-Fruity-Tea-Cheezma.jpg"
+    },
+    {
+        name: "P8 Fresh Dragon Fruit Cheema",
+        description: "355 calories to 396 calories",
+        price: 6.50,
+        image: "https://olodev.azurewebsites.net/imagesmenu/P8-Dragon-Fruity-Cheezma.jpg"
+    },
+    {
+        name: "P9 Fresh Strawberry Cheema",
+        description: "301 calories to 345 calories",
+        price: 6.50,
+        image: "https://olodev.azurewebsites.net/imagesmenu/P9-Strawberry-Fruity-Cheezma.jpg"
+    }
+];
+
+function toggleMenu(e, menuId) {
     e.stopPropagation();
-    document.getElementById('dropdown-menu').classList.toggle('show');
+    const allMenus = ['dropdown-menu-fb', 'dropdown-menu-rb'];
+    allMenus.forEach(id => {
+        const menu = document.getElementById(id);
+        if (id === menuId) {
+            menu.classList.toggle('show');
+        } else if (menu) {
+            menu.classList.remove('show');
+        }
+    });
 }
 
 document.addEventListener('click', () => {
-    const menu = document.getElementById('dropdown-menu');
-    if (menu) menu.classList.remove('show');
+    ['dropdown-menu-fb', 'dropdown-menu-rb'].forEach(id => {
+        const menu = document.getElementById(id);
+        if (menu) menu.classList.remove('show');
+    });
 });
 
 
 const routes = {
-    'landing-page': () => `
+    'landing': () => `
             <div class="flex flex-col h-full relative overflow-hidden bg-black">
                 <div class="absolute inset-0 z-0">
                     <img src="${assets.featured}" class="w-full h-full object-cover opacity-80">
@@ -126,10 +224,10 @@ const routes = {
                 </div>
 
                 <div class="relative z-10 px-6 pb-12 w-full shrink-0">
-                    <button onclick="navigateTo('home-auth')" class="w-full bg-red-600 text-white py-4 rounded-full font-black text-lg shadow-[0_10px_30px_rgba(220,38,38,0.4)] active:scale-95 transition-transform uppercase tracking-wider italic">Log In</button>
+                    <button onclick="navigateTo('sign-in')" class="w-full bg-red-600 text-white py-4 rounded-full font-black text-lg shadow-[0_10px_30px_rgba(220,38,38,0.4)] active:scale-95 transition-transform uppercase tracking-wider italic">Log In</button>
                 </div>
             </div>`,
-    'merchant-dashboard': () => `
+    'dashboard': () => `
             <div class="flex flex-col h-full bg-[#f0f2f5] relative">
                 <header class="bg-[#1a1a1a] px-6 py-4 flex justify-between items-center z-50 shrink-0 shadow-md">
                     <div class="flex flex-col text-left">
@@ -253,26 +351,26 @@ const routes = {
                         </div>
                         <div class="px-6">
                             <h3 class="font-black text-2xl tracking-tight text-gray-900 mb-6 uppercase">Recently viewed</h3>
-                            <div class="min-w-[280px] group cursor-pointer" onclick="navigateTo('restaurant-homepage')">
+                            <div class="min-w-[280px] group cursor-pointer" onclick="navigateTo('restaurant-home')">
                                 <div class="relative overflow-hidden rounded-2xl mb-3 aspect-[16/10] shadow-sm"><img src="${assets.bobaHero}" class="w-full h-full object-cover"></div>
-                                <p class="text-base font-black text-gray-900 uppercase">Bob's Boba Tea</p>
+                                <p class="text-base font-black text-gray-900 uppercase">I-TEA</p>
                                 <p class="text-sm font-semibold text-gray-500 italic">4.8 • 0.3 mi • 10 min</p>
                             </div>
                         </div>
                     </div>
                     <div class="flex-shrink-0 bg-white border-t border-gray-100 p-6 sticky bottom-0 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-                        <button onclick="navigateTo('restaurant-homepage')" class="w-full bg-[#d92323] text-white py-4 rounded-full font-black text-lg shadow-xl mb-4 active:scale-95 transition-all uppercase">START ORDER</button>
+                        <button onclick="navigateTo('restaurant-home')" class="w-full bg-[#d92323] text-white py-4 rounded-full font-black text-lg shadow-xl mb-4 active:scale-95 transition-all uppercase">START ORDER</button>
                         <div class="flex justify-around text-[10px] font-black uppercase">
                             <div class="text-red-600 flex flex-col items-center gap-1" onclick="navigateTo('home')"><i class="fa-solid fa-house text-xl"></i>HOME</div>
-                            <div class="text-gray-400 flex flex-col items-center gap-1" onclick="navigateTo('restaurant-homepage')"><i class="fa-solid fa-utensils text-xl"></i>ORDER</div>
+                            <div class="text-gray-400 flex flex-col items-center gap-1" onclick="navigateTo('restaurant-home')"><i class="fa-solid fa-utensils text-xl"></i>ORDER</div>
                             <div class="text-gray-400 flex flex-col items-center gap-1"><i class="fa-solid fa-qrcode text-xl"></i>SCAN</div>
-                            <div class="text-gray-400 flex flex-col items-center gap-1" onclick="navigateTo('my-account')"><i class="fa-solid fa-user text-xl"></i>ACCOUNT</div>
+                            <div class="text-gray-400 flex flex-col items-center gap-1" onclick="navigateTo('account')"><i class="fa-solid fa-user text-xl"></i>ACCOUNT</div>
                         </div>
                     </div>
                 </div>`;
         }
     },
-    'home-auth': () => `
+    'sign-in': () => `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.featured}')"></div>
             <div class="modal-overlay" onclick="navigateTo('home')">
                 <div class="modal-content" onclick="event.stopPropagation()">
@@ -307,11 +405,11 @@ const routes = {
                     </div>
                 </div>
             </div>`,
-    'bobs-landing': () => `
+    'restaurant-landing': () => `
             <div class="flex flex-col h-full relative overflow-hidden bg-white">
                 <div class="absolute inset-0 z-0">
                     <img src="${assets.bobaHero}" class="w-full h-full object-cover">
-                    <!-- White overlay/gradient for Bob's Boba branding -->
+                    <!-- White overlay/gradient for I-TEA branding -->
                     <div class="absolute inset-0 bg-white/60"></div>
                     <div class="absolute inset-0 bg-gradient-to-t from-white/90 via-white/20 to-white/60"></div>
                 </div>
@@ -320,24 +418,24 @@ const routes = {
                     <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-xl mb-6 border-4 border-violet-100">
                         <i class="fa-solid fa-ice-cream text-4xl text-violet-600"></i>
                     </div>
-                    <h1 class="text-6xl font-black text-violet-600 tracking-tighter uppercase italic drop-shadow-sm">BOB'S BOBA</h1>
+                    <h1 class="text-6xl font-black text-violet-600 tracking-tighter uppercase italic drop-shadow-sm">I-TEA</h1>
                     <p class="text-gray-800 font-bold tracking-widest uppercase mt-4 text-xs">Premium Boba Tea & more.</p>
                 </div>
 
                 <div class="relative z-10 px-6 pb-12 w-full shrink-0">
-                    <button onclick="navigateTo('bobs-auth')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_10px_30px_rgba(124,58,237,0.4)] active:scale-95 transition-transform uppercase tracking-wider italic">Log In</button>
+                    <button onclick="navigateTo('restaurant-sign-in')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_10px_30px_rgba(124,58,237,0.4)] active:scale-95 transition-transform uppercase tracking-wider italic">Log In</button>
                 </div>
             </div>`,
-    'bobs-auth': () => `
+    'restaurant-sign-in': () => `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.bobaHero}')"></div>
             <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
-            <div class="modal-overlay" onclick="navigateTo('bobs-landing')">
+            <div class="modal-overlay" onclick="navigateTo('restaurant-landing')">
                 <div class="modal-content" onclick="event.stopPropagation()">
-                    <button class="absolute top-6 left-6 text-gray-500" onclick="navigateTo('bobs-landing')"><i class="fa-solid fa-xmark text-2xl"></i></button>
+                    <button class="absolute top-6 left-6 text-gray-500" onclick="navigateTo('restaurant-landing')"><i class="fa-solid fa-xmark text-2xl"></i></button>
                     <div class="text-center mb-6 mt-6 uppercase">
                         <div class="flex items-center justify-center gap-2">
                              <i class="fa-solid fa-ice-cream text-xl text-violet-600"></i>
-                             <span class="text-2xl font-black text-violet-600 tracking-tighter uppercase font-black italic">BOB'S BOBA</span>
+                             <span class="text-2xl font-black text-violet-600 tracking-tighter uppercase font-black italic">I-TEA</span>
                         </div>
                     </div>
                     <h2 class="text-3xl font-black text-center mb-8 uppercase tracking-tight text-gray-900">Sign in / Sign up</h2>
@@ -368,11 +466,11 @@ const routes = {
                         </div>
                     </div>
                     <div class="mt-8 text-center px-4">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">By continuing, you agree to Bob's Boba Terms & Privacy Policy</p>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">By continuing, you agree to I-TEA Terms & Privacy Policy</p>
                     </div>
                 </div>
             </div>`,
-    'restaurant-homepage': () => {
+    'restaurant-home': () => {
         const cardWidth = currentViewport === 'desktop' ? 'w-[24%] min-w-[240px] max-w-[300px]' : (currentViewport === 'tablet' ? 'w-[45%]' : 'w-full');
         const isDesktop = currentViewport === 'desktop';
         return `
@@ -386,7 +484,7 @@ const routes = {
 
                 <header class="bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0 relative">
                     <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center text-[#3A2218]"><i class="fa-regular fa-user text-2xl"></i></button>
-                    <div class="flex flex-col items-center cursor-pointer" onclick="navigateTo('location-selection')">
+                    <div class="flex flex-col items-center cursor-pointer" onclick="navigateTo('location-pick')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#3A2218] tracking-[0.15em] uppercase">DELIVERY</span><i class="fa-solid fa-chevron-down text-[9px] text-[#3A2218]"></i></div>
                         <span class="text-[13px] font-medium text-[#3A2218] mt-0.5">Home</span>
                     </div>
@@ -401,7 +499,7 @@ const routes = {
                     <div class="text-center pt-2 relative z-10 shrink-0">
                         <div class="text-violet-600 text-[11px] font-black tracking-[0.2em] uppercase mb-1">Limited Time Only</div>
                         <h1 class="text-5xl font-black text-violet-600 uppercase tracking-tighter leading-[0.9] font-sans scale-y-110 mt-2 ${isDesktop ? 'mb-4' : 'mb-2'}">I-TEA<br>MENU</h1>
-                        ${isDesktop ? `<button onclick="navigateTo('location-selection')" class="bg-violet-600 text-white px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider inline-block">Order Now</button>` : ''}
+                        ${isDesktop ? `<button onclick="navigateTo('location-pick')" class="bg-violet-600 text-white px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider inline-block">Order Now</button>` : ''}
                     </div>
                     
                     <!-- Spacer so background image can be seen before the carousel -->
@@ -411,7 +509,7 @@ const routes = {
                     <div class="relative z-20 w-full mt-auto shrink-0 pb-2">
                         <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-6 before:content-[''] before:w-0 before:shrink-0 after:content-[''] after:w-2 after:shrink-0 ${isDesktop ? 'justify-center' : ''}">
                             <!-- Card 1 -->
-                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
+                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
@@ -420,7 +518,7 @@ const routes = {
                                 </div>
                             </div>
                             <!-- Card 2 -->
-                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
+                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
@@ -429,7 +527,7 @@ const routes = {
                                 </div>
                             </div>
                             <!-- Card 3 -->
-                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
+                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
@@ -438,7 +536,7 @@ const routes = {
                                 </div>
                             </div>
                             <!-- Card 4 -->
-                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('order-details')">
+                            <div class="snap-start shrink-0 ${cardWidth} bg-white rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-lg overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover rounded shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
@@ -461,45 +559,26 @@ const routes = {
                 ${!isDesktop ? `
                 <!-- Order Now Button (Fixed above bottom nav on mobile/tablet) -->
                 <div class="px-6 pb-4 pt-2 relative z-20 shrink-0">
-                    <button onclick="navigateTo('location-selection')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
+                    <button onclick="navigateTo('location-pick')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
                 </div>` : ''}
 
                 <!-- Bottom Navigation -->
                 <div class="flex-shrink-0 bg-white/90 backdrop-blur-md px-6 py-5 flex justify-between items-center z-50 border-t border-gray-200 relative">
-                    <button class="text-violet-600 font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('restaurant-homepage')">HOME</button>
+                    <button class="text-violet-600 font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('restaurant-home')">HOME</button>
                     <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu')">MENU</button>
                     <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('cart')">REORDER</button>
-                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('my-account')">REWARDS</button>
-                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('bobs-dine-in-instruction')">SCAN</button>
+                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('account')">REWARDS</button>
+                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('dine-in-guide')">SCAN</button>
                 </div>
             </div>`;
     },
-    'location-selection': () => {
+    'location-pick': () => {
         const getSet = () => {
-            const allLocations = [
-                { name: "I-TEA - TEMPE", address: "825 W UNIVERSITY, Tempe, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM" },
-                { name: "I-TEA - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "12.4 mi", fav: false, hours: "12:00 PM to 9:30 PM" },
-                { name: "I-TEA - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM" },
-                { name: "I-TEA - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM" },
-                { name: "I-TEA - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM" },
-                { name: "I-TEA - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM" },
-                { name: "I-TEA - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM" },
-                { name: "I-TEA - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM" },
-                { name: "I-TEA - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM" },
-                { name: "I-TEA - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM" },
-                { name: "I-TEA - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM" },
-                { name: "I-TEA - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM" },
-                { name: "I-TEA - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM" },
-                { name: "I-TEA - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM" },
-                { name: "I-TEA - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM" },
-                { name: "I-TEA - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours" }
-            ];
-
-            if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return allLocations;
-            if (mockupState.locationFilter === 'Favorites') return allLocations.filter(loc => loc.fav);
-            if (mockupState.locationFilter === 'Previous') return [allLocations[13], allLocations[0], allLocations[9]]; // TEARAY, TEMPE, OAKLAND
+            if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return LOCATIONS;
+            if (mockupState.locationFilter === 'Favorites') return LOCATIONS.filter(loc => loc.fav);
+            if (mockupState.locationFilter === 'Previous') return [LOCATIONS[13], LOCATIONS[0], LOCATIONS[9]]; // TEARAY, TEMPE, OAKLAND
             
-            return allLocations;
+            return LOCATIONS;
         };
 
         if (currentViewport === 'desktop') {
@@ -507,7 +586,7 @@ const routes = {
                 <div class="flex flex-row h-full bg-white">
                     <div class="w-[450px] flex flex-col shrink-0 border-r border-gray-200 z-10 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.05)]">
                         <header class="p-4 border-b border-gray-100 flex items-center bg-white">
-                            <button onclick="navigateTo('restaurant-homepage')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
+                            <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
                             <h1 class="text-xl font-black tracking-tight uppercase italic text-gray-900">Choose Location</h1>
                         </header>
                         <div class="p-5 border-b border-gray-100 bg-white">
@@ -550,7 +629,7 @@ const routes = {
             return `
                 <div class="flex flex-col h-full bg-[#f4f4f2] relative">
                     <header class="p-4 flex items-center bg-white z-20 shrink-0 shadow-sm relative">
-                        <button onclick="navigateTo('restaurant-homepage')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
+                        <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
                         <h1 class="text-xl font-black tracking-tight uppercase italic text-gray-900">Choose Location</h1>
                     </header>
                     
@@ -574,7 +653,7 @@ const routes = {
 
                         <div class="p-4 space-y-3 flex-1 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); navigateTo('bobs-fulfillment-select')">
+                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); updateMockupState('selectedAddress', '${s.address}'); updateMockupState('selectedDistance', '${s.dist}'); navigateTo('order-type')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Office</span>' : ''}
@@ -599,7 +678,7 @@ const routes = {
     'location-favorites': () => `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 border-b border-gray-100">
-                    <button onclick="navigateTo('location-selection')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4 hover:bg-gray-50 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                    <button onclick="navigateTo('location-pick')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4 hover:bg-gray-50 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button>
                     <h1 class="text-xl font-black tracking-tight uppercase italic text-gray-900 flex-1 text-center">Favorite Locations</h1>
                     <div class="w-10"></div>
                 </header>
@@ -659,14 +738,14 @@ const routes = {
                     </div>
                 </div>
                 <div class="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
-                    <button onclick="navigateTo('location-selection')" class="w-full bg-violet-600 text-white py-4 rounded-xl font-black uppercase italic tracking-wider shadow-lg active:scale-[0.98] transition-all">Save Changes</button>
+                    <button onclick="navigateTo('location-pick')" class="w-full bg-violet-600 text-white py-4 rounded-xl font-black uppercase italic tracking-wider shadow-lg active:scale-[0.98] transition-all">Save Changes</button>
                 </div>
             </div>
         `,
     'order-type': () => {
         const btn = (icon, label) => {
             const isActive = mockupState.fulfillmentMode === label;
-            const clickHandler = label === 'Dine In' ? `navigateTo('bobs-dine-in-instruction')` : `updateMockupState('fulfillmentMode', '${label}')`;
+            const clickHandler = label === 'Dine In' ? `navigateTo('dine-in-guide')` : `updateMockupState('fulfillmentMode', '${label}')`;
             return `
                     <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-1 py-3 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-800 border-gray-100'}">
                         <i class="fa-solid ${icon} text-xl ${isActive ? 'text-white' : 'text-violet-600'}"></i>
@@ -709,14 +788,14 @@ const routes = {
         // Proximity to close check
         const isNearClose = mockupState.selectedTimeSlot.includes('8:') || mockupState.selectedTimeSlot.includes('9:');
 
-        const locationTitle = mockupState.selectedLocation || "BOB'S BOBA";
+        const locationTitle = mockupState.selectedLocation || "I-TEA";
 
         return `
                 <div class="flex flex-col h-full bg-[#FAF9F6] relative overflow-hidden">
-                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic"><button onclick="navigateTo('location-selection')" class="mr-4"><i class="fa-solid fa-chevron-left text-xl text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">${locationTitle}</span><div class="w-6"></div></header>
+                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic"><button onclick="navigateTo('location-pick')" class="mr-4"><i class="fa-solid fa-chevron-left text-xl text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">${locationTitle}</span><div class="w-6"></div></header>
                     <div class="flex-1 overflow-y-auto px-6 pt-5 pb-32">
                         <!-- Location Info Card -->
-                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('location-selection')">
+                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('location-pick')">
                             <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
                                 <i class="fa-solid fa-location-dot text-xl"></i>
                             </div>
@@ -798,29 +877,29 @@ const routes = {
 
                     <!-- Time Modal -->
                     <div id="time-modal" class="absolute inset-0 bg-black/60 z-[100] ${timeModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
-                        <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col h-[85vh] sm:max-h-[85vh]">
+                        <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[90vh]">
                             <div class="flex justify-between items-center mb-5 shrink-0">
                                 <h3 class="font-black text-xl uppercase italic text-gray-900">Choose Time</h3>
                                 <button onclick="mockupState.modalOpen = null; navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
                             </div>
                             
-                            <div class="flex-1 flex flex-col min-h-0">
-                                <div class="overflow-y-auto scrollbar-hide flex-1 pb-4">
+                            <div class="flex-1 flex flex-col min-h-0 bg-gray-50/50 rounded-2xl p-4 border border-gray-100 mb-5">
+                                <div class="overflow-y-auto scrollbar-hide h-[230px] pr-1">
                                     <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                                        ${times15.map(time => {
+                                        ${times15.map((time, idx) => {
                                             const isThisTimeNearClose = time.includes('8:') || time.includes('9:');
                                             const clickAction = isThisTimeNearClose && !mockupState.acknowledgedClose 
                                                 ? `updateMockupState('selectedTimeSlot', '${time}'); mockupState.modalOpen = 'warning'; navigateTo(currentPage);` 
                                                 : `updateMockupState('selectedTimeSlot', '${time}'); navigateTo(currentPage);`;
                                             
                                             return `
-                                            <button onclick="${clickAction}" class="py-2.5 rounded-xl border-2 ${mockupState.selectedTimeSlot === time ? 'border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200' : 'border-gray-100 text-gray-600 hover:border-violet-200 bg-white'} font-black text-[13px] transition-all tracking-tight">${time}</button>
+                                            <button id="time-slot-${idx}" onclick="${clickAction}" class="py-3 rounded-xl border-2 ${mockupState.selectedTimeSlot === time ? 'border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200' : 'border-gray-100 text-gray-700 hover:border-violet-300 bg-white'} font-black text-[13px] transition-all tracking-tight">${time}</button>
                                             `;
                                         }).join('')}
                                     </div>
                                 </div>
 
-                                <div class="mt-2 pt-4 border-t border-gray-100 shrink-0">
+                                <div class="mt-4 pt-4 border-t border-gray-100 shrink-0">
                                     <label class="block text-[10px] font-black text-violet-600 uppercase tracking-widest mb-3 italic">Or enter a custom pickup time</label>
                                     <div class="flex items-center gap-3">
                                         <div class="relative flex-1">
@@ -832,14 +911,15 @@ const routes = {
 
                             </div>
                             
-                            <div class="pt-5 mt-auto bg-white border-t border-gray-50 shrink-0">
+                            <div class="shrink-0 pb-2">
                                 <button onclick="
-                                    if(isNearClose && !mockupState.acknowledgedClose) {
+                                    if(${isNearClose} && !mockupState.acknowledgedClose) {
                                         mockupState.modalOpen = 'warning';
+                                        navigateTo(currentPage);
                                     } else {
                                         mockupState.modalOpen = null;
+                                        navigateTo('menu');
                                     }
-                                    navigateTo(currentPage);
                                 " class="w-full py-4 rounded-xl bg-violet-600 text-white font-black uppercase text-sm tracking-widest shadow-xl shadow-violet-200 transition-all active:scale-95">Confirm Time</button>
                             </div>
                         </div>
@@ -870,9 +950,9 @@ const routes = {
 
                 </div>`;
     },
-    'bobs-dine-in-instruction': () => `
+    'dine-in-guide': () => `
             <div class="flex flex-col h-full bg-white relative">
-                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic"><button onclick="navigateTo('order-type')" class="mr-4"><i class="fa-solid fa-chevron-left text-xl text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">BOB'S BOBA</span><div class="w-6"></div></header>
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic"><button onclick="navigateTo('order-type')" class="mr-4"><i class="fa-solid fa-chevron-left text-xl text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">I-TEA</span><div class="w-6"></div></header>
                 <div class="flex-1 flex flex-col items-center justify-center px-6 text-center">
                     <div class="w-full aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-12">
                         <img src="images/qr-instruction.jpg" class="w-full h-full object-cover">
@@ -891,13 +971,14 @@ const routes = {
         return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
                 <!-- Header Component -->
-                <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 border-b border-gra                    <button onclick="navigateTo('restaurant-homepage')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4 hover:bg-gray-50 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button>
-                    <div class="flex-1">
-                        <h1 class="text-xl font-black tracking-tight uppercase italic text-gray-900">I-TEA Menu</h1>
-                    </div>
-                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 rounded-full transition-colors">
-                        <i class="fa-solid fa-bag-shopping text-xl"></i>
-                        <span class="absolute top-1 right-1 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content box-border">2</span>
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic">
+                    <button onclick="navigateTo('restaurant-home')" class="mr-4">
+                        <i class="fa-solid fa-chevron-left text-xl text-gray-600"></i>
+                    </button>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">I-TEA Menu</span>
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-[#3A2218] hover:opacity-80 transition-opacity cursor-pointer">
+                        <i class="fa-solid fa-bag-shopping text-2xl"></i>
+                        <span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">1</span>
                     </button>
                 </header>
 
@@ -920,7 +1001,7 @@ const routes = {
                                     <span class="bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Popular</span>
                                     <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4">Brown Sugar<br>Boba Latte</h2>
                                     <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P4 • 356 to 478 calories. A perfectly sweet and creamy favorite.</p>
-                                    <button onclick="navigateTo('order-details')" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Start Order</button>
+                                    <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Start Order</button>
                                 </div>
                             </div>
 
@@ -932,30 +1013,19 @@ const routes = {
                                 </div>
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <!-- Item 1 -->
-                                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                        <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative">
-                                            <img src="${assets.boba1}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                                    ${MENU_ITEMS.map((item, index) => `
+                                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                            <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative cursor-pointer" onclick='selectItemAndNavigate(${index})'>
+                                                <img src="${item.image}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                                            </div>
+                                            <div class="flex justify-between items-start mb-2 cursor-pointer" onclick='selectItemAndNavigate(${index})'>
+                                                <h4 class="font-black text-gray-900 text-lg leading-tight w-2/3 tracking-tight">${item.name}</h4>
+                                                <span class="font-black text-violet-600">$${item.price.toFixed(2)}</span>
+                                            </div>
+                                            <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed">${item.description}</p>
+                                            <button onclick='selectItemAndNavigate(${index})' class="w-full py-3 rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black text-sm uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide">+ Add to Order</button>
                                         </div>
-                                        <div class="flex justify-between items-start mb-2">
-                                            <h4 class="font-black text-gray-900 text-lg leading-tight w-2/3 tracking-tight">M7 Crème Brûlée Boba Milk Tea</h4>
-                                            <span class="font-black text-violet-600">$5.75</span>
-                                        </div>
-                                        <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed">377 calories to 549 calories</p>
-                                        <button onclick="navigateTo('order-details')" class="w-full py-3 rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black text-sm uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide">+ Add to Order</button>
-                                    </div>
-                                    <!-- Item 2 -->
-                                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                        <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative">
-                                            <img src="${assets.boba3}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
-                                        </div>
-                                        <div class="flex justify-between items-start mb-2">
-                                            <h4 class="font-black text-gray-900 text-lg leading-tight w-2/3 tracking-tight">M8 Taro Boba Purée Latte</h4>
-                                            <span class="font-black text-violet-600">$5.75</span>
-                                        </div>
-                                        <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed">Come With Fresh Taro Puree, Freshly Made Taro Boba</p>
-                                        <button onclick="navigateTo('order-details')" class="w-full py-3 rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black text-sm uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide">+ Add to Order</button>
-                                    </div>
+                                    `).join('')}
                                 </div>
                             </div>
                         </div>
@@ -996,7 +1066,7 @@ const routes = {
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 3 days ago</div>
                                             </div>
                                         </div>
-                                        <button onclick="navigateTo('order-details')" class="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95"><i class="fa-solid fa-plus text-xs"></i></button>
+                                        <button onclick="navigateTo('customize')" class="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95"><i class="fa-solid fa-plus text-xs"></i></button>
                                     </div>
                                     <!-- Fav 2 -->
                                     <div class="flex items-center justify-between group">
@@ -1007,7 +1077,7 @@ const routes = {
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 1 week ago</div>
                                             </div>
                                         </div>
-                                        <button onclick="navigateTo('order-details')" class="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95"><i class="fa-solid fa-plus text-xs"></i></button>
+                                        <button onclick="navigateTo('customize')" class="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95"><i class="fa-solid fa-plus text-xs"></i></button>
                                     </div>
                                     <!-- Fav 3 -->
                                     <div class="flex items-center justify-between group">
@@ -1018,7 +1088,7 @@ const routes = {
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: Yesterday</div>
                                             </div>
                                         </div>
-                                        <button onclick="navigateTo('order-details')" class="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95"><i class="fa-solid fa-plus text-xs"></i></button>
+                                        <button onclick="navigateTo('customize')" class="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95"><i class="fa-solid fa-plus text-xs"></i></button>
                                     </div>
                                 </div>
                                 <button class="w-full py-3 rounded-full bg-gray-50 text-gray-800 font-black text-sm hover:bg-gray-100 transition-colors">Manage Favorites</button>
@@ -1039,7 +1109,7 @@ const routes = {
                         <!-- Logo Section (Full Width Row) -->
                         <div class="mb-6 text-center md:text-left">
                             <div class="font-black text-violet-600 text-xl tracking-tighter italic flex items-center justify-center md:justify-start whitespace-nowrap leading-none">
-                                <i class="fa-solid fa-mug-hot mr-2 text-lg"></i>BOB'S BOBA TEA
+                                <i class="fa-solid fa-mug-hot mr-2 text-lg"></i>I-TEA
                             </div>
                         </div>
                         
@@ -1070,7 +1140,7 @@ const routes = {
                             </div>
                         </div>
                         <div class="flex flex-col-reverse md:flex-row justify-between items-center pt-6 border-t border-gray-100 text-[11px] text-gray-400 font-medium gap-4">
-                            <p>© 2026 Bob's Boba Tea Inc. All rights reserved.</p>
+                            <p>© 2026 I-TEA Inc. All rights reserved.</p>
                             <div class="flex gap-5 text-gray-400">
                                 <i class="fa-solid fa-award text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
                                 <i class="fa-regular fa-star text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
@@ -1081,40 +1151,120 @@ const routes = {
                 </div>
             </div>`;
     },
-    'order-details': () => {
+    'customize': () => {
         const isDesktop = currentViewport === 'desktop';
-        const basePrice = 5.75;
-        const totalPrice = (basePrice * mockupState.itemQuantity).toFixed(2);
+        const item = mockupState.selectedItem || MENU_ITEMS[1]; // Fallback to Taro Latte
+        const basePrice = item.price;
+
+        // --- Extra Toppings definition (with price per unit) ---
+        const EXTRA_TOPPINGS = [
+            { id: 'agarBoba',    name: 'AGAR BOBA',   price: 0.75 },
+            { id: 'almondMilk',  name: 'ALMOND MILK', price: 0.75 },
+            { id: 'aloeVera',    name: 'ALOE VERA',   price: 0.50 },
+            { id: 'boba',        name: 'BOBA',        price: 0.00 },
+            { id: 'chiaSeed',    name: 'CHIA SEED',   price: 0.00 },
+        ];
+
+        // --- Cup Options (add-on, qty-based) ---
+        const CUP_OPTIONS = [
+            { id: 'afterCup', name: 'AFTER CUP', price: 1.00 },
+            { id: 'saltCup',  name: 'SALT CUP',  price: 0.40 },
+        ];
+
+        // --- Free toppings checklist (large list from screenshot) ---
+        const FREE_TOPPINGS = [
+            'FLAN', 'CRYSTAL JELLY', 'EGG PUDDING', 'COCONUT JELLY', 'ANNA',
+            'LEMON TEA', 'LYCHEE JELLY', 'PASSION JELLY', 'TARO ANNA', 'RED BEAN',
+            'COFFEE JELLY', 'BLUE BOBA (FIL.)', 'PINEAPPLE JELLY', 'PLANTAINS PUDDING',
+            'M PUDDING', 'PANDA JELLY', 'PAMELA LOTTE', 'STRAWBERRY POBAL', 'MANGO BOBA',
+            'GROUND COCONUT LOTTE', 'CREPE JELLY', 'CINNAMON COCONUT JELLY',
+        ];
+
+        // init topping quantities if needed
+        if (!mockupState.toppingQty) mockupState.toppingQty = {};
+        if (!mockupState.cupQty)     mockupState.cupQty = {};
+        if (!mockupState.freeToppings) mockupState.freeToppings = [];
+        if (!mockupState.iceLevel)   mockupState.iceLevel = 'ICE';
+
+        // --- Dynamic total calculation ---
+        let extrasTotal = 0;
+        EXTRA_TOPPINGS.forEach(t => {
+            extrasTotal += (mockupState.toppingQty[t.id] || 0) * t.price;
+        });
+        CUP_OPTIONS.forEach(c => {
+            extrasTotal += (mockupState.cupQty[c.id] || 0) * c.price;
+        });
+        const totalPrice = ((basePrice + extrasTotal) * mockupState.itemQuantity).toFixed(2);
+
+        // --- Helper: stepper button for toppings/cups ---
+        const stepperRow = (id, name, price, stateKey, qty) => {
+            const fmtPrice = price === 0 ? 'FREE' : `+$${price.toFixed(2)}`;
+            return `
+                <div class="flex justify-between items-center py-2.5">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-black text-gray-800 uppercase tracking-tight">${name}</span>
+                        <span class="text-[11px] font-bold text-gray-400">${fmtPrice}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="(() => { const q = {...(mockupState.${stateKey} || {})}; q['${id}'] = Math.max(0, (q['${id}'] || 0) - 1); updateMockupState('${stateKey}', q); })()" class="w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 transition-all active:scale-90 text-xs">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <span class="font-black text-gray-900 w-4 text-center text-sm">${qty}</span>
+                        <button onclick="(() => { const q = {...(mockupState.${stateKey} || {})}; q['${id}'] = (q['${id}'] || 0) + 1; updateMockupState('${stateKey}', q); })()" class="w-7 h-7 rounded-full border border-violet-200 bg-violet-50 flex items-center justify-center text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all active:scale-90 text-xs">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>`;
+        };
+
+        // --- Helper: radio row ---
+        const radioRow = (label, stateKey, value, activeValue) => `
+            <button onclick="updateMockupState('${stateKey}', '${value}')" class="w-full flex justify-between items-center py-2 group">
+                <span class="text-sm font-black text-gray-700 uppercase tracking-tight">${label}</span>
+                <div class="w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${activeValue === value ? 'border-violet-600 bg-violet-600' : 'border-gray-200 group-hover:border-violet-300'}">
+                    ${activeValue === value ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ''}
+                </div>
+            </button>`;
+
+        // --- Section header ---
+        const sectionHeader = (label) => `
+            <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
+                <span class="text-xs font-black text-violet-600 uppercase tracking-widest italic">${label}</span>
+            </div>`;
+
         const content = `
                 <div class="${isDesktop ? 'modal-content max-w-xl p-0 overflow-hidden' : 'flex flex-col h-full bg-white'}">
                     ${!isDesktop ? `
-                    <header class="bg-white px-6 py-4 flex items-center justify-between shadow-sm shrink-0 sticky top-0 z-50">
-                        <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 rounded-full transition-colors shrink-0"><i class="fa-solid fa-arrow-left text-xl"></i></button>
-                        <h1 class="text-xl font-black tracking-tight uppercase italic text-gray-900 flex-1 text-center">Customize Item</h1>
-                        <div class="w-10"></div>
-                    </header>` : ''}
+                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic">
+                    <button onclick="navigateTo('menu')" class="mr-4">
+                        <i class="fa-solid fa-chevron-left text-xl text-gray-600"></i>
+                    </button>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Customize</span>
+                    <div class="w-10"></div>
+                </header>` : ''}
 
                     <div id="order-details-scroller" class="flex-1 overflow-y-auto scrollbar-hide">
                         <!-- Header / Modal Top -->
                         <div class="relative ${isDesktop ? 'bg-violet-600 p-4 text-white flex justify-between items-center' : 'hidden'}">
-                            h2 class="font-black uppercase italic tracking-tight">Order Details</h2>
+                            <h2 class="font-black uppercase italic tracking-tight">Order Details</h2>
                             <button onclick="navigateTo('menu')" class="text-white hover:opacity-70"><i class="fa-solid fa-xmark text-xl"></i></button>
                         </div>
 
                         <!-- Item Banner Image -->
-                        <div class="w-full h-64 sm:h-80 overflow-hidden relative">
-                            <img src="${assets.boba3}" class="w-full h-full object-cover">
+                        <div class="w-full h-56 overflow-hidden relative">
+                            <img src="${item.image}" class="w-full h-full object-cover">
                         </div>
 
                         <!-- Info & Price -->
-                        <div class="p-6 text-center border-b border-gray-100">
-                            <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$5.75</div>
-                            <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-2">MB Taro Boba Purée Latte</h3>
-                            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed px-4">Come with fresh taro purée, freshly made taro boba</p>
+                        <div class="px-6 pt-5 pb-4 text-center border-b border-gray-100">
+                            <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
+                            <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-1">${item.name}</h3>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description}</p>
                         </div>
 
-                        <!-- Customization Sections -->
-                        <div class="p-6 space-y-8">
+                        <!-- Customizations -->
+                        <div class="p-6 space-y-7">
+
                             <!-- Quantity -->
                             <div class="flex justify-between items-center">
                                 <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Quantity</span>
@@ -1125,77 +1275,74 @@ const routes = {
                                 </div>
                             </div>
 
-                            <!-- Options Grid from Image -->
-                            <div class="space-y-6">
-                                <!-- Sugar Level -->
-                                <div>
-                                    <div class="flex justify-between items-center mb-4 border-b border-gray-50 pb-2">
-                                        <span class="text-xs font-black text-violet-600 uppercase tracking-widest italic">Sugar Level</span>
-                                        <i class="fa-solid fa-chevron-up text-[10px] text-gray-400"></i>
-                                    </div>
-                                    <div class="space-y-3">
-                                        ${['SUGAR 0%', 'SUGAR 30%', 'SUGAR 50%', 'SUGAR 80%', 'SUGAR 100%'].map(lvl => `
-                                            <button onclick="updateMockupState('sugarLevel', '${lvl}')" class="w-full flex justify-between items-center group">
-                                                <span class="text-sm font-black text-gray-700 uppercase tracking-tight">${lvl}</span>
-                                                <div class="w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center ${mockupState.sugarLevel === lvl ? 'border-violet-600 bg-violet-600 text-white' : 'border-gray-200 group-hover:border-violet-300'}">
-                                                    ${mockupState.sugarLevel === lvl ? '<i class="fa-solid fa-check text-[10px]"></i>' : ''}
-                                                </div>
-                                            </button>
-                                        `).join('')}
-                                    </div>
-                                </div>
-
-                                <!-- Extra Toppings -->
-                                <div>
-                                    <div class="flex justify-between items-center mb-4 border-b border-gray-50 pb-2">
-                                        <span class="text-xs font-black text-violet-600 uppercase tracking-widest italic">Extra Toppings</span>
-                                        <i class="fa-solid fa-chevron-up text-[10px] text-gray-400"></i>
-                                    </div>
-                                    <div class="space-y-3">
-                                        ${[
-                { name: 'AGAR BOBA', price: '+$0.75' },
-                { name: 'ALMOND MILK', price: '+$0.75' },
-                { name: 'ALOE VERA', price: '+$0.50' },
-                { name: 'BOBA', price: '+$0.00' },
-                { name: 'CHIA SEED', price: '+$0.00' }
-            ].map(t => `
-                                            <div class="w-full flex justify-between items-center">
-                                                <div class="flex flex-col text-left">
-                                                    <span class="text-sm font-black text-gray-700 uppercase tracking-tight">${t.name}</span>
-                                                    <span class="text-[10px] font-bold text-gray-400">${t.price}</span>
-                                                </div>
-                                                <button class="w-8 h-8 rounded-full bg-gray-50 text-gray-400 border border-gray-100 flex items-center justify-center hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all"><i class="fa-solid fa-plus text-xs"></i></button>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                </div>
-
-                                <!-- Cup Option -->
-                                <div>
-                                    <div class="flex justify-between items-center mb-4 border-b border-gray-50 pb-2">
-                                        <span class="text-xs font-black text-violet-600 uppercase tracking-widest italic">Cup Option</span>
-                                        <i class="fa-solid fa-chevron-up text-[10px] text-gray-400"></i>
-                                    </div>
-                                    <div class="flex justify-between items-center">
-                                        <div class="flex flex-col text-left">
-                                            <span class="text-sm font-black text-gray-700 uppercase tracking-tight">SPLIT CUP</span>
-                                            <span class="text-[10px] font-bold text-gray-400">+$1.00</span>
-                                        </div>
-                                        <button class="w-8 h-8 rounded-full bg-gray-50 text-gray-400 border border-gray-100 flex items-center justify-center hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all"><i class="fa-solid fa-plus text-xs"></i></button>
-                                    </div>
-                                </div>
-
-                                <!-- Special Instructions -->
-                                <div>
-                                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions (Max 25 Characters)</div>
-                                    <textarea maxlength="25" placeholder="Ex. Less ice, no boba" class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20"></textarea>
+                            <!-- Sugar Level -->
+                            <div>
+                                ${sectionHeader('Sugar Level')}
+                                <div class="space-y-1">
+                                    ${['SUGAR 0%', 'SUGAR 30%', 'SUGAR 50%', 'SUGAR 80%', 'SUGAR 100%'].map(lvl => radioRow(lvl, 'sugarLevel', lvl, mockupState.sugarLevel)).join('')}
                                 </div>
                             </div>
+
+                            <!-- Ice Level -->
+                            <div>
+                                ${sectionHeader('Ice Level')}
+                                <div class="space-y-1">
+                                    ${['PLAIN', 'LESS ICE', 'ICE', 'MORE ICE', 'HOT', 'HOT CHOICE'].map(lvl => radioRow(lvl, 'iceLevel', lvl, mockupState.iceLevel)).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Extra Toppings (stepper, priced) -->
+                            <div>
+                                ${sectionHeader('Extra Toppings')}
+                                <div class="divide-y divide-gray-50">
+                                    ${EXTRA_TOPPINGS.map(t => stepperRow(t.id, t.name, t.price, 'toppingQty', mockupState.toppingQty[t.id] || 0)).join('')}
+                                </div>
+                                <p class="text-[10px] font-bold text-gray-400 mt-3 uppercase tracking-widest">Note: Not charged for free toppings</p>
+                            </div>
+
+                            <!-- Cup Options (stepper, priced) -->
+                            <div>
+                                ${sectionHeader('Cup Options')}
+                                <div class="divide-y divide-gray-50">
+                                    ${CUP_OPTIONS.map(c => stepperRow(c.id, c.name, c.price, 'cupQty', mockupState.cupQty[c.id] || 0)).join('')}
+                                </div>
+                                <p class="text-[10px] font-bold text-gray-400 mt-3 uppercase tracking-widest">Note: Not charged for free toppings</p>
+                            </div>
+
+                            <!-- Free Topping Checklist (large list) -->
+                            <div>
+                                ${sectionHeader('Add Toppings')}
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                    ${FREE_TOPPINGS.map(t => {
+                                        const isChecked = (mockupState.freeToppings || []).includes(t);
+                                        const safeT = t.replace(/'/g, "\\'");
+                                        return `
+                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                            <button onclick="(() => { let ft = [...(mockupState.freeToppings || [])]; const i = ft.indexOf('${safeT}'); if(i > -1) ft.splice(i,1); else ft.push('${safeT}'); updateMockupState('freeToppings', ft); })()"
+                                                class="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${isChecked ? 'border-violet-600 bg-violet-600' : 'border-gray-200 group-hover:border-violet-300'}">
+                                                ${isChecked ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ''}
+                                             </button>
+                                            <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight">${t}</span>
+                                        </label>`;
+                                    }).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Special Instructions -->
+                            <div>
+                                <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions <span class="text-gray-300">(Max 250 Characters)</span></div>
+                                <textarea maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors"></textarea>
+                            </div>
+
                         </div>
                     </div>
 
                     <!-- Sticky Bottom Actions -->
-                    <div class="p-6 bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.02)] space-y-3">
+                    <div class="p-6 bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] space-y-3">
+                        <div class="flex justify-between items-center text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1">
+                            <span>Options Total</span>
+                            <span class="text-gray-700">+$${extrasTotal.toFixed(2)}</span>
+                        </div>
                         <button onclick="navigateTo('cart')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider italic">Add to Cart - $${totalPrice}</button>
                         <button onclick="navigateTo('menu')" class="w-full text-gray-400 font-black text-xs uppercase tracking-widest hover:text-gray-600 transition-colors py-2">Cancel</button>
                     </div>
@@ -1204,6 +1351,7 @@ const routes = {
 
         return isDesktop ? `<div class="modal-overlay">${content}</div>` : content;
     },
+
     'cart': () => {
         const bagFee = (mockupState.bagQuantity * 0.10);
         const subtotal = 19.00;
@@ -1211,62 +1359,70 @@ const routes = {
         const finalTotal = (subtotal + taxes + bagFee).toFixed(2);
 
         const selectionNotMade = mockupState.bagQuantity === 0 && !mockupState.noBagsSelected;
-        const paymentAction = selectionNotMade ? `updateMockupState('modalOpen', 'bag-alert')` : `navigateTo('payment')`;
+        const paymentAction = selectionNotMade ? `updateMockupState('modalOpen', 'bag-alert')` : `navigateTo('checkout')`;
 
         return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
-                <header class="bg-white px-6 py-4 flex items-center justify-between shadow-sm z-50 shrink-0 sticky top-0">
-                    <button onclick="navigateTo('restaurant-homepage')" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 rounded-full transition-colors shrink-0"><i class="fa-solid fa-arrow-left text-xl"></i></button>
-                    <h1 class="text-xl font-black tracking-tight uppercase italic text-gray-900 flex-1 text-center">Your Order</h1>
-                    <button class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-50 rounded-full transition-colors shrink-0">
-                        <i class="fa-solid fa-bag-shopping text-xl"></i>
-                        <span class="absolute top-1 right-1 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content box-border">2</span>
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic">
+                    <button onclick="navigateTo('menu')" class="mr-4">
+                        <i class="fa-solid fa-chevron-left text-xl text-gray-600"></i>
                     </button>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Review order</span>
+                    <div class="w-10"></div>
                 </header>
                 <div id="cart-scroller" class="flex-1 overflow-y-auto p-6 flex flex-col gap-6 scrollbar-hide pb-32">
                     
-                    <!-- Order Details Card -->
-                    <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col gap-3 shrink-0">
-                        <div class="flex justify-between items-start">
-                            <div class="flex gap-3">
-                                <i class="fa-solid fa-location-dot text-violet-600 mt-1 text-lg"></i>
+                    <!-- Consolidated Order Details Card -->
+                    <div class="bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col gap-4 shrink-0 transition-all">
+                        <!-- Store Info (Compact) -->
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                            <div class="flex gap-3 items-center">
+                                <div class="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-store text-violet-600 text-base"></i>
+                                </div>
                                 <div>
-                                    <h3 class="font-black text-[#33424A] text-lg uppercase tracking-tight leading-tight">Bob's Boba Tea</h3>
-                                    <p class="text-[13px] font-medium text-gray-500 mt-0.5">4728 E Ray Rd, Phoenix, AZ 85044</p>
+                                    <h3 class="font-black text-[#33424A] text-xs uppercase tracking-tight leading-tight">${(mockupState.selectedLocation || "I-TEA").replace(/\b\d{5}\b/g, '').trim()}</h3>
+                                    <p class="text-[10px] font-bold text-gray-400 mt-0.5 tracking-wide">${mockupState.selectedDistance || "0.8 mi"}</p>
                                 </div>
                             </div>
-                            <button onclick="navigateTo('location-selection')" class="text-[#354E57] font-black text-[11px] uppercase tracking-wide border-b-[1.5px] border-dashed border-[#354E57] pb-0.5 mt-1 shrink-0 hover:opacity-70 transition-opacity">CHANGE</button>
+                            <button onclick="navigateTo('location-pick')" class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-violet-600 hover:border-violet-100 transition-all">
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
                         </div>
-                        
-                        <div class="h-px w-full bg-gray-200/80 my-1"></div>
-                        
-                        <div class="flex flex-col gap-3">
-                            <div class="flex justify-between items-center">
-                                <div class="flex gap-3 items-center">
-                                    <i class="fa-solid fa-bag-shopping text-violet-600 w-4 text-center text-sm"></i>
-                                    <span class="text-[13px] font-medium text-gray-500">Order Type: <span class="font-bold text-gray-700 italic ml-1">${mockupState.fulfillmentMode}</span></span>
+
+                        <!-- Pickup Details (Compact Grid) -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Pickup Method -->
+                            <div onclick="navigateTo('order-type')" class="flex gap-3 items-center cursor-pointer group">
+                                <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-violet-50 transition-colors">
+                                    <i class="fa-solid ${mockupState.fulfillmentMode === 'Delivery' ? 'fa-truck' : mockupState.fulfillmentMode === 'Curbside' ? 'fa-car' : 'fa-person-walking-luggage'} text-violet-600 text-sm"></i>
                                 </div>
-                                <button onclick="navigateTo('order-type')" class="text-[#354E57] font-black text-[11px] uppercase tracking-wide border-b-[1.5px] border-dashed border-[#354E57] pb-0.5 shrink-0 hover:opacity-70 transition-opacity">CHANGE</button>
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup method</span>
+                                    <span class="text-[11px] font-black text-gray-700 uppercase italic tracking-tight leading-tight">${mockupState.fulfillmentMode || 'Pickup'}</span>
+                                </div>
                             </div>
-                            <div class="flex justify-between items-center">
-                                <div class="flex gap-3 items-center">
-                                    <i class="fa-regular fa-clock text-violet-600 w-4 text-center text-sm"></i>
-                                    <span class="text-[13px] font-medium text-gray-500">Order Time: <span class="font-bold text-gray-700 italic ml-1">${mockupState.orderTime === 'Later' ? mockupState.selectedDay + ' @ ' + mockupState.selectedTimeSlot : mockupState.orderTime}</span></span>
+                            <!-- Pickup Time -->
+                            <div onclick="navigateTo('order-type')" class="flex gap-3 items-center cursor-pointer group border-l border-gray-50 pl-2">
+                                <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-violet-50 transition-colors">
+                                    <i class="fa-regular fa-clock text-violet-600 text-sm"></i>
                                 </div>
-                                <button onclick="navigateTo('order-type')" class="text-[#354E57] font-black text-[11px] uppercase tracking-wide border-b-[1.5px] border-dashed border-[#354E57] pb-0.5 shrink-0 hover:opacity-70 transition-opacity">CHANGE</button>
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup time</span>
+                                    <span class="text-[11px] font-black text-gray-700 uppercase italic tracking-tight leading-tight">${mockupState.orderTime === 'Later' ? mockupState.selectedTimeSlot : 'ASAP'} (4-7m)</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">For: Mike</h2>
                         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 divide-y divide-gray-100">
                             <!-- Item 1 -->
                             <div class="flex justify-between items-start pb-5 mb-5">
                                 <div class="flex gap-4 items-center">
-                                    <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('order-details')"><img src="${assets.boba2}" class="w-full h-full object-cover"></div>
+                                    <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba2}" class="w-full h-full object-cover"></div>
                                     <div>
-                                        <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight cursor-pointer" onclick="navigateTo('order-details')">Brown Sugar Pearl</h3>
+                                        <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight cursor-pointer" onclick="navigateTo('customize')">Brown Sugar Pearl</h3>
                                         <p class="text-[11px] text-gray-500 font-medium mb-3 cursor-pointer line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed" onclick="this.classList.toggle('line-clamp-2')" title="Click to expand/collapse customizations">Large, Less Ice, Extra Boba, Oat Milk, 50% Sweetness, No Foam, Double Pearl, Less Sweet, Extra Ice, Cheese Foam, Lychee Jelly</p>
                                         
                                         <!-- Quantity Selector Pill -->
@@ -1284,9 +1440,9 @@ const routes = {
                             <!-- Item 2 -->
                             <div class="flex justify-between items-start pt-5">
                                 <div class="flex gap-4 items-center">
-                                    <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('order-details')"><img src="${assets.boba1}" class="w-full h-full object-cover"></div>
+                                    <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba1}" class="w-full h-full object-cover"></div>
                                     <div>
-                                        <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight cursor-pointer" onclick="navigateTo('order-details')">Protein Bowl</h3>
+                                        <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight cursor-pointer" onclick="navigateTo('customize')">Protein Bowl</h3>
                                         <p class="text-xs text-gray-500 font-medium mb-3">Extra Chicken</p>
                                         
                                         <!-- Quantity Selector Pill -->
@@ -1314,34 +1470,34 @@ const routes = {
                         <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2">
                             <!-- Suggestion 1 -->
                             <div class="snap-center shrink-0 w-[140px] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                                <div class="h-24 relative cursor-pointer" onclick="navigateTo('order-details')"><img src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover"></div>
+                                <div class="h-24 relative cursor-pointer" onclick="navigateTo('customize')"><img src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover"></div>
                                 <div class="p-3 text-left">
-                                    <h4 class="text-xs font-black text-gray-900 uppercase tracking-tight truncate cursor-pointer" onclick="navigateTo('order-details')">Matcha Cookie</h4>
+                                    <h4 class="text-xs font-black text-gray-900 uppercase tracking-tight truncate cursor-pointer" onclick="navigateTo('customize')">Matcha Cookie</h4>
                                     <div class="flex justify-between items-center mt-2">
                                         <span class="text-sm font-black text-violet-600">$3.00</span>
-                                        <button onclick="navigateTo('order-details')" class="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                                        <button onclick="navigateTo('customize')" class="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px]"></i></button>
                                     </div>
                                 </div>
                             </div>
                             <!-- Suggestion 2 -->
                             <div class="snap-center shrink-0 w-[140px] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                                <div class="h-24 relative cursor-pointer" onclick="navigateTo('order-details')"><img src="${assets.boba4}" class="w-full h-full object-cover"></div>
+                                <div class="h-24 relative cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba4}" class="w-full h-full object-cover"></div>
                                 <div class="p-3 text-left">
-                                    <h4 class="text-xs font-black text-gray-900 uppercase tracking-tight truncate cursor-pointer" onclick="navigateTo('order-details')">Matcha Latte</h4>
+                                    <h4 class="text-xs font-black text-gray-900 uppercase tracking-tight truncate cursor-pointer" onclick="navigateTo('customize')">Matcha Latte</h4>
                                     <div class="flex justify-between items-center mt-2">
                                         <span class="text-sm font-black text-violet-600">$5.50</span>
-                                        <button onclick="navigateTo('order-details')" class="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                                        <button onclick="navigateTo('customize')" class="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px]"></i></button>
                                     </div>
                                 </div>
                             </div>
                             <!-- Suggestion 3 -->
                             <div class="snap-center shrink-0 w-[140px] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                                <div class="h-24 relative cursor-pointer" onclick="navigateTo('order-details')"><img src="${assets.boba3}" class="w-full h-full object-cover"></div>
+                                <div class="h-24 relative cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba3}" class="w-full h-full object-cover"></div>
                                 <div class="p-3 text-left">
-                                    <h4 class="text-xs font-black text-gray-900 uppercase tracking-tight truncate cursor-pointer" onclick="navigateTo('order-details')">Taro Milk Tea</h4>
+                                    <h4 class="text-xs font-black text-gray-900 uppercase tracking-tight truncate cursor-pointer" onclick="navigateTo('customize')">Taro Milk Tea</h4>
                                     <div class="flex justify-between items-center mt-2">
                                         <span class="text-sm font-black text-violet-600">$6.00</span>
-                                        <button onclick="navigateTo('order-details')" class="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                                        <button onclick="navigateTo('customize')" class="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px]"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -1405,7 +1561,7 @@ const routes = {
                             </div>
                             
                             <div class="w-full space-y-3">
-                                <button id="bag-continue-btn" onclick="${mockupState.bagQuantity > 0 ? "mockupState.modalOpen = null; navigateTo('payment');" : "mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('payment');"}" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase italic tracking-wide active:scale-95 transition-all shadow-md">
+                                <button id="bag-continue-btn" onclick="${mockupState.bagQuantity > 0 ? "mockupState.modalOpen = null; navigateTo('checkout');" : "mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('checkout');"}" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase italic tracking-wide active:scale-95 transition-all shadow-md">
                                     ${mockupState.bagQuantity > 0 ? `Continue with ${mockupState.bagQuantity} bag(s)` : "I don't need bags"}
                                 </button>
                             </div>
@@ -1416,8 +1572,8 @@ const routes = {
             </div>`;
     },
 
-    'my-account': () => `<div class="p-10 text-center uppercase font-black italic h-full flex flex-col items-center justify-center"><h1>My Account</h1><button onclick="navigateTo('home')" class="underline mt-4">Logout</button></div>`,
-    'status': () => `
+    'account': () => `<div class="p-10 text-center uppercase font-black italic h-full flex flex-col items-center justify-center"><h1>My Account</h1><button onclick="navigateTo('home')" class="underline mt-4">Logout</button></div>`,
+    'order-status': () => `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0">
                     <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4"><i class="fa-solid fa-arrow-left text-xl"></i></button>
@@ -1487,11 +1643,19 @@ const routes = {
                     </button>
                 </div>
             </div>`,
-    'register': () => `<div class="p-10 text-center uppercase font-black italic">Registration</div>`,
+    'sign-up': () => `<div class="p-10 text-center uppercase font-black italic">Registration</div>`,
     'login': () => `<div class="p-10 text-center uppercase font-black italic">Login View</div>`,
     'privacy': () => `<div class="p-10 text-center uppercase font-black italic">Privacy Policy</div>`,
-    'confirmation': () => `
-            <div class="flex flex-col h-full bg-white relative items-center justify-center p-8 text-center">
+    'order-confirm': () => `
+            <div class="flex flex-col h-full bg-white relative">
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic">
+                    <button onclick="navigateTo('menu')" class="mr-4">
+                        <i class="fa-solid fa-chevron-left text-xl text-gray-600"></i>
+                    </button>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">SUCCESS</span>
+                    <div class="w-10"></div>
+                </header>
+                <div class="flex-1 flex flex-col items-center justify-center p-8 text-center">
                 <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 shadow-inner">
                     <i class="fa-solid fa-check text-5xl"></i>
                 </div>
@@ -1504,103 +1668,192 @@ const routes = {
                 </div>
 
                 <div class="w-full space-y-4">
-                    <button onclick="navigateTo('status')" class="w-full bg-red-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider italic">Track Order</button>
+                    <button onclick="navigateTo('order-status')" class="w-full bg-red-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider italic">Track Order</button>
                     <button onclick="navigateTo('home')" class="w-full bg-white border-2 border-gray-100 text-gray-700 py-4 rounded-full font-black text-lg active:scale-95 transition-all uppercase tracking-wider italic hover:bg-gray-50">Back to Home</button>
                 </div>
             </div>`,
-    'payment': () => `
+    'checkout': () => {
+        const subtotal = 12.50;
+        const taxes = 1.25;
+        const bagFee = mockupState.bagQuantity * 0.10;
+        
+        let tipAmount = 0;
+        if (mockupState.tipPercentage === 'other') {
+            tipAmount = parseFloat(mockupState.customTipAmount) || 0;
+        } else {
+            tipAmount = subtotal * (mockupState.tipPercentage / 100);
+        }
+
+        const finalTotal = (subtotal + taxes + bagFee + tipAmount).toFixed(2);
+
+        const openPaymentModal = (method) => {
+            mockupState.paymentMethod = method;
+            updateMockupState('modalOpen', `payment-${method}`);
+        };
+
+        return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
-                <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0">
-                    <button onclick="navigateTo('cart')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4"><i class="fa-solid fa-arrow-left text-xl"></i></button>
-                    <h1 class="text-xl font-black tracking-tight uppercase italic text-gray-900">Payment</h1>
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black italic">
+                    <button onclick="navigateTo('cart')" class="mr-4">
+                        <i class="fa-solid fa-chevron-left text-xl text-gray-600"></i>
+                    </button>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Payment</span>
+                    <div class="w-10"></div>
                 </header>
-                <div id="payment-scroller" class="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
-                    <h2 class="text-sm font-black text-gray-400 uppercase tracking-widest mb-2">Payment Method</h2>
+                
+                <div id="payment-scroller" class="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide pb-32">
                     
-                    <div class="space-y-3">
-                        <!-- Credit or Debit Card Option -->
-                        <div onclick="updateMockupState('paymentMethod', 'card')" class="bg-white rounded-2xl p-4 shadow-sm border-2 flex items-center justify-between cursor-pointer transition-all ${mockupState.paymentMethod === 'card' ? 'border-violet-600' : 'border-gray-100'}">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-credit-card text-2xl text-gray-400"></i>
-                                <div>
-                                    <span class="font-black text-gray-900 uppercase text-sm block">Credit or Debit Card</span>
-                                    <div class="flex gap-2 mt-1 opacity-60">
-                                        <i class="fa-brands fa-cc-visa text-xs"></i>
-                                        <i class="fa-brands fa-cc-mastercard text-xs"></i>
-                                        <i class="fa-brands fa-cc-amex text-xs"></i>
-                                        <i class="fa-brands fa-cc-discover text-xs"></i>
+                    <!-- Payment Methods -->
+                    <div>
+                        <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Payment Method</h2>
+                        <div class="space-y-3">
+                            <!-- Card -->
+                            <div onclick="updateMockupState('modalOpen', 'payment-card')" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400">
+                                        <i class="fa-solid fa-credit-card text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-black text-gray-900 uppercase text-xs block tracking-tight">Credit or Debit Card</span>
+                                        <span class="text-[10px] font-bold text-gray-400">Ending in 4242</span>
                                     </div>
                                 </div>
+                                <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
                             </div>
-                            <div class="w-5 h-5 rounded-full border-4 transition-all ${mockupState.paymentMethod === 'card' ? 'border-violet-600 bg-white' : 'border-gray-200 bg-white'}"></div>
-                        </div>
 
-                        <!-- Apple Pay Option -->
-                        <div onclick="updateMockupState('paymentMethod', 'apple')" class="bg-white rounded-2xl p-4 shadow-sm border-2 flex items-center justify-between cursor-pointer transition-all ${mockupState.paymentMethod === 'apple' ? 'border-violet-600' : 'border-gray-100'}">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-brands fa-apple text-2xl text-black"></i>
-                                <span class="font-black text-gray-900 uppercase text-sm">Apple Pay</span>
-                            </div>
-                            <div class="w-5 h-5 rounded-full border-4 transition-all ${mockupState.paymentMethod === 'apple' ? 'border-violet-600 bg-white' : 'border-gray-200 bg-white'}"></div>
-                        </div>
-
-                        <!-- Gift Card Option -->
-                        <div onclick="updateMockupState('paymentMethod', 'gift')" class="bg-white rounded-2xl p-4 shadow-sm border-2 flex items-center justify-between cursor-pointer transition-all ${mockupState.paymentMethod === 'gift' ? 'border-violet-600' : 'border-gray-100'}">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-gift text-2xl text-violet-400"></i>
-                                <span class="font-black text-gray-900 uppercase text-sm">Gift Card</span>
-                            </div>
-                            <div class="w-5 h-5 rounded-full border-4 transition-all ${mockupState.paymentMethod === 'gift' ? 'border-violet-600 bg-white' : 'border-gray-200 bg-white'}"></div>
-                        </div>
-
-                        <!-- Loyalty Rewards Option -->
-                        <div onclick="updateMockupState('paymentMethod', 'rewards')" class="bg-white rounded-2xl p-4 shadow-sm border-2 flex items-center justify-between cursor-pointer transition-all ${mockupState.paymentMethod === 'rewards' ? 'border-violet-600' : 'border-gray-100'}">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-award text-2xl text-amber-400"></i>
-                                <div class="flex flex-col">
-                                    <span class="font-black text-gray-900 uppercase text-sm">Loyalty Rewards</span>
-                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Available: $12.50</span>
+                            <!-- Gift Card -->
+                            <div onclick="updateMockupState('modalOpen', 'payment-gift')" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-400">
+                                        <i class="fa-solid fa-gift text-lg"></i>
+                                    </div>
+                                    <span class="font-black text-gray-900 uppercase text-xs tracking-tight">Redeem Gift Card</span>
                                 </div>
+                                <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
                             </div>
-                            <div class="w-5 h-5 rounded-full border-4 transition-all ${mockupState.paymentMethod === 'rewards' ? 'border-violet-600 bg-white' : 'border-gray-200 bg-white'}"></div>
+
+                            <!-- Loyalty -->
+                            <div onclick="updateMockupState('modalOpen', 'payment-rewards')" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-400">
+                                        <i class="fa-solid fa-award text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-black text-gray-900 uppercase text-xs block tracking-tight">Loyalty Rewards</span>
+                                        <span class="text-[10px] font-bold text-violet-600 uppercase">Available: $12.50</span>
+                                    </div>
+                                </div>
+                                <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
+                            </div>
                         </div>
                     </div>
 
-                    ${mockupState.paymentMethod === 'card' ? `
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mt-6 animate-[fadeIn_0.3s_ease-out]">
-                        <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-4">Card Details</h3>
-                        <div class="space-y-4">
-                            <div class="relative">
-                                <input type="text" placeholder="Cardholder Name" value="Mike Smith" class="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl font-bold text-gray-700 outline-none focus:border-violet-600 transition-colors">
+                    <!-- Tipping Section -->
+                    <div>
+                        <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Add a Tip</h2>
+                        <div class="grid grid-cols-4 gap-3">
+                            ${[10, 15, 20, 'other'].map(val => {
+                                const isSelected = mockupState.tipPercentage === val;
+                                const label = val === 'other' ? 'Other' : `${val}%`;
+                                const action = val === 'other' ? "updateMockupState('modalOpen', 'tip-other')" : `updateMockupState('tipPercentage', ${val})`;
+                                return `
+                                    <button onclick="${action}" class="py-3.5 rounded-2xl border-2 font-black uppercase text-xs tracking-tighter transition-all ${isSelected ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-gray-400 border-gray-100 hover:border-violet-100'}">
+                                        ${label}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                        <p class="text-[10px] font-bold text-gray-400 mt-3 px-1 uppercase italic tracking-wide text-center">Your generosity supports our hard-working baristas! ✨</p>
+                    </div>
+
+                    <!-- Pricing Summary -->
+                    <div class="bg-white rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-50 space-y-4">
+                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase tracking-widest"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase tracking-widest"><span>Tax & Service</span><span>$${taxes.toFixed(2)}</span></div>
+                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase tracking-widest"><span>Tip</span><span>$${tipAmount.toFixed(2)}</span></div>
+                        <div class="h-px bg-gray-50 w-full my-4"></div>
+                        <div class="flex justify-between text-xl font-black text-gray-900 uppercase italic"><span>Total</span><span class="text-violet-600">$${finalTotal}</span></div>
+                    </div>
+                </div>
+
+                <!-- Footer Action Buttons -->
+                <div class="p-6 bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-50 flex justify-between gap-4">
+                    <button onclick="navigateTo('cart')" class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 shadow-sm transition-all active:scale-95 shrink-0 border border-gray-100"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                    <button onclick="navigateTo('order-confirm')" class="flex-1 bg-violet-600 text-white rounded-2xl font-black text-lg shadow-[0_12px_30px_-10px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider italic">Purchase Order</button>
+                </div>
+
+                <!-- PAYMENT MODALS -->
+                
+                <!-- Credit Card Modal -->
+                ${mockupState.modalOpen === 'payment-card' ? `
+                <div class="modal-overlay z-[200]">
+                    <div class="bg-white w-[90%] max-w-[420px] rounded-[32px] p-8 shadow-2xl animate-[slideUp_0.4s_ease-out]">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-black text-xl text-gray-900 uppercase italic">Card Details</h3>
+                            <button onclick="updateMockupState('modalOpen', null)" class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div class="space-y-4 mb-8">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Cardholder Name</label>
+                                <input type="text" value="Mike Smith" class="w-full bg-gray-50 border border-gray-100 px-4 py-3.5 rounded-2xl font-bold text-gray-900 outline-none focus:border-violet-600 transition-colors">
                             </div>
-                            <div class="relative">
-                                <input type="text" placeholder="Card Number" value="•••• •••• •••• 4242" class="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl font-bold text-gray-700 outline-none focus:border-violet-600 transition-colors">
-                                <div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1.5 opacity-40">
-                                    <i class="fa-brands fa-cc-visa"></i>
-                                    <i class="fa-brands fa-cc-mastercard"></i>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Card Number</label>
+                                <div class="relative">
+                                    <input type="text" value="•••• •••• •••• 4242" class="w-full bg-gray-50 border border-gray-100 px-4 py-3.5 rounded-2xl font-bold text-gray-900 outline-none focus:border-violet-600 transition-colors">
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1.5 opacity-40">
+                                        <i class="fa-brands fa-cc-visa text-lg"></i>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex gap-4">
-                                <input type="text" placeholder="MM/YY" value="12/26" class="w-1/2 bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl font-bold text-gray-700 outline-none focus:border-violet-600 transition-colors">
-                                <input type="text" placeholder="CVC" value="•••" class="w-1/2 bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl font-bold text-gray-700 outline-none focus:border-violet-600 transition-colors">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Expiry</label>
+                                    <input type="text" value="12/26" class="w-full bg-gray-50 border border-gray-100 px-4 py-3.5 rounded-2xl font-bold text-gray-900 outline-none">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">CVC</label>
+                                    <input type="text" value="•••" class="w-full bg-gray-50 border border-gray-100 px-4 py-3.5 rounded-2xl font-bold text-gray-900 outline-none">
+                                </div>
                             </div>
                         </div>
-                    </div>` : mockupState.paymentMethod === 'gift' ? `
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mt-6 animate-[fadeIn_0.3s_ease-out]">
-                        <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-4">Redeem Gift Card</h3>
-                        <div class="space-y-3">
-                            <input type="text" placeholder="Gift Card Number" class="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl font-bold text-gray-700 outline-none focus:border-violet-600 transition-colors">
-                            <button class="w-full bg-violet-600 text-white px-6 py-3 rounded-xl font-black uppercase text-sm tracking-widest active:scale-95 transition-transform shadow-sm">Apply Gift Card</button>
+                        <button onclick="updateMockupState('modalOpen', null)" class="w-full bg-violet-600 text-white py-4 rounded-2xl font-black uppercase italic tracking-wide shadow-lg active:scale-95 transition-all">Save & Continue</button>
+                    </div>
+                </div>` : ''}
+
+                <!-- Gift Card Modal -->
+                ${mockupState.modalOpen === 'payment-gift' ? `
+                <div class="modal-overlay z-[200]">
+                    <div class="bg-white w-[90%] max-w-[400px] rounded-[32px] p-8 shadow-2xl text-center">
+                        <div class="w-16 h-16 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <i class="fa-solid fa-gift text-2xl"></i>
                         </div>
-                    </div>` : mockupState.paymentMethod === 'rewards' ? `
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mt-6 animate-[fadeIn_0.3s_ease-out]">
-                        <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-4">Your Punch Card</h3>
-                        <div class="bg-violet-50 rounded-2xl p-5 border border-violet-100">
+                        <h3 class="font-black text-2xl text-gray-900 uppercase italic mb-2">Redeem Gift Card</h3>
+                        <p class="text-xs font-bold text-gray-400 mb-8 uppercase tracking-tight">Enter your 16-digit code below</p>
+                        
+                        <input type="text" placeholder="XXXX-XXXX-XXXX-XXXX" class="w-full bg-gray-50 border border-gray-200 px-4 py-4 rounded-2xl font-black text-center text-gray-900 outline-none focus:border-violet-600 mb-6 tracking-widest">
+                        
+                        <div class="flex gap-4">
+                            <button onclick="updateMockupState('modalOpen', null)" class="flex-1 py-4 font-black uppercase text-xs text-gray-400">Cancel</button>
+                            <button onclick="updateMockupState('modalOpen', null)" class="flex-[2] bg-violet-600 text-white py-4 rounded-2xl font-black uppercase italic shadow-md active:scale-95 transition-all">Apply</button>
+                        </div>
+                    </div>
+                </div>` : ''}
+
+                <!-- Rewards Modal -->
+                ${mockupState.modalOpen === 'payment-rewards' ? `
+                <div class="modal-overlay z-[200]">
+                    <div class="bg-white w-[95%] max-w-[420px] rounded-[32px] p-8 shadow-2xl animate-[slideUp_0.4s_ease-out]">
+                        <div class="flex justify-between items-center mb-8">
+                            <h3 class="font-black text-xl text-gray-900 uppercase italic">Your Punch Card</h3>
+                            <button onclick="updateMockupState('modalOpen', null)" class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        
+                        <div class="bg-violet-50 rounded-[24px] p-6 border border-violet-100 mb-8">
                             <div class="grid grid-cols-5 gap-3 mb-6">
                                 ${Array.from({ length: 10 }).map((_, i) => {
                                     let stampClass = 'bg-white border-violet-100 text-violet-100';
-                                    if (i < 6) stampClass = 'bg-violet-600 border-violet-600 text-white shadow-sm';
-                                    if (i === 6) stampClass = 'bg-emerald-500 border-emerald-500 text-white shadow-sm ring-2 ring-emerald-200'; // Newest stamp today
+                                    if (i < 7) stampClass = 'bg-violet-600 border-violet-600 text-white shadow-sm';
                                     return `
                                     <div class="aspect-square rounded-full border-2 flex items-center justify-center ${stampClass}">
                                         <i class="fa-solid fa-mug-hot text-lg"></i>
@@ -1609,25 +1862,57 @@ const routes = {
                                 }).join('')}
                             </div>
                             <div class="text-center">
-                                <p class="text-xs font-black text-violet-600 uppercase tracking-widest mb-1 italic">3 More Bobas Left!</p>
-                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter leading-tight">You've earned 7 stamps. Collect 10 to receive a free regular drink of your choice.</p>
+                                <p class="text-sm font-black text-violet-600 uppercase tracking-widest mb-1 italic">3 More Bobas Left!</p>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-tight leading-tight">You've earned 7 stamps. Collect 10 to receive a free regular drink of your choice.</p>
                             </div>
                         </div>
-                        <button class="w-full mt-6 bg-gray-50 text-gray-400 py-3 rounded-xl font-black uppercase text-xs tracking-widest cursor-not-allowed">Apply Free Drink (Locked)</button>
-                    </div>` : ''}
-                </div>
-                </div>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                <span class="text-xs font-black text-gray-900 uppercase">Available Balance</span>
+                                <span class="text-base font-black text-violet-600">$12.50</span>
+                            </div>
+                            <button class="w-full py-4 rounded-2xl bg-gray-100 text-gray-400 font-black uppercase text-xs tracking-widest cursor-not-allowed">Claim Free Drink (3 to go)</button>
+                        </div>
+                    </div>
+                </div>` : ''}
 
-                <!-- Footer Action Buttons -->
-                <div class="p-6 bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-50 flex justify-between gap-4">
-                    <button onclick="navigateTo('cart')" class="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 shadow-sm transition-all active:scale-95 shrink-0 border border-gray-100"><i class="fa-solid fa-arrow-left text-xl"></i></button>
-                    <button onclick="navigateTo('confirmation')" class="flex-1 bg-violet-600 text-white rounded-xl font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider italic">Purchase Order</button>
-                </div>
-            </div>`,
+                <!-- Custom Tip Modal -->
+                ${mockupState.modalOpen === 'tip-other' ? `
+                <div class="modal-overlay z-[200]">
+                    <div class="bg-white w-[90%] max-w-[420px] rounded-[40px] overflow-hidden shadow-2xl animate-[slideUp_0.4s_ease-out] flex flex-col items-center pb-8">
+                        <div class="w-full h-48 relative">
+                            <img src="/Users/michael-riley/.gemini/antigravity/brain/08975937-9007-44b0-a614-da53691cb6fc/friendly_barista_smiling_1773372724072.png" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
+                            <button onclick="updateMockupState('modalOpen', null)" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-gray-900 shadow-lg transition-transform active:scale-90"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        
+                        <div class="px-8 text-center -mt-6 relative z-10 w-full">
+                            <h3 class="font-black text-3xl text-gray-900 uppercase italic tracking-tighter mb-2 leading-none">Custom Tip</h3>
+                            <p class="text-sm font-bold text-gray-500 uppercase tracking-tight mb-8">Choose an amount to support the team</p>
+                            
+                            <div class="relative mb-10 group">
+                                <span class="absolute left-6 top-1/2 -translate-y-1/2 text-4xl font-black text-violet-600 opacity-40 group-focus-within:opacity-100 transition-opacity">$</span>
+                                <input type="number" id="custom-tip-input" value="${mockupState.customTipAmount || ''}" placeholder="0.00" 
+                                       class="w-full bg-gray-50 border-2 border-transparent focus:border-violet-600 px-12 py-6 rounded-[24px] text-4xl font-black text-center text-gray-900 outline-none transition-all placeholder:text-gray-200"
+                                       onchange="mockupState.customTipAmount = this.value">
+                            </div>
+
+                            <button onclick="updateMockupState('tipPercentage', 'other'); updateMockupState('modalOpen', null);" 
+                                    class="w-full bg-violet-600 text-white py-5 rounded-[24px] font-black uppercase text-lg italic shadow-[0_15px_30px_-10px_rgba(124,58,237,0.5)] active:scale-95 transition-all">
+                                Add Tip
+                            </button>
+                        </div>
+                    </div>
+                </div>` : ''}
+
+            </div>`;
+    },
+
     'location-favorites': () => `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 border-b border-gray-100">
-                    <button onclick="navigateTo('location-selection')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4 hover:bg-gray-50 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                    <button onclick="navigateTo('location-pick')" class="w-10 h-10 flex items-center justify-center text-gray-700 mr-4 hover:bg-gray-50 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button>
                     <h1 class="text-xl font-black tracking-tight uppercase italic text-gray-900 flex-1 text-center">Favorite Locations</h1>
                     <div class="w-10"></div>
                 </header>
@@ -1687,7 +1972,7 @@ const routes = {
                     </div>
                 </div>
                 <div class="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
-                    <button onclick="navigateTo('location-selection')" class="w-full bg-violet-600 text-white py-4 rounded-xl font-black uppercase italic tracking-wider shadow-lg active:scale-[0.98] transition-all">Save Changes</button>
+                    <button onclick="navigateTo('location-pick')" class="w-full bg-violet-600 text-white py-4 rounded-xl font-black uppercase italic tracking-wider shadow-lg active:scale-[0.98] transition-all">Save Changes</button>
                 </div>
             </div>
         `
@@ -1695,7 +1980,7 @@ const routes = {
 
 
 
-routes['bobs-boba-auth'] = routes['restaurant-homepage'];
+routes['bobs-boba-auth'] = routes['restaurant-home'];
 
 function applyViewport() {
     const wrapper = document.getElementById('preview-wrapper');
@@ -1719,27 +2004,40 @@ function applyViewport() {
 }
 
 function renderPage() {
-    const label = document.getElementById('current-page-label');
+    const fbLabel = document.getElementById('current-fb-label');
+    const rbLabel = document.getElementById('current-rb-label');
+    
+    // Update labels and active states
     const items = document.querySelectorAll('.dropdown-item');
     items.forEach(item => {
-        if ((item.getAttribute('onclick') || '').includes(`'${currentPage}'`)) {
-            if (label) label.innerText = item.innerText.trim();
+        const itemOnClick = item.getAttribute('onclick') || '';
+        if (itemOnClick.includes(`'${currentPage}'`)) {
             item.classList.add('active');
+            const parentId = item.parentElement.id;
+            if (parentId === 'dropdown-menu-fb' && fbLabel) fbLabel.innerText = item.innerText.trim();
+            if (parentId === 'dropdown-menu-rb' && rbLabel) rbLabel.innerText = item.innerText.trim();
         } else {
             item.classList.remove('active');
         }
     });
-    if (label && !label.innerText.trim()) {
-        label.innerText = PAGE_LABELS[currentPage] || currentPage;
-    }
-    const dropdownMenu = document.getElementById('dropdown-menu');
-    if (dropdownMenu) dropdownMenu.classList.remove('show');
+
+    // Fallback for labels
+    if (fbLabel && !fbLabel.innerText.trim()) fbLabel.innerText = 'FareBites';
+    if (rbLabel && !rbLabel.innerText.trim()) rbLabel.innerText = "I-TEA";
+
+    // Close all menus
+    ['dropdown-menu-fb', 'dropdown-menu-rb'].forEach(id => {
+        const m = document.getElementById(id);
+        if (m) m.classList.remove('show');
+    });
     const viewport = document.getElementById('app-viewport');
     if (!viewport) return;
     viewport.innerHTML = routes[currentPage]
         ? routes[currentPage]()
         : `<div class="p-10 text-center uppercase font-black italic">404 - Page Not Found</div>`;
     viewport.scrollTop = 0;
+    const canvasArea = document.getElementById('canvas');
+    if (canvasArea) canvasArea.scrollTop = 0;
     persistAllState();
     document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
 }
@@ -1757,12 +2055,22 @@ function adjustBagQuantity(delta) {
     if (contBtn) {
         if (mockupState.bagQuantity > 0) {
             contBtn.innerText = `Continue with ${mockupState.bagQuantity} bag(s)`;
-            contBtn.setAttribute('onclick', "mockupState.modalOpen = null; navigateTo('payment');");
+            contBtn.setAttribute('onclick', "mockupState.modalOpen = null; navigateTo('checkout');");
         } else {
             contBtn.innerText = "I don't need bags";
-            contBtn.setAttribute('onclick', "mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('payment');");
+            contBtn.setAttribute('onclick', "mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('checkout');");
         }
     }
+}
+
+function selectItemAndNavigate(index) {
+    const item = MENU_ITEMS[index];
+    mockupState.selectedItem = item;
+    // Reset quantity and customization defaults for new item
+    mockupState.itemQuantity = 1;
+    mockupState.sugarLevel = '50%';
+    persistAllState();
+    navigateTo('customize');
 }
 
 function updateMockupState(key, value) {
@@ -1792,7 +2100,7 @@ function checkAuthPasscode() {
     const isBobs = !!document.querySelector('.text-violet-600.italic'); // Check if we're on Bob's branded page
 
     if (input && input.value === '7413') {
-        navigateTo('restaurant-homepage');
+        navigateTo('restaurant-home');
     } else if (error) {
         error.classList.remove('opacity-0');
         input.classList.add(isBobs ? 'border-violet-600' : 'border-red-500');
@@ -1818,48 +2126,82 @@ function setViewport(size) {
 }
 
 function renderDropdownMenu() {
-    const menuHTML = `
-        <div>
-            <div class="dropdown-column-title">Core Flow</div>
-            <div class="dropdown-item" onclick="navigateTo('landing-page')">FareBites Landing Page</div>
-            <div class="dropdown-item" onclick="navigateTo('home')">FareBites Homepage (Logged In)</div>
-            <div class="dropdown-item" onclick="navigateTo('home-auth')">Homepage (Sign In/Sign Up Modal)</div>
-            <div class="dropdown-item" onclick="navigateTo('cart')">Cart / Review</div>
-            <div class="dropdown-item" onclick="navigateTo('order-details')">Order Details (Customization)</div>
-            <div class="dropdown-item" onclick="navigateTo('payment')">Payment Page</div>
-            <div class="dropdown-item" onclick="navigateTo('confirmation')">Confirmation</div>
-            <div class="dropdown-item" onclick="navigateTo('status')">Order Status</div>
-        </div>
-        <div>
-            <div class="dropdown-column-title">Restaurant Pages</div>
-            <div class="dropdown-item" onclick="navigateTo('restaurant-homepage')">Bob's Boba Homepage (Standard)</div>
-            <div class="dropdown-item" onclick="navigateTo('bobs-landing')">Bob's Boba Landing Page (White/Purple)</div>
-            <div class="dropdown-item" onclick="navigateTo('bobs-auth')">Bob's Boba (Sign In Sign Up)</div>
-            <div class="dropdown-item" onclick="navigateTo('order-type')">Bob's Boba (Order Type Select)</div>
-            <div class="dropdown-item" onclick="navigateTo('bobs-dine-in-instruction')">Bob's Boba (Dine-In Instruction)</div>
-            <div class="dropdown-item" onclick="navigateTo('menu')">Restaurant Menu</div>
-            <div class="dropdown-item" onclick="navigateTo('location-selection')">Location Selection</div>
-            <div class="dropdown-item" onclick="navigateTo('location-favorites')">Location Favorites</div>
-        </div>
-        <div>
-            <div class="dropdown-column-title">Authentication & Account</div>
-            <div class="dropdown-item" onclick="navigateTo('login')">Login (Phone)</div>
-            <div class="dropdown-item" onclick="navigateTo('register')">Registration</div>
-            <div class="dropdown-item" onclick="navigateTo('my-account')">My Account</div>
-            <div class="dropdown-item" onclick="navigateTo('privacy')">Privacy Policy</div>
-        </div>
-        <div>
-            <div class="dropdown-column-title">Merchant Portal</div>
-            <div class="dropdown-item" onclick="navigateTo('merchant-dashboard')">Merchant Dashboard</div>
-        </div>
+    const fbPages = [
+        { key: 'landing', label: 'Landing' },
+        { key: 'home', label: 'Home (Logged In)' },
+        { key: 'sign-in', label: 'Sign In' }
+    ];
+
+    const rbPages = [
+        { key: 'restaurant-landing', label: 'Restaurant Landing' },
+        { key: 'restaurant-sign-in', label: 'Restaurant Sign In' },
+        { key: 'restaurant-home', label: 'Restaurant Home' },
+        { key: 'menu', label: 'Menu' },
+        { key: 'location-pick', label: 'Location Pick' },
+        { key: 'order-type', label: 'Order Type' },
+        { key: 'customize', label: 'Customize Item' },
+        { key: 'cart', label: 'Cart' },
+        { key: 'checkout', label: 'Checkout' },
+        { key: 'order-confirm', label: 'Order Confirm' },
+        { key: 'order-status', label: 'Order Status' },
+        { key: 'dine-in-guide', label: 'Dine-In Guide' }
+    ];
+
+    const fbMenuHTML = fbPages.map(p => `<div class="dropdown-item ${currentPage === p.key ? 'active' : ''}" onclick="navigateTo('${p.key}')">${p.label}</div>`).join('');
+    const rbMenuHTML = rbPages.map(p => `<div class="dropdown-item ${currentPage === p.key ? 'active' : ''}" onclick="navigateTo('${p.key}')">${p.label}</div>`).join('');
+
+    const fbContainer = document.getElementById('dropdown-menu-fb');
+    if (fbContainer) fbContainer.innerHTML = fbMenuHTML;
+
+    const rbContainer = document.getElementById('dropdown-menu-rb');
+    if (rbContainer) rbContainer.innerHTML = rbMenuHTML;
+}
+
+function renderWorkspaceHeader() {
+    const header = document.getElementById('workspace-header');
+    if (!header) return;
+
+    header.innerHTML = `
+            <div class="flex items-center gap-6">
+                <span
+                    class="font-black text-red-500 tracking-tighter text-xl cursor-pointer hover:opacity-80 transition-opacity"
+                    onclick="navigateTo('home')">
+                    FAREBITES <span class="text-white font-light text-xs opacity-50 ml-1">v3.7.3 FINAL</span>
+                </span>
+                <div class="h-6 w-[1px] bg-gray-700 mx-2"></div>
+
+                <!-- FareBites Dropdown -->
+                <div class="relative">
+                    <button class="page-selector-btn" onclick="toggleMenu(event, 'dropdown-menu-fb')">
+                        <span id="current-fb-label">FareBites</span>
+                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    </button>
+                    <div id="dropdown-menu-fb" class="dropdown-menu"></div>
+                </div>
+
+                <!-- Restaurant Dropdown -->
+                <div class="relative">
+                    <button class="page-selector-btn" onclick="toggleMenu(event, 'dropdown-menu-rb')">
+                        <span id="current-rb-label">I-TEA</span>
+                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    </button>
+                    <div id="dropdown-menu-rb" class="dropdown-menu"></div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button class="btn-toggle" id="btn-desktop" onclick="setViewport('desktop')"><i
+                        class="fa-solid fa-desktop mr-2"></i>Desktop</button>
+                <button class="btn-toggle" id="btn-mobile" onclick="setViewport('mobile')"><i
+                        class="fa-solid fa-mobile-screen mr-2"></i>Mobile</button>
+                <button class="btn-toggle" id="btn-tablet" onclick="setViewport('tablet')"><i
+                        class="fa-solid fa-tablet-screen-button mr-2"></i>Tablet</button>
+            </div>
     `;
-    const menuContainer = document.getElementById('dropdown-menu');
-    if (menuContainer) {
-        menuContainer.innerHTML = menuHTML;
-    }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    renderWorkspaceHeader();
     applyViewport();
     renderPage();
     renderDropdownMenu();
