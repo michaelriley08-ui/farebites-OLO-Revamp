@@ -727,11 +727,11 @@ const routes = {
                                     <p class="text-xs font-black text-gray-800 truncate">i-Tea – Tempe &nbsp;·&nbsp; 0.3 mi</p>
                                 </div>
                             </div>
-                            <button onclick="updateMockupState('selectedLocation', 'TEMPE'); navigateTo('order-details')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
+                            <button onclick="updateMockupState('selectedLocation', 'TEMPE'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); navigateTo('order-details')">
+                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Office</span>' : ''}
@@ -773,7 +773,7 @@ const routes = {
                                 <p class="text-xs font-black text-gray-800 truncate">i-Tea – Tempe &nbsp;·&nbsp; 0.3 mi</p>
                             </div>
                         </div>
-                        <button onclick="updateMockupState('selectedLocation', 'TEMPE'); navigateTo('order-details')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
+                        <button onclick="updateMockupState('selectedLocation', 'TEMPE'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
                     </div>
 
                     <div class="w-full h-[35%] min-h-[220px] shrink-0 relative z-0">
@@ -796,7 +796,7 @@ const routes = {
 
                         <div class="p-4 space-y-3 flex-1 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); updateMockupState('selectedAddress', '${s.address}'); updateMockupState('selectedDistance', '${s.dist}'); navigateTo('order-details')">
+                                <div class="p-5 border ${s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white'} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); updateMockupState('selectedAddress', '${s.address}'); updateMockupState('selectedDistance', '${s.dist}'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[9px] font-black text-violet-600 uppercase tracking-widest mb-1 block">Office</span>' : ''}
@@ -1028,7 +1028,7 @@ const routes = {
                             
                             <div class="flex-1 flex flex-col min-h-0 bg-gray-50/50 rounded-2xl p-4 border border-gray-100 mb-5">
                                 <div class="overflow-y-auto scrollbar-hide h-[230px] pr-1">
-                                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                    <div class="grid grid-cols-3 gap-2">
                                         ${times15.map((time, idx) => {
                                             const isThisTimeNearClose = time.includes('8:') || time.includes('9:');
                                             const clickAction = isThisTimeNearClose && !mockupState.acknowledgedClose 
@@ -1036,7 +1036,7 @@ const routes = {
                                                 : `updateMockupState('selectedTimeSlot', '${time}'); navigateTo(currentPage);`;
                                             
                                             return `
-                                            <button id="time-slot-${idx}" onclick="${clickAction}" class="py-3 rounded-xl border-2 ${mockupState.selectedTimeSlot === time ? 'border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200' : 'border-gray-100 text-gray-700 hover:border-violet-300 bg-white'} font-black text-[13px] transition-all tracking-tight">${time}</button>
+                                            <button id="time-slot-${idx}" onclick="${clickAction}" class="py-3 rounded-xl border-2 ${mockupState.selectedTimeSlot === time ? 'border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200' : 'border-gray-100 text-gray-700 hover:border-violet-300 bg-white'} font-black text-[11px] transition-all tracking-tight whitespace-nowrap">${time}</button>
                                             `;
                                         }).join('')}
                                     </div>
@@ -1111,6 +1111,26 @@ const routes = {
             </div>`,
     'menu': () => {
         const isDesktop = currentViewport === 'desktop';
+        const categoryModalClass = mockupState.modalOpen === 'categories' ? 'flex' : 'hidden';
+
+        const categories = [
+            { id: 'most-ordered', name: 'MOST ORDERED', img: assets.bobaHero },
+            { id: 'new-items', name: 'NEW ITEMS', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
+            { id: 'teaspresso', name: 'TEASPRESSO SERIES', img: assets.boba1 },
+            { id: 'milk-tea', name: 'MILK TEA SPECIALTY', img: assets.boba2 },
+            { id: 'fruit-tea', name: 'I-TEA FRUIT TEA', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
+            { id: 'kreama', name: 'SEA SALT KREAMA', img: 'https://olodev.azurewebsites.net/imagesmenu/P5-Sun-Moon-Lake-Cheesma.jpg' },
+            { id: 'frosty', name: 'SUMMER FROSTY', img: 'https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg' },
+            { id: 'iced-milk', name: 'SIGNATURE ICED MILK', img: assets.boba2 },
+            { id: 'dessert', name: 'DESSERT DRINKS', img: 'https://olodev.azurewebsites.net/imagesmenu/M9_3G-Fresh-Taro-Boba-Latte.jpg' },
+            { id: 'hot-drink', name: 'HOT DRINK', img: 'https://olodev.azurewebsites.net/imagesmenu/M8_Fresh-Taro-Puree-Boba-Latte.jpg' },
+            { id: 'premium-tea', name: 'PREMIUM TEA TAIWAN', img: 'https://olodev.azurewebsites.net/imagesmenu/P8-Dragon-Fruity-Cheezma.jpg' },
+            { id: 'cold-brew', name: 'COLD BREW', img: assets.icedMatcha },
+            { id: 'snack', name: 'SNACK MENU', img: 'https://olodev.azurewebsites.net/imagesmenu/P7-Mango-Fruity-Tea-Cheezma.jpg' },
+            { id: 'onigiri', name: 'OKINAWA ONIGIRI SERIES', img: 'https://olodev.azurewebsites.net/imagesmenu/P9-Strawberry-Fruity-Cheezma.jpg' },
+            { id: 'food', name: 'FOOD MENU', img: assets.boba1 }
+        ];
+
         return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
                 <!-- Header Component -->
@@ -1125,12 +1145,34 @@ const routes = {
                     </button>
                 </header>
 
-                <div class="p-6 md:p-8 max-w-6xl mx-auto w-full">
-                    <!-- Greeting -->
-                    <div class="mb-8">
-                        <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1">Hi Mike!</h1>
-                        <p class="text-gray-600 font-medium">Your favorites are ready to go. What's on the menu today?</p>
+                <!-- Category Navigation -->
+                <div class="bg-white border-b border-gray-100 sticky top-[72px] z-40">
+                    <div class="flex gap-2 items-center overflow-x-auto scrollbar-hide px-4 py-4">
+                        <div class="flex gap-4 items-center pr-4 border-r border-gray-100 shrink-0">
+                            <button onclick="updateMockupState('modalOpen', 'categories'); navigateTo('menu')" class="text-gray-900 hover:text-violet-600 transition-colors">
+                                <i class="fa-solid fa-list text-xl"></i>
+                            </button>
+                            <button onclick="updateMockupState('modalOpen', 'categories'); navigateTo('menu')" class="text-gray-900 hover:text-violet-600 transition-colors">
+                                <i class="fa-solid fa-magnifying-glass text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="flex gap-2 overflow-x-auto scrollbar-hide pl-2">
+                            ${[
+                                'NEW ITEMS', 'TEASPRESSO SERIES', 'MILK TEA SPECIALTY', 'I-TEA FRUIT TEA',
+                                'SEA SALT KREAMA', 'SUMMER FROSTY', 'SIGNATURE ICED MILK', 'DESSERT DRINKS',
+                                'HOT DRINK', 'PREMIUM TEA TAIWAN', 'COLD BREW', 'SNACK MENU',
+                                'OKINAWA ONIGIRI SERIES', 'FOOD MENU'
+                            ].map(cat => `
+                                <button onclick="document.getElementById('new-items-section').scrollIntoView({behavior: 'smooth'})" class="whitespace-nowrap px-6 py-2 rounded-full bg-violet-600 text-white shadow-sm font-black text-[10px] uppercase hover:bg-violet-700 transition-all shrink-0">
+                                    ${cat}
+                                </button>
+                            `).join('')}
+                        </div>
                     </div>
+                </div>
+
+                <div class="p-6 md:p-8 max-w-6xl mx-auto w-full">
+
 
                     <div class="flex flex-col ${isDesktop ? 'lg:flex-row gap-8' : 'gap-8'}">
                         <!-- MAIN CONTENT COLUMN -->
@@ -1144,7 +1186,7 @@ const routes = {
                                     <span class="bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Popular</span>
                                     <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4">Brown Sugar<br>Boba Latte</h2>
                                     <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P4 • 356 to 478 calories. A perfectly sweet and creamy favorite.</p>
-                                    <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Start Order</button>
+                                    <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
                                 </div>
                             </div>
 
@@ -1194,10 +1236,38 @@ const routes = {
                             </div>
                             ` : ''}
 
-                            <!-- Seasonal Specials Grid -->
-                            <div>
+                            <!-- New Items Carousel -->
+                            <div id="new-items-section">
                                 <div class="flex justify-between items-end mb-4 px-1">
                                     <h3 class="text-2xl font-black text-gray-900 tracking-tight">New Items</h3>
+                                    <button class="text-violet-600 font-bold text-sm hover:underline tracking-tight">See All</button>
+                                </div>
+                                
+                                <div class="relative group">
+                                    <!-- Horizontal Scroll Container -->
+                                    <div class="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-1 px-1">
+                                        ${MENU_ITEMS.slice(0, 5).map((item, index) => `
+                                            <div class="snap-center shrink-0 w-[280px] md:w-[320px] bg-white rounded-3xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group/card cursor-pointer" onclick='selectItemAndNavigate(${index})'>
+                                                <div class="w-full h-40 rounded-2xl overflow-hidden mb-4 relative">
+                                                    <img src="${item.image}" class="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700">
+                                                    <div class="absolute top-3 left-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full shadow-sm text-[10px] font-black uppercase text-violet-600 tracking-wider">New</div>
+                                                </div>
+                                                <div class="flex justify-between items-start mb-1">
+                                                    <h4 class="font-black text-gray-900 text-base leading-tight w-2/3 tracking-tight group-hover/card:text-violet-600 transition-colors">${item.name}</h4>
+                                                    <span class="font-black text-violet-600">$${item.price.toFixed(2)}</span>
+                                                </div>
+                                                <p class="text-gray-400 text-[11px] font-medium leading-relaxed truncate mb-4">${item.description}</p>
+                                                <button onclick='selectItemAndNavigate(${index})' class="w-full py-2.5 rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black text-[11px] uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide">+ Add to Order</button>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Seasonal Specials Grid -->
+                            <div>
+                                <div class="flex justify-between items-end mb-4 px-1" id="explore-menu-section">
+                                    <h3 class="text-2xl font-black text-gray-900 tracking-tight">Explore Our Menu</h3>
                                     <button class="text-violet-600 font-bold text-sm hover:underline tracking-tight">View All</button>
                                 </div>
                                 
@@ -1338,8 +1408,49 @@ const routes = {
                                 <i class="fa-regular fa-envelope text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
                             </div>
                         </div>
+                </div>
+
+                <!-- Category Bottom Sheet Modal -->
+                <div id="category-modal" class="fixed inset-0 bg-black/60 z-[100] ${categoryModalClass} flex-col justify-end backdrop-blur-sm transition-all duration-300">
+                    <div class="absolute inset-0" onclick="updateMockupState('modalOpen', null); navigateTo('menu')"></div>
+                    <div class="bg-white w-full rounded-t-[40px] shadow-2xl animate-[slideUp_0.4s_ease-out] flex flex-col max-h-[85vh] z-10 relative">
+                        <!-- Handle -->
+                        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-4 mb-6" onclick="updateMockupState('modalOpen', null); navigateTo('menu')"></div>
+                        
+                        <!-- Modal Heading & Search -->
+                        <div class="px-6 pb-6 border-b border-gray-100">
+                            <div class="relative group">
+                                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-violet-600 transition-colors"></i>
+                                <input type="text" placeholder="Search menu categories..." class="w-full pl-11 pr-12 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 focus:bg-white rounded-2xl outline-none font-black text-sm uppercase tracking-wide transition-all">
+                                <button onclick="updateMockupState('modalOpen', null); navigateTo('menu')" class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-400 hover:text-gray-900 transition-colors">
+                                    <i class="fa-solid fa-xmark text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Category List -->
+                        <div class="flex-1 overflow-y-auto px-6 py-4 space-y-3 scrollbar-hide">
+                            ${categories.map(cat => `
+                                <div onclick="updateMockupState('modalOpen', null); navigateTo('menu'); setTimeout(() => document.getElementById('new-items-section').scrollIntoView({behavior: 'smooth'}), 100)" class="flex items-center justify-between p-3 rounded-2xl border-2 border-gray-50 bg-white hover:border-violet-200 hover:bg-violet-50/30 transition-all cursor-pointer group active:scale-[0.98]">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                                            <img src="${cat.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                        </div>
+                                        <span class="font-black text-sm text-gray-900 uppercase tracking-tight">${cat.name}</span>
+                                    </div>
+                                    <div class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 group-hover:bg-violet-600 group-hover:text-white transition-all">
+                                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="p-6 bg-gray-50/50 border-t border-gray-100 italic font-black text-center text-[10px] text-gray-400 uppercase tracking-widest leading-loose">
+                            Quickly jump to your favorite section
+                        </div>
                     </div>
                 </div>
+
             </div>`;
     },
     'customize': () => {
