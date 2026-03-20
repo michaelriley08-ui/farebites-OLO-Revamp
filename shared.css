@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Outfit', sans-serif;
             background-color: #f0f2f5;
             margin: 0;
             overflow: hidden;
@@ -134,7 +134,7 @@
 
         .dropdown-column-title {
             font-size: 10px;
-            font-weight: 800;
+            font-weight: 700;
             color: #d92323;
             letter-spacing: 0.1em;
             margin-bottom: 12px;
@@ -261,7 +261,7 @@
             flex: 1;
             padding: 8px 0;
             text-align: center;
-            font-weight: 700;
+            font-weight: 600;
             font-size: 13px;
             border-radius: 50px;
             transition: all 0.2s;
@@ -270,4 +270,15 @@
         .segmented-btn.active {
             background: white;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Font Weight Overrides to slightly reduce stroke */
+        .font-black {
+            font-weight: 800 !important;
+        }
+        .font-bold {
+            font-weight: 600 !important;
+        }
+        .font-semibold {
+            font-weight: 500 !important;
         }
