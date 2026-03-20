@@ -490,18 +490,18 @@ const routes = {
             <div class="flex flex-col h-full relative overflow-hidden">
                 <!-- Full Viewport Background Image -->
                 <div class="absolute inset-0 z-0">
-                    <img src="${assets.bobaHero}" class="w-full h-full object-cover">
+                    <img src="https://order-iteausa.com/imagesmenu/N9-Fresh-Strawberry-Mango-Fruit-Tea.jpg" class="w-full h-full object-cover">
                     <!-- Subtle gradient to ensure text readability -->
                     <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90"></div>
                 </div>
 
                 <header class="bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0 relative">
-                    <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center text-[#3A2218]"><i class="fa-regular fa-user text-2xl"></i></button>
+                    <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
                     <div class="flex flex-col items-center cursor-pointer" onclick="navigateTo('location-pick')">
-                        <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#3A2218] tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-[#3A2218]"></i></div>
-                        <span class="text-[13px] font-medium text-[#3A2218] mt-0.5">Home</span>
+                        <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
+                        <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
                     </div>
-                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-[#3A2218] hover:opacity-80 transition-opacity cursor-pointer">
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                         <span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">1</span>
                     </button>
@@ -523,37 +523,37 @@ const routes = {
                         <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
                             <!-- Card 1 -->
                             <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover rounded-2xl shadow-sm"></div>
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
-                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
                                     <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
                                 </div>
                             </div>
                             <!-- Card 2 -->
                             <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover rounded-2xl shadow-sm"></div>
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
-                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
                                     <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
                                 </div>
                             </div>
                             <!-- Card 3 -->
                             <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover rounded-2xl shadow-sm"></div>
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
-                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
                                     <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
                                 </div>
                             </div>
                             <!-- Card 4 -->
                             <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover rounded-2xl shadow-sm"></div>
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
-                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
                                     <div class="text-sm font-bold text-gray-500 mt-auto">$5.95</div>
                                 </div>
                             </div>
@@ -578,10 +578,10 @@ const routes = {
                 <!-- Bottom Navigation -->
                 <div class="flex-shrink-0 bg-white/90 backdrop-blur-md px-6 py-5 flex justify-between items-center z-50 border-t border-gray-200 relative">
                     <button class="text-violet-600 font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('restaurant-home')">HOME</button>
-                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu')">MENU</button>
-                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('cart')">REORDER</button>
-                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('account')">REWARDS</button>
-                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('qr-code-guide')">SCAN</button>
+                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu')">MENU</button>
+                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('cart')">REORDER</button>
+                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('account')">REWARDS</button>
+                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('qr-code-guide')">SCAN</button>
                 </div>
             </div>`;
     },
@@ -592,18 +592,18 @@ const routes = {
             <div class="flex flex-col h-full relative overflow-hidden">
                 <!-- Full Viewport Background Image -->
                 <div class="absolute inset-0 z-0">
-                    <img src="${assets.bobaHero}" class="w-full h-full object-cover">
+                    <img src="https://order-iteausa.com/imagesmenu/N9-Fresh-Strawberry-Mango-Fruit-Tea.jpg" class="w-full h-full object-cover">
                     <!-- Subtle gradient to ensure text readability -->
                     <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90"></div>
                 </div>
 
                 <header class="bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0 relative">
-                    <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center text-[#3A2218]"><i class="fa-regular fa-user text-2xl"></i></button>
+                    <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
                     <div class="flex flex-col items-center cursor-pointer" onclick="navigateTo('location-pick')">
-                        <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#3A2218] tracking-[0.15em] uppercase">DELIVERY</span><i class="fa-solid fa-chevron-down text-[9px] text-[#3A2218]"></i></div>
-                        <span class="text-[13px] font-medium text-[#3A2218] mt-0.5">Home</span>
+                        <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">DELIVERY</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
+                        <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
                     </div>
-                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-[#3A2218] hover:opacity-80 transition-opacity cursor-pointer">
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                         <span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">1</span>
                     </button>
@@ -627,37 +627,37 @@ const routes = {
                         <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
                             <!-- Card 1 -->
                             <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover rounded-2xl shadow-sm"></div>
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
-                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
                                     <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
                                 </div>
                             </div>
                             <!-- Card 2 -->
                             <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover rounded-2xl shadow-sm"></div>
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
-                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
                                     <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
                                 </div>
                             </div>
                             <!-- Card 3 -->
                             <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover rounded-2xl shadow-sm"></div>
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
-                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
                                     <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
                                 </div>
                             </div>
                             <!-- Card 4 -->
                             <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover rounded-2xl shadow-sm"></div>
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
-                                    <div class="text-base font-black text-[#3A2218] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
                                     <div class="text-sm font-bold text-gray-500 mt-auto">$5.95</div>
                                 </div>
                             </div>
@@ -682,10 +682,10 @@ const routes = {
                 <!-- Bottom Navigation -->
                 <div class="flex-shrink-0 bg-white/90 backdrop-blur-md px-6 py-5 flex justify-between items-center z-50 border-t border-gray-200 relative">
                     <button class="text-violet-600 font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('restaurant-home-logo')">HOME</button>
-                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu')">MENU</button>
-                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('cart')">REORDER</button>
-                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('account')">REWARDS</button>
-                    <button class="text-[#3A2218] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('qr-code-guide')">SCAN</button>
+                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu')">MENU</button>
+                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('cart')">REORDER</button>
+                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('account')">REWARDS</button>
+                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('qr-code-guide')">SCAN</button>
                 </div>
             </div>`;
     },
@@ -1099,7 +1099,7 @@ const routes = {
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black"><button onclick="navigateTo('order-details')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">i-Tea</span><div class="w-6"></div></header>
                 <div class="flex-1 flex flex-col items-center justify-center px-6 text-center">
                     <div class="w-full aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-12">
-                        <img src="images/qr-scan-photo.jpg" class="w-full h-full object-cover">
+                        <img src="images/qr-scan-table.jpg" class="w-full h-full object-cover">
                     </div>
                     <h2 class="text-2xl font-black mb-6 uppercase tracking-tight font-black text-gray-900 leading-tight">Ready to Dine In?</h2>
                     <div class="space-y-4 text-left uppercase font-black text-gray-600">
