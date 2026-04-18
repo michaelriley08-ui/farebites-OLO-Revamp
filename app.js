@@ -444,14 +444,10 @@ const routes = {
             <div class="modal-overlay" onclick="navigateTo('restaurant-landing')">
                 <div class="modal-content" onclick="event.stopPropagation()">
                     <button class="absolute top-6 left-6 text-gray-500" onclick="navigateTo('restaurant-landing')"><i class="fa-solid fa-xmark text-2xl"></i></button>
-                    <div class="text-center mb-6 mt-6">
-                        <div class="flex flex-col items-center justify-center gap-4">
-                             <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-100 overflow-hidden">
-                                 <img src="images/itea_logo.png" class="w-full h-full object-cover">
-                             </div>
-                        </div>
+                    <div class="w-full max-h-[200px] flex items-center justify-center mb-4 mt-6">
+                         <img src="images/itea_logo.png" class="h-full max-h-[200px] w-auto object-contain">
                     </div>
-                    <h2 class="text-3xl font-black text-center mb-8 uppercase tracking-tight text-gray-900">Sign in / Sign up</h2>
+                    <h2 class="text-2xl font-black text-center mb-6 uppercase tracking-tight text-gray-900">Sign in / Sign up</h2>
                     <div class="space-y-4">
                         <div class="flex gap-2">
                             <div class="bg-violet-50 px-4 py-4 rounded-xl font-bold text-violet-600 min-w-[100px] flex items-center justify-center border border-violet-100">+1 <i class="fa-solid fa-chevron-down text-[10px] ml-2"></i></div>
@@ -1202,7 +1198,7 @@ const routes = {
                                     <!-- Fav 1 -->
                                     <div class="flex items-center justify-between group">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba3}" class="w-full h-full object-cover"></div>
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba3}" class="w-full h-full object-cover object-top"></div>
                                             <div>
                                                 <div class="font-black text-sm text-gray-900 leading-tight w-40 truncate">P1 Super Fruit Tea</div>
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 3 days ago</div>
@@ -1213,7 +1209,7 @@ const routes = {
                                     <!-- Fav 2 -->
                                     <div class="flex items-center justify-between group">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba4}" class="w-full h-full object-cover"></div>
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba4}" class="w-full h-full object-cover object-top"></div>
                                             <div>
                                                 <div class="font-black text-sm text-gray-900 leading-tight w-40 truncate">P2 Super Lime Sijichun</div>
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 1 week ago</div>
@@ -1224,7 +1220,7 @@ const routes = {
                                     <!-- Fav 3 -->
                                     <div class="flex items-center justify-between group">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba1}" class="w-full h-full object-cover"></div>
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba1}" class="w-full h-full object-cover object-top"></div>
                                             <div>
                                                 <div class="font-black text-sm text-gray-900 leading-tight w-40 truncate">P3 Super Grapefruit</div>
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: Yesterday</div>
@@ -1250,7 +1246,7 @@ const routes = {
                                         ${MENU_ITEMS.slice(0, 5).map((item, index) => `
                                             <div class="snap-center shrink-0 w-[280px] md:w-[320px] bg-white rounded-3xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group/card cursor-pointer" onclick='selectItemAndNavigate(${index})'>
                                                 <div class="w-full h-40 rounded-2xl overflow-hidden mb-4 relative">
-                                                    <img src="${item.image}" class="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700">
+                                                    <img src="${item.image}" class="w-full h-full object-cover object-top group-hover/card:scale-110 transition-transform duration-700">
                                                     <div class="absolute top-3 left-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full shadow-sm text-[10px] font-black uppercase text-violet-600 tracking-wider">New</div>
                                                 </div>
                                                 <div class="flex justify-between items-start mb-1">
@@ -1276,7 +1272,7 @@ const routes = {
                                     ${MENU_ITEMS.map((item, index) => `
                                         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                             <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative cursor-pointer" onclick='selectItemAndNavigate(${index})'>
-                                                <img src="${item.image}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                                                <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
                                             </div>
                                             <div class="flex justify-between items-start mb-2 cursor-pointer" onclick='selectItemAndNavigate(${index})'>
                                                 <h4 class="font-black text-gray-900 text-lg leading-tight w-2/3 tracking-tight">${item.name}</h4>
@@ -1321,7 +1317,7 @@ const routes = {
                                     <!-- Fav 1 -->
                                     <div class="flex items-center justify-between group">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba3}" class="w-full h-full object-cover"></div>
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba3}" class="w-full h-full object-cover object-top"></div>
                                             <div>
                                                 <div class="font-black text-sm text-gray-900 leading-tight w-40 truncate">P1 Super Fruit Tea</div>
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 3 days ago</div>
@@ -1332,7 +1328,7 @@ const routes = {
                                     <!-- Fav 2 -->
                                     <div class="flex items-center justify-between group">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba4}" class="w-full h-full object-cover"></div>
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba4}" class="w-full h-full object-cover object-top"></div>
                                             <div>
                                                 <div class="font-black text-sm text-gray-900 leading-tight w-40 truncate">P2 Super Lime Sijichun</div>
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 1 week ago</div>
@@ -1343,7 +1339,7 @@ const routes = {
                                     <!-- Fav 3 -->
                                     <div class="flex items-center justify-between group">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba1}" class="w-full h-full object-cover"></div>
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${assets.boba1}" class="w-full h-full object-cover object-top"></div>
                                             <div>
                                                 <div class="font-black text-sm text-gray-900 leading-tight w-40 truncate">P3 Super Grapefruit</div>
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: Yesterday</div>
@@ -1435,7 +1431,7 @@ const routes = {
                                 <div onclick="updateMockupState('modalOpen', null); navigateTo('menu'); setTimeout(() => document.getElementById('new-items-section').scrollIntoView({behavior: 'smooth'}), 100)" class="flex items-center justify-between p-3 rounded-2xl border-2 border-gray-50 bg-white hover:border-violet-200 hover:bg-violet-50/30 transition-all cursor-pointer group active:scale-[0.98]">
                                     <div class="flex items-center gap-4">
                                         <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                                            <img src="${cat.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                            <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                         </div>
                                         <span class="font-black text-sm text-gray-900 uppercase tracking-tight">${cat.name}</span>
                                     </div>
@@ -1555,7 +1551,7 @@ const routes = {
 
                         <!-- Item Banner Image -->
                         <div class="w-full h-56 overflow-hidden relative">
-                            <img src="${item.image}" class="w-full h-full object-cover">
+                            <img src="${item.image}" class="w-full h-full object-cover object-top">
                         </div>
 
                         <!-- Info & Price -->
@@ -1641,13 +1637,12 @@ const routes = {
                     </div>
 
                     <!-- Sticky Bottom Actions -->
-                    <div class="p-6 bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] space-y-3">
+                    <div class="p-6 pb-bottom-safe bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
                         <div class="flex justify-between items-center text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1">
                             <span>Options Total</span>
                             <span class="text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                         </div>
                         <button onclick="navigateTo('cart')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Add to Cart - $${totalPrice}</button>
-                        <button onclick="navigateTo('menu')" class="w-full text-gray-400 font-black text-xs uppercase tracking-widest hover:text-gray-600 transition-colors py-2">Cancel</button>
                     </div>
                 </div>
             `;
@@ -1723,7 +1718,7 @@ const routes = {
                             <!-- Item 1 -->
                             <div class="flex justify-between items-start pb-5 mb-5">
                                 <div class="flex gap-4 items-center">
-                                    <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba2}" class="w-full h-full object-cover"></div>
+                                    <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba2}" class="w-full h-full object-cover object-top"></div>
                                     <div>
                                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight cursor-pointer" onclick="navigateTo('customize')">Brown Sugar Pearl</h3>
                                         <p class="text-[11px] text-gray-500 font-medium mb-3 cursor-pointer line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed" onclick="this.classList.toggle('line-clamp-2')" title="Click to expand/collapse customizations">Large, Less Ice, Extra Boba, Oat Milk, 50% Sweetness, No Foam, Double Pearl, Less Sweet, Extra Ice, Cheese Foam, Lychee Jelly</p>
@@ -1743,7 +1738,7 @@ const routes = {
                             <!-- Item 2 -->
                             <div class="flex justify-between items-start pt-5">
                                 <div class="flex gap-4 items-center">
-                                    <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba1}" class="w-full h-full object-cover"></div>
+                                    <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba1}" class="w-full h-full object-cover object-top"></div>
                                     <div>
                                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight cursor-pointer" onclick="navigateTo('customize')">Protein Bowl</h3>
                                         <p class="text-xs text-gray-500 font-medium mb-3">Extra Chicken</p>
@@ -1777,7 +1772,7 @@ const routes = {
                                 return `
                                     <div class="snap-center shrink-0 w-[140px] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
                                         <div class="h-24 relative cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">
-                                            <img src="${item.image}" class="w-full h-full object-cover">
+                                            <img src="${item.image}" class="w-full h-full object-cover object-top">
                                         </div>
                                         <div class="p-3 text-left">
                                             <h4 class="text-xs font-black text-gray-900 uppercase tracking-tight truncate cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">${item.name}</h4>
@@ -2116,7 +2111,7 @@ const routes = {
                         <div class="space-y-4">
                             <div class="flex gap-4">
                                 <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba3}" class="w-full h-full object-cover">
+                                    <img src="${assets.boba3}" class="w-full h-full object-cover object-top">
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start">
@@ -2128,7 +2123,7 @@ const routes = {
                             </div>
                             <div class="flex gap-4">
                                 <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba4}" class="w-full h-full object-cover">
+                                    <img src="${assets.boba4}" class="w-full h-full object-cover object-top">
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start">
@@ -2140,7 +2135,7 @@ const routes = {
                             </div>
                             <div class="flex gap-4">
                                 <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba1}" class="w-full h-full object-cover">
+                                    <img src="${assets.boba1}" class="w-full h-full object-cover object-top">
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start">
@@ -2307,7 +2302,7 @@ const routes = {
                         <div class="space-y-4">
                             <div class="flex gap-4">
                                 <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba3}" class="w-full h-full object-cover">
+                                    <img src="${assets.boba3}" class="w-full h-full object-cover object-top">
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start">
@@ -2319,7 +2314,7 @@ const routes = {
                             </div>
                             <div class="flex gap-4">
                                 <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba4}" class="w-full h-full object-cover">
+                                    <img src="${assets.boba4}" class="w-full h-full object-cover object-top">
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start">
@@ -2331,7 +2326,7 @@ const routes = {
                             </div>
                             <div class="flex gap-4">
                                 <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba1}" class="w-full h-full object-cover">
+                                    <img src="${assets.boba1}" class="w-full h-full object-cover object-top">
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start">
@@ -2751,7 +2746,7 @@ const routes = {
                         ${favorites.map(item => `
                             <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex gap-5 hover:shadow-md transition-shadow relative group">
                                 <div class="w-24 h-24 rounded-xl overflow-hidden shrink-0 border border-gray-50">
-                                    <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                    <img src="${item.image}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                 </div>
                                 <div class="flex-1 flex flex-col justify-between py-1">
                                     <div>
