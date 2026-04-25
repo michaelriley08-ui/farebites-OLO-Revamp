@@ -1676,12 +1676,12 @@ const routes = {
                         <!-- Store Info (Compact) -->
                         <div class="flex justify-between items-center pb-3 border-b border-gray-50">
                             <div class="flex gap-3 items-center">
-                                <div class="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-store text-violet-600 text-base"></i>
+                                <div class="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-md border border-violet-50 overflow-hidden shrink-0">
+                                    <img src="images/itea_logo.png" class="w-full h-full object-cover">
                                 </div>
                                 <div>
-                                    <h3 class="font-black text-[#33424A] text-xs tracking-tight leading-tight">${(mockupState.selectedLocation || "i-Tea").replace(/\b\d{5}\b/g, '').trim()}</h3>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-0.5 tracking-wide">${mockupState.selectedDistance || "0.8 mi"}</p>
+                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${(mockupState.selectedLocation || "i-Tea - TEMPE").replace(/\b\d{5}\b/g, '').trim()}</h3>
+                                    <p class="text-[10px] font-bold text-gray-400 mt-1 tracking-wide uppercase">${mockupState.selectedDistance || "0.8 mi"}</p>
                                 </div>
                             </div>
                             <button onclick="navigateTo('location-pick')" class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-violet-600 hover:border-violet-100 transition-all">
