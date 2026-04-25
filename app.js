@@ -67,6 +67,7 @@ const assets = {
     burger: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80",
     burritoBowl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&getSet=80",
     icedMatcha: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=400&q=80",
+    restaurantHero: "https://order-iteausa.com/imagesmenu/N9-Fresh-Strawberry-Mango-Fruit-Tea.jpg",
     googleMapsEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d106518.42371900132!2d-112.4414169904297!3d33.4571167448373!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b394142f9b23b%3A0xc3f92d47101783e4!2sGoodyear%2C%20AZ!5e0!3m2!1sen!2sus!4v1709854800000!5m2!1sen!2sus"
 };
 
@@ -420,7 +421,7 @@ const routes = {
     'restaurant-landing': () => `
             <div class="flex flex-col h-full relative overflow-hidden bg-white">
                 <div class="absolute inset-0 z-0">
-                    <img src="${assets.bobaHero}" class="w-full h-full object-cover">
+                    <img src="${assets.restaurantHero}" class="w-full h-full object-cover">
                     <!-- White overlay/gradient for i-Tea branding -->
                     <div class="absolute inset-0 bg-white/60"></div>
                     <div class="absolute inset-0 bg-gradient-to-t from-white/90 via-white/20 to-white/60"></div>
@@ -439,7 +440,7 @@ const routes = {
                 </div>
             </div>`,
     'restaurant-sign-in': () => `
-            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.bobaHero}')"></div>
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
             <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
             <div class="modal-overlay" onclick="navigateTo('restaurant-landing')">
                 <div class="modal-content" onclick="event.stopPropagation()">
@@ -486,7 +487,7 @@ const routes = {
             <div class="flex flex-col h-full relative overflow-hidden">
                 <!-- Full Viewport Background Image -->
                 <div class="absolute inset-0 z-0">
-                    <img src="https://order-iteausa.com/imagesmenu/N9-Fresh-Strawberry-Mango-Fruit-Tea.jpg" class="w-full h-full object-cover">
+                    <img src="${assets.restaurantHero}" class="w-full h-full object-cover">
                     <!-- Subtle gradient to ensure text readability -->
                     <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90"></div>
                 </div>
@@ -588,7 +589,7 @@ const routes = {
             <div class="flex flex-col h-full relative overflow-hidden">
                 <!-- Full Viewport Background Image -->
                 <div class="absolute inset-0 z-0">
-                    <img src="https://order-iteausa.com/imagesmenu/N9-Fresh-Strawberry-Mango-Fruit-Tea.jpg" class="w-full h-full object-cover">
+                    <img src="${assets.restaurantHero}" class="w-full h-full object-cover">
                     <!-- Subtle gradient to ensure text readability -->
                     <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90"></div>
                 </div>
@@ -2090,9 +2091,9 @@ const routes = {
                             <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
                             <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
                         </button>
-                        <button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
-                            <i class="fa-solid fa-dollar-sign text-[10px] text-gray-500"></i>
-                            <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Add...</span>
+                        <button onclick="navigateTo('cart')" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-violet-600 text-white shadow-md whitespace-nowrap active:scale-95 transition-all hover:bg-violet-700">
+                            <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                            <span class="text-sm font-black uppercase tracking-tight">Order Again</span>
                         </button>
                     </div>
 
@@ -2103,7 +2104,7 @@ const routes = {
                                 <img src="images/itea_logo.png" class="w-full h-full object-cover">
                             </div>
                             <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">i-Tea</h3>
+                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
                                 <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
                             </div>
                         </div>
@@ -2250,8 +2251,8 @@ const routes = {
                     `}
                 
                 <div class="p-6 bg-white border-t border-gray-100 shrink-0 sticky bottom-0">
-                    <button class="w-full bg-gray-100 text-gray-700 py-4 rounded-full font-black text-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-phone"></i> Contact Store
+                    <button onclick="navigateTo('cart')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
+                        <i class="fa-solid fa-rotate-left"></i> Order Again
                     </button>
                 </div>
             </div>`,
@@ -2294,7 +2295,7 @@ const routes = {
                                 <img src="images/itea_logo.png" class="w-full h-full object-cover">
                             </div>
                             <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">i-Tea</h3>
+                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
                                 <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
                             </div>
                         </div>
