@@ -22,7 +22,8 @@ const PAGE_FILE_MAP = {
     "privacy": "privacy.html",
     "dashboard": "dashboard.html",
     "index": "index.html",
-    "manage-favorites": "manage-favorites.html"
+    "manage-favorites": "manage-favorites.html",
+    "directions": "directions.html"
 };
 const PAGE_LABELS = {
     "landing": "FareBites Landing Page",
@@ -47,7 +48,8 @@ const PAGE_LABELS = {
     "account": "My Account",
     "privacy": "Privacy Policy",
     "dashboard": "Merchant Dashboard",
-    "manage-favorites": "Manage Favorites"
+    "manage-favorites": "Manage Favorites",
+    "directions": "Directions"
 };
 const STORAGE_KEYS = {
     state: 'farebitesMockupState',
@@ -321,7 +323,7 @@ const routes = {
                 <div class="flex flex-col w-full min-h-full">
                     <nav class="flex justify-between items-center px-16 py-6 bg-white sticky top-0 z-50 shadow-sm">
                         <div class="flex items-center gap-8"><span class="text-3xl font-black text-red-600 tracking-tighter cursor-pointer" onclick="navigateTo('home')">FAREBITES</span></div>
-                        <div class="flex items-center gap-6"><span class="font-black text-gray-800">Hi Mike!</span><div class="w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center border-2 border-transparent group-hover:border-red-600 transition"><i class="fa-solid fa-user text-gray-600"></i></div></div>
+                        <div class="flex items-center gap-6"><span class="font-black text-gray-800">Hi Michaelangelo!</span><div class="w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center border-2 border-transparent group-hover:border-red-600 transition"><i class="fa-solid fa-user text-gray-600"></i></div></div>
                     </nav>
                     <div class="desktop-hero" style="background-image: url('${assets.featured}')">
                         <div class="relative z-10 w-full max-w-5xl px-12 text-center text-white py-24">
@@ -405,14 +407,23 @@ const routes = {
                         </div>
 
                         <div class="space-y-3">
-                            <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center gap-3 hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-                                <i class="fa-brands fa-google text-lg text-red-500"></i> Continue with Google
+                            <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
+                                <div class="flex items-center gap-4 w-52">
+                                    <i class="fa-brands fa-google text-lg text-red-500 w-6 text-center"></i>
+                                    <span>Continue with Google</span>
+                                </div>
                             </button>
-                            <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center gap-3 hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-                                <i class="fa-brands fa-apple text-lg text-black"></i> Continue with Apple
+                            <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
+                                <div class="flex items-center gap-4 w-52">
+                                    <i class="fa-brands fa-apple text-lg text-black w-6 text-center"></i>
+                                    <span>Continue with Apple</span>
+                                </div>
                             </button>
-                            <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center gap-3 hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-                                <i class="fa-brands fa-facebook text-lg text-[#1877F2]"></i> Continue with Facebook
+                            <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
+                                <div class="flex items-center gap-4 w-52">
+                                    <i class="fa-brands fa-facebook text-lg text-[#1877F2] w-6 text-center"></i>
+                                    <span>Continue with Facebook</span>
+                                </div>
                             </button>
                         </div>
                     </div>
@@ -428,8 +439,8 @@ const routes = {
                 </div>
                 
                 <div class="relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center mt-12">
-                    <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-xl mb-6 border-4 border-violet-100 overflow-hidden text-white">
-                        <img src="images/itea_logo.png" class="w-full h-full object-cover">
+                    <div class="w-48 h-48 bg-white rounded-full flex items-center justify-center shadow-xl mb-6 border-4 border-violet-100 overflow-hidden text-white">
+                        <img src="images/itea_logo.png" class="w-full h-full object-contain p-4">
                     </div>
                     <h1 class="text-6xl font-black text-violet-600 tracking-tighter drop-shadow-sm">i-Tea</h1>
                     <p class="text-gray-800 font-bold tracking-widest uppercase mt-4 text-xs">Premium Boba Tea & more.</p>
@@ -445,17 +456,20 @@ const routes = {
             <div class="modal-overlay" onclick="navigateTo('restaurant-landing')">
                 <div class="modal-content" onclick="event.stopPropagation()">
                     <button class="absolute top-6 left-6 text-gray-500" onclick="navigateTo('restaurant-landing')"><i class="fa-solid fa-xmark text-2xl"></i></button>
-                    <div class="w-full max-h-[200px] flex items-center justify-center mb-4 mt-6">
-                         <img src="images/itea_logo.png" class="h-full max-h-[200px] w-auto object-contain">
+                    <div class="w-full max-h-[140px] flex items-center justify-center mb-2 mt-4">
+                         <img src="images/i-tea-logo-new.png" class="h-full max-h-[140px] w-auto object-contain">
                     </div>
-                    <h2 class="text-2xl font-black text-center mb-6 uppercase tracking-tight text-gray-900">Sign in / Sign up</h2>
-                    <div class="space-y-4">
+                    <h2 class="text-2xl font-black text-center mb-4 uppercase tracking-tight text-gray-900 leading-tight">Sign in /<br>Create Account</h2>
+                    <div class="space-y-2">
                         <div class="flex gap-2">
                             <div class="bg-violet-50 px-4 py-4 rounded-xl font-bold text-violet-600 min-w-[100px] flex items-center justify-center border border-violet-100">+1 <i class="fa-solid fa-chevron-down text-[10px] ml-2"></i></div>
                             <input type="tel" id="auth-mobile-input" placeholder="Mobile Number" class="flex-1 min-w-0 bg-gray-50 px-4 py-4 rounded-xl border-2 border-transparent focus:border-violet-600 outline-none font-bold text-lg text-gray-900">
                         </div>
                         <div id="auth-error" class="text-xs font-bold text-red-500 px-2 h-4 transition-all opacity-0">Invalid passcode. Please try again.</div>
-                        <button onclick="checkAuthPasscode()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase font-black">Continue</button>
+                        <div class="space-y-2 mt-2">
+                            <button onclick="checkAuthPasscode()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase font-black">Sign In</button>
+                            <button onclick="navigateTo('registration')" class="w-full bg-white border-2 border-violet-600 text-violet-600 py-4 rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 hover:bg-violet-50/50 active:scale-95 transition-all uppercase font-black">Create an Account</button>
+                        </div>
                         
                         <div class="flex items-center gap-4 py-2">
                             <div class="flex-1 h-px bg-gray-100"></div>
@@ -464,18 +478,27 @@ const routes = {
                         </div>
 
                         <div class="space-y-3">
-                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center gap-3 hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm">
-                                <i class="fa-brands fa-google text-lg text-red-500"></i> Continue with Google
+                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm">
+                                <div class="flex items-center gap-4 w-52">
+                                    <i class="fa-brands fa-google text-lg text-red-500 w-6 text-center"></i>
+                                    <span>Continue with Google</span>
+                                </div>
                             </button>
-                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center gap-3 hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm">
-                                <i class="fa-brands fa-apple text-lg text-black"></i> Continue with Apple
+                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm">
+                                <div class="flex items-center gap-4 w-52">
+                                    <i class="fa-brands fa-apple text-lg text-black w-6 text-center"></i>
+                                    <span>Continue with Apple</span>
+                                </div>
                             </button>
-                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center gap-3 hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm">
-                                <i class="fa-brands fa-facebook text-lg text-[#1877F2]"></i> Continue with Facebook
+                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm">
+                                <div class="flex items-center gap-4 w-52">
+                                    <i class="fa-brands fa-facebook text-lg text-[#1877F2] w-6 text-center"></i>
+                                    <span>Continue with Facebook</span>
+                                </div>
                             </button>
                         </div>
                     </div>
-                    <div class="mt-8 text-center px-4">
+                    <div class="mt-2 text-center px-4">
                         <p class="text-[10px] text-gray-400 font-bold tracking-widest">By continuing, you agree to i-Tea Terms & Privacy Policy</p>
                     </div>
                 </div>
@@ -611,7 +634,7 @@ const routes = {
                     <div class="text-center pt-4 relative z-10 shrink-0 flex flex-col items-center">
                         <div class="text-violet-600 text-[11px] font-black tracking-[0.2em] uppercase mb-2">Open 24 Hours</div>
                         <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-violet-600 shadow-[0_8px_32px_-4px_rgba(124,58,237,0.55)] ${isDesktop ? 'mb-4' : 'mb-2'}">
-                            <img src="images/itea_logo.png" alt="i-Tea" class="w-full h-full object-cover">
+                            <img src="images/i-tea-logo-new.png" alt="i-Tea" class="w-full h-full object-cover">
                         </div>
                         ${isDesktop ? `<button onclick="navigateTo('location-pick')" class="bg-violet-600 text-white px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider inline-block">Order Now</button>` : ''}
                     </div>
@@ -1143,31 +1166,94 @@ const routes = {
                     </button>
                 </header>
 
-                <!-- Category Navigation -->
-                <div class="bg-white border-b border-gray-100 sticky top-[72px] z-40">
-                    <div class="flex gap-2 items-center overflow-x-auto scrollbar-hide px-4 py-4">
-                        <div class="flex gap-4 items-center pr-4 border-r border-gray-100 shrink-0">
+                <!-- Category Navigation (Redesigned) -->
+                <div class="bg-white border-b border-gray-100 sticky top-[72px] z-40 px-4 py-2 flex flex-col gap-3">
+                    <!-- Top Row: Icons, Greeting, Rewards -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex gap-4 items-center pr-4 border-r border-gray-100">
                             <button onclick="updateMockupState('modalOpen', 'categories'); navigateTo('menu')" class="text-gray-900 hover:text-violet-600 transition-colors">
-                                <i class="fa-solid fa-list text-xl"></i>
+                                <i class="fa-solid fa-list-ul text-xl"></i>
                             </button>
                             <button onclick="updateMockupState('modalOpen', 'categories'); navigateTo('menu')" class="text-gray-900 hover:text-violet-600 transition-colors">
                                 <i class="fa-solid fa-magnifying-glass text-xl"></i>
                             </button>
                         </div>
-                        <div class="flex gap-2 overflow-x-auto scrollbar-hide pl-2">
-                            ${[
-                                'NEW ITEMS', 'TEASPRESSO SERIES', 'MILK TEA SPECIALTY', 'I-TEA FRUIT TEA',
-                                'SEA SALT KREAMA', 'SUMMER FROSTY', 'SIGNATURE ICED MILK', 'DESSERT DRINKS',
-                                'HOT DRINK', 'PREMIUM TEA TAIWAN', 'COLD BREW', 'SNACK MENU',
-                                'OKINAWA ONIGIRI SERIES', 'FOOD MENU'
-                            ].map(cat => `
-                                <button onclick="document.getElementById('new-items-section').scrollIntoView({behavior: 'smooth'})" class="whitespace-nowrap px-6 py-2 rounded-full bg-violet-600 text-white shadow-sm font-black text-[10px] uppercase hover:bg-violet-700 transition-all shrink-0">
-                                    ${cat}
-                                </button>
-                            `).join('')}
+                        
+                        <div class="flex-1 text-center px-4">
+                            <h2 class="text-xl font-black text-gray-900 tracking-tighter whitespace-nowrap">Hi Michaelangelo</h2>
                         </div>
+
+                        <button onclick="updateMockupState('modalOpen', 'rewards'); navigateTo('menu')" class="w-11 h-11 rounded-full bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-200 hover:bg-violet-700 transition-all active:scale-90">
+                            <i class="fa-solid fa-award text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Bottom Row: Category Pills -->
+                    <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                        ${[
+                            'NEW ITEMS', 'TEASPRESSO SERIES', 'MILK TEA SPECIALTY', 'I-TEA FRUIT TEA',
+                            'SEA SALT KREAMA', 'SUMMER FROSTY', 'SIGNATURE ICED MILK', 'DESSERT DRINKS',
+                            'HOT DRINK', 'PREMIUM TEA TAIWAN', 'COLD BREW', 'SNACK MENU',
+                            'OKINAWA ONIGIRI SERIES', 'FOOD MENU'
+                        ].map(cat => `
+                            <button onclick="document.getElementById('new-items-section').scrollIntoView({behavior: 'smooth'})" class="whitespace-nowrap px-6 py-2 rounded-full bg-violet-600 text-white shadow-sm font-black text-[10px] uppercase hover:bg-violet-700 transition-all shrink-0">
+                                ${cat}
+                            </button>
+                        `).join('')}
                     </div>
                 </div>
+
+                <!-- Rewards Modal -->
+                ${mockupState.modalOpen === 'rewards' ? `
+                <div class="modal-overlay z-[200]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
+                    <div class="bg-white w-[92%] max-w-[380px] rounded-[32px] p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out]">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Your Rewards</h2>
+                            <button onclick="mockupState.modalOpen=null;navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="bg-violet-50 rounded-2xl p-6 border border-violet-100 relative overflow-hidden mb-6">
+                            <div class="flex items-center gap-4 mb-5 relative z-10">
+                                <div class="w-12 h-12 rounded-full bg-violet-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                                    <i class="fa-solid fa-award text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="text-violet-600 font-black text-sm tracking-tight uppercase">Gold Member</div>
+                                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">1,240 pts until next reward</div>
+                                </div>
+                            </div>
+                            <div class="w-full bg-violet-200/60 h-2 rounded-full overflow-hidden relative z-10">
+                                <div class="bg-violet-600 h-full w-[65%] rounded-full relative overflow-hidden">
+                                    <div class="absolute inset-0 bg-white/20 w-full h-full skew-x-12 -translate-x-1/2"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-ticket text-violet-600"></i>
+                                    <span class="text-sm font-bold text-gray-700 uppercase tracking-tight">Free Topping Coupon</span>
+                                </div>
+                                <span class="text-xs font-black text-violet-600">REDEEM</span>
+                            </div>
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-percent text-violet-600"></i>
+                                    <span class="text-sm font-bold text-gray-700 uppercase tracking-tight">10% Off Next Order</span>
+                                </div>
+                                <span class="text-xs font-black text-gray-400 font-bold">LOCKED</span>
+                            </div>
+                        </div>
+
+                        <button onclick="mockupState.modalOpen=null;navigateTo('account');" class="w-full mt-8 py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">
+                            View Points History
+                        </button>
+                    </div>
+                </div>
+                ` : ''}
 
                 <div class="p-6 md:p-8 max-w-6xl mx-auto w-full">
 
@@ -1289,23 +1375,6 @@ const routes = {
 
                         <!-- SIDEBAR COLUMN -->
                         <div class="${isDesktop ? 'w-[340px] shrink-0' : 'w-full'} space-y-6">
-                            <!-- Rewards Card -->
-                            <div class="bg-violet-50 rounded-2xl p-6 border border-violet-100 relative overflow-hidden">
-                                <div class="flex items-center gap-4 mb-5 relative z-10">
-                                    <div class="w-12 h-12 rounded-full bg-violet-600 text-white flex items-center justify-center shrink-0 shadow-md">
-                                        <i class="fa-solid fa-award text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-violet-600 font-black text-sm tracking-tight uppercase">Gold Member</div>
-                                        <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">1,240 pts until next reward</div>
-                                    </div>
-                                </div>
-                                <div class="w-full bg-violet-200/60 h-2 rounded-full overflow-hidden relative z-10">
-                                    <div class="bg-violet-600 h-full w-[65%] rounded-full relative overflow-hidden">
-                                        <div class="absolute inset-0 bg-white/20 w-full h-full skew-x-12 -translate-x-1/2"></div>
-                                    </div>
-                                </div>
-                            </div>
 
                             ${isDesktop ? `
                             <!-- Reorder Favorites (Desktop) -->
@@ -1429,7 +1498,7 @@ const routes = {
                         <!-- Category List -->
                         <div class="flex-1 overflow-y-auto px-6 py-4 space-y-3 scrollbar-hide">
                             ${categories.map(cat => `
-                                <div onclick="updateMockupState('modalOpen', null); navigateTo('menu'); setTimeout(() => document.getElementById('new-items-section').scrollIntoView({behavior: 'smooth'}), 100)" class="flex items-center justify-between p-3 rounded-2xl border-2 border-gray-50 bg-white hover:border-violet-200 hover:bg-violet-50/30 transition-all cursor-pointer group active:scale-[0.98]">
+                                <div onclick="updateMockupState('modalOpen', null); navigateTo('menu'); setTimeout(() => document.getElementById('new-items-section').scrollIntoView({behavior: 'smooth'}), 100)" class="flex items-start gap-4 p-3 rounded-2xl border-2 border-gray-50 bg-white hover:border-violet-200 hover:bg-violet-50/30 transition-all cursor-pointer group active:scale-[0.98]">
                                     <div class="flex items-center gap-4">
                                         <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm border border-gray-100">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
@@ -1677,7 +1746,7 @@ const routes = {
                         <div class="flex justify-between items-center pb-3 border-b border-gray-50">
                             <div class="flex gap-3 items-center">
                                 <div class="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-md border border-violet-50 overflow-hidden shrink-0">
-                                    <img src="images/itea_logo.png" class="w-full h-full object-cover">
+                                    <img src="images/i-tea-logo-new.png" class="w-full h-full object-cover">
                                 </div>
                                 <div>
                                     <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${(mockupState.selectedLocation || "i-Tea - TEMPE").replace(/\b\d{5}\b/g, '').trim()}</h3>
@@ -1693,8 +1762,8 @@ const routes = {
                         <div class="grid grid-cols-2 gap-4">
                             <!-- Pickup Method -->
                             <div onclick="navigateTo('order-details')" class="flex gap-3 items-center cursor-pointer group">
-                                <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-violet-50 transition-colors">
-                                    <i class="fa-solid ${mockupState.fulfillmentMode === 'Delivery' ? 'fa-truck' : mockupState.fulfillmentMode === 'Curbside' ? 'fa-car' : 'fa-person-walking-luggage'} text-violet-600 text-sm"></i>
+                                <div class="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
+                                    <i class="fa-solid ${mockupState.fulfillmentMode === 'Delivery' ? 'fa-truck' : mockupState.fulfillmentMode === 'Curbside' ? 'fa-car' : mockupState.fulfillmentMode === 'DriveUp' ? 'fa-car-side' : 'fa-shop'} text-white text-sm"></i>
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup method</span>
@@ -1703,8 +1772,8 @@ const routes = {
                             </div>
                             <!-- Pickup Time -->
                             <div onclick="navigateTo('order-details')" class="flex gap-3 items-center cursor-pointer group border-l border-gray-50 pl-2">
-                                <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-violet-50 transition-colors">
-                                    <i class="fa-regular fa-clock text-violet-600 text-sm"></i>
+                                <div class="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
+                                    <i class="fa-regular fa-clock text-white text-sm"></i>
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup time</span>
@@ -1718,7 +1787,7 @@ const routes = {
                         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 divide-y divide-gray-100">
                             <!-- Item 1 -->
                             <div class="flex justify-between items-start pb-5 mb-5">
-                                <div class="flex gap-4 items-center">
+                                <div class="flex gap-4 items-start">
                                     <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba2}" class="w-full h-full object-cover object-top"></div>
                                     <div>
                                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight cursor-pointer" onclick="navigateTo('customize')">Brown Sugar Pearl</h3>
@@ -1738,7 +1807,7 @@ const routes = {
                             </div>
                             <!-- Item 2 -->
                             <div class="flex justify-between items-start pt-5">
-                                <div class="flex gap-4 items-center">
+                                <div class="flex gap-4 items-start">
                                     <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba1}" class="w-full h-full object-cover object-top"></div>
                                     <div>
                                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight cursor-pointer" onclick="navigateTo('customize')">Protein Bowl</h3>
@@ -1884,7 +1953,7 @@ const routes = {
 
                     <!-- Greeting -->
                     <div class="mb-2">
-                        <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1">Hi Mike!</h1>
+                        <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1">Hi Michaelangelo!</h1>
                         <p class="text-gray-500 font-medium">Manage your account settings and order history.</p>
                     </div>
 
@@ -1904,7 +1973,7 @@ const routes = {
                         <div class="px-5 py-4 grid grid-cols-2 gap-x-8 gap-y-4">
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">First Name</p>
-                                <p class="font-bold text-gray-800 text-sm">Mike</p>
+                                <p class="font-bold text-gray-800 text-sm">Michaelangelo</p>
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Last Name</p>
@@ -1941,7 +2010,7 @@ const routes = {
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">First Name</label>
-                                        <input type="text" value="Mike" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <input type="text" value="Michaelangelo" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                     </div>
                                     <div>
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Last Name</label>
@@ -2054,6 +2123,25 @@ const routes = {
                         </div>
                     </div>
 
+                    <!-- Rewards Card -->
+                    <div class="bg-violet-50 rounded-2xl p-6 border border-violet-100 relative overflow-hidden">
+                        <div class="flex items-center gap-4 mb-5 relative z-10">
+                            <div class="w-12 h-12 rounded-full bg-violet-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                                <i class="fa-solid fa-award text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="text-violet-600 font-black text-sm tracking-tight uppercase">Gold Member</div>
+                                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">1,240 pts until next reward</div>
+                            </div>
+                        </div>
+                        <div class="w-full bg-violet-200/60 h-2 rounded-full overflow-hidden relative z-10">
+                            <div class="bg-violet-600 h-full w-[65%] rounded-full relative overflow-hidden">
+                                <div class="absolute inset-0 bg-white/20 w-full h-full skew-x-12 -translate-x-1/2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <!-- Logout -->
                     <button onclick="navigateTo('home')" class="w-full py-4 rounded-full border-2 border-gray-200 text-gray-700 font-black uppercase tracking-widest text-sm hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out
@@ -2101,7 +2189,7 @@ const routes = {
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
-                                <img src="images/itea_logo.png" class="w-full h-full object-cover">
+                                <img src="images/i-tea-logo-new.png" class="w-full h-full object-cover">
                             </div>
                             <div>
                                 <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
@@ -2256,9 +2344,121 @@ const routes = {
                     </button>
                 </div>
             </div>`,
-    'sign-up': () => `<div class="p-10 text-center uppercase font-black">Registration</div>`,
-    'login': () => `<div class="p-10 text-center uppercase font-black">Login View</div>`,
-    'privacy': () => `<div class="p-10 text-center uppercase font-black">Privacy Policy</div>`,
+    'registration': () => `
+            <div class="flex flex-col h-full bg-white relative overflow-y-auto">
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
+                    <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                    </button>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Create Account</span>
+                    <div class="w-10"></div>
+                </header>
+                
+                <div class="p-8 flex flex-col gap-8 font-sans">
+                    <div class="text-center mb-2">
+                        <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Register</h1>
+                        <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mt-2">Create a new account</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Account Info Section -->
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-black text-violet-600 uppercase tracking-widest border-b border-violet-50 pb-2">Account Info</h3>
+                            
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Email</label>
+                                <div class="relative">
+                                    <i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                    <input type="email" placeholder="email@example.com" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Password</label>
+                                    <div class="relative">
+                                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <input type="password" placeholder="Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Confirm Password</label>
+                                    <div class="relative">
+                                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <input type="password" placeholder="Confirm Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customer Info Section -->
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-black text-violet-600 uppercase tracking-widest border-b border-violet-50 pb-2">Customer Info</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">First Name</label>
+                                    <input type="text" placeholder="First Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Last Name</label>
+                                    <input type="text" placeholder="Last Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                </div>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Phone Number</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                    <input type="tel" placeholder="(555) 000-0000" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                </div>
+                            </div>
+
+                            <!-- Disclosure Checkbox -->
+                            <div class="flex items-start gap-4 px-1 py-1">
+                                <div class="relative flex items-center shrink-0 mt-1">
+                                    <input type="checkbox" id="sms-disclosure" class="w-6 h-6 border-2 border-gray-200 rounded-md checked:bg-violet-600 checked:border-violet-600 appearance-none cursor-pointer transition-all">
+                                    <i class="fa-solid fa-check absolute text-white text-[12px] left-1.5 opacity-0 pointer-events-none"></i>
+                                </div>
+                                <label for="sms-disclosure" class="text-xs text-gray-400 font-bold leading-relaxed tracking-wider uppercase">
+                                    I understand that by providing this cell number, I will receive verification, status, and/or service-related text message(s) and/or phone call(s) notifying me of the status of my account and order(s). All other uses are not authorized. Data rates may apply; frequency varies. Reply STOP to opt out at any time.
+                                </label>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Street</label>
+                                <input type="text" placeholder="Address" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1.5 text-sm">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">City</label>
+                                    <input type="text" placeholder="City" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-sm">
+                                    <div class="space-y-1.5">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">State</label>
+                                        <input type="text" placeholder="AZ" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Zip</label>
+                                        <input type="text" placeholder="85281" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button onclick="navigateTo('restaurant-home')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase tracking-widest font-black">Create Account</button>
+                    </div>
+
+                    <div class="text-center mb-8">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Already have an account? <button onclick="navigateTo('restaurant-sign-in')" class="text-violet-600 ml-1 font-black underline underline-offset-4">Sign In</button></p>
+                    </div>
+                </div>
+            </div>
+    `,
     'order-confirm': () => `
             <div class="flex flex-col h-full bg-white relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
@@ -2277,14 +2477,31 @@ const routes = {
                         <p class="text-gray-500 font-medium mb-8">Your order #FB-9824 is being sent to the kitchen.</p>
                     </div>
 
+                    <div class="bg-gray-50 w-full rounded-2xl px-6 py-3 border border-gray-100">
+                        <div class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1">Pick Up Time</div>
+                        <div class="text-3xl font-black text-gray-900 uppercase">8:02 PM</div>
+                    </div>
+
+                    <div class="bg-gray-50 w-full rounded-2xl px-6 py-3 border border-gray-100 flex flex-col gap-3">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-violet-600 shrink-0">
+                                <i class="fa-solid fa-location-dot text-2xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Pick Up Location</div>
+                                <div class="text-lg font-black text-gray-900 uppercase leading-none">i-Tea – Tempe</div>
+                                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-tight mt-1">825 W. University Dr., Tempe, AZ 85281</div>
+                            </div>
+                        </div>
+                        <button onclick="navigateTo('directions')" class="self-end px-5 py-2 bg-gray-100 text-gray-500 rounded-full font-black text-[9px] uppercase tracking-widest hover:bg-gray-200 active:scale-95 transition-all shadow-sm border border-gray-200">
+                             Get Directions
+                        </button>
+                    </div>
+
                     <div class="flex gap-2 overflow-x-auto scrollbar-hide shrink-0 pb-2">
                         <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
                             <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
                             <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
-                        </button>
-                        <button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
-                            <i class="fa-solid fa-dollar-sign text-[10px] text-gray-500"></i>
-                            <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Add...</span>
                         </button>
                     </div>
 
@@ -2292,7 +2509,7 @@ const routes = {
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
-                                <img src="images/itea_logo.png" class="w-full h-full object-cover">
+                                <img src="images/i-tea-logo-new.png" class="w-full h-full object-cover">
                             </div>
                             <div>
                                 <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
@@ -2345,33 +2562,8 @@ const routes = {
                                 <span>$24.50</span>
                             </div>
                             <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Delivery Fee</span>
-                                <div class="flex gap-2">
-                                    <span class="line-through text-gray-300">$1.99</span>
-                                    <span>$0.00</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <div class="flex items-center gap-1">Service Fee <i class="fa-solid fa-circle-info text-[10px]"></i></div>
-                                <div class="flex gap-2">
-                                    <span class="line-through text-gray-300">$3.00</span>
-                                    <span>$0.99</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <div class="flex items-center gap-1">Estimated Tax <i class="fa-solid fa-circle-info text-[10px]"></i></div>
+                                <span>Tax</span>
                                 <span>$2.32</span>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>VIP Delivery Fee</span>
-                                <div class="flex gap-2">
-                                    <span class="line-through text-gray-300">$5.99</span>
-                                    <span>$0.00</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Dasher Tip</span>
-                                <span>$4.00</span>
                             </div>
                             <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
                                 <span>Total</span>
@@ -2393,20 +2585,14 @@ const routes = {
                                 </div>
                                 <span class="text-base font-black text-gray-900">$31.81</span>
                             </div>
-                            <p class="text-[10px] font-bold text-gray-400 mt-4 leading-relaxed line-clamp-2">You'll be charged at the end of the day for this and other orders.</p>
                         </div>
                     </div>
-                    ` : `
-                    <div class="bg-gray-50 w-full rounded-lg p-6 border border-gray-100">
-                        <div class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1">Pick Up Time</div>
-                        <div class="text-3xl font-black text-gray-900 uppercase">8:02 PM</div>
-                    </div>
+                    ` : ''}
 
                     <div class="w-full space-y-4">
                         <button onclick="navigateTo('order-status')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Track Order</button>
                         <button onclick="navigateTo('home')" class="w-full bg-white border-2 border-gray-100 text-gray-700 py-4 rounded-full font-black text-lg active:scale-95 transition-all uppercase tracking-wider hover:bg-gray-50">Back to Home</button>
                     </div>
-                    `}
                 </div>`,
     'checkout': () => {
         const subtotal = 12.50;
@@ -2531,7 +2717,7 @@ const routes = {
                         <div class="space-y-4 mb-8">
                             <div class="space-y-1.5">
                                 <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Cardholder Name</label>
-                                <input type="text" value="Mike Smith" class="w-full bg-gray-50 border border-gray-100 px-4 py-3.5 rounded-2xl font-bold text-gray-900 outline-none focus:border-violet-600 transition-colors">
+                                <input type="text" value="Michaelangelo Smith" class="w-full bg-gray-50 border border-gray-100 px-4 py-3.5 rounded-2xl font-bold text-gray-900 outline-none focus:border-violet-600 transition-colors">
                             </div>
                             <div class="space-y-1.5">
                                 <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Card Number</label>
@@ -2777,7 +2963,44 @@ const routes = {
                     </div>
                 </div>
             </div>`;
-    }
+    },
+
+    'directions': () => `
+            <div class="flex flex-col h-full bg-white relative">
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
+                    <button onclick="navigateTo('order-confirm')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                    </button>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center whitespace-nowrap">Directions to Tempe</span>
+                    <button class="w-10 h-10 opacity-0 pointer-events-none"></button>
+                </header>
+
+                <div class="flex-1 relative">
+                    <iframe src="${assets.googleMapsEmbed}" class="absolute inset-0 w-full h-full border-0" allowfullscreen="" loading="lazy"></iframe>
+                    
+                    <div class="absolute bottom-10 left-6 right-6 z-10">
+                        <div class="bg-white rounded-[32px] p-6 shadow-2xl border border-gray-100">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-12 h-12 bg-violet-600 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-violet-200">
+                                    <i class="fa-solid fa-location-dot text-xl"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm">i-Tea – Tempe</h3>
+                                    <p class="text-xs font-bold text-gray-500 leading-tight">825 W. University Dr., Tempe, AZ 85281</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <button onclick="window.open('https://maps.google.com/?q=825+W+University+Dr+Tempe+AZ+85281','_blank')" class="flex-1 py-4 bg-violet-600 text-white rounded-full font-black uppercase tracking-widest text-xs shadow-lg hover:bg-violet-700 active:scale-95 transition-all outline-none">
+                                    Open in Google Maps
+                                </button>
+                                <button onclick="navigateTo('order-confirm')" class="px-6 py-4 border-2 border-gray-100 text-gray-500 rounded-full font-black uppercase tracking-widest text-xs hover:bg-gray-50 active:scale-95 transition-all outline-none">
+                                    Back
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`
 };
 
 
