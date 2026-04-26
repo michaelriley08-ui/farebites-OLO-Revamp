@@ -23,7 +23,8 @@ const PAGE_FILE_MAP = {
     "dashboard": "dashboard.html",
     "index": "index.html",
     "manage-favorites": "manage-favorites.html",
-    "directions": "directions.html"
+    "directions": "directions.html",
+    "registration": "registration.html"
 };
 const PAGE_LABELS = {
     "landing": "FareBites Landing Page",
@@ -49,7 +50,8 @@ const PAGE_LABELS = {
     "privacy": "Privacy Policy",
     "dashboard": "Merchant Dashboard",
     "manage-favorites": "Manage Favorites",
-    "directions": "Directions"
+    "directions": "Directions",
+    "registration": "Registration Form"
 };
 const STORAGE_KEYS = {
     state: 'farebitesMockupState',
@@ -2459,6 +2461,76 @@ const routes = {
                 </div>
             </div>
     `,
+    'directions': () => `
+            <div class="flex flex-col h-full bg-white relative">
+                <!-- Status Bar Mockup -->
+                <div class="bg-white px-6 py-2 flex justify-between items-center z-50">
+                    <span class="text-sm font-black text-gray-900 leading-none">9:41</span>
+                    <div class="flex gap-2 items-center text-gray-900">
+                        <i class="fa-solid fa-signal text-xs"></i>
+                        <i class="fa-solid fa-wifi text-xs"></i>
+                        <i class="fa-solid fa-battery-full text-sm"></i>
+                    </div>
+                </div>
+
+                <!-- Map Area -->
+                <div class="flex-1 relative bg-gray-100 overflow-hidden">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.9880816825!2d-111.95254172421831!3d33.42224097339947!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08da35c246f9%3A0xe21289658ec91e!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1714088000000!5m2!1sen!2sus" 
+                        class="w-full h-full border-0" 
+                        allowfullscreen="" 
+                        loading="lazy">
+                    </iframe>
+
+                    <!-- Search Mockup -->
+                    <div class="absolute top-4 left-4 right-4 z-10">
+                        <div class="bg-white rounded-full shadow-xl flex items-center px-5 py-4 border border-gray-100">
+                            <i class="fa-solid fa-magnifying-glass text-gray-400 mr-4 text-sm"></i>
+                            <span class="text-xs font-black text-gray-900 flex-1 truncate uppercase tracking-widest leading-none">825 W University Dr, Tempe, AZ 85281</span>
+                            <i class="fa-solid fa-microphone text-violet-600 ml-4 border-l pl-5 border-gray-100"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Panel -->
+                <div class="bg-white rounded-t-[32px] shadow-[0_-12px_48px_rgba(0,0,0,0.15)] p-8 z-20 -mt-8">
+                    <div class="w-16 h-1.5 bg-gray-100 rounded-full mx-auto mb-8"></div>
+                    
+                    <div class="flex items-start justify-between gap-6 mb-8">
+                        <div class="flex-1">
+                            <h2 class="text-3xl font-black text-gray-900 leading-none uppercase tracking-tighter">i-Tea Tempe</h2>
+                            <p class="text-xs font-black text-gray-500 mt-3 uppercase tracking-widest leading-relaxed">825 W University Dr, Tempe, AZ 85281</p>
+                        </div>
+                        <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center border-2 border-violet-100 overflow-hidden shadow-sm shrink-0">
+                            <img src="images/itea_logo.png" class="w-12 h-12 object-contain">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 mb-8">
+                        <button class="flex-[2.5] bg-violet-600 text-white py-5 rounded-2xl font-black text-lg uppercase tracking-[0.2em] shadow-lg shadow-violet-200 flex items-center justify-center gap-3 active:scale-95 transition-all">
+                            <i class="fa-solid fa-location-arrow text-xl"></i> START
+                        </button>
+                        <button class="flex-1 bg-white border-2 border-gray-200 text-gray-900 py-5 rounded-2xl flex items-center justify-center active:scale-95 transition-all shadow-sm">
+                            <i class="fa-solid fa-share-nodes text-2xl text-violet-600"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100 shadow-sm mb-10">
+                        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm shrink-0 text-violet-600">
+                            <i class="fa-solid fa-car text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Estimated Arrival</div>
+                            <div class="text-lg font-black text-gray-900 uppercase tracking-tight">9 mins <span class="font-bold text-gray-500 lowercase ml-2 text-sm">(2.4 miles)</span></div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="window.history.back()" class="w-full py-2 text-gray-400 font-extrabold text-xs uppercase tracking-[0.3em] hover:text-gray-900 transition-colors">
+                        <i class="fa-solid fa-xmark mr-1"></i> Close Map
+                    </button>
+                </div>
+            </div>
+    `,
     'order-confirm': () => `
             <div class="flex flex-col h-full bg-white relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
@@ -2965,42 +3037,7 @@ const routes = {
             </div>`;
     },
 
-    'directions': () => `
-            <div class="flex flex-col h-full bg-white relative">
-                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('order-confirm')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
-                    </button>
-                    <span class="text-lg font-black text-violet-600 flex-1 text-center whitespace-nowrap">Directions to Tempe</span>
-                    <button class="w-10 h-10 opacity-0 pointer-events-none"></button>
-                </header>
 
-                <div class="flex-1 relative">
-                    <iframe src="${assets.googleMapsEmbed}" class="absolute inset-0 w-full h-full border-0" allowfullscreen="" loading="lazy"></iframe>
-                    
-                    <div class="absolute bottom-10 left-6 right-6 z-10">
-                        <div class="bg-white rounded-[32px] p-6 shadow-2xl border border-gray-100">
-                            <div class="flex items-center gap-4 mb-4">
-                                <div class="w-12 h-12 bg-violet-600 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-violet-200">
-                                    <i class="fa-solid fa-location-dot text-xl"></i>
-                                </div>
-                                <div class="min-w-0">
-                                    <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm">i-Tea – Tempe</h3>
-                                    <p class="text-xs font-bold text-gray-500 leading-tight">825 W. University Dr., Tempe, AZ 85281</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-3">
-                                <button onclick="window.open('https://maps.google.com/?q=825+W+University+Dr+Tempe+AZ+85281','_blank')" class="flex-1 py-4 bg-violet-600 text-white rounded-full font-black uppercase tracking-widest text-xs shadow-lg hover:bg-violet-700 active:scale-95 transition-all outline-none">
-                                    Open in Google Maps
-                                </button>
-                                <button onclick="navigateTo('order-confirm')" class="px-6 py-4 border-2 border-gray-100 text-gray-500 rounded-full font-black uppercase tracking-widest text-xs hover:bg-gray-50 active:scale-95 transition-all outline-none">
-                                    Back
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>`
 };
 
 
@@ -3179,28 +3216,20 @@ function setViewport(size) {
 }
 
 function renderDropdownMenu() {
-    const fbPages = [
-        { key: 'landing', label: 'Landing' },
-        { key: 'home', label: 'Home (Logged In)' },
-        { key: 'sign-in', label: 'Sign In' }
+    const fbPagesList = ['landing', 'home', 'registration', 'privacy', 'dashboard', 'directions'];
+    const rbPagesList = [
+        'restaurant-landing', 'restaurant-sign-in', 'restaurant-home', 'restaurant-home-logo', 
+        'menu', 'location-pick', 'location-favorites', 'manage-favorites', 'order-details', 
+        'customize', 'cart', 'checkout', 'order-confirm', 'order-status', 'qr-code-guide', 'account'
     ];
 
-    const rbPages = [
-        { key: 'restaurant-landing', label: 'Restaurant Landing' },
-        { key: 'restaurant-sign-in', label: 'Restaurant Sign In' },
-        { key: 'restaurant-home', label: 'Restaurant Home' },
-        { key: 'restaurant-home-logo', label: 'Restaurant Home (Logo)' },
-        { key: 'menu', label: 'Menu' },
-        { key: 'location-pick', label: 'Location Pick' },
-        { key: 'order-details', label: 'Order Details' },
-        { key: 'customize', label: 'Customize Item' },
-        { key: 'cart', label: 'Cart' },
-        { key: 'checkout', label: 'Checkout' },
-        { key: 'order-confirm', label: 'Order Confirm' },
-        { key: 'order-status', label: 'Order Status' },
-        { key: 'qr-code-guide', label: 'QR Code Guide' },
-        { key: 'account', label: 'My Account' }
-    ];
+    const fbPages = fbPagesList
+        .filter(key => routes[key])
+        .map(key => ({ key, label: PAGE_LABELS[key] || key.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ') }));
+
+    const rbPages = rbPagesList
+        .filter(key => routes[key])
+        .map(key => ({ key, label: PAGE_LABELS[key] || key.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ') }));
 
     const fbMenuHTML = fbPages.map(p => `<div class="dropdown-item ${currentPage === p.key ? 'active' : ''}" onclick="navigateTo('${p.key}')">${p.label}</div>`).join('');
     const rbMenuHTML = rbPages.map(p => `<div class="dropdown-item ${currentPage === p.key ? 'active' : ''}" onclick="navigateTo('${p.key}')">${p.label}</div>`).join('');
