@@ -3416,11 +3416,11 @@ function setViewport(size) {
 }
 
 function renderDropdownMenu() {
-    const fbPagesList = ['landing', 'home', 'privacy', 'dashboard', 'directions'];
+    const fbPagesList = ['landing', 'home', 'privacy', 'dashboard'];
     const rbPagesList = [
         'restaurant-landing', 'restaurant-sign-in', 'registration', 'restaurant-home', 'restaurant-home-logo', 
         'menu', 'location-pick', 'location-favorites', 'manage-favorites', 'order-details', 
-        'customize', 'cart', 'checkout', 'order-confirm', 'order-status', 'qr-code-guide', 'account'
+        'customize', 'cart', 'checkout', 'order-confirm', 'order-status', 'track-order', 'qr-code-guide', 'directions', 'account'
     ];
 
     const fbPages = fbPagesList
