@@ -848,7 +848,7 @@ const routes = {
                     <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center">Favorite Locations</h1>
                     <div class="w-10"></div>
                 </header>
-                <div class="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+                <div class="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide w-full max-w-[1080px] mx-auto">
                     <!-- Location 1 -->
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
                         <div class="flex justify-between items-start">
@@ -1434,49 +1434,6 @@ const routes = {
                         </div>
                     </div>
                     
-                    <!-- Footer Area -->
-                    <div class="mt-16 pt-6 border-t border-gray-200">
-                        <!-- Logo Section (Full Width Row) -->
-                        <div class="mb-6 text-center md:text-left">
-                            <div class="font-black text-violet-600 text-xl tracking-tighter flex items-center justify-center md:justify-start whitespace-nowrap leading-none">
-                                <i class="fa-solid fa-mug-hot mr-2 text-lg"></i>i-Tea
-                            </div>
-                        </div>
-                        
-                        <!-- Links Section (3 Columns) -->
-                        <div class="grid grid-cols-3 gap-4 md:gap-8 text-left pb-10">
-                            <div>
-                                <h4 class="font-black text-gray-900 mb-4 text-xs tracking-tight">Explore</h4>
-                                <ul class="space-y-3 text-[10px] text-gray-400 font-bold">
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Menu</a></li>
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Locations</a></li>
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Gift Cards</a></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 class="font-black text-gray-900 mb-4 text-xs tracking-tight">Support</h4>
-                                <ul class="space-y-3 text-[10px] text-gray-400 font-bold">
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Contact</a></li>
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Help</a></li>
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Feedback</a></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 class="font-black text-gray-900 mb-4 text-xs tracking-tight">Legal</h4>
-                                <ul class="space-y-3 text-[10px] text-gray-400 font-bold">
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Privacy</a></li>
-                                    <li><a href="#" class="hover:text-violet-600 transition-colors">Terms</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="flex flex-col-reverse md:flex-row justify-between items-center pt-6 border-t border-gray-100 text-[11px] text-gray-400 font-medium gap-4">
-                            <p>© 2026 i-Tea Inc. All rights reserved.</p>
-                            <div class="flex gap-5 text-gray-400">
-                                <i class="fa-solid fa-award text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
-                                <i class="fa-regular fa-star text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
-                                <i class="fa-regular fa-envelope text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
-                            </div>
-                        </div>
                 </div>
 
                 <!-- Category Bottom Sheet Modal -->
@@ -1606,12 +1563,14 @@ const routes = {
         const content = `
                 <div class="${isDesktop ? 'modal-content max-w-xl p-0 overflow-hidden' : 'flex flex-col h-full bg-white'}">
                     ${!isDesktop ? `
-                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
-                    </button>
-                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Customize</span>
-                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg><span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">1</span></button>
+                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
+                    <div class="w-full max-w-[1080px] flex items-center px-2">
+                        <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
+                            <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                        </button>
+                        <span class="text-lg font-black text-violet-600 flex-1 text-center">Customize</span>
+                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg><span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">1</span></button>
+                    </div>
                 </header>` : ''}
 
                     <div id="order-details-scroller" class="flex-1 overflow-y-auto scrollbar-hide">
@@ -1733,16 +1692,20 @@ const routes = {
 
         return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
-                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
-                    </button>
-                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Review order</span>
-                    <div class="w-10"></div>
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
+                    <div class="w-full max-w-[1080px] flex items-center px-2">
+                        <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
+                            <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                        </button>
+                        <span class="text-lg font-black text-violet-600 flex-1 text-center">Review order</span>
+                        <div class="w-10"></div>
+                    </div>
                 </header>
-                <div id="cart-scroller" class="flex-1 overflow-y-auto p-6 flex flex-col gap-6 scrollbar-hide pb-32">
+                <div id="cart-scroller" class="flex-1 overflow-y-auto p-6 flex flex-col gap-6 scrollbar-hide pb-32 w-full max-w-[1080px] mx-auto lg:flex-row lg:items-start lg:pb-6">
                     
-                    <!-- Consolidated Order Details Card -->
+                    <!-- Left Column (2/3 width on desktop) -->
+                    <div class="contents lg:flex lg:flex-col lg:gap-6 lg:w-2/3 lg:shrink">
+                        <!-- Consolidated Order Details Card -->
                     <div class="bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col gap-4 shrink-0 transition-all">
                         <!-- Store Info (Compact) -->
                         <div class="flex justify-between items-center pb-3 border-b border-gray-50">
@@ -1852,15 +1815,15 @@ const routes = {
                                 // Find the actual index in MENU_ITEMS for the onclick handler
                                 const actualIndex = MENU_ITEMS.indexOf(item);
                                 return `
-                                    <div class="snap-center shrink-0 w-[140px] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                                        <div class="h-24 relative cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">
+                                    <div class="snap-center shrink-0 w-[140px] md:w-auto md:flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md">
+                                        <div class="h-24 md:h-32 lg:h-36 relative cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">
                                             <img src="${item.image}" class="w-full h-full object-cover object-top">
                                         </div>
-                                        <div class="p-3 text-left">
-                                            <h4 class="text-xs font-black text-gray-900 uppercase tracking-tight truncate cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">${item.name}</h4>
-                                            <div class="flex justify-between items-center mt-2">
-                                                <span class="text-sm font-black text-violet-600">$${item.price.toFixed(2)}</span>
-                                                <button onclick="selectItemAndNavigate(${actualIndex})" class="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                                        <div class="p-3 md:p-4 text-left flex flex-col flex-1">
+                                            <h4 class="text-xs md:text-sm font-black text-gray-900 uppercase tracking-tight truncate cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">${item.name}</h4>
+                                            <div class="flex justify-between items-center mt-auto pt-2">
+                                                <span class="text-sm md:text-base font-black text-violet-600">$${item.price.toFixed(2)}</span>
+                                                <button onclick="selectItemAndNavigate(${actualIndex})" class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px] md:text-xs"></i></button>
                                             </div>
                                         </div>
                                     </div>
@@ -1868,7 +1831,11 @@ const routes = {
                             }).join('')}
                         </div>
                     </div>
+                    
+                    </div> <!-- End Left Column -->
 
+                    <!-- Right Column (1/3 width on desktop) -->
+                    <div class="contents lg:flex lg:flex-col lg:gap-6 lg:w-1/3 lg:shrink lg:sticky lg:top-0">
 
                     <!-- Bag Selection (California Compliance) -->
                     <div class="shrink-0 bg-violet-50 rounded-2xl p-4 border border-violet-100 flex flex-col gap-4">
@@ -1906,13 +1873,24 @@ const routes = {
                         ${mockupState.bagQuantity > 0 ? `<div class="flex justify-between text-sm font-bold text-gray-600"><span>Plastic Bag(s)</span><span>$${bagFee.toFixed(2)}</span></div>` : ''}
                         <div class="h-px bg-gray-200 w-full my-2"></div>
                         <div class="flex justify-between text-lg font-black text-gray-900 uppercase"><span>Total</span><span>$${finalTotal}</span></div>
+                        
+                        <!-- Inline Checkout Button (Desktop Only) -->
+                        <button onclick="${paymentAction}" class="hidden lg:block w-full mt-4 bg-violet-600 text-white px-6 py-4 rounded-full font-black text-[15px] shadow-[0_8px_20px_-5px_rgba(124,58,237,0.3)] hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">
+                            Checkout $${finalTotal}
+                        </button>
                     </div>
+                    
+                    </div> <!-- End Right Column -->
                 </div>
 
                 <!-- Floating Checkout Button -->
-                <button onclick="${paymentAction}" class="absolute bottom-8 right-6 bg-violet-600 text-white px-8 py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] z-[60] active:scale-95 transition-all uppercase tracking-wider">
-                    Checkout $${finalTotal}
-                </button>
+                <div class="absolute bottom-8 left-0 right-0 w-full z-[60] pointer-events-none px-6 flex justify-center lg:hidden">
+                    <div class="w-full max-w-[1080px] flex justify-end">
+                        <button onclick="${paymentAction}" class="pointer-events-auto bg-violet-600 text-white px-8 py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">
+                            Checkout $${finalTotal}
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Bag Alert Modal -->
                 ${mockupState.modalOpen === 'bag-alert' ? `
@@ -2390,12 +2368,14 @@ const routes = {
             </div>`,
     'track-order': () => `
             <div class="flex flex-col h-full bg-white relative">
-                <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0">
-                    <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
-                    <h1 class="text-xl font-black tracking-tight uppercase text-gray-900">Track Order</h1>
+                <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 justify-center">
+                    <div class="w-full max-w-[1080px] flex items-center">
+                        <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
+                        <h1 class="text-xl font-black tracking-tight uppercase text-gray-900">Track Order</h1>
+                    </div>
                 </header>
                 
-                <div class="px-6 py-4 space-y-4">
+                <div class="px-6 py-4 space-y-4 w-full max-w-[1080px] mx-auto">
                     <div class="flex justify-end shrink-0 pb-2">
                         <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
                             <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
@@ -2565,7 +2545,7 @@ const routes = {
                 </div>
             </div>`,
     'registration': () => `
-            <div class="flex flex-col h-full bg-white relative overflow-y-auto">
+            <div class="flex flex-col h-full bg-white lg:bg-[#f6f6f6] relative overflow-y-auto">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
                     <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
                         <i class="fa-solid fa-chevron-left text-gray-600"></i>
@@ -2574,107 +2554,109 @@ const routes = {
                     <div class="w-10"></div>
                 </header>
                 
-                <div class="p-8 flex flex-col gap-8 font-sans">
+                <div class="w-full max-w-[1080px] mx-auto p-8 lg:px-6 lg:py-8 flex flex-col gap-8 font-sans">
                     <div class="text-center mb-2">
                         <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Register</h1>
                         <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mt-2">Create a new account</p>
                     </div>
 
-                    <div class="space-y-6">
-                        <!-- Account Info Section -->
-                        <div class="space-y-4">
-                            <h3 class="text-sm font-black text-violet-600 uppercase tracking-widest border-b border-violet-50 pb-2">Account Info</h3>
-                            
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Email</label>
-                                <div class="relative">
-                                    <i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                    <input type="email" placeholder="email@example.com" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                    <div class="lg:bg-white lg:rounded-2xl lg:p-8 lg:shadow-sm lg:border lg:border-gray-100 flex flex-col gap-8">
+                        <div class="space-y-6">
+                            <!-- Account Info Section -->
+                            <div class="space-y-4">
+                                <h3 class="text-sm font-black text-violet-600 uppercase tracking-widest border-b border-violet-50 pb-2">Account Info</h3>
+                                
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Email</label>
+                                    <div class="relative">
+                                        <i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <input type="email" placeholder="email@example.com" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div class="space-y-1.5">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Password</label>
+                                        <div class="relative">
+                                            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                            <input type="password" placeholder="Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Confirm Password</label>
+                                        <div class="relative">
+                                            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                            <input type="password" placeholder="Confirm Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
+                            <!-- Customer Info Section -->
                             <div class="space-y-4">
-                                <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Password</label>
-                                    <div class="relative">
-                                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                        <input type="password" placeholder="Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                <h3 class="text-sm font-black text-violet-600 uppercase tracking-widest border-b border-violet-50 pb-2">Customer Info</h3>
+                                
+                                <div class="space-y-4">
+                                    <div class="space-y-1.5">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">First Name</label>
+                                        <input type="text" placeholder="First Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Last Name</label>
+                                        <input type="text" placeholder="Last Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
                                 </div>
+
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Confirm Password</label>
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Phone Number</label>
                                     <div class="relative">
-                                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                        <input type="password" placeholder="Confirm Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <input type="tel" placeholder="(555) 000-0000" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                    </div>
+                                </div>
+
+                                <!-- Disclosure Checkbox -->
+                                <div class="flex items-start gap-4 px-1 py-1">
+                                    <div class="relative flex items-center shrink-0 mt-1">
+                                        <input type="checkbox" id="sms-disclosure" class="w-6 h-6 border-2 border-gray-200 rounded-md checked:bg-violet-600 checked:border-violet-600 appearance-none cursor-pointer transition-all">
+                                        <i class="fa-solid fa-check absolute text-white text-[12px] left-1.5 opacity-0 pointer-events-none"></i>
+                                    </div>
+                                    <label for="sms-disclosure" class="text-xs text-gray-400 font-bold leading-relaxed tracking-wider uppercase">
+                                        I understand that by providing this cell number, I will receive verification, status, and/or service-related text message(s) and/or phone call(s) notifying me of the status of my account and order(s). All other uses are not authorized. Data rates may apply; frequency varies. Reply STOP to opt out at any time.
+                                    </label>
+                                </div>
+
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Street</label>
+                                    <input type="text" placeholder="Address" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="space-y-1.5 text-sm">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">City</label>
+                                        <input type="text" placeholder="City" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 text-sm">
+                                        <div class="space-y-1.5">
+                                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">State</label>
+                                            <input type="text" placeholder="AZ" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Zip</label>
+                                            <input type="text" placeholder="85281" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Customer Info Section -->
-                        <div class="space-y-4">
-                            <h3 class="text-sm font-black text-violet-600 uppercase tracking-widest border-b border-violet-50 pb-2">Customer Info</h3>
-                            
-                            <div class="space-y-4">
-                                <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">First Name</label>
-                                    <input type="text" placeholder="First Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
-                                </div>
-                                <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Last Name</label>
-                                    <input type="text" placeholder="Last Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
-                                </div>
-                            </div>
-
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Phone Number</label>
-                                <div class="relative">
-                                    <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                    <input type="tel" placeholder="(555) 000-0000" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
-                                </div>
-                            </div>
-
-                            <!-- Disclosure Checkbox -->
-                            <div class="flex items-start gap-4 px-1 py-1">
-                                <div class="relative flex items-center shrink-0 mt-1">
-                                    <input type="checkbox" id="sms-disclosure" class="w-6 h-6 border-2 border-gray-200 rounded-md checked:bg-violet-600 checked:border-violet-600 appearance-none cursor-pointer transition-all">
-                                    <i class="fa-solid fa-check absolute text-white text-[12px] left-1.5 opacity-0 pointer-events-none"></i>
-                                </div>
-                                <label for="sms-disclosure" class="text-xs text-gray-400 font-bold leading-relaxed tracking-wider uppercase">
-                                    I understand that by providing this cell number, I will receive verification, status, and/or service-related text message(s) and/or phone call(s) notifying me of the status of my account and order(s). All other uses are not authorized. Data rates may apply; frequency varies. Reply STOP to opt out at any time.
-                                </label>
-                            </div>
-
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Street</label>
-                                <input type="text" placeholder="Address" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="space-y-1.5 text-sm">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">City</label>
-                                    <input type="text" placeholder="City" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all">
-                                </div>
-                                <div class="grid grid-cols-2 gap-2 text-sm">
-                                    <div class="space-y-1.5">
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">State</label>
-                                        <input type="text" placeholder="AZ" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
-                                    </div>
-                                    <div class="space-y-1.5">
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Zip</label>
-                                        <input type="text" placeholder="85281" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="mt-4">
+                            <button onclick="navigateTo('restaurant-home')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase tracking-widest font-black">Create Account</button>
                         </div>
-                    </div>
 
-                    <div class="mt-4">
-                        <button onclick="navigateTo('restaurant-home')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase tracking-widest font-black">Create Account</button>
-                    </div>
-
-                    <div class="text-center mb-8">
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Already have an account? <button onclick="navigateTo('restaurant-sign-in')" class="text-violet-600 ml-1 font-black underline underline-offset-4">Sign In</button></p>
+                        <div class="text-center">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Already have an account? <button onclick="navigateTo('restaurant-sign-in')" class="text-violet-600 ml-1 font-black underline underline-offset-4">Sign In</button></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2751,15 +2733,20 @@ const routes = {
     `,
     'order-confirm': () => `
             <div class="flex flex-col h-full bg-white relative">
-                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
-                    </button>
-                    <span class="text-lg font-black text-violet-600 flex-1 text-center">SUCCESS</span>
-                    <div class="w-10"></div>
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
+                    <div class="w-full max-w-[1080px] flex items-center px-2">
+                        <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
+                            <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                        </button>
+                        <span class="text-lg font-black text-violet-600 flex-1 text-center">SUCCESS</span>
+                        <div class="w-10"></div>
+                    </div>
                 </header>
-                <div class="flex-1 overflow-y-auto px-6 py-8 space-y-6">
-                    <div class="text-center">
+                <div class="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6 w-full max-w-[1080px] mx-auto lg:flex-row lg:gap-8 lg:items-start">
+                    
+                    <!-- Left Column (Desktop) uses skill wrapper -->
+                    <div class="contents lg:flex lg:flex-col lg:gap-6 lg:w-2/3 lg:shrink">
+                        <div class="text-center">
                         <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 mx-auto shadow-inner">
                             <i class="fa-solid fa-check text-5xl"></i>
                         </div>
@@ -2777,9 +2764,12 @@ const routes = {
                             <div class="text-base font-black text-gray-900 uppercase truncate">i-Tea Tempe</div>
                             <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight mt-1 truncate">825 W. University Dr</div>
                         </div>
-                    </div>
+                        </div>
+                    </div> <!-- End Left Column -->
 
-                    <div class="flex gap-2 overflow-x-auto scrollbar-hide shrink-0 pb-2">
+                    <!-- Right Column (Desktop) uses skill wrapper -->
+                    <div class="contents lg:flex lg:flex-col lg:gap-6 lg:w-1/3 lg:shrink lg:sticky lg:top-8">
+                        <div class="flex gap-2 overflow-x-auto scrollbar-hide shrink-0 pb-2">
                         <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
                             <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
                             <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
@@ -2897,15 +2887,17 @@ const routes = {
 
         return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
-                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('cart')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
-                    </button>
-                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Payment</span>
-                    <div class="w-10"></div>
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
+                    <div class="w-full max-w-[1080px] flex items-center px-2">
+                        <button onclick="navigateTo('cart')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
+                            <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                        </button>
+                        <span class="text-lg font-black text-violet-600 flex-1 text-center">Payment</span>
+                        <div class="w-10"></div>
+                    </div>
                 </header>
                 
-                <div id="payment-scroller" class="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide pb-32">
+                <div id="payment-scroller" class="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide pb-32 w-full max-w-[1080px] mx-auto">
                     
                     <!-- Payment Methods -->
                     <div>
@@ -3120,7 +3112,7 @@ const routes = {
                     <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center">Favorite Locations</h1>
                     <div class="w-10"></div>
                 </header>
-                <div class="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+                <div class="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide w-full max-w-[1080px] mx-auto">
                     <!-- Location 1 -->
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
                         <div class="flex justify-between items-start">
@@ -3304,9 +3296,63 @@ function renderPage() {
     });
     const viewport = document.getElementById('app-viewport');
     if (!viewport) return;
-    viewport.innerHTML = routes[currentPage]
+    
+    let contentHtml = routes[currentPage]
         ? routes[currentPage]()
         : `<div class="p-10 text-center uppercase font-black">404 - Page Not Found</div>`;
+
+    const noFooterPages = ['location-pick', 'menu', 'restaurant-home-logo', 'restaurant-home', 'restaurant-sign-in', 'restaurant-landing'];
+    if (!noFooterPages.includes(currentPage)) {
+        const globalFooter = `
+            <div class="hidden lg:block w-full bg-white shrink-0">
+                <div class="max-w-[1080px] mx-auto px-6 border-t border-gray-200 mt-16 pt-10">
+                    <!-- Logo Section -->
+                    <div class="mb-6 text-center md:text-left">
+                        <div class="font-black text-violet-600 text-xl tracking-tighter flex items-center justify-center md:justify-start whitespace-nowrap leading-none">
+                            <img src="images/itea_logo.png" alt="i-Tea" class="h-8 w-auto mr-3 object-contain">i-Tea
+                        </div>
+                    </div>
+                    
+                    <!-- Links Section -->
+                    <div class="grid grid-cols-3 gap-4 md:gap-8 text-left pb-10">
+                        <div>
+                            <h4 class="font-black text-gray-900 mb-4 text-xs tracking-tight">Explore</h4>
+                            <ul class="space-y-3 text-[10px] text-gray-400 font-bold">
+                                <li><a href="#" class="hover:text-violet-600 transition-colors">Menu</a></li>
+                                <li><a href="#" class="hover:text-violet-600 transition-colors">Locations</a></li>
+                                <li><a href="#" class="hover:text-violet-600 transition-colors">Gift Cards</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-gray-900 mb-4 text-xs tracking-tight">Support</h4>
+                            <ul class="space-y-3 text-[10px] text-gray-400 font-bold">
+                                <li><a href="#" class="hover:text-violet-600 transition-colors">Contact</a></li>
+                                <li><a href="#" class="hover:text-violet-600 transition-colors">Help</a></li>
+                                <li><a href="#" class="hover:text-violet-600 transition-colors">Feedback</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-gray-900 mb-4 text-xs tracking-tight">Legal</h4>
+                            <ul class="space-y-3 text-[10px] text-gray-400 font-bold">
+                                <li><a href="#" class="hover:text-violet-600 transition-colors">Privacy</a></li>
+                                <li><a href="#" class="hover:text-violet-600 transition-colors">Terms</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="flex flex-col-reverse md:flex-row justify-between items-center py-6 border-t border-gray-100 text-[11px] text-gray-400 font-medium gap-4">
+                        <p>© 2026 i-Tea Inc. All rights reserved.</p>
+                        <div class="flex gap-5 text-gray-400">
+                            <i class="fa-solid fa-award text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
+                            <i class="fa-regular fa-star text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
+                            <i class="fa-regular fa-envelope text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        contentHtml += globalFooter;
+    }
+
+    viewport.innerHTML = contentHtml;
     viewport.scrollTop = 0;
     const canvasArea = document.getElementById('canvas');
     if (canvasArea) canvasArea.scrollTop = 0;
