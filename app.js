@@ -1266,7 +1266,7 @@ const routes = {
                 </div>
                 ` : ''}
 
-                <div class="p-6 md:p-8 max-w-[1080px] mx-auto w-full">
+                <div class="${isDesktop ? 'p-8' : 'p-3'} max-w-[1080px] mx-auto w-full">
 
 
                     <!-- Top Split Row (Hero + Sidebar) -->
@@ -1376,19 +1376,19 @@ const routes = {
                             
                             <div class="relative group">
                                 <!-- Horizontal Scroll Container -->
-                                <div class="${isDesktop ? 'grid grid-cols-4 gap-5 pb-0 mx-0 px-0' : 'flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-1 px-1'}">
+                                <div class="${isDesktop ? 'grid grid-cols-4 gap-5 pb-0 mx-0 px-0' : 'flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-1 px-1'}">
                                     ${MENU_ITEMS.slice(0, 8).map((item, index) => `
-                                        <div class="snap-center shrink-0 ${isDesktop ? 'w-auto' : 'w-[280px]'} bg-white rounded-3xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group/card cursor-pointer flex flex-col" onclick='selectItemAndNavigate(${index})'>
-                                            <div class="w-full h-40 rounded-2xl overflow-hidden mb-4 relative shrink-0">
+                                        <div class="snap-center shrink-0 ${isDesktop ? 'w-auto' : 'w-[280px]'} bg-white rounded-3xl ${isDesktop ? 'p-4' : 'px-2 py-4'} shadow-sm border border-gray-100 hover:shadow-md transition-shadow group/card cursor-pointer flex flex-col" onclick='selectItemAndNavigate(${index})'>
+                                            <div class="w-full ${isDesktop ? 'h-40' : 'h-52'} rounded-2xl overflow-hidden mb-4 relative shrink-0">
                                                 <img src="${item.image}" class="w-full h-full object-cover object-top group-hover/card:scale-110 transition-transform duration-700">
                                                 <div class="absolute top-3 left-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full shadow-sm text-[10px] font-black uppercase text-violet-600 tracking-wider">New</div>
                                             </div>
-                                            <div class="flex justify-between items-start mb-1 shrink-0">
-                                                <h4 class="font-black text-gray-900 text-base leading-tight w-2/3 tracking-tight group-hover/card:text-violet-600 transition-colors uppercase">${item.name}</h4>
-                                                <span class="font-black text-violet-600">$${item.price.toFixed(2)}</span>
+                                            <div class="cursor-pointer mb-2 shrink-0" onclick='selectItemAndNavigate(${index})'>
+                                                <h4 class="font-black text-gray-900 ${isDesktop ? 'text-base' : 'text-[13px]'} leading-tight tracking-tight group-hover/card:text-violet-600 transition-colors uppercase mb-1">${item.name}</h4>
+                                                <div class="font-black text-violet-600 ${isDesktop ? 'text-sm' : 'text-[12px]'}">$${item.price.toFixed(2)}</div>
                                             </div>
-                                            <p class="text-gray-400 text-[11px] font-medium leading-relaxed truncate mb-4 flex-1">${item.description}</p>
-                                            <button onclick='selectItemAndNavigate(${index})' class="w-full py-2.5 rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black text-[11px] uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0">+ Add to Order</button>
+                                            ${isDesktop ? `<p class="text-gray-400 text-[11px] font-medium leading-relaxed truncate mb-4 flex-1">${item.description}</p>` : ''}
+                                            <button onclick='selectItemAndNavigate(${index})' class="w-full py-2.5 rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black text-[11px] uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                         </div>
                                     `).join('')}
                                 </div>
@@ -1402,18 +1402,18 @@ const routes = {
                                 <button class="text-violet-600 font-bold text-sm hover:underline tracking-tight">View All</button>
                             </div>
                             
-                            <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-5'}">
+                            <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
                                 ${MENU_ITEMS.map((item, index) => `
-                                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                        <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative cursor-pointer" onclick='selectItemAndNavigate(${index})'>
+                                    <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                        <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${index})'>
                                             <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
                                         </div>
-                                        <div class="flex justify-between items-start mb-2 cursor-pointer" onclick='selectItemAndNavigate(${index})'>
-                                            <h4 class="font-black text-gray-900 text-lg leading-tight w-2/3 tracking-tight uppercase">${item.name}</h4>
-                                            <span class="font-black text-violet-600">$${item.price.toFixed(2)}</span>
+                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${index})'>
+                                            <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                            <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
                                         </div>
-                                        <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed">${item.description}</p>
-                                        <button onclick='selectItemAndNavigate(${index})' class="w-full py-3 rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black text-sm uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm">+ Add to Order</button>
+                                        ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed">${item.description}</p>` : ''}
+                                        <button onclick='selectItemAndNavigate(${index})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                     </div>
                                 `).join('')}
                             </div>
@@ -2974,6 +2974,7 @@ const routes = {
         `;
     },
     'checkout': () => {
+        const isDesktop = currentViewport === 'desktop';
         const subtotal = 12.50;
         const taxes = 1.25;
         const bagFee = mockupState.bagQuantity * 0.10;
@@ -3004,28 +3005,28 @@ const routes = {
                     </div>
                 </header>
                 
-                <div id="payment-scroller" class="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide pb-32 w-full max-w-[1080px] mx-auto">
+                <div id="payment-scroller" class="flex-1 overflow-y-auto ${isDesktop ? 'p-8 space-y-8' : 'p-4 space-y-6'} scrollbar-hide pb-32 w-full max-w-[1080px] mx-auto">
                     
                     <!-- Payment Methods -->
                     <div>
                         <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Payment Method</h2>
                         <div class="space-y-3">
                             <!-- Card -->
-                            <div onclick="updateMockupState('modalOpen', 'payment-card')" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                            <div onclick="updateMockupState('modalOpen', 'payment-card')" class="bg-white rounded-2xl ${isDesktop ? 'p-4' : 'p-3'} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400">
                                         <i class="fa-solid fa-credit-card text-lg"></i>
                                     </div>
                                     <div>
                                         <span class="font-black text-gray-900 uppercase text-xs block tracking-tight">Credit or Debit Card</span>
-                                        <span class="text-[10px] font-bold text-gray-400">Ending in 4242</span>
+                                        <span class="text-[10px] font-bold text-violet-600 uppercase">Ending in 442</span>
                                     </div>
                                 </div>
                                 <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
                             </div>
 
                             <!-- Gift Card -->
-                            <div onclick="updateMockupState('modalOpen', 'payment-gift')" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                            <div onclick="updateMockupState('modalOpen', 'payment-gift')" class="bg-white rounded-2xl ${isDesktop ? 'p-4' : 'p-3'} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-400">
                                         <i class="fa-solid fa-gift text-lg"></i>
@@ -3036,7 +3037,7 @@ const routes = {
                             </div>
 
                             <!-- Loyalty -->
-                            <div onclick="updateMockupState('modalOpen', 'payment-rewards')" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                            <div onclick="updateMockupState('modalOpen', 'payment-rewards')" class="bg-white rounded-2xl ${isDesktop ? 'p-4' : 'p-3'} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-400">
                                         <i class="fa-solid fa-award text-lg"></i>
@@ -3066,7 +3067,6 @@ const routes = {
                                 `;
                             }).join('')}
                         </div>
-                        <p class="text-[10px] font-bold text-gray-400 mt-3 px-1 uppercase tracking-wide text-center">Your generosity supports our hard-working baristas! ✨</p>
                     </div>
 
                     <!-- Pricing Summary -->
