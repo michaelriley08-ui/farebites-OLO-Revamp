@@ -1139,7 +1139,7 @@ const routes = {
 
         const categories = [
             { id: 'most-ordered', name: 'MOST ORDERED', img: assets.bobaHero },
-            { id: 'new-items', name: 'NEW ITEMS', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
+            { id: 'featured-items', name: 'FEATURED ITEMS', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
             { id: 'teaspresso', name: 'TEASPRESSO SERIES', img: assets.boba1 },
             { id: 'milk-tea', name: 'MILK TEA SPECIALTY', img: assets.boba2 },
             { id: 'fruit-tea', name: 'I-TEA FRUIT TEA', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
@@ -1200,12 +1200,12 @@ const routes = {
                     ${!isDesktop ? `
                     <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
                         ${[
-                            'NEW ITEMS', 'TEASPRESSO SERIES', 'MILK TEA SPECIALTY', 'I-TEA FRUIT TEA',
+                            'FEATURED ITEMS', 'TEASPRESSO SERIES', 'MILK TEA SPECIALTY', 'I-TEA FRUIT TEA',
                             'SEA SALT KREAMA', 'SUMMER FROSTY', 'SIGNATURE ICED MILK', 'DESSERT DRINKS',
                             'HOT DRINK', 'PREMIUM TEA TAIWAN', 'COLD BREW', 'SNACK MENU',
                             'OKINAWA ONIGIRI SERIES', 'FOOD MENU'
                         ].map(cat => `
-                            <button onclick="document.getElementById('new-items-section').scrollIntoView({behavior: 'smooth'})" class="whitespace-nowrap px-6 py-2 rounded-full bg-violet-600 text-white shadow-sm font-black text-[10px] uppercase hover:bg-violet-700 transition-all shrink-0">
+                            <button onclick="document.getElementById('featured-items-section').scrollIntoView({behavior: 'smooth'})" class="whitespace-nowrap px-6 py-2 rounded-full bg-violet-600 text-white shadow-sm font-black text-[10px] uppercase hover:bg-violet-700 transition-all shrink-0">
                                 ${cat}
                             </button>
                         `).join('')}
@@ -1299,15 +1299,14 @@ const routes = {
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${fav.image}" class="w-full h-full object-cover object-top"></div>
                                             <div>
-                                                <div class="font-black text-sm text-gray-900 leading-tight w-40 truncate">${fav.name}</div>
+                                                <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2">${fav.name}</div>
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 3 days ago</div>
                                             </div>
                                         </div>
-                                        <button onclick="navigateTo('customize')" class="w-9 h-9 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95 shrink-0 ml-4"><i class="fa-solid fa-plus text-xs"></i></button>
+                                        <button onclick="navigateTo('customize')" class="w-9 h-9 rounded-xl bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95 shrink-0 ml-4"><i class="fa-solid fa-plus text-xs"></i></button>
                                     </div>
                                     `).join('')}
                                 </div>
-                                <button onclick="navigateTo('manage-favorites')" class="w-full py-3 rounded-full bg-gray-50 text-gray-800 font-black text-sm hover:bg-gray-100 transition-colors">Manage Favorites</button>
                             </div>
                             ` : ''}
                         </div>
@@ -1327,25 +1326,18 @@ const routes = {
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${fav.image}" class="w-full h-full object-cover object-top"></div>
                                             <div>
-                                                <div class="font-black text-sm text-gray-900 leading-tight w-40 truncate">${fav.name}</div>
+                                                <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2">${fav.name}</div>
                                                 <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 3 days ago</div>
                                             </div>
                                         </div>
-                                        <button onclick="navigateTo('customize')" class="w-9 h-9 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95 shrink-0 ml-4"><i class="fa-solid fa-plus text-xs"></i></button>
+                                        <button onclick="navigateTo('customize')" class="w-9 h-9 rounded-xl bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95 shrink-0 ml-4"><i class="fa-solid fa-plus text-xs"></i></button>
                                     </div>
                                     `).join('')}
                                 </div>
-                                <button onclick="navigateTo('manage-favorites')" class="w-full py-3 rounded-full bg-gray-50 text-gray-800 font-black text-sm hover:bg-gray-100 transition-colors">Manage Favorites</button>
                             </div>
                             ` : ''}
 
-                            <!-- Promo Card (Mobile/Tablet Sidebar) -->
-                            <div class="${isDesktop ? 'hidden' : 'block'} bg-[#0b132b] rounded-2xl p-6 relative overflow-hidden text-white shadow-xl">
-                                <i class="fa-solid fa-tag absolute -right-3 -top-3 text-7xl text-white/5 rotate-12"></i>
-                                <h3 class="font-black text-xl tracking-tight mb-2 relative z-10">Free Desert</h3>
-                                <p class="text-xs text-blue-100/80 font-medium mb-5 relative z-10 leading-relaxed pr-6">On orders over $35. Valid for your next 3 orders.</p>
-                                <div class="text-[11px] font-black text-violet-500 uppercase tracking-widest relative z-10">CODE: BITESFREE35</div>
-                            </div>
+                            <!-- Promo Card moved to bottom on mobile -->
                         </div>
                     </div>
 
@@ -1355,22 +1347,22 @@ const routes = {
                         <!-- Desktop Category Pills -->
                         <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2 pt-2 -mx-1 px-1">
                             ${[
-                                'NEW ITEMS', 'TEASPRESSO SERIES', 'MILK TEA SPECIALTY', 'I-TEA FRUIT TEA',
+                                'FEATURED ITEMS', 'TEASPRESSO SERIES', 'MILK TEA SPECIALTY', 'I-TEA FRUIT TEA',
                                 'SEA SALT KREAMA', 'SUMMER FROSTY', 'SIGNATURE ICED MILK', 'DESSERT DRINKS',
                                 'HOT DRINK', 'PREMIUM TEA TAIWAN', 'COLD BREW', 'SNACK MENU',
                                 'OKINAWA ONIGIRI SERIES', 'FOOD MENU'
                             ].map(cat => `
-                                <button onclick="document.getElementById('new-items-section').scrollIntoView({behavior: 'smooth'})" class="whitespace-nowrap px-6 py-2.5 rounded-full bg-violet-600 text-white shadow-sm font-black text-[10px] uppercase hover:bg-violet-700 transition-all shrink-0 tracking-wide">
+                                <button onclick="document.getElementById('featured-items-section').scrollIntoView({behavior: 'smooth'})" class="whitespace-nowrap px-6 py-2.5 rounded-full bg-violet-600 text-white shadow-sm font-black text-[10px] uppercase hover:bg-violet-700 transition-all shrink-0 tracking-wide">
                                     ${cat}
                                 </button>
                             `).join('')}
                         </div>
                         ` : ''}
 
-                        <!-- New Items Carousel -->
-                        <div id="new-items-section">
+                        <!-- Featured Items Carousel -->
+                        <div id="featured-items-section">
                             <div class="flex justify-between items-end mb-4 px-1">
-                                <h3 class="text-2xl font-black text-gray-900 tracking-tight">New Items</h3>
+                                <h3 class="text-2xl font-black text-gray-900 tracking-tight">Featured Items</h3>
                                 <button class="text-violet-600 font-bold text-sm hover:underline tracking-tight">See All</button>
                             </div>
                             
@@ -1387,7 +1379,7 @@ const routes = {
                                                 <h4 class="font-black text-gray-900 ${isDesktop ? 'text-base' : 'text-[13px]'} leading-tight tracking-tight group-hover/card:text-violet-600 transition-colors uppercase mb-1">${item.name}</h4>
                                                 <div class="font-black text-violet-600 ${isDesktop ? 'text-sm' : 'text-[12px]'}">$${item.price.toFixed(2)}</div>
                                             </div>
-                                            ${isDesktop ? `<p class="text-gray-400 text-[11px] font-medium leading-relaxed truncate mb-4 flex-1">${item.description}</p>` : ''}
+                                            ${isDesktop ? `<p class="text-gray-400 text-[11px] font-medium leading-relaxed mb-4 flex-1 line-clamp-2">${item.description}</p>` : ''}
                                             <button onclick='selectItemAndNavigate(${index})' class="w-full py-2.5 rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black text-[11px] uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                         </div>
                                     `).join('')}
@@ -1412,11 +1404,21 @@ const routes = {
                                             <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
                                             <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
                                         </div>
-                                        ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed">${item.description}</p>` : ''}
+                                        ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ''}
                                         <button onclick='selectItemAndNavigate(${index})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                     </div>
                                 `).join('')}
                             </div>
+
+                            ${!isDesktop ? `
+                            <!-- Promo Card (Mobile Bottom) -->
+                            <div class="bg-[#0b132b] rounded-2xl p-6 relative overflow-hidden text-white shadow-xl mt-8">
+                                <i class="fa-solid fa-tag absolute -right-3 -top-3 text-7xl text-white/5 rotate-12"></i>
+                                <h3 class="font-black text-xl tracking-tight mb-2 relative z-10">Free Desert</h3>
+                                <p class="text-xs text-blue-100/80 font-medium mb-5 relative z-10 leading-relaxed pr-6">On orders over $35. Valid for your next 3 orders.</p>
+                                <div class="text-[11px] font-black text-violet-500 uppercase tracking-widest relative z-10">CODE: BITESFREE35</div>
+                            </div>
+                            ` : ''}
                         </div>
 
                         ${isDesktop ? `
@@ -1453,7 +1455,7 @@ const routes = {
                         <!-- Category List -->
                         <div class="flex-1 overflow-y-auto px-6 py-4 space-y-3 scrollbar-hide">
                             ${categories.map(cat => `
-                                <div onclick="updateMockupState('modalOpen', null); navigateTo('menu'); setTimeout(() => document.getElementById('new-items-section').scrollIntoView({behavior: 'smooth'}), 100)" class="flex items-start gap-4 p-3 rounded-2xl border-2 border-gray-50 bg-white hover:border-violet-200 hover:bg-violet-50/30 transition-all cursor-pointer group active:scale-[0.98]">
+                                <div onclick="updateMockupState('modalOpen', null); navigateTo('menu'); setTimeout(() => document.getElementById('featured-items-section').scrollIntoView({behavior: 'smooth'}), 100)" class="flex items-start gap-4 p-3 rounded-2xl border-2 border-gray-50 bg-white hover:border-violet-200 hover:bg-violet-50/30 transition-all cursor-pointer group active:scale-[0.98]">
                                     <div class="flex items-center gap-4">
                                         <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm border border-gray-100">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
@@ -3294,10 +3296,11 @@ const routes = {
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
 
-                <div class="p-6 md:p-8 max-w-4xl mx-auto w-full">
+                <div class="${isDesktop ? 'p-8' : 'p-3'} max-w-4xl mx-auto w-full">
                     <div class="mb-8">
                         <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1 uppercase">Your Favorites</h1>
-                        <p class="text-gray-600 font-medium">Keep track of the items you love most.</p>
+                        <p class="text-gray-600 font-medium mb-4">Keep track of the items you love most.</p>
+                        ${!isDesktop ? '<button class="w-full py-3 bg-violet-600 text-white rounded-full font-black uppercase text-sm shadow-lg tracking-widest mb-2">Manage Favorites</button>' : ''}
                     </div>
 
                     ${favorites.length === 0 ? `
@@ -3310,25 +3313,25 @@ const routes = {
                             <button onclick="navigateTo('menu')" class="bg-violet-600 text-white px-8 py-3 rounded-full font-black uppercase text-sm shadow-lg tracking-wide">Explore Menu</button>
                         </div>
                     ` : `
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 ${isDesktop ? 'gap-6' : 'gap-[10px]'}">
                         ${favorites.map(item => `
-                            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex gap-5 hover:shadow-md transition-shadow relative group">
-                                <div class="w-24 h-24 rounded-xl overflow-hidden shrink-0 border border-gray-50">
+                            <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-4'} shadow-sm border border-gray-100 flex ${isDesktop ? 'gap-5' : 'flex-col gap-4'} hover:shadow-md transition-shadow relative group">
+                                <div class="${isDesktop ? 'w-24 h-24' : 'w-full h-56'} rounded-xl overflow-hidden shrink-0 border border-gray-50">
                                     <img src="${item.image}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                 </div>
-                                <div class="flex-1 flex flex-col justify-between py-1">
-                                    <div>
+                                <div class="flex-1 flex flex-col justify-between py-1 min-w-0">
+                                    <div class="cursor-pointer">
                                         <div class="text-violet-600 text-[9px] font-black tracking-widest uppercase mb-1">${item.category}</div>
-                                        <h4 class="font-black text-gray-900 text-base leading-tight tracking-tight mb-1 pr-8">${item.name}</h4>
-                                        <span class="font-black text-violet-600 text-sm">$${item.price.toFixed(2)}</span>
+                                        <h4 class="font-black text-gray-900 ${isDesktop ? 'text-base' : 'text-lg'} leading-tight tracking-tight mb-1 pr-8 truncate">${item.name}</h4>
+                                        <div class="font-black text-violet-600 text-sm">$${item.price.toFixed(2)}</div>
                                     </div>
-                                    <div class="flex gap-2">
+                                    <div class="flex gap-2 mt-4">
                                         <button onclick="navigateTo('customize')" class="text-violet-600 font-black text-[10px] uppercase tracking-widest hover:underline">Customize</button>
                                         <span class="text-gray-300">•</span>
                                         <button onclick="navigateTo('cart')" class="text-violet-600 font-black text-[10px] uppercase tracking-widest hover:underline">Add to Order</button>
                                     </div>
                                 </div>
-                                <button onclick="removeFavorite(${item.id})" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors shadow-sm" title="Remove from favorites">
+                                <button onclick="removeFavorite(${item.id})" class="absolute ${isDesktop ? 'top-4 right-4' : 'top-4 right-4'} w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors shadow-sm" title="Remove from favorites">
                                     <i class="fa-solid fa-heart text-sm"></i>
                                 </button>
                             </div>
