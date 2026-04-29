@@ -1190,8 +1190,8 @@ const routes = {
                             <h2 class="text-xl font-black text-gray-900 tracking-tighter whitespace-nowrap">Hi Michaelangelo</h2>
                         </div>
 
-                        <button onclick="updateMockupState('modalOpen', 'rewards'); navigateTo('menu')" class="w-11 h-11 rounded-full bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-200 hover:bg-violet-700 transition-all active:scale-90">
-                            <i class="fa-solid fa-award text-xl"></i>
+                        <button onclick="updateMockupState('modalOpen', 'rewards'); navigateTo('menu')" class="text-violet-600 hover:text-violet-700 transition-all active:scale-90 flex items-center justify-center p-2">
+                            <i class="fa-solid fa-award text-3xl drop-shadow-sm"></i>
                         </button>
                     </div>
                     ` : ''}
@@ -1290,20 +1290,22 @@ const routes = {
                             <!-- Reorder Favorites (Mobile/Tablet) -->
                             <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                                 <div class="flex justify-between items-center mb-6">
-                                    <h3 class="font-black text-gray-900 tracking-tight text-lg">Reorder Favorites</h3>
-                                    <button class="text-violet-600 font-bold text-xs hover:underline tracking-tight">See All</button>
+                                    <h3 class="font-black text-gray-900 tracking-tight ${isDesktop ? 'text-2xl' : 'text-xl'} uppercase">Reorder Favorites</h3>
+                                    <button onclick="updateMockupState('modalOpen', 'favorites-see-all'); navigateTo('menu')" class="text-violet-600 font-bold text-xs hover:underline tracking-tight">See All</button>
                                 </div>
                                 <div class="space-y-5 mb-6">
-                                    ${(mockupState.favorites || []).slice(0, 3).map(fav => `
+                                    ${(mockupState.favorites || []).slice(0, 3).map((fav, index) => `
                                     <div class="flex items-center justify-between group">
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${fav.image}" class="w-full h-full object-cover object-top"></div>
                                             <div>
                                                 <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2">${fav.name}</div>
-                                                <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 3 days ago</div>
+                                                <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">
+                                                    ${index === 0 ? 'Ordered 5+ times' : index === 1 ? 'Ordered 10+ times' : 'Ordered 3 times'}
+                                                </div>
                                             </div>
                                         </div>
-                                        <button onclick="navigateTo('customize')" class="w-9 h-9 rounded-xl bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95 shrink-0 ml-4"><i class="fa-solid fa-plus text-xs"></i></button>
+                                        <button onclick="navigateTo('customize')" class="w-9 h-9 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 flex items-center justify-center hover:bg-violet-50 hover:border-violet-300 shadow-sm transition-all active:scale-95 shrink-0 ml-4"><i class="fa-solid fa-plus text-xs"></i></button>
                                     </div>
                                     `).join('')}
                                 </div>
@@ -1317,20 +1319,22 @@ const routes = {
                             <!-- Reorder Favorites (Desktop) -->
                             <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                                 <div class="flex justify-between items-center mb-6">
-                                    <h3 class="font-black text-gray-900 tracking-tight text-lg">Reorder Favorites</h3>
+                                    <h3 class="font-black text-gray-900 tracking-tight ${isDesktop ? 'text-2xl' : 'text-xl'} uppercase">Reorder Favorites</h3>
                                     <button class="text-violet-600 font-bold text-xs hover:underline tracking-tight">See All</button>
                                 </div>
                                 <div class="space-y-5 mb-6">
-                                    ${(mockupState.favorites || []).slice(0, 3).map(fav => `
+                                    ${(mockupState.favorites || []).slice(0, 3).map((fav, index) => `
                                     <div class="flex items-center justify-between group">
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${fav.image}" class="w-full h-full object-cover object-top"></div>
                                             <div>
                                                 <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2">${fav.name}</div>
-                                                <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">Last ordered: 3 days ago</div>
+                                                <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">
+                                                    ${index === 0 ? 'Ordered 5+ times' : index === 1 ? 'Ordered 10+ times' : 'Ordered 3 times'}
+                                                </div>
                                             </div>
                                         </div>
-                                        <button onclick="navigateTo('customize')" class="w-9 h-9 rounded-xl bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 shadow-md transition-transform active:scale-95 shrink-0 ml-4"><i class="fa-solid fa-plus text-xs"></i></button>
+                                        <button onclick="navigateTo('customize')" class="w-9 h-9 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 flex items-center justify-center hover:bg-violet-50 hover:border-violet-300 shadow-sm transition-all active:scale-95 shrink-0 ml-4"><i class="fa-solid fa-plus text-xs"></i></button>
                                     </div>
                                     `).join('')}
                                 </div>
@@ -1362,7 +1366,7 @@ const routes = {
                         <!-- Featured Items Carousel -->
                         <div id="featured-items-section">
                             <div class="flex justify-between items-end mb-4 px-1">
-                                <h3 class="text-2xl font-black text-gray-900 tracking-tight">Featured Items</h3>
+                                <h3 class="${isDesktop ? 'text-2xl' : 'text-xl'} font-black text-gray-900 tracking-tight uppercase">Featured Items</h3>
                                 <button class="text-violet-600 font-bold text-sm hover:underline tracking-tight">See All</button>
                             </div>
                             
@@ -1390,7 +1394,7 @@ const routes = {
                         <!-- Seasonal Specials Grid -->
                         <div>
                             <div class="flex justify-between items-end mb-4 px-1" id="explore-menu-section">
-                                <h3 class="text-2xl font-black text-gray-900 tracking-tight">Explore Our Menu</h3>
+                                <h3 class="${isDesktop ? 'text-2xl' : 'text-xl'} font-black text-gray-900 tracking-tight uppercase">Explore Our Menu</h3>
                                 <button class="text-violet-600 font-bold text-sm hover:underline tracking-tight">View All</button>
                             </div>
                             
@@ -1433,6 +1437,49 @@ const routes = {
                     </div>
                     
                 </div>
+
+                <!-- Favorites See All Modal -->
+                ${mockupState.modalOpen === 'favorites-see-all' ? `
+                <div class="absolute inset-0 bg-black/60 z-[110] flex flex-col justify-end backdrop-blur-sm transition-all duration-300">
+                    <div class="absolute inset-0" onclick="updateMockupState('modalOpen', null); navigateTo('menu')"></div>
+                    <div class="bg-white w-full rounded-t-[40px] shadow-2xl animate-[slideUp_0.4s_ease-out] flex flex-col max-h-[85vh] z-10 relative">
+                        <!-- Handle -->
+                        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-4 mb-6" onclick="updateMockupState('modalOpen', null); navigateTo('menu')"></div>
+                        
+                        <div class="px-6 pb-6 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="text-xl font-black text-gray-900 uppercase tracking-tight">Reorder Favorites</h3>
+                            <button onclick="updateMockupState('modalOpen', null); navigateTo('menu')" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:text-gray-900 transition-colors">
+                                <i class="fa-solid fa-xmark text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto px-6 py-6 space-y-5 scrollbar-hide">
+                            ${(mockupState.favorites || []).slice(0, 6).map((fav, index) => `
+                                <div class="flex items-center justify-between group">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-50">
+                                            <img src="${fav.image}" class="w-full h-full object-cover object-top">
+                                        </div>
+                                        <div>
+                                            <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2">${fav.name}</div>
+                                            <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">
+                                                ${index === 0 ? 'Ordered 5+ times' : index === 1 ? 'Ordered 10+ times' : index === 2 ? 'Ordered 3 times' : index === 3 ? 'Ordered 8+ times' : index === 4 ? 'Ordered 12+ times' : 'Ordered 2 times'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button onclick="navigateTo('customize')" class="w-10 h-10 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 flex items-center justify-center hover:bg-violet-50 hover:border-violet-300 shadow-sm transition-all active:scale-95 shrink-0 ml-4">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="p-6 border-t border-gray-100">
+                            <button onclick="updateMockupState('modalOpen', null); navigateTo('manage-favorites')" class="w-full py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">Manage All Favorites</button>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
 
                 <!-- Category Bottom Sheet Modal -->
                 <div id="category-modal" class="absolute inset-0 bg-black/60 z-[100] ${categoryModalClass} flex-col justify-end backdrop-blur-sm transition-all duration-300">
@@ -1572,8 +1619,10 @@ const routes = {
 
                         <!-- Item Image + Info Card -->
                         <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex gap-0">
-                            <div class="w-64 shrink-0 overflow-hidden">
-                                <img src="${item.image}" class="w-full h-full object-cover object-top">
+                            <div class="w-64 shrink-0 p-3">
+                                <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+                                    <img src="${item.image}" class="w-full h-full object-cover object-top">
+                                </div>
                             </div>
                             <div class="flex-1 px-8 py-6 flex flex-col justify-center gap-4">
                                 <div>
@@ -1684,8 +1733,10 @@ const routes = {
 
                     <div id="order-details-scroller" class="flex-1 overflow-y-auto scrollbar-hide">
                         <!-- Item Banner Image -->
-                        <div class="w-full h-56 overflow-hidden relative">
-                            <img src="${item.image}" class="w-full h-full object-cover object-top">
+                        <div class="px-3 pt-3">
+                            <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative">
+                                <img src="${item.image}" class="w-full h-full object-cover object-top">
+                            </div>
                         </div>
 
                         <!-- Info & Price -->
