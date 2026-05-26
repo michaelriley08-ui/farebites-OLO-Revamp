@@ -88,7 +88,6 @@ const DEFAULT_STATE = {
     noBagsSelected: false,
     toppings: ['BOBA'],
     modalOpen: null,
-    menuTab: 'menu',
     paymentMethod: 'card',
     selectedItem: null,
     tipPercentage: 15,
@@ -612,11 +611,8 @@ const routes = {
                 </div>
 
                 <header class="bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0 relative">
-                    <div class="flex items-center gap-3">
-                        <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
-                        <button onclick="navigateTo('qr-code-guide')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
-                    </div>
-                    <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('location-pick')">
+                    <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
+                    <div class="flex flex-col items-center cursor-pointer" onclick="navigateTo('location-pick')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
                         <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
                     </div>
@@ -690,9 +686,18 @@ const routes = {
 
                 ${!isDesktop ? `
                 <!-- Order Now Button (Fixed above bottom nav on mobile/tablet) -->
-                <div class="px-6 pb-6 pt-2 relative z-20 shrink-0">
+                <div class="px-6 pb-4 pt-2 relative z-20 shrink-0">
                     <button onclick="navigateTo('location-pick')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
                 </div>` : ''}
+
+                <!-- Bottom Navigation -->
+                <div class="flex-shrink-0 bg-white/90 backdrop-blur-md px-6 py-5 flex justify-between items-center z-50 border-t border-gray-200 relative">
+                    <button class="text-violet-600 font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('restaurant-home')">HOME</button>
+                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu')">MENU</button>
+                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('cart')">REORDER</button>
+                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('account')">REWARDS</button>
+                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('qr-code-guide')">SCAN</button>
+                </div>
             </div>`;
     },
     'restaurant-home-logo': () => {
@@ -708,11 +713,8 @@ const routes = {
                 </div>
 
                 <header class="bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0 relative">
-                    <div class="flex items-center gap-3">
-                        <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
-                        <button onclick="navigateTo('qr-code-guide')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
-                    </div>
-                    <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('location-pick')">
+                    <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
+                    <div class="flex flex-col items-center cursor-pointer" onclick="navigateTo('location-pick')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">DELIVERY</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
                         <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
                     </div>
@@ -788,9 +790,18 @@ const routes = {
 
                 ${!isDesktop ? `
                 <!-- Order Now Button (Fixed above bottom nav on mobile/tablet) -->
-                <div class="px-6 pb-6 pt-2 relative z-20 shrink-0">
+                <div class="px-6 pb-4 pt-2 relative z-20 shrink-0">
                     <button onclick="navigateTo('location-pick')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
                 </div>` : ''}
+
+                <!-- Bottom Navigation -->
+                <div class="flex-shrink-0 bg-white/90 backdrop-blur-md px-6 py-5 flex justify-between items-center z-50 border-t border-gray-200 relative">
+                    <button class="text-violet-600 font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('restaurant-home-logo')">HOME</button>
+                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu')">MENU</button>
+                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('cart')">REORDER</button>
+                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('account')">REWARDS</button>
+                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('qr-code-guide')">SCAN</button>
+                </div>
             </div>`;
     },
     'location-pick': () => {
@@ -1242,61 +1253,7 @@ const routes = {
                     </div>
                 </header>
 
-
-
-                <!-- Rewards Modal -->
-                ${mockupState.modalOpen === 'rewards' ? `
-                <div class="modal-overlay z-[200]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
-                    <div class="bg-white w-[92%] max-w-[380px] rounded-[32px] p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out]">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Your Rewards</h2>
-                            <button onclick="mockupState.modalOpen=null;navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="bg-violet-50 rounded-2xl p-6 border border-violet-100 relative overflow-hidden mb-6">
-                            <div class="flex items-center gap-4 mb-5 relative z-10">
-                                <div class="w-12 h-12 rounded-full bg-violet-600 text-white flex items-center justify-center shrink-0 shadow-md">
-                                    <i class="fa-solid fa-award text-xl"></i>
-                                </div>
-                                <div>
-                                    <div class="text-violet-600 font-black text-sm tracking-tight uppercase">Gold Member</div>
-                                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">1,240 pts until next reward</div>
-                                </div>
-                            </div>
-                            <div class="w-full bg-violet-200/60 h-2 rounded-full overflow-hidden relative z-10">
-                                <div class="bg-violet-600 h-full w-[65%] rounded-full relative overflow-hidden">
-                                    <div class="absolute inset-0 bg-white/20 w-full h-full skew-x-12 -translate-x-1/2"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
-                                <div class="flex items-center gap-3">
-                                    <i class="fa-solid fa-ticket text-violet-600"></i>
-                                    <span class="text-sm font-bold text-gray-700 uppercase tracking-tight">Free Topping Coupon</span>
-                                </div>
-                                <span class="text-xs font-black text-violet-600">REDEEM</span>
-                            </div>
-                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
-                                <div class="flex items-center gap-3">
-                                    <i class="fa-solid fa-percent text-violet-600"></i>
-                                    <span class="text-sm font-bold text-gray-700 uppercase tracking-tight">10% Off Next Order</span>
-                                </div>
-                                <span class="text-xs font-black text-gray-400 font-bold">LOCKED</span>
-                            </div>
-                        </div>
-
-                        <button onclick="mockupState.modalOpen=null;navigateTo('account');" class="w-full mt-8 py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">
-                            View Points History
-                        </button>
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- Tab Navigation (Menu / Featured / Favorites / History) -->
+                <!-- Category Navigation (Redesigned) -->
                 <div class="bg-white border-b border-gray-100 sticky top-[72px] z-40 px-4 py-2 flex flex-col items-center">
                     <div class="w-full max-w-[1080px] flex flex-col gap-3">
                     <!-- Top Row: Icons, Greeting, Rewards -->
@@ -1321,23 +1278,22 @@ const routes = {
                     </div>
                     ` : ''}
 
-                    <!-- Bottom Row: Tab Selector -->
-                    <div class="flex border-b border-gray-100 w-full justify-around mt-1">
+                    <!-- Bottom Row: Category Pills -->
+                    ${!isDesktop ? `
+                    <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
                         ${[
-                            { id: 'menu', name: 'Menu' },
-                            { id: 'featured', name: 'Featured' },
-                            { id: 'favorites', name: 'Favorites' },
-                            { id: 'history', name: 'History' }
-                        ].map(tab => {
-                            const isActive = mockupState.menuTab === tab.id;
-                            const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold';
-                            return `
-                                <button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo('menu');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}">
-                                    ${tab.name}
-                                </button>
-                            `;
-                        }).join('')}
+                            { id: 'featured-items-section', name: 'FEATURED ITEMS' },
+                            { id: 'teaspresso-section', name: 'TEASPRESSO SERIES' },
+                            { id: 'milk-tea-section', name: 'MILK TEA SPECIALTY' },
+                            { id: 'fruit-tea-section', name: 'I-TEA FRUIT TEA' },
+                            { id: 'dessert-section', name: 'DESSERT DRINKS' }
+                        ].map(cat => `
+                            <button onclick="document.getElementById('${cat.id}').scrollIntoView({behavior: 'smooth'})" class="whitespace-nowrap px-6 py-2 rounded-full bg-violet-600 text-white shadow-sm font-black text-[10px] uppercase hover:bg-violet-700 transition-all shrink-0">
+                                ${cat.name}
+                            </button>
+                        `).join('')}
                     </div>
+                    ` : ''}
                     </div>
                 </div>
 
@@ -1394,194 +1350,180 @@ const routes = {
                 ` : ''}
 
                 <div class="${isDesktop ? 'p-8' : 'p-3'} max-w-[1080px] mx-auto w-full">
-                    ${isDesktop ? `
-                    <!-- Desktop Tab Selector -->
-                    <div class="flex border-b border-gray-100 w-full justify-start gap-8 mb-6 mt-2 pb-2">
-                        ${[
-                            { id: 'menu', name: 'Menu' },
-                            { id: 'featured', name: 'Featured' },
-                            { id: 'favorites', name: 'Favorites' },
-                            { id: 'history', name: 'History' }
-                        ].map(tab => {
-                            const isActive = mockupState.menuTab === tab.id;
-                            const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
-                            return `
-                                <button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo('menu');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}">
-                                    ${tab.name}
-                                </button>
-                            `;
-                        }).join('')}
-                    </div>
-                    ` : ''}
 
-                    <!-- Render Tab Content Subview -->
-                    ${(() => {
-                        if (mockupState.menuTab === 'menu') {
-                            return `
-                                <!-- Menu Feed (Categories) -->
-                                <div class="space-y-12">
-                                    ${[
-                                        { id: 'teaspresso-section', name: 'TEASPRESSO SERIES', categoryKey: 'Tea Spresso Series' },
-                                        { id: 'milk-tea-section', name: 'MILK TEA SPECIALTY', categoryKey: 'Milk Tea' },
-                                        { id: 'fruit-tea-section', name: 'I-TEA FRUIT TEA', categoryKey: 'Fruit Tea' },
-                                        { id: 'dessert-section', name: 'DESSERT DRINKS', categoryKey: 'Dessert Drink' }
-                                    ].map(section => {
-                                        const sectionItems = MENU_ITEMS.filter(item => item.category === section.categoryKey);
-                                        if (sectionItems.length === 0) return '';
+
+                    <!-- Top Split Row (Hero + Sidebar) -->
+                    <div class="flex flex-col ${isDesktop ? 'flex-row gap-8' : 'gap-8'} mb-8">
+                        <!-- MAIN CONTENT COLUMN -->
+                        <div class="flex-1 space-y-8 min-w-0">
+                            <!-- Hero Special Card -->
+                            <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[300px] flex flex-col justify-end p-8">
+                                <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
+                                
+                                <div class="relative z-10 w-full max-w-md">
+                                    <span class="bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Popular</span>
+                                    <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4 font-branding">Brown Sugar<br>Boba Latte</h2>
+                                    <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P4 • 356 to 478 calories. A perfectly sweet and creamy favorite.</p>
+                                    <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
+                                </div>
+                            </div>
+
+                                ${!isDesktop ? `
+                            <!-- Reorder Favorites (Mobile/Tablet) -->
+                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3 class="font-black text-gray-900 tracking-tight ${isDesktop ? 'text-2xl' : 'text-xl'} uppercase">Reorder Favorites</h3>
+                                    <button onclick="updateMockupState('modalOpen', 'favorites-see-all'); navigateTo('menu')" class="text-violet-600 font-bold text-xs hover:underline tracking-tight">See All</button>
+                                </div>
+                                <div class="space-y-5 mb-6">
+                                    ${(mockupState.favorites || []).slice(0, 3).map((fav, index) => `
+                                    <div class="flex items-center justify-between group">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${fav.image}" class="w-full h-full object-cover object-top"></div>
+                                            <div>
+                                                <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2">${fav.name}</div>
+                                                <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">
+                                                    ${index === 0 ? 'Ordered 5+ times' : index === 1 ? 'Ordered 10+ times' : 'Ordered 3 times'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button onclick="navigateTo('customize')" class="w-9 h-9 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 flex items-center justify-center hover:bg-violet-50 hover:border-violet-300 shadow-sm transition-all active:scale-95 shrink-0 ml-4"><i class="fa-solid fa-plus text-xs"></i></button>
+                                    </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- SIDEBAR COLUMN -->
+                        <div class="${isDesktop ? 'w-[340px] shrink-0' : 'w-full'} space-y-6">
+                            ${isDesktop ? `
+                            <!-- Reorder Favorites (Desktop) -->
+                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3 class="font-black text-gray-900 tracking-tight ${isDesktop ? 'text-2xl' : 'text-xl'} uppercase">Reorder Favorites</h3>
+                                    <button class="text-violet-600 font-bold text-xs hover:underline tracking-tight">See All</button>
+                                </div>
+                                <div class="space-y-5 mb-6">
+                                    ${(mockupState.favorites || []).slice(0, 3).map((fav, index) => `
+                                    <div class="flex items-center justify-between group">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0"><img src="${fav.image}" class="w-full h-full object-cover object-top"></div>
+                                            <div>
+                                                <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2">${fav.name}</div>
+                                                <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">
+                                                    ${index === 0 ? 'Ordered 5+ times' : index === 1 ? 'Ordered 10+ times' : 'Ordered 3 times'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button onclick="navigateTo('customize')" class="w-9 h-9 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 flex items-center justify-center hover:bg-violet-50 hover:border-violet-300 shadow-sm transition-all active:scale-95 shrink-0 ml-4"><i class="fa-solid fa-plus text-xs"></i></button>
+                                    </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            <!-- Promo Card moved to bottom on mobile -->
+                        </div>
+                    </div>
+
+                    <!-- Full Width Bottom Section -->
+                    <div class="space-y-8 w-full">
+                        ${isDesktop ? `
+                        <!-- Desktop Category Pills -->
+                        <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2 pt-2 -mx-1 px-1">
+                            ${[
+                                { id: 'featured-items-section', name: 'FEATURED ITEMS' },
+                                { id: 'teaspresso-section', name: 'TEASPRESSO SERIES' },
+                                { id: 'milk-tea-section', name: 'MILK TEA SPECIALTY' },
+                                { id: 'fruit-tea-section', name: 'I-TEA FRUIT TEA' },
+                                { id: 'dessert-section', name: 'DESSERT DRINKS' }
+                            ].map(cat => `
+                                <button onclick="document.getElementById('${cat.id}').scrollIntoView({behavior: 'smooth'})" class="whitespace-nowrap px-6 py-2.5 rounded-full bg-violet-600 text-white shadow-sm font-black text-[10px] uppercase hover:bg-violet-700 transition-all shrink-0 tracking-wide">
+                                    ${cat.name}
+                                </button>
+                            `).join('')}
+                        </div>
+                        ` : ''}
+
+                        <!-- Featured Items Carousel -->
+                        <div id="featured-items-section">
+                            <div class="flex justify-between items-end mb-4 px-1">
+                                <h3 class="${isDesktop ? 'text-2xl' : 'text-xl'} font-black text-gray-900 tracking-tight uppercase">Featured Items</h3>
+                                <button class="text-violet-600 font-bold text-sm hover:underline tracking-tight">See All</button>
+                            </div>
+                            
+                            <div class="relative group">
+                                <!-- Horizontal Scroll Container -->
+                                <div class="${isDesktop ? 'grid grid-cols-4 gap-5 pb-0 mx-0 px-0' : 'flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-1 px-1'}">
+                                    ${MENU_ITEMS.slice(0, 8).map((item) => {
+                                        const actualIndex = MENU_ITEMS.indexOf(item);
                                         return `
-                                            <div id="${section.id}" class="pt-4 scroll-mt-24">
-                                                <div class="flex justify-between items-end mb-4 px-1">
-                                                    <h3 class="${isDesktop ? 'text-3xl' : 'text-2xl'} font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
-                                                    <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
+                                            <div class="snap-center shrink-0 ${isDesktop ? 'w-auto' : 'w-[280px]'} bg-white rounded-3xl ${isDesktop ? 'p-4' : 'px-2 py-4'} shadow-sm border border-gray-100 hover:shadow-md transition-shadow group/card cursor-pointer flex flex-col" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                <div class="w-full ${isDesktop ? 'h-40' : 'h-52'} rounded-2xl overflow-hidden mb-4 relative shrink-0">
+                                                    <img src="${item.image}" class="w-full h-full object-cover object-top group-hover/card:scale-110 transition-transform duration-700">
+                                                    <div class="absolute top-3 left-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full shadow-sm text-[10px] font-black uppercase text-violet-600 tracking-wider">New</div>
                                                 </div>
-                                                <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
-                                                    ${sectionItems.map(item => {
-                                                        const actualIndex = MENU_ITEMS.indexOf(item);
-                                                        return `
-                                                            <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                                                <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                    <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
-                                                                </div>
-                                                                <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                    <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                                    <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
-                                                                </div>
-                                                                ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ''}
-                                                                <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
-                                                            </div>
-                                                        `;
-                                                    }).join('')}
+                                                <div class="cursor-pointer mb-2 shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                    <h4 class="font-black text-gray-900 ${isDesktop ? 'text-base' : 'text-[13px]'} leading-tight tracking-tight group-hover/card:text-violet-600 transition-colors uppercase mb-1">${item.name}</h4>
+                                                    <div class="font-black text-violet-600 ${isDesktop ? 'text-sm' : 'text-[12px]'}">$${item.price.toFixed(2)}</div>
                                                 </div>
+                                                ${isDesktop ? `<p class="text-gray-400 text-[11px] font-medium leading-relaxed mb-4 flex-1 line-clamp-2">${item.description}</p>` : ''}
+                                                <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-2.5 rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black text-[11px] uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                             </div>
                                         `;
                                     }).join('')}
                                 </div>
-                            `;
-                        } else if (mockupState.menuTab === 'featured') {
-                            return `
-                                <!-- Featured View -->
-                                <div class="space-y-12">
-                                    <!-- Hero Special Card -->
-                                    <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[300px] flex flex-col justify-end p-8">
-                                        <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
-                                        
-                                        <div class="relative z-10 w-full max-w-md">
-                                            <span class="bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Featured</span>
-                                            <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4 font-branding">Brown Sugar<br>Boba Latte</h2>
-                                            <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P4 • Creamy, caramelized milk tea perfection.</p>
-                                            <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
-                                        </div>
-                                    </div>
+                            </div>
+                        </div>
 
-                                    <!-- Featured Items Grid (Large Premium Cards) -->
-                                    <div>
-                                        <div class="flex justify-between items-end mb-6 px-1">
-                                            <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Featured Specials</h3>
-                                        </div>
-                                        <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
-                                            ${MENU_ITEMS.slice(0, 6).map((item) => {
-                                                const actualIndex = MENU_ITEMS.indexOf(item);
-                                                return `
-                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                                        <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
-                                                            <div class="absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm">Popular</div>
-                                                        </div>
-                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                            <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
-                                                        </div>
-                                                        ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ''}
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
-                                                    </div>
-                                                `;
-                                            }).join('')}
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        } else if (mockupState.menuTab === 'favorites') {
-                            const hasFavorites = mockupState.favorites && mockupState.favorites.length > 0;
+                        <!-- Grouped Category Sections -->
+                        ${[
+                            { id: 'teaspresso-section', name: 'TEASPRESSO SERIES', categoryKey: 'Tea Spresso Series' },
+                            { id: 'milk-tea-section', name: 'MILK TEA SPECIALTY', categoryKey: 'Milk Tea' },
+                            { id: 'fruit-tea-section', name: 'I-TEA FRUIT TEA', categoryKey: 'Fruit Tea' },
+                            { id: 'dessert-section', name: 'DESSERT DRINKS', categoryKey: 'Dessert Drink' }
+                        ].map(section => {
+                            const sectionItems = MENU_ITEMS.filter(item => item.category === section.categoryKey);
+                            if (sectionItems.length === 0) return '';
                             return `
-                                <div class="space-y-6">
+                                <div id="${section.id}" class="pt-4 scroll-mt-24">
                                     <div class="flex justify-between items-end mb-4 px-1">
-                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Your Saved Favorites</h3>
+                                        <h3 class="${isDesktop ? 'text-2xl' : 'text-xl'} font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
+                                        <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
                                     </div>
-                                    ${hasFavorites ? `
-                                        <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
-                                            ${mockupState.favorites.map((fav) => {
-                                                const originalIndex = MENU_ITEMS.findIndex(item => item.name === fav.name);
-                                                const actualIndex = originalIndex >= 0 ? originalIndex : 0;
-                                                return `
-                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card">
-                                                        <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <img src="${fav.image}" class="w-full h-full object-cover object-top group-hover/card:scale-105 transition-transform duration-500">
-                                                            <button onclick="event.stopPropagation(); toggleFavorite(${fav.id})" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white text-red-500 shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-transform">
-                                                                <i class="fa-solid fa-heart"></i>
-                                                            </button>
-                                                        </div>
-                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${fav.name}</h4>
-                                                            <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${fav.price.toFixed(2)}</div>
-                                                        </div>
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors tracking-wide mt-auto">+ Reorder</button>
+                                    <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
+                                        ${sectionItems.map(item => {
+                                            const actualIndex = MENU_ITEMS.indexOf(item);
+                                            return `
+                                                <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                                    <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
                                                     </div>
-                                                `;
-                                            }).join('')}
-                                        </div>
-                                    ` : `
-                                        <div class="flex flex-col items-center justify-center py-16 text-center">
-                                            <div class="w-20 h-20 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mb-6 shadow-sm"><i class="fa-regular fa-heart text-3xl"></i></div>
-                                            <h4 class="font-black text-gray-900 uppercase tracking-tight text-lg mb-2">No Favorites Saved Yet</h4>
-                                            <p class="text-sm text-gray-500 max-w-xs leading-relaxed">Items you heart on the menu will appear here for fast reordering!</p>
-                                        </div>
-                                    `}
-                                </div>
-                            `;
-                        } else if (mockupState.menuTab === 'history') {
-                            return `
-                                <div class="space-y-6">
-                                    <div class="flex justify-between items-end mb-4 px-1">
-                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
-                                    </div>
-                                    
-                                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                                        <div class="space-y-5">
-                                            ${[
-                                                { index: 0, times: 'Ordered 15 times' },
-                                                { index: 6, times: 'Ordered 12 times' },
-                                                { index: 1, times: 'Ordered 8 times' },
-                                                { index: 11, times: 'Ordered 5 times' },
-                                                { index: 15, times: 'Ordered 3 times' }
-                                            ].map((hist, i) => {
-                                                const item = MENU_ITEMS[hist.index];
-                                                return `
-                                                    <div class="flex items-center justify-between group border-b border-gray-50 pb-4 last:border-b-0 last:pb-0">
-                                                        <div class="flex items-center gap-4">
-                                                            <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 cursor-pointer" onclick="selectItemAndNavigate(${hist.index})">
-                                                                <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-300">
-                                                            </div>
-                                                            <div>
-                                                                <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2 cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})">${item.name}</div>
-                                                                <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide flex items-center gap-2">
-                                                                    <span>${hist.times}</span>
-                                                                    <span>•</span>
-                                                                    <span>Last ordered ${i === 0 ? 'Yesterday' : i === 1 ? '3 days ago' : 'last week'}</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <button onclick="selectItemAndNavigate(${hist.index})" class="px-5 py-2 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 hover:bg-violet-50 hover:border-violet-300 shadow-sm font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 shrink-0 ml-4">+ Add</button>
+                                                    <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                        <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
                                                     </div>
-                                                `;
-                                            }).join('')}
-                                        </div>
+                                                    ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ''}
+                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                </div>
+                                            `;
+                                        }).join('')}
                                     </div>
                                 </div>
                             `;
-                        }
-                    })()}
-                </div>
+                        }).join('')}
+
+                        ${!isDesktop ? `
+                        <!-- Promo Card (Mobile Bottom) -->
+                        <div class="bg-[#0b132b] rounded-2xl p-6 relative overflow-hidden text-white shadow-xl mt-8">
+                            <i class="fa-solid fa-tag absolute -right-3 -top-3 text-7xl text-white/5 rotate-12"></i>
+                            <h3 class="font-black text-xl tracking-tight mb-2 relative z-10">Free Desert</h3>
+                            <p class="text-xs text-blue-100/80 font-medium mb-5 relative z-10 leading-relaxed pr-6">On orders over $35. Valid for your next 3 orders.</p>
+                            <div class="text-[11px] font-black text-violet-500 uppercase tracking-widest relative z-10">CODE: BITESFREE35</div>
+                        </div>
+                        ` : ''}
 
                         ${isDesktop ? `
                         <!-- Promo Card (Desktop Bottom) -->
