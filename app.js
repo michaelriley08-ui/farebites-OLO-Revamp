@@ -94,6 +94,9 @@ const DEFAULT_STATE = {
     tipPercentage: 15,
     customTipAmount: 0,
     orderDetailsExpanded: true,
+    hamburgerOpen: false,
+    menuSearchOpen: false,
+    menuSearchQuery: '',
     favorites: [
         { id: 1, name: "M7 Crème Brûlée Boba Milk Tea", price: 5.75, image: assets.boba1, category: "Tea Spresso Series" },
         { id: 2, name: "P4 Brown Sugar Boba Latte", price: 5.75, image: assets.boba2, category: "Tea Spresso Series" },
@@ -319,6 +322,78 @@ document.addEventListener('click', () => {
         if (menu) menu.classList.remove('show');
     });
 });
+
+function openHamburger() {
+    mockupState.hamburgerOpen = true;
+    persistAllState();
+    renderPage();
+}
+
+function closeHamburger() {
+    mockupState.hamburgerOpen = false;
+    persistAllState();
+    renderPage();
+}
+
+function hamburgerDrawerHTML() {
+    const isLoggedIn = mockupState.isLoggedIn;
+    const userName = mockupState.userName || 'Guest';
+
+    const navItems = [
+        { label: 'Home',          icon: 'fa-house',              page: 'restaurant-home' },
+        { label: 'Menu',          icon: 'fa-utensils',           page: 'menu' },
+        { label: 'Locations',     icon: 'fa-location-dot',       page: 'location-pick' },
+        { label: 'Rewards',       icon: 'fa-award',              page: 'account' },
+        { label: 'Scan QR Code',  icon: 'fa-qrcode',             page: 'qr-code-guide' },
+        { label: 'Cart',          icon: 'fa-bag-shopping',       page: 'cart' },
+        { label: 'Order Status',  icon: 'fa-clock-rotate-left',  page: 'order-status' },
+        { label: 'My Account',    icon: 'fa-user',               page: 'account' },
+    ];
+
+    return `
+        <div class="absolute inset-0 z-[500] flex">
+            <!-- Drawer Panel -->
+            <div class="w-[78%] max-w-[310px] bg-white h-full flex flex-col shadow-2xl relative z-10">
+                <!-- Header -->
+                <div class="px-6 pt-10 pb-6 border-b border-gray-100 flex items-start justify-between">
+                    <div>
+                        ${isLoggedIn ? `
+                            <p class="font-black text-[22px] text-gray-900 leading-tight">Hi, ${userName}</p>
+                            <button onclick="closeHamburger(); navigateTo('account');" class="text-sm font-bold text-violet-600 mt-1 hover:underline">View My Account</button>
+                        ` : `
+                            <button onclick="closeHamburger(); navigateTo('restaurant-sign-in');" class="font-black text-[22px] text-gray-900">Sign In</button>
+                        `}
+                    </div>
+                    <button onclick="closeHamburger()" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500 shrink-0 mt-1">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+                <!-- Nav Links -->
+                <nav class="flex-1 overflow-y-auto py-3">
+                    ${navItems.map(item => `
+                        <button onclick="closeHamburger(); navigateTo('${item.page}');" 
+                            class="w-full text-left px-6 py-4 text-[17px] font-black tracking-tight flex items-center gap-4 transition-colors hover:bg-violet-50 ${
+                                currentPage === item.page ? 'text-violet-600' : 'text-gray-900'
+                            }">
+                            <i class="fa-solid ${item.icon} w-5 text-center text-sm ${currentPage === item.page ? 'text-violet-600' : 'text-gray-300'}"></i>
+                            ${item.label}
+                        </button>
+                    `).join('')}
+                </nav>
+                <!-- Footer -->
+                <div class="px-6 py-6 border-t border-gray-100">
+                    ${isLoggedIn ? `
+                        <button onclick="closeHamburger();" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Sign Out</button>
+                    ` : `
+                        <button onclick="closeHamburger(); navigateTo('restaurant-sign-in');" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-violet-600 transition-colors">Sign In / Create Account</button>
+                    `}
+                </div>
+            </div>
+            <!-- Backdrop -->
+            <div class="flex-1 bg-black/50 backdrop-blur-[2px]" onclick="closeHamburger()"></div>
+        </div>
+    `;
+}
 
 
 const routes = {
@@ -1200,7 +1275,13 @@ const routes = {
     },
     'qr-code-guide': () => `
             <div class="flex flex-col h-full bg-white relative">
-                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black"><button onclick="navigateTo('order-details')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">i-Tea</span><div class="w-6"></div></header>
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black">
+                    <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Scan to Dine In</span>
+                    <div class="w-10"></div>
+                </header>
                 <div class="flex-1 flex flex-col items-center justify-center px-6 text-center">
                     <div class="w-full aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-12">
                         <img src="images/qr-scan-table.jpg" class="w-full h-full object-cover">
@@ -1228,118 +1309,66 @@ const routes = {
 
         return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative ${(!isDesktop && mockupState.modalOpen) ? 'overflow-hidden' : 'overflow-y-auto'} scrollbar-hide">
-                <!-- Header Component -->
-                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
-                    <div class="w-full max-w-[1080px] flex items-center">
-                        <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                <!-- Compact Sticky Header: ≡ | 🔍 | i-Tea logo | ⭐ | 🛍 -->
+                <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shrink-0">
+                    <div class="px-3 py-2 flex items-center gap-2 w-full max-w-[1080px] mx-auto">
+                        <!-- Left: Hamburger -->
+                        <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors shrink-0">
+                            <i class="fa-solid fa-bars text-xl"></i>
                         </button>
-                        <span class="text-lg font-black text-violet-600 flex-1 text-center">Menu</span>
-                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer">
+                        <!-- Search icon -->
+                        <button onclick="updateMockupState('menuSearchOpen', ${!mockupState.menuSearchOpen}); updateMockupState('menuSearchQuery', '');" class="w-10 h-10 flex items-center justify-center shrink-0 transition-colors ${mockupState.menuSearchOpen ? 'text-violet-600' : 'text-gray-700 hover:text-violet-600'}">
+                            <i class="fa-solid ${mockupState.menuSearchOpen ? 'fa-xmark' : 'fa-magnifying-glass'} text-xl"></i>
+                        </button>
+                        <!-- Center: i-Tea logo -->
+                        <div class="flex-1 flex items-center justify-center">
+                            <img src="images/i-tea-logo-new.png" class="h-9 w-auto object-contain" alt="i-Tea">
+                        </div>
+                        <!-- Right: Rewards + Cart -->
+                        <button onclick="updateMockupState('modalOpen', 'rewards'); navigateTo('menu')" class="w-10 h-10 flex items-center justify-center text-violet-600 hover:text-violet-700 transition-all active:scale-90 shrink-0">
+                            <i class="fa-solid fa-award text-2xl"></i>
+                        </button>
+                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                             ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
                         </button>
                     </div>
-                </header>
 
-
-
-                <!-- Rewards Modal -->
-                ${mockupState.modalOpen === 'rewards' ? `
-                <div class="modal-overlay z-[200]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
-                    <div class="bg-white w-[92%] max-w-[380px] rounded-[32px] p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out]">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Your Rewards</h2>
-                            <button onclick="mockupState.modalOpen=null;navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
+                    <!-- Inline Search Bar (expands below header when open) -->
+                    ${mockupState.menuSearchOpen ? `
+                    <div class="px-3 pb-2 w-full max-w-[1080px] mx-auto">
+                        <div class="flex items-center bg-gray-100 rounded-full px-4 py-2 gap-3">
+                            <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                            <input
+                                type="text"
+                                id="menu-search-input"
+                                placeholder="Search menu..."
+                                value="${mockupState.menuSearchQuery || ''}"
+                                oninput="mockupState.menuSearchQuery = this.value; persistAllState(); renderPage();"
+                                class="flex-1 bg-transparent text-gray-900 text-sm font-bold outline-none placeholder:text-gray-400 placeholder:font-normal"
+                                autofocus
+                            >
+                            ${mockupState.menuSearchQuery ? `<button onclick="updateMockupState('menuSearchQuery', '');" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-circle-xmark"></i></button>` : ''}
                         </div>
-                        
-                        <div class="bg-violet-50 rounded-2xl p-6 border border-violet-100 relative overflow-hidden mb-6">
-                            <div class="flex items-center gap-4 mb-5 relative z-10">
-                                <div class="w-12 h-12 rounded-full bg-violet-600 text-white flex items-center justify-center shrink-0 shadow-md">
-                                    <i class="fa-solid fa-award text-xl"></i>
-                                </div>
-                                <div>
-                                    <div class="text-violet-600 font-black text-sm tracking-tight uppercase">Gold Member</div>
-                                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">1,240 pts until next reward</div>
-                                </div>
-                            </div>
-                            <div class="w-full bg-violet-200/60 h-2 rounded-full overflow-hidden relative z-10">
-                                <div class="bg-violet-600 h-full w-[65%] rounded-full relative overflow-hidden">
-                                    <div class="absolute inset-0 bg-white/20 w-full h-full skew-x-12 -translate-x-1/2"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
-                                <div class="flex items-center gap-3">
-                                    <i class="fa-solid fa-ticket text-violet-600"></i>
-                                    <span class="text-sm font-bold text-gray-700 uppercase tracking-tight">Free Topping Coupon</span>
-                                </div>
-                                <span class="text-xs font-black text-violet-600">REDEEM</span>
-                            </div>
-                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
-                                <div class="flex items-center gap-3">
-                                    <i class="fa-solid fa-percent text-violet-600"></i>
-                                    <span class="text-sm font-bold text-gray-700 uppercase tracking-tight">10% Off Next Order</span>
-                                </div>
-                                <span class="text-xs font-black text-gray-400 font-bold">LOCKED</span>
-                            </div>
-                        </div>
-
-                        <button onclick="mockupState.modalOpen=null;navigateTo('account');" class="w-full mt-8 py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">
-                            View Points History
-                        </button>
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- Tab Navigation (Menu / Featured / Favorites / History) -->
-                <div class="bg-white border-b border-gray-100 sticky top-[72px] z-40 px-4 py-2 flex flex-col items-center">
-                    <div class="w-full max-w-[1080px] flex flex-col gap-3">
-                    <!-- Top Row: Icons, Greeting, Rewards -->
-                    ${!isDesktop ? `
-                    <div class="flex items-center justify-between">
-                        <div class="flex gap-4 items-center pr-4 border-r border-gray-100">
-                            <button onclick="updateMockupState('modalOpen', 'categories'); navigateTo('menu')" class="text-gray-900 hover:text-violet-600 transition-colors">
-                                <i class="fa-solid fa-list-ul text-xl"></i>
-                            </button>
-                            <button onclick="updateMockupState('modalOpen', 'categories'); navigateTo('menu')" class="text-gray-900 hover:text-violet-600 transition-colors">
-                                <i class="fa-solid fa-magnifying-glass text-xl"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="flex-1 text-center px-4">
-                            <h2 class="text-xl font-black text-gray-900 tracking-tighter whitespace-nowrap">Hi Michaelangelo</h2>
-                        </div>
-
-                        <button onclick="updateMockupState('modalOpen', 'rewards'); navigateTo('menu')" class="text-violet-600 hover:text-violet-700 transition-all active:scale-90 flex items-center justify-center p-2">
-                            <i class="fa-solid fa-award text-3xl drop-shadow-sm"></i>
-                        </button>
                     </div>
                     ` : ''}
 
-                    <!-- Bottom Row: Tab Selector -->
-                    <div class="flex border-b border-gray-100 w-full justify-around mt-1">
-                        ${[
-                            { id: 'menu', name: 'Menu' },
-                            { id: 'featured', name: 'Featured' },
-                            { id: 'favorites', name: 'Favorites' },
-                            { id: 'history', name: 'History' }
-                        ].map(tab => {
-                            const isActive = mockupState.menuTab === tab.id;
-                            const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold';
-                            return `
-                                <button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo('menu');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}">
-                                    ${tab.name}
-                                </button>
-                            `;
-                        }).join('')}
+                    <!-- Tab Row -->
+                    <div class="border-t border-gray-100 px-4 w-full max-w-[1080px] mx-auto">
+                        <div class="flex justify-around">
+                            ${[
+                                { id: 'menu', name: 'Menu' },
+                                { id: 'featured', name: 'Featured' },
+                                { id: 'favorites', name: 'Favorites' },
+                                { id: 'history', name: 'History' }
+                            ].map(tab => {
+                                const isActive = mockupState.menuTab === tab.id;
+                                const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold';
+                                return `<button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo('menu');" class="py-2 text-sm uppercase tracking-wide transition-all ${activeClass}">${tab.name}</button>`;
+                            }).join('')}
+                        </div>
                     </div>
-                    </div>
-                </div>
+                </header>
 
                 <!-- Rewards Modal -->
                 ${mockupState.modalOpen === 'rewards' ? `
@@ -1417,6 +1446,47 @@ const routes = {
                     <!-- Render Tab Content Subview -->
                     ${(() => {
                         if (mockupState.menuTab === 'menu') {
+                            // Search filter: when a query is active, show flat filtered results
+                            if (mockupState.menuSearchQuery && mockupState.menuSearchQuery.trim().length > 0) {
+                                const query = mockupState.menuSearchQuery.toLowerCase();
+                                const filtered = MENU_ITEMS.filter(item =>
+                                    item.name.toLowerCase().includes(query) ||
+                                    (item.description && item.description.toLowerCase().includes(query)) ||
+                                    item.category.toLowerCase().includes(query)
+                                );
+                                if (filtered.length === 0) {
+                                    return `<div class="flex flex-col items-center justify-center py-24 text-center px-8">
+                                        <i class="fa-solid fa-magnifying-glass text-gray-200 text-5xl mb-6"></i>
+                                        <p class="font-black text-gray-400 text-lg uppercase tracking-tight">No results for</p>
+                                        <p class="font-black text-gray-600 text-xl mt-1">"${mockupState.menuSearchQuery}"</p>
+                                        <button onclick="updateMockupState('menuSearchQuery', '');" class="mt-8 px-6 py-3 rounded-full border border-violet-200 text-violet-600 text-sm font-black uppercase tracking-wide hover:bg-violet-50 transition-colors">Clear Search</button>
+                                    </div>`;
+                                }
+                                return `
+                                    <div class="space-y-0">
+                                        <p class="text-[11px] font-black text-gray-400 uppercase tracking-widest px-1 mb-4">${filtered.length} result${filtered.length !== 1 ? 's' : ''}</p>
+                                        <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 gap-[10px]'}">
+                                            ${filtered.map(item => {
+                                                const actualIndex = MENU_ITEMS.indexOf(item);
+                                                return `
+                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                                        <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                            <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
+                                                        </div>
+                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                            <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">${item.category}</p>
+                                                            <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
+                                                        </div>
+                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+
                             return `
                                 <!-- Menu Feed (Categories) -->
                                 <div class="space-y-12">
@@ -2005,8 +2075,8 @@ const routes = {
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
                     <div class="w-full max-w-[1080px] flex items-center px-2">
-                        <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                        <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
+                            <i class="fa-solid fa-bars text-xl"></i>
                         </button>
                         <span class="text-lg font-black text-violet-600 flex-1 text-center">Review order</span>
                         <div class="w-10"></div>
@@ -2240,8 +2310,8 @@ const routes = {
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
                 <!-- Header -->
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                    <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
+                        <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">My Account</span>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer">
@@ -3706,12 +3776,28 @@ function renderPage() {
         contentHtml += globalFooter;
     }
 
+    // Inject hamburger drawer for all restaurant pages
+    const nonRestaurantPages = ['landing', 'home', 'sign-in', 'dashboard', 'privacy'];
+    if (!nonRestaurantPages.includes(currentPage) && mockupState.hamburgerOpen) {
+        contentHtml += hamburgerDrawerHTML();
+    }
+
     viewport.innerHTML = contentHtml;
     viewport.scrollTop = 0;
     const canvasArea = document.getElementById('canvas');
     if (canvasArea) canvasArea.scrollTop = 0;
     persistAllState();
     document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
+
+    // Re-focus menu search input after render (keeps cursor active while typing)
+    if (currentPage === 'menu' && mockupState.menuSearchOpen) {
+        const searchInput = document.getElementById('menu-search-input');
+        if (searchInput) {
+            searchInput.focus();
+            const len = searchInput.value.length;
+            searchInput.setSelectionRange(len, len);
+        }
+    }
 
     // Attach carousel scroll listener if on home page
     if (currentPage === 'restaurant-home') {
