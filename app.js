@@ -1,6 +1,6 @@
 const PAGE_FILE_MAP = {
     "landing": "landing.html",
-    "home": "home.html",
+    "home": "restaurant-home.html",
     "sign-in": "sign-in.html",
     "cart": "cart.html",
     "customize": "customize.html",
@@ -51,7 +51,9 @@ const PAGE_LABELS = {
     "dashboard": "Merchant Dashboard",
     "manage-favorites": "Manage Favorites",
     "directions": "Directions",
-    "registration": "Registration Form"
+    "registration": "Registration Form",
+    "menu-old": "Menu (Old)",
+    "restaurant-home-old": "i-Tea Homepage (Old)"
 };
 const STORAGE_KEYS = {
     state: 'farebitesMockupState',
@@ -72,7 +74,7 @@ const assets = {
     burritoBowl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&getSet=80",
     icedMatcha: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=400&q=80",
     restaurantHero: "https://order-iteausa.com/imagesmenu/N9-Fresh-Strawberry-Mango-Fruit-Tea.jpg",
-    googleMapsEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d106518.42371900132!2d-112.4414169904297!3d33.4571167448373!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b394142f9b23b%3A0xc3f92d47101783e4!2sGoodyear%2C%20AZ!5e0!3m2!1sen!2sus!4v1709854800000!5m2!1sen!2sus"
+    googleMapsEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.8329606830704!2d-111.9525413!3d33.4211153!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08de64c1bf87%3A0x7d022b7a9de3e878!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1716768000000!5m2!1sen!2sus"
 };
 
 const DEFAULT_STATE = {
@@ -102,10 +104,33 @@ const DEFAULT_STATE = {
         { id: 2, name: "P4 Brown Sugar Boba Latte", price: 5.75, image: assets.boba2, category: "Tea Spresso Series" },
         { id: 3, name: "M8 Taro Boba Purée Latte", price: 5.75, image: assets.boba3, category: "Tea Spresso Series" },
         { id: 4, name: "P1 Super Fruit Tea", price: 5.95, image: assets.boba4, category: "Tea Spresso Series" }
-    ]
+    ],
+    featuredSlideIndex: 0
 };
 
-let currentViewport = sessionStorage.getItem(STORAGE_KEYS.viewport) || 'mobile';
+/* ==========================================================================
+   TEMPORARY VIEWPORT OVERRIDE FOR DEMO & TESTING
+   ========================================================================== */
+let forcedViewport = sessionStorage.getItem('farebitesForcedViewport') || null;
+
+function getCurrentViewport() {
+    if (forcedViewport) return forcedViewport;
+    if (window.innerWidth >= 1024) return 'desktop';
+    if (window.innerWidth >= 640) return 'tablet';
+    return 'mobile';
+}
+let currentViewport = getCurrentViewport();
+
+window.addEventListener('resize', () => {
+    if (forcedViewport) return; // Ignore resize if viewport is forced
+    const newViewport = getCurrentViewport();
+    if (newViewport !== currentViewport) {
+        currentViewport = newViewport;
+        renderPage();
+    }
+});
+const _v = new Date();
+const VERSION_STR = `V${_v.getMonth() + 1}.${_v.getDate()}.${String(_v.getHours()).padStart(2,'0')}.${String(_v.getMinutes()).padStart(2,'0')}`;
 let currentPage = document.body.dataset.page || 'restaurant-landing';
 let mockupState = loadMockupState();
 
@@ -120,7 +145,6 @@ function loadMockupState() {
 
 function persistAllState() {
     sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
-    sessionStorage.setItem(STORAGE_KEYS.viewport, currentViewport);
 }
 
 const LOCATIONS = [
@@ -305,21 +329,33 @@ const MENU_ITEMS = [
 
 function toggleMenu(e, menuId) {
     e.stopPropagation();
-    const allMenus = ['dropdown-menu-fb', 'dropdown-menu-rb'];
+    const allMenus = ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown'];
     allMenus.forEach(id => {
         const menu = document.getElementById(id);
+        if (!menu) return;
         if (id === menuId) {
-            menu.classList.toggle('show');
-        } else if (menu) {
+            const isShowing = menu.classList.contains('show');
+            if (isShowing) {
+                menu.classList.remove('show');
+                menu.classList.add('hidden');
+            } else {
+                menu.classList.add('show');
+                menu.classList.remove('hidden');
+            }
+        } else {
             menu.classList.remove('show');
+            menu.classList.add('hidden');
         }
     });
 }
 
 document.addEventListener('click', () => {
-    ['dropdown-menu-fb', 'dropdown-menu-rb'].forEach(id => {
+    ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown'].forEach(id => {
         const menu = document.getElementById(id);
-        if (menu) menu.classList.remove('show');
+        if (menu) {
+            menu.classList.remove('show');
+            menu.classList.add('hidden');
+        }
     });
 });
 
@@ -383,7 +419,7 @@ function hamburgerDrawerHTML() {
                 <!-- Footer -->
                 <div class="px-6 py-6 border-t border-gray-100">
                     ${isLoggedIn ? `
-                        <button onclick="closeHamburger();" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Sign Out</button>
+                        <button onclick="closeHamburger(); signOutUser();" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Sign Out</button>
                     ` : `
                         <button onclick="closeHamburger(); navigateTo('restaurant-sign-in');" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-violet-600 transition-colors">Sign In / Create Account</button>
                     `}
@@ -675,18 +711,50 @@ const routes = {
                 </div>
             </div>`,
     'restaurant-home': () => {
-        const cardWidth = currentViewport === 'desktop' ? 'w-[24%] min-w-[240px] max-w-[300px]' : (currentViewport === 'tablet' ? 'w-[45%]' : 'w-full');
         const isDesktop = currentViewport === 'desktop';
+        
+        let cardWidthClass = '';
+        let carouselAlign = '';
+        if (currentViewport === 'desktop') {
+            cardWidthClass = 'w-[23%] min-w-[200px] max-w-[260px] snap-align-none';
+            carouselAlign = 'lg:justify-center lg:overflow-x-visible';
+        } else if (currentViewport === 'tablet') {
+            cardWidthClass = 'w-[47%] shrink-0 snap-center';
+            carouselAlign = 'justify-start';
+        } else {
+            cardWidthClass = 'w-full shrink-0 snap-center';
+            carouselAlign = 'justify-start';
+        }
+
         return `
-            <div class="flex flex-col h-full relative overflow-hidden">
-                <!-- Full Viewport Background Image -->
-                <div class="absolute inset-0 z-0">
-                    <img src="${assets.restaurantHero}" class="w-full h-full object-cover">
+            <div class="flex flex-col h-full relative overflow-hidden bg-slate-50">
+                <!-- Hero Banner / Background Section -->
+                <div class="${isDesktop ? 'relative h-[480px] w-full shrink-0 overflow-hidden flex items-center bg-violet-600' : 'absolute inset-0 z-0'}">
+                    ${isDesktop ? `
+                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
+                    <div class="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-violet-950/30 to-transparent z-0"></div>
+                    <div class="relative z-10 w-full max-w-[1080px] mx-auto px-12 text-left flex flex-col justify-center h-full">
+                        <div class="max-w-[480px] pt-2">
+                            <h2 class="font-branding font-black text-5xl tracking-tight text-white uppercase leading-none">SIP THE</h2>
+                            <h1 class="font-branding font-extrabold text-7xl text-white tracking-tight mt-1 mb-4 flex items-center gap-3 leading-none">
+                                <span class="italic font-serif" style="font-family: 'Outfit', sans-serif;">Goodness</span>
+                                <i class="fa-regular fa-heart text-4xl text-violet-200"></i>
+                            </h1>
+                            <p class="text-base font-semibold text-white/90 mb-6 leading-relaxed">Refreshing flavors. Chewy boba. Made for every moment.</p>
+                            <button onclick="navigateTo('location-pick')" class="inline-flex items-center gap-3 bg-white text-violet-700 hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
+                                <span>Order Now</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    ` : `
+                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0">
                     <!-- Subtle gradient to ensure text readability -->
-                    <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90 z-0"></div>
+                    `}
                 </div>
 
-                <header class="bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0 relative">
+                <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
                     <div class="flex items-center gap-3">
                         <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
                         <button onclick="navigateTo('qr-code-guide')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
@@ -702,21 +770,23 @@ const routes = {
                 </header>
                 
                 <div class="flex-1 overflow-y-auto relative scrollbar-hide z-10 flex flex-col">
-                    <!-- Titles & CTA -->
-                    <div class="text-center pt-2 relative z-10 shrink-0">
+                    <!-- Titles & CTA for Mobile/Tablet -->
+                    ${!isDesktop ? `
+                    <div class="text-center pt-24 relative z-10 shrink-0">
                         <div class="text-violet-600 text-[11px] font-black tracking-[0.2em] uppercase mb-1">Open 24 Hours</div>
-                        <h1 class="text-5xl font-black text-violet-600 tracking-tighter leading-[0.9] font-sans scale-y-110 mt-2 ${isDesktop ? 'mb-4' : 'mb-2'} drop-shadow-md">i-Tea</h1>
-                        ${isDesktop ? `<button onclick="navigateTo('location-pick')" class="bg-violet-600 text-white px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider inline-block">Order Now</button>` : ''}
+                        <h1 class="text-5xl font-black text-violet-600 tracking-tighter leading-[0.9] font-sans scale-y-110 mt-2 mb-2 drop-shadow-md">i-Tea</h1>
                     </div>
+                    ` : ''}
                     
-                    <!-- Spacer so background image can be seen before the carousel -->
-                    <div class="w-full flex-1 min-h-[140px]"></div>
+                    <!-- Spacer so background image can be seen before the carousel (Desktop uses negative margin wrapper instead) -->
+                    ${!isDesktop ? '<div class="w-full flex-1 min-h-[140px]"></div>' : ''}
                     
                     <!-- Carousel Container -->
+                    ${!isDesktop ? `
                     <div class="relative z-20 w-full mt-auto shrink-0 pb-2 px-6">
-                        <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
+                        <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory ${carouselAlign}">
                             <!-- Card 1 -->
-                            <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
+                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
@@ -725,7 +795,7 @@ const routes = {
                                 </div>
                             </div>
                             <!-- Card 2 -->
-                            <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
+                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
@@ -734,7 +804,7 @@ const routes = {
                                 </div>
                             </div>
                             <!-- Card 3 -->
-                            <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
+                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
@@ -743,7 +813,7 @@ const routes = {
                                 </div>
                             </div>
                             <!-- Card 4 -->
-                            <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
+                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
@@ -754,13 +824,89 @@ const routes = {
                         </div>
                         
                         <!-- Pagination Dots -->
-                        <div class="flex justify-center items-center gap-2 mt-2 mb-4" style="padding-right: 0;">
+                        <div class="flex justify-center items-center gap-2 mt-2 mb-4 lg:hidden" style="padding-right: 0;">
                             <div id="carousel-dot-0" class="w-2 h-2 rounded-full bg-violet-600 transition-colors duration-300"></div>
                             <div id="carousel-dot-1" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
                             <div id="carousel-dot-2" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
                             <div id="carousel-dot-3" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
                         </div>
                     </div>
+                    ` : ''}
+                    <!-- Desktop Categories Section -->
+                    ${isDesktop ? `
+                    <div class="bg-white pt-24 pb-24 px-12 rounded-t-[40px] -mt-16 w-full shrink-0 relative z-30 shadow-[0_-15px_30px_-5px_rgba(0,0,0,0.05)]">
+                        <div class="max-w-[1080px] mx-auto text-center">
+                            <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Explore Our Menu</h2>
+                            <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Select a category to start ordering</p>
+                            
+                            <div class="grid grid-cols-5 gap-6 justify-items-center mb-16">
+                                ${[
+                                    { name: 'Featured Items', id: 'featured-items-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
+                                    { name: 'Tea Spresso', id: 'teaspresso-section', img: assets.boba1 },
+                                    { name: 'Milk Tea', id: 'milk-tea-section', img: assets.boba2 },
+                                    { name: 'Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
+                                    { name: 'Dessert Drinks', id: 'dessert-section', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg' }
+                                ].map(cat => `
+                                    <div onclick="navigateTo('menu');" class="flex flex-col items-center cursor-pointer group max-w-[200px]">
+                                        <div class="w-44 h-28 rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
+                                            <img src="${cat.img}" class="w-full h-full object-cover object-top">
+                                        </div>
+                                        <h3 class="font-branding font-black text-base text-gray-800 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
+                                        <div class="text-[10px] font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span>Order Now</span><i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="h-px bg-gray-100 w-full mb-16"></div>
+
+                            <!-- Featured Items Section -->
+                            <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Featured Items</h2>
+                            <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Our handcrafted favorites</p>
+
+                            <div class="grid grid-cols-4 gap-6 justify-items-center w-full">
+                                <!-- Card 1 -->
+                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
+                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
+                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+                                    </div>
+                                </div>
+                                <!-- Card 2 -->
+                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
+                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
+                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+                                    </div>
+                                </div>
+                                <!-- Card 3 -->
+                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
+                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
+                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+                                    </div>
+                                </div>
+                                <!-- Card 4 -->
+                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
+                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
+                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.95</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
 
                 ${!isDesktop ? `
@@ -771,18 +917,50 @@ const routes = {
             </div>`;
     },
     'restaurant-home-logo': () => {
-        const cardWidth = currentViewport === 'desktop' ? 'w-[24%] min-w-[240px] max-w-[300px]' : (currentViewport === 'tablet' ? 'w-[45%]' : 'w-full');
         const isDesktop = currentViewport === 'desktop';
+        
+        let cardWidthClass = '';
+        let carouselAlign = '';
+        if (currentViewport === 'desktop') {
+            cardWidthClass = 'w-[23%] min-w-[200px] max-w-[260px] snap-align-none';
+            carouselAlign = 'lg:justify-center lg:overflow-x-visible';
+        } else if (currentViewport === 'tablet') {
+            cardWidthClass = 'w-[47%] shrink-0 snap-center';
+            carouselAlign = 'justify-start';
+        } else {
+            cardWidthClass = 'w-full shrink-0 snap-center';
+            carouselAlign = 'justify-start';
+        }
+
         return `
-            <div class="flex flex-col h-full relative overflow-hidden">
-                <!-- Full Viewport Background Image -->
-                <div class="absolute inset-0 z-0">
-                    <img src="${assets.restaurantHero}" class="w-full h-full object-cover">
+            <div class="flex flex-col h-full relative overflow-hidden bg-slate-50">
+                <!-- Hero Banner / Background Section -->
+                <div class="${isDesktop ? 'relative h-[480px] w-full shrink-0 overflow-hidden flex items-center bg-violet-600' : 'absolute inset-0 z-0'}">
+                    ${isDesktop ? `
+                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
+                    <div class="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-violet-950/30 to-transparent z-0"></div>
+                    <div class="relative z-10 w-full max-w-[1080px] mx-auto px-12 text-left flex flex-col justify-center h-full">
+                        <div class="max-w-[480px] pt-2 flex flex-col items-start">
+                            <h2 class="font-branding font-black text-5xl tracking-tight text-white uppercase leading-none">SIP THE</h2>
+                            <h1 class="font-branding font-extrabold text-7xl text-white tracking-tight mt-1 mb-4 flex items-center gap-3 leading-none">
+                                <span class="italic font-serif" style="font-family: 'Outfit', sans-serif;">Goodness</span>
+                                <i class="fa-regular fa-heart text-4xl text-violet-200"></i>
+                            </h1>
+                            <p class="text-base font-semibold text-white/90 mb-6 leading-relaxed">Refreshing flavors. Chewy boba. Made for every moment.</p>
+                            <button onclick="navigateTo('location-pick')" class="inline-flex items-center gap-3 bg-white text-violet-700 hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
+                                <span>Order Now</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    ` : `
+                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0">
                     <!-- Subtle gradient to ensure text readability -->
-                    <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90 z-0"></div>
+                    `}
                 </div>
 
-                <header class="bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0 relative">
+                <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
                     <div class="flex items-center gap-3">
                         <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
                         <button onclick="navigateTo('qr-code-guide')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
@@ -798,23 +976,25 @@ const routes = {
                 </header>
                 
                 <div class="flex-1 overflow-y-auto relative scrollbar-hide z-10 flex flex-col">
-                    <!-- Logo + CTA -->
-                    <div class="text-center pt-4 relative z-10 shrink-0 flex flex-col items-center">
+                    <!-- Logo + CTA for Mobile/Tablet -->
+                    ${!isDesktop ? `
+                    <div class="text-center pt-24 relative z-10 shrink-0 flex flex-col items-center">
                         <div class="text-violet-600 text-[11px] font-black tracking-[0.2em] uppercase mb-2">Open 24 Hours</div>
-                        <div class="w-28 h-28 bg-white rounded-full overflow-hidden border-4 border-violet-600 shadow-[0_8px_32px_-4px_rgba(124,58,237,0.55)] ${isDesktop ? 'mb-4' : 'mb-2'} flex items-center justify-center">
+                        <div class="w-28 h-28 bg-white rounded-full overflow-hidden border-4 border-violet-600 shadow-[0_8px_32px_-4px_rgba(124,58,237,0.55)] mb-2 flex items-center justify-center">
                             <img src="images/itea_logo.png" alt="i-Tea" class="w-full h-full object-contain p-2">
                         </div>
-                        ${isDesktop ? `<button onclick="navigateTo('location-pick')" class="bg-violet-600 text-white px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider inline-block">Order Now</button>` : ''}
                     </div>
+                    ` : ''}
                     
                     <!-- Spacer so background image can be seen before the carousel -->
-                    <div class="w-full flex-1 min-h-[140px]"></div>
+                    ${!isDesktop ? '<div class="w-full flex-1 min-h-[140px]"></div>' : ''}
                     
                     <!-- Carousel Container -->
+                    ${!isDesktop ? `
                     <div class="relative z-20 w-full mt-auto shrink-0 pb-2 px-6">
-                        <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
+                        <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory ${carouselAlign}">
                             <!-- Card 1 -->
-                            <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
+                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
@@ -823,7 +1003,7 @@ const routes = {
                                 </div>
                             </div>
                             <!-- Card 2 -->
-                            <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
+                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
@@ -832,7 +1012,7 @@ const routes = {
                                 </div>
                             </div>
                             <!-- Card 3 -->
-                            <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
+                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
@@ -841,7 +1021,7 @@ const routes = {
                                 </div>
                             </div>
                             <!-- Card 4 -->
-                            <div class="snap-center shrink-0 w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
+                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
                                 <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
                                     <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
@@ -852,13 +1032,89 @@ const routes = {
                         </div>
                         
                         <!-- Pagination Dots -->
-                        <div class="flex justify-center items-center gap-2 mt-2 mb-4" style="padding-right: 0;">
+                        <div class="flex justify-center items-center gap-2 mt-2 mb-4 lg:hidden" style="padding-right: 0;">
                             <div id="carousel-dot-0" class="w-2 h-2 rounded-full bg-violet-600 transition-colors duration-300"></div>
                             <div id="carousel-dot-1" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
                             <div id="carousel-dot-2" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
                             <div id="carousel-dot-3" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
                         </div>
                     </div>
+                    ` : ''}
+                    <!-- Desktop Categories Section -->
+                    ${isDesktop ? `
+                    <div class="bg-white pt-24 pb-24 px-12 rounded-t-[40px] -mt-16 w-full shrink-0 relative z-30 shadow-[0_-15px_30px_-5px_rgba(0,0,0,0.05)]">
+                        <div class="max-w-[1080px] mx-auto text-center">
+                            <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Explore Our Menu</h2>
+                            <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Select a category to start ordering</p>
+                            
+                            <div class="grid grid-cols-5 gap-6 justify-items-center mb-16">
+                                ${[
+                                    { name: 'Featured Items', id: 'featured-items-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
+                                    { name: 'Tea Spresso', id: 'teaspresso-section', img: assets.boba1 },
+                                    { name: 'Milk Tea', id: 'milk-tea-section', img: assets.boba2 },
+                                    { name: 'Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
+                                    { name: 'Dessert Drinks', id: 'dessert-section', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg' }
+                                ].map(cat => `
+                                    <div onclick="navigateTo('menu');" class="flex flex-col items-center cursor-pointer group max-w-[200px]">
+                                        <div class="w-44 h-28 rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
+                                            <img src="${cat.img}" class="w-full h-full object-cover object-top">
+                                        </div>
+                                        <h3 class="font-branding font-black text-base text-gray-800 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
+                                        <div class="text-[10px] font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span>Order Now</span><i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="h-px bg-gray-100 w-full mb-16"></div>
+
+                            <!-- Featured Items Section -->
+                            <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Featured Items</h2>
+                            <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Our handcrafted favorites</p>
+
+                            <div class="grid grid-cols-4 gap-6 justify-items-center w-full">
+                                <!-- Card 1 -->
+                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
+                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
+                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+                                    </div>
+                                </div>
+                                <!-- Card 2 -->
+                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
+                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
+                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+                                    </div>
+                                </div>
+                                <!-- Card 3 -->
+                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
+                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
+                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+                                    </div>
+                                </div>
+                                <!-- Card 4 -->
+                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
+                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
+                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.95</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
 
                 ${!isDesktop ? `
@@ -998,14 +1254,22 @@ const routes = {
                 </div>`;
         }
     },
-    'location-favorites': () => `
+    'location-favorites': () => {
+        const isDesktop = currentViewport === 'desktop';
+        return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
-                <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 border-b border-gray-100">
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
                     <button onclick="navigateTo('location-pick')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
-                    <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center">Favorite Locations</h1>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Favorite Locations</span>
                     <div class="w-10"></div>
                 </header>
-                <div class="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide w-full max-w-[1080px] mx-auto">
+                <div class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-hide w-full max-w-3xl mx-auto">
+                    ${isDesktop ? `
+                    <div class="mb-2">
+                        <h1 class="text-3xl font-black text-gray-900 tracking-tighter mb-1 uppercase font-black">Favorite Locations</h1>
+                        <p class="text-gray-600 font-medium mb-4">Manage your saved home, work, and custom addresses.</p>
+                    </div>
+                    ` : ''}
                     <!-- Location 1 -->
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
                         <div class="flex justify-between items-start">
@@ -1059,12 +1323,21 @@ const routes = {
                             <textarea placeholder="Delivery instructions for this location..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-xs font-medium outline-none focus:border-violet-300 h-24 resize-none leading-relaxed"></textarea>
                         </div>
                     </div>
+
+                    ${isDesktop ? `
+                    <div class="flex justify-start pt-2">
+                        <button onclick="navigateTo('location-pick')" class="w-1/3 bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] hover:bg-violet-700 transition-all">Save Changes</button>
+                    </div>
+                    ` : ''}
                 </div>
+                ${!isDesktop ? `
                 <div class="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
                     <button onclick="navigateTo('location-pick')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] transition-all">Save Changes</button>
                 </div>
+                ` : ''}
             </div>
-        `,
+        `;
+    },
     'order-details': () => {
         const btn = (icon, label) => {
             const isActive = mockupState.fulfillmentMode === label;
@@ -1116,7 +1389,7 @@ const routes = {
         return `
                 <div class="flex flex-col h-full bg-[#FAF9F6] relative overflow-hidden">
                     <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black"><button onclick="navigateTo('location-pick')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span><button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button></header>
-                    <div class="flex-1 overflow-y-auto px-6 pt-5 pb-32">
+                    <div class="flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full pb-32">
                         <!-- Location Info Card -->
                         <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('location-pick')">
                             <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
@@ -1273,7 +1546,9 @@ const routes = {
 
                 </div>`;
     },
-    'qr-code-guide': () => `
+    'qr-code-guide': () => {
+        const isDesktopOrTablet = currentViewport === 'desktop' || currentViewport === 'tablet';
+        return `
             <div class="flex flex-col h-full bg-white relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
@@ -1282,8 +1557,8 @@ const routes = {
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Scan to Dine In</span>
                     <div class="w-10"></div>
                 </header>
-                <div class="flex-1 flex flex-col items-center justify-center px-6 text-center">
-                    <div class="w-full aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-12">
+                <div class="${isDesktopOrTablet ? 'flex-1 flex flex-col items-center justify-center p-6 md:p-8 max-w-3xl mx-auto w-full text-center' : 'flex-1 flex flex-col items-center justify-center px-6 text-center'}">
+                    <div class="w-full ${isDesktopOrTablet ? 'max-w-md' : ''} aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-12">
                         <img src="images/qr-scan-table.jpg" class="w-full h-full object-cover">
                     </div>
                     <h2 class="text-2xl font-black mb-6 uppercase tracking-tight font-black text-gray-900 leading-tight">Ready to Dine In?</h2>
@@ -1293,8 +1568,13 @@ const routes = {
                         <p class="text-sm">3. Scan to start your order.</p>
                     </div>
                 </div>
-                <div class="p-6 border-t sticky bottom-0 bg-white"><button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] flex items-center justify-center gap-3 active:scale-95 transition-all uppercase shadow-violet-100 font-black"><i class="fa-solid fa-camera"></i><span>SCAN TABLE QR</span></button></div>
-            </div>`,
+                <div class="border-t sticky bottom-0 bg-white">
+                    <div class="p-6 w-full ${isDesktopOrTablet ? 'max-w-3xl mx-auto' : ''}">
+                        <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] flex items-center justify-center gap-3 active:scale-95 transition-all uppercase shadow-violet-100 font-black"><i class="fa-solid fa-camera"></i><span>SCAN TABLE QR</span></button>
+                    </div>
+                </div>
+            </div>`;
+    },
     'menu': () => {
         const isDesktop = currentViewport === 'desktop';
         const categoryModalClass = mockupState.modalOpen === 'categories' ? 'flex' : 'hidden';
@@ -1491,12 +1771,15 @@ const routes = {
                                 <!-- Menu Feed (Categories) -->
                                 <div class="space-y-12">
                                     ${[
+                                        { id: 'featured-section', name: 'FEATURED ITEMS', isFeatured: true },
                                         { id: 'teaspresso-section', name: 'TEASPRESSO SERIES', categoryKey: 'Tea Spresso Series' },
                                         { id: 'milk-tea-section', name: 'MILK TEA SPECIALTY', categoryKey: 'Milk Tea' },
                                         { id: 'fruit-tea-section', name: 'I-TEA FRUIT TEA', categoryKey: 'Fruit Tea' },
                                         { id: 'dessert-section', name: 'DESSERT DRINKS', categoryKey: 'Dessert Drink' }
                                     ].map(section => {
-                                        const sectionItems = MENU_ITEMS.filter(item => item.category === section.categoryKey);
+                                        const sectionItems = section.isFeatured 
+                                            ? MENU_ITEMS.slice(0, 6)
+                                            : MENU_ITEMS.filter(item => item.category === section.categoryKey);
                                         if (sectionItems.length === 0) return '';
                                         return `
                                             <div id="${section.id}" class="pt-4 scroll-mt-24">
@@ -1528,10 +1811,69 @@ const routes = {
                                 </div>
                             `;
                         } else if (mockupState.menuTab === 'featured') {
-                            return `
-                                <!-- Featured View -->
-                                <div class="space-y-12">
-                                    <!-- Hero Special Card -->
+                            const slideIndex = mockupState.featuredSlideIndex || 0;
+                            const isDesktopOrTablet = currentViewport === 'desktop' || currentViewport === 'tablet';
+
+                            let heroCardHtml = '';
+                            if (isDesktopOrTablet) {
+                                if (slideIndex === 0) {
+                                    heroCardHtml = `
+                                        <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[340px] flex flex-col justify-end p-8 transition-all duration-500 ease-in-out">
+                                            <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
+                                            <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
+                                            
+                                            <div class="relative z-10 w-full max-w-md">
+                                                <span class="bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Featured</span>
+                                                <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4 font-branding">Brown Sugar<br>Boba Latte</h2>
+                                                <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P4 • Creamy, caramelized milk tea perfection.</p>
+                                                <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
+                                            </div>
+                                            
+                                            <!-- White caret bracket facing east to slide to Grapefruit -->
+                                            <button onclick="updateMockupState('featuredSlideIndex', 1)" class="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer">
+                                                <i class="fa-solid fa-chevron-right text-lg"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Carousel indicator dots -->
+                                        <div class="flex justify-center gap-2 mt-4">
+                                            <button onclick="updateMockupState('featuredSlideIndex', 0)" class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-violet-600 w-6"></button>
+                                            <button onclick="updateMockupState('featuredSlideIndex', 1)" class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-gray-300"></button>
+                                        </div>
+                                    `;
+                                } else {
+                                    const grapefruitImg = MENU_ITEMS[5] ? MENU_ITEMS[5].image : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
+                                    heroCardHtml = `
+                                        <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[340px] flex flex-col justify-end p-8 transition-all duration-500 ease-in-out">
+                                            <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover">
+                                            <!-- Orange gradient overlay replacing drop shadow -->
+                                            <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
+                                            
+                                            <div class="relative z-10 w-full max-w-md">
+                                                <!-- Orange Featured Badge -->
+                                                <span class="bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Featured</span>
+                                                <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4 font-branding">P3 Super<br>Grapefruit</h2>
+                                                <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P3 • Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
+                                                <!-- White button, orange text -->
+                                                <button onclick="selectItemAndNavigate(5)" class="bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
+                                            </div>
+                                            
+                                            <!-- White caret bracket facing east to slide back to Boba -->
+                                            <button onclick="updateMockupState('featuredSlideIndex', 0)" class="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer">
+                                                <i class="fa-solid fa-chevron-right text-lg"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Carousel indicator dots -->
+                                        <div class="flex justify-center gap-2 mt-4">
+                                            <button onclick="updateMockupState('featuredSlideIndex', 0)" class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-gray-300"></button>
+                                            <button onclick="updateMockupState('featuredSlideIndex', 1)" class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-orange-600 w-6"></button>
+                                        </div>
+                                    `;
+                                }
+                            } else {
+                                // Mobile view: single card
+                                heroCardHtml = `
                                     <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[300px] flex flex-col justify-end p-8">
                                         <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
                                         <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
@@ -1543,6 +1885,14 @@ const routes = {
                                             <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
                                         </div>
                                     </div>
+                                `;
+                            }
+
+                            return `
+                                <!-- Featured View -->
+                                <div class="space-y-12">
+                                    <!-- Hero Special Card / Carousel -->
+                                    ${heroCardHtml}
 
                                     <!-- Featured Items Grid (Large Premium Cards) -->
                                     <div>
@@ -1610,45 +1960,82 @@ const routes = {
                                 </div>
                             `;
                         } else if (mockupState.menuTab === 'history') {
-                            return `
-                                <div class="space-y-6">
-                                    <div class="flex justify-between items-end mb-4 px-1">
-                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
-                                    </div>
-                                    
-                                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                                        <div class="space-y-5">
-                                            ${[
-                                                { index: 0, times: 'Ordered 15 times' },
-                                                { index: 6, times: 'Ordered 12 times' },
-                                                { index: 1, times: 'Ordered 8 times' },
-                                                { index: 11, times: 'Ordered 5 times' },
-                                                { index: 15, times: 'Ordered 3 times' }
-                                            ].map((hist, i) => {
-                                                const item = MENU_ITEMS[hist.index];
-                                                return `
-                                                    <div class="flex items-center justify-between group border-b border-gray-50 pb-4 last:border-b-0 last:pb-0">
-                                                        <div class="flex items-center gap-4">
-                                                            <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 cursor-pointer" onclick="selectItemAndNavigate(${hist.index})">
-                                                                <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-300">
-                                                            </div>
-                                                            <div>
-                                                                <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2 cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})">${item.name}</div>
-                                                                <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide flex items-center gap-2">
-                                                                    <span>${hist.times}</span>
-                                                                    <span>•</span>
-                                                                    <span>Last ordered ${i === 0 ? 'Yesterday' : i === 1 ? '3 days ago' : 'last week'}</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <button onclick="selectItemAndNavigate(${hist.index})" class="px-5 py-2 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 hover:bg-violet-50 hover:border-violet-300 shadow-sm font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 shrink-0 ml-4">+ Add</button>
+                            const historyItems = [
+                                { index: 0, times: 'Ordered 15 times' },
+                                { index: 6, times: 'Ordered 12 times' },
+                                { index: 1, times: 'Ordered 8 times' },
+                                { index: 11, times: 'Ordered 5 times' },
+                                { index: 15, times: 'Ordered 3 times' }
+                            ];
+
+                            if (isDesktop) {
+                                const gridItemsHTML = historyItems.map((hist, i) => {
+                                    const item = MENU_ITEMS[hist.index];
+                                    return `
+                                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center justify-between group">
+                                            <div class="flex items-center gap-4 min-w-0">
+                                                <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 cursor-pointer" onclick="selectItemAndNavigate(${hist.index})">
+                                                    <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-300">
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <div class="font-black text-sm text-gray-900 leading-tight uppercase truncate cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})" title="${item.name}">${item.name}</div>
+                                                    <div class="flex flex-col gap-1.5 mt-1.5">
+                                                        <span class="px-2.5 py-0.5 bg-violet-600 text-white rounded-full text-[9px] font-black uppercase tracking-wider inline-block w-fit">${hist.times}</span>
+                                                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Last ordered ${i === 0 ? 'Yesterday' : i === 1 ? '3 days ago' : 'last week'}</span>
                                                     </div>
-                                                `;
-                                            }).join('')}
+                                                </div>
+                                            </div>
+                                            <button onclick="selectItemAndNavigate(${hist.index})" class="px-4 py-2 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 hover:bg-violet-50 hover:border-violet-300 shadow-sm font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 shrink-0 ml-3">+ Reorder</button>
+                                        </div>
+                                    `;
+                                }).join('');
+
+                                return `
+                                    <div class="space-y-6">
+                                        <div class="flex justify-between items-end mb-4 px-1">
+                                            <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            ${gridItemsHTML}
                                         </div>
                                     </div>
-                                </div>
-                            `;
+                                `;
+                            } else {
+                                const listItemsHTML = historyItems.map((hist, i) => {
+                                    const item = MENU_ITEMS[hist.index];
+                                    return `
+                                        <div class="flex items-center justify-between group border-b border-gray-50 pb-4 last:border-b-0 last:pb-0">
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 cursor-pointer" onclick="selectItemAndNavigate(${hist.index})">
+                                                    <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-300">
+                                                </div>
+                                                <div>
+                                                    <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2 cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})">${item.name}</div>
+                                                    <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide flex items-center gap-2">
+                                                        <span>${hist.times}</span>
+                                                        <span>•</span>
+                                                        <span>Last ordered ${i === 0 ? 'Yesterday' : i === 1 ? '3 days ago' : 'last week'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button onclick="selectItemAndNavigate(${hist.index})" class="px-5 py-2 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 hover:bg-violet-50 hover:border-violet-300 shadow-sm font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 shrink-0 ml-4">+ Reorder</button>
+                                        </div>
+                                    `;
+                                }).join('');
+
+                                return `
+                                    <div class="space-y-6">
+                                        <div class="flex justify-between items-end mb-4 px-1">
+                                            <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
+                                        </div>
+                                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                                            <div class="space-y-5">
+                                                ${listItemsHTML}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }
                         }
                     })()}
                 </div>
@@ -1837,7 +2224,7 @@ const routes = {
         if (isDesktop) {
             return `
                 <div class="flex flex-col h-full bg-[#f6f6f6] relative overflow-y-auto">
-                    <div class="w-full max-w-[1080px] mx-auto px-6 py-8 flex flex-col gap-6">
+                    <div class="w-full max-w-3xl mx-auto p-6 md:p-8 flex flex-col gap-6">
 
                         <!-- Page Title -->
                         <div>
@@ -2514,7 +2901,7 @@ const routes = {
 
 
                     <!-- Logout -->
-                    <button onclick="navigateTo('home')" class="w-full py-4 rounded-full border-2 border-gray-200 text-gray-700 font-black uppercase tracking-widest text-sm hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
+                    <button onclick="signOutUser()" class="w-full py-4 rounded-full border-2 border-gray-200 text-gray-700 font-black uppercase tracking-widest text-sm hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out
                     </button>
 
@@ -2568,14 +2955,16 @@ const routes = {
                 </div>
             </div>`;
     },
-    'order-status': () => `
+    'order-status': () => {
+        const isDesktop = currentViewport === 'desktop';
+        return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0">
                     <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
                     <h1 class="text-xl font-black tracking-tight uppercase text-gray-900">Order Status</h1>
                 </header>
                 
-
+                <div class="${isDesktop ? 'flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full space-y-6 scrollbar-hide' : 'flex-1 overflow-y-auto space-y-6 scrollbar-hide'}">
                     <div class="flex gap-2 overflow-x-auto scrollbar-hide shrink-0 pb-2">
                         <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
                             <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
@@ -2741,14 +3130,19 @@ const routes = {
                     </div>
                 </div>
                 
-                <div class="p-6 bg-white border-t border-gray-100 shrink-0 sticky bottom-0">
-                    <button onclick="navigateTo('cart')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
-                        <i class="fa-solid fa-rotate-left"></i> Reorder
-                    </button>
+                <div class="bg-white border-t border-gray-100 shrink-0 sticky bottom-0">
+                    <div class="p-6 w-full ${isDesktop ? 'max-w-3xl mx-auto' : ''}">
+                        <button onclick="navigateTo('cart')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
+                            <i class="fa-solid fa-rotate-left"></i> Reorder
+                        </button>
+                    </div>
                 </div>
-            </div>`,
-    'track-order': () => `
-            <div class="flex flex-col h-full bg-white relative">
+            </div>`;
+    },
+    'track-order': () => {
+        const isDesktop = currentViewport === 'desktop';
+        return `
+            <div class="flex flex-col h-full ${isDesktop ? 'bg-[#f6f6f6]' : 'bg-white'} relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 justify-center">
                     <div class="w-full max-w-[1080px] flex items-center">
                         <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
@@ -2756,7 +3150,7 @@ const routes = {
                     </div>
                 </header>
                 
-                <div class="px-6 py-4 space-y-4 w-full max-w-[1080px] mx-auto">
+                <div class="${isDesktop ? 'flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full space-y-6 scrollbar-hide' : 'px-6 py-4 space-y-4 w-full max-w-[1080px] mx-auto'}">
                     <div class="flex justify-end shrink-0 pb-2">
                         <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
                             <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
@@ -2918,13 +3312,16 @@ const routes = {
                     </div>
                 </div>
                 
-                <div class="p-6 bg-white border-t border-gray-100 shrink-0 sticky bottom-0 space-y-3">
-                    <button onclick="alert('Calling store at (602) 555-0123...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
-                        <i class="fa-solid fa-phone"></i> Contact Store
-                    </button>
-                    <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
+                <div class="bg-white border-t border-gray-100 shrink-0 sticky bottom-0">
+                    <div class="p-6 w-full ${isDesktop ? 'max-w-3xl mx-auto' : ''} space-y-3">
+                        <button onclick="alert('Calling store at (602) 555-0123...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
+                            <i class="fa-solid fa-phone"></i> Contact Store
+                        </button>
+                        <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
+                    </div>
                 </div>
-            </div>`,
+            </div>`;
+    },
     'registration': () => {
         const isDesktop = currentViewport === 'desktop';
         return `
@@ -2937,7 +3334,7 @@ const routes = {
                     <div class="w-10"></div>
                 </header>
                 
-                <div class="w-full max-w-[1080px] mx-auto ${isDesktop ? 'px-6 py-8' : 'p-8'} flex flex-col gap-8 font-sans">
+                <div class="w-full max-w-3xl mx-auto p-6 md:p-8 flex flex-col gap-8 font-sans">
                     <div class="text-center mb-2">
                         <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Register</h1>
                         <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mt-2">Create a new account</p>
@@ -3286,7 +3683,7 @@ const routes = {
                     </div>
                 </header>
                 
-                <div id="payment-scroller" class="flex-1 overflow-y-auto ${isDesktop ? 'p-8 space-y-8' : 'p-4 space-y-6'} scrollbar-hide pb-32 w-full max-w-[1080px] mx-auto">
+                <div id="payment-scroller" class="flex-1 overflow-y-auto ${isDesktop ? 'p-6 md:p-8 space-y-8 w-full max-w-3xl mx-auto' : 'p-4 space-y-6 w-full max-w-[1080px] mx-auto'} scrollbar-hide pb-32">
                     
                     <!-- Payment Methods -->
                     <div>
@@ -3361,9 +3758,11 @@ const routes = {
                 </div>
 
                 <!-- Footer Action Buttons -->
-                <div class="p-6 bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-50 flex justify-between gap-4">
-                    <button onclick="navigateTo('cart')" class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:text-violet-600 hover:bg-violet-50 shadow-md transition-all active:scale-95 shrink-0"><i class="fa-solid fa-arrow-left text-xl"></i></button>
-                    <button onclick="navigateTo('order-confirm')" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">Purchase Order</button>
+                <div class="bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-50">
+                    <div class="p-6 flex justify-between gap-4 w-full ${isDesktop ? 'max-w-3xl mx-auto' : 'max-w-[1080px] mx-auto'}">
+                        <button onclick="navigateTo('cart')" class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:text-violet-600 hover:bg-violet-50 shadow-md transition-all active:scale-95 shrink-0"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                        <button onclick="navigateTo('order-confirm')" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">Purchase Order</button>
+                    </div>
                 </div>
 
                 <!-- PAYMENT MODALS -->
@@ -3493,14 +3892,22 @@ const routes = {
             </div>`;
     },
 
-    'location-favorites': () => `
+    'location-favorites': () => {
+        const isDesktop = currentViewport === 'desktop';
+        return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
-                <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 border-b border-gray-100">
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
                     <button onclick="navigateTo('location-pick')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
-                    <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center">Favorite Locations</h1>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Favorite Locations</span>
                     <div class="w-10"></div>
                 </header>
-                <div class="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide w-full max-w-[1080px] mx-auto">
+                <div class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-hide w-full max-w-3xl mx-auto">
+                    ${isDesktop ? `
+                    <div class="mb-2">
+                        <h1 class="text-3xl font-black text-gray-900 tracking-tighter mb-1 uppercase font-black">Favorite Locations</h1>
+                        <p class="text-gray-600 font-medium mb-4">Manage your saved home, work, and custom addresses.</p>
+                    </div>
+                    ` : ''}
                     <!-- Location 1 -->
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
                         <div class="flex justify-between items-start">
@@ -3554,12 +3961,21 @@ const routes = {
                             <textarea placeholder="Delivery instructions for this location..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-xs font-medium outline-none focus:border-violet-300 h-24 resize-none leading-relaxed"></textarea>
                         </div>
                     </div>
+
+                    ${isDesktop ? `
+                    <div class="flex justify-start pt-2">
+                        <button onclick="navigateTo('location-pick')" class="w-1/3 bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] hover:bg-violet-700 transition-all">Save Changes</button>
+                    </div>
+                    ` : ''}
                 </div>
+                ${!isDesktop ? `
                 <div class="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
                     <button onclick="navigateTo('location-pick')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] transition-all">Save Changes</button>
                 </div>
+                ` : ''}
             </div>
-        `,
+        `;
+    },
     'manage-favorites': () => {
         const isDesktop = currentViewport === 'desktop';
         const favorites = mockupState.favorites || [];
@@ -3575,7 +3991,7 @@ const routes = {
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
 
-                <div class="${isDesktop ? 'p-8' : 'p-3'} max-w-4xl mx-auto w-full">
+                <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 pb-16">
                     <div class="mb-8">
                         <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1 uppercase">Your Favorites</h1>
                         <p class="text-gray-600 font-medium mb-4">Keep track of the items you love most.</p>
@@ -3634,57 +4050,15 @@ const routes = {
 
 
 routes['bobs-boba-auth'] = routes['restaurant-home'];
-
-function applyViewport() {
-    const wrapper = document.getElementById('preview-wrapper');
-    const canvas = document.getElementById('canvas');
-    if (!wrapper || !canvas) return;
-
-    wrapper.classList.remove('view-mobile', 'view-tablet', 'view-desktop');
-    document.querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('active'));
-    wrapper.classList.add(`view-${currentViewport}`);
-
-    const btn = document.getElementById(`btn-${currentViewport}`);
-    if (btn) btn.classList.add('active');
-
-    if (currentViewport === 'desktop') {
-        canvas.classList.remove('justify-center');
-        canvas.classList.add('p-0');
-    } else {
-        canvas.classList.add('justify-center');
-        canvas.classList.add('p-10');
-    }
-}
+routes['menu-old'] = () => { window.location.href = 'menu-old.html'; return ''; };
+routes['restaurant-home-old'] = () => { window.location.href = 'restaurant-home-old.html'; return ''; };
 
 function renderPage() {
-    const fbLabel = document.getElementById('current-fb-label');
-    const rbLabel = document.getElementById('current-rb-label');
-    
-    // Update labels and active states
-    const items = document.querySelectorAll('.dropdown-item');
-    items.forEach(item => {
-        const itemOnClick = item.getAttribute('onclick') || '';
-        if (itemOnClick.includes(`'${currentPage}'`)) {
-            item.classList.add('active');
-            const parentId = item.parentElement.id;
-            if (parentId === 'dropdown-menu-fb' && fbLabel) fbLabel.innerText = item.innerText.trim();
-            if (parentId === 'dropdown-menu-rb' && rbLabel) rbLabel.innerText = item.innerText.trim();
-        } else {
-            item.classList.remove('active');
-        }
-    });
-
-    // Fallback for labels
-    if (fbLabel && !fbLabel.innerText.trim()) fbLabel.innerText = 'FareBites';
-    if (rbLabel && !rbLabel.innerText.trim()) rbLabel.innerText = "i-Tea";
-
-    // Close all menus
-    ['dropdown-menu-fb', 'dropdown-menu-rb'].forEach(id => {
-        const m = document.getElementById(id);
-        if (m) m.classList.remove('show');
-    });
     const viewport = document.getElementById('app-viewport');
     if (!viewport) return;
+    
+    // Apply temporary demo/testing viewport styling wrapper
+    applyViewportContainerStyles();
     
     let contentHtml = routes[currentPage]
         ? routes[currentPage]()
@@ -3698,23 +4072,42 @@ function renderPage() {
         const desktopNavHtml = `
             <nav class="hidden lg:flex md:flex justify-between items-center px-4 lg:px-8 py-3 lg:py-4 bg-white sticky top-0 z-[100] border-b border-gray-100 shadow-sm w-full shrink-0">
                 <div class="flex items-center gap-4 lg:gap-8">
-                    <div class="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-full overflow-hidden border border-gray-100 shadow-sm flex items-center justify-center cursor-pointer hover:shadow-md transition-shadow shrink-0" onclick="navigateTo('restaurant-home')">
-                        <img src="images/itea_logo.png" class="w-full h-full object-contain p-1">
+                    <div class="w-12 h-12 lg:w-24 lg:h-24 flex items-center justify-center cursor-pointer shrink-0" onclick="navigateTo('restaurant-home')">
+                        <img src="images/nav-logo.png" class="w-full h-full object-contain">
                     </div>
-                    <div class="flex items-center gap-3 lg:gap-6 text-[12px] lg:text-[14px] font-black uppercase tracking-tight text-[#1A1A1A] ml-2">
+                    <div class="flex items-center gap-3 lg:gap-6 text-[16px] lg:text-[18px] font-black uppercase tracking-tight text-[#1A1A1A] ml-2">
+                        <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('restaurant-home')">Home</span>
                         <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('menu')">Menu</span>
+                        <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('location-pick')">Order</span>
                         <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('account')">Rewards</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-4 lg:gap-8 text-[11px] lg:text-[12px] font-black uppercase tracking-tight text-[#1A1A1A]">
-                    <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('location-pick')">
+                <div class="flex items-center gap-4 lg:gap-8 text-[14px] lg:text-[16px] font-black uppercase tracking-tight text-[#1A1A1A]">
+                    <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1A1A1A]" onclick="navigateTo('location-pick')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
-                        <span>Find an i-Tea</span>
+                        <span>Locations</span>
                     </div>
-                    <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('restaurant-sign-in')">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-                        <span>${mockupState.isLoggedIn ? mockupState.userName : 'Sign In / Join'}</span>
-                    </div>
+                    ${mockupState.isLoggedIn ? `
+                        <div class="relative">
+                            <button class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1A1A1A]" onclick="toggleMenu(event, 'user-profile-dropdown')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                                <span>${mockupState.userName}</span>
+                                <i class="fa-solid fa-chevron-down text-[10px] ml-1 text-gray-400"></i>
+                            </button>
+                            <div id="user-profile-dropdown" class="dropdown-menu">
+                                <div class="dropdown-column-title">My Profile</div>
+                                <div class="dropdown-item" onclick="navigateTo('account')">Account Details</div>
+                                <div class="dropdown-item" onclick="navigateTo('account')">Rewards</div>
+                                <div class="h-px bg-violet-100/50 my-2"></div>
+                                <div class="dropdown-item text-red-500 hover:text-red-600" onclick="signOutUser()">Sign Out</div>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('restaurant-sign-in')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                            <span>Sign In / Join</span>
+                        </div>
+                    `}
                     <div class="cursor-pointer relative hover:text-violet-600 transition-colors shrink-0 w-10 h-10 lg:w-11 lg:h-11 flex items-center justify-center -mr-2" onclick="navigateTo('cart')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                         ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
@@ -3725,8 +4118,8 @@ function renderPage() {
         contentHtml = desktopNavHtml + contentHtml;
     }
 
-    const noFooterPages = ['location-pick', 'menu', 'restaurant-home-logo', 'restaurant-home', 'restaurant-sign-in', 'restaurant-landing'];
-    if (!noFooterPages.includes(currentPage)) {
+    const noFooterPages = [];
+    if (!noFooterPages.includes(currentPage) && currentViewport === 'desktop') {
         const globalFooter = `
             <div class="hidden lg:block w-full bg-white shrink-0">
                 <div class="max-w-[1080px] mx-auto px-6 border-t border-gray-200 mt-16 pt-10">
@@ -3764,7 +4157,7 @@ function renderPage() {
                         </div>
                     </div>
                     <div class="flex flex-col-reverse md:flex-row justify-between items-center py-6 border-t border-gray-100 text-[11px] text-gray-400 font-medium gap-4">
-                        <p>© 2026 i-Tea Inc. All rights reserved.</p>
+                        <p>© 2026 i-Tea Inc. All rights reserved. <span class="ml-2 opacity-50">${VERSION_STR}</span></p>
                         <div class="flex gap-5 text-gray-400">
                             <i class="fa-solid fa-award text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
                             <i class="fa-regular fa-star text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
@@ -3783,9 +4176,7 @@ function renderPage() {
     }
 
     viewport.innerHTML = contentHtml;
-    viewport.scrollTop = 0;
-    const canvasArea = document.getElementById('canvas');
-    if (canvasArea) canvasArea.scrollTop = 0;
+    window.scrollTo(0, 0);
     persistAllState();
     document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
 
@@ -3820,6 +4211,135 @@ function renderPage() {
             });
         }
     }
+    
+    // Render the temporary viewport switcher widget
+    renderViewportSwitcher();
+}
+
+/* ==========================================================================
+   TEMPORARY VIEWPORT SWITCHER UTILITIES (DEMO/TEST MODE ONLY)
+   Delete this block and setForcedViewport/renderViewportSwitcher calls before live.
+   ========================================================================== */
+function applyViewportContainerStyles() {
+    const viewport = document.getElementById('app-viewport');
+    if (!viewport) return;
+    
+    // Reset body classes and viewport styles
+    document.body.className = '';
+    viewport.className = 'app-content';
+    viewport.style.cssText = '';
+    
+    // Remove simulated notch if present
+    const existingNotch = document.getElementById('simulated-notch');
+    if (existingNotch) existingNotch.remove();
+    
+    if (forcedViewport === 'mobile') {
+        document.body.className = 'bg-slate-900 flex items-center justify-center min-h-screen overflow-hidden';
+        // 375x667 represents a realistic mobile web viewport height (subtracting Safari/Chrome chrome)
+        viewport.className = 'app-content relative w-[375px] h-[667px] bg-white rounded-3xl shadow-2xl border-[8px] border-slate-800 overflow-y-auto overflow-x-hidden flex flex-col scrollbar-hide';
+        viewport.style.transform = 'scale(0.9)';
+        viewport.style.transformOrigin = 'center center';
+    } else if (forcedViewport === 'tablet') {
+        document.body.className = 'bg-slate-900 flex items-center justify-center min-h-screen overflow-hidden';
+        // 768x920 represents a realistic tablet web viewport height
+        viewport.className = 'app-content relative w-[768px] h-[920px] bg-white rounded-2xl shadow-2xl border-[10px] border-slate-800 overflow-y-auto overflow-x-hidden flex flex-col scrollbar-hide';
+        viewport.style.transform = 'scale(0.72)';
+        viewport.style.transformOrigin = 'center center';
+    } else if (forcedViewport === 'desktop') {
+        document.body.className = 'bg-slate-50 min-h-screen flex flex-col';
+        viewport.className = 'app-content w-full min-h-screen bg-white relative flex-1';
+    } else {
+        // Auto mode
+        document.body.className = 'bg-white';
+        viewport.className = 'app-content w-full min-h-screen relative';
+    }
+}
+
+function renderViewportSwitcher() {
+    let switcher = document.getElementById('dev-viewport-switcher');
+    if (!switcher) {
+        switcher = document.createElement('div');
+        switcher.id = 'dev-viewport-switcher';
+        document.body.appendChild(switcher);
+    }
+    
+    const activeClass = 'bg-violet-600 text-white';
+    const inactiveClass = 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200';
+
+    const col1Keys = ['restaurant-home', 'restaurant-home-logo', 'menu', 'location-pick', 'location-favorites', 'manage-favorites', 'account', 'qr-code-guide', 'directions'];
+    const col2Keys = ['cart', 'checkout', 'order-details', 'customize', 'order-confirm', 'order-status', 'track-order'];
+    const col3Keys = ['restaurant-landing', 'restaurant-sign-in', 'registration'];
+    const fbKeys = ['landing', 'home', 'privacy', 'dashboard'];
+    const oldKeys = ['restaurant-home-old', 'menu-old'];
+
+    const makeColHTML = (keys, title) => {
+        const itemsHTML = keys
+            .filter(key => routes[key])
+            .map(key => {
+                const label = PAGE_LABELS[key] || key.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
+                const activeClass = currentPage === key ? 'active' : '';
+                return `<div class="dropdown-item ${activeClass}" onclick="navigateTo('${key}')">${label}</div>`;
+            }).join('');
+        return `
+            <div class="flex flex-col gap-1">
+                <div class="dropdown-column-title">${title}</div>
+                ${itemsHTML}
+            </div>
+        `;
+    };
+
+    const col1HTML = makeColHTML(col1Keys, 'i-Tea Ordering');
+    const col2HTML = makeColHTML(col2Keys, 'i-Tea Checkout');
+    const iTeaGatesHTML = makeColHTML(col3Keys, 'i-Tea Gateways');
+    const fbHTML = makeColHTML(fbKeys, 'FareBites Pages');
+    const archiveHTML = makeColHTML(oldKeys, 'Archived Pages');
+
+    const col3HTML = `
+        <div class="flex flex-col gap-4">
+            ${iTeaGatesHTML}
+            ${fbHTML}
+            ${archiveHTML}
+        </div>
+    `;
+    
+    switcher.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 lg:bottom-auto lg:top-0 lg:right-4 lg:left-auto lg:translate-x-0 z-[999999] flex items-center gap-1.5 lg:gap-1 p-1.5 lg:p-1 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl lg:rounded-t-none lg:rounded-b-xl transition-all duration-300';
+    switcher.innerHTML = `
+        <div class="text-[9px] lg:text-[7.5px] font-black text-slate-400 uppercase tracking-widest px-2.5 lg:px-1.5 select-none hidden sm:block">Demo Switcher</div>
+        <div class="relative">
+            <button onclick="toggleMenu(event, 'all-pages-dropdown')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all bg-violet-500 text-white hover:bg-violet-600 shadow-md">
+                <span>Sitemap</span><i class="fa-solid fa-chevron-down text-[8px] lg:text-[7px] ml-1"></i>
+            </button>
+            <div id="all-pages-dropdown" class="dropdown-menu">
+                ${col1HTML}
+                ${col2HTML}
+                ${col3HTML}
+            </div>
+        </div>
+        <button onclick="setForcedViewport(null)" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${!forcedViewport ? activeClass : inactiveClass}">
+            <i class="fa-solid fa-wand-magic-sparkles text-[10px] lg:text-[8px]"></i><span>Auto</span>
+        </button>
+        <button onclick="setForcedViewport('mobile')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${forcedViewport === 'mobile' ? activeClass : inactiveClass}">
+            <i class="fa-solid fa-mobile-screen-button text-[10px] lg:text-[8px]"></i><span>Mobile</span>
+        </button>
+        <button onclick="setForcedViewport('tablet')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${forcedViewport === 'tablet' ? activeClass : inactiveClass}">
+            <i class="fa-solid fa-tablet-screen-button text-[10px] lg:text-[8px]"></i><span>Tablet</span>
+        </button>
+        <button onclick="setForcedViewport('desktop')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${forcedViewport === 'desktop' ? activeClass : inactiveClass}">
+            <i class="fa-solid fa-laptop text-[10px] lg:text-[8px]"></i><span>Desktop</span>
+        </button>
+    `;
+}
+
+function setForcedViewport(mode) {
+    if (mode === null) {
+        sessionStorage.removeItem('farebitesForcedViewport');
+        forcedViewport = null;
+    } else {
+        sessionStorage.setItem('farebitesForcedViewport', mode);
+        forcedViewport = mode;
+    }
+    currentViewport = getCurrentViewport();
+    renderPage();
 }
 
 function adjustBagQuantity(delta) {
@@ -3881,6 +4401,13 @@ function checkAuthPasscode() {
     navigateTo('restaurant-home');
 }
 
+function signOutUser() {
+    mockupState.isLoggedIn = false;
+    mockupState.userName = 'Guest';
+    persistAllState();
+    navigateTo('restaurant-landing');
+}
+
 function removeFavorite(id) {
     mockupState.favorites = mockupState.favorites.filter(item => item.id !== id);
     persistAllState();
@@ -3897,92 +4424,6 @@ function navigateTo(pageId) {
     window.location.href = nextFile;
 }
 
-function setViewport(size) {
-    currentViewport = size;
-    persistAllState();
-    applyViewport();
-    renderPage();
-}
-
-function renderDropdownMenu() {
-    const fbPagesList = ['landing', 'home', 'privacy', 'dashboard'];
-    const rbPagesList = [
-        'restaurant-landing', 'restaurant-sign-in', 'registration', 'restaurant-home', 'restaurant-home-logo', 
-        'menu', 'location-pick', 'location-favorites', 'manage-favorites', 'order-details', 
-        'customize', 'cart', 'checkout', 'order-confirm', 'order-status', 'track-order', 'qr-code-guide', 'directions', 'account'
-    ];
-
-    const fbPages = fbPagesList
-        .filter(key => routes[key])
-        .map(key => ({ key, label: PAGE_LABELS[key] || key.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ') }));
-
-    const rbPages = rbPagesList
-        .filter(key => routes[key])
-        .map(key => ({ key, label: PAGE_LABELS[key] || key.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ') }));
-
-    const fbMenuHTML = fbPages.map(p => `<div class="dropdown-item ${currentPage === p.key ? 'active' : ''}" onclick="navigateTo('${p.key}')">${p.label}</div>`).join('');
-    const rbMenuHTML = rbPages.map(p => `<div class="dropdown-item ${currentPage === p.key ? 'active' : ''}" onclick="navigateTo('${p.key}')">${p.label}</div>`).join('');
-
-    const fbContainer = document.getElementById('dropdown-menu-fb');
-    if (fbContainer) fbContainer.innerHTML = fbMenuHTML;
-
-    const rbContainer = document.getElementById('dropdown-menu-rb');
-    if (rbContainer) rbContainer.innerHTML = rbMenuHTML;
-}
-
-function renderWorkspaceHeader() {
-    const header = document.getElementById('workspace-header');
-    if (!header) return;
-
-    header.innerHTML = `
-            <div class="flex items-center gap-6">
-                <span
-                    class="font-black text-red-500 tracking-tighter text-xl cursor-pointer hover:opacity-80 transition-opacity"
-                    onclick="navigateTo('home')">
-                    FAREBITES <span class="text-white font-light text-xs opacity-50 ml-1" id="version-badge"></span>
-                </span>
-                <div class="h-6 w-[1px] bg-gray-700 mx-2"></div>
-
-                <!-- FareBites Dropdown -->
-                <div class="relative">
-                    <button class="page-selector-btn" onclick="toggleMenu(event, 'dropdown-menu-fb')">
-                        <span id="current-fb-label">FareBites</span>
-                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                    </button>
-                    <div id="dropdown-menu-fb" class="dropdown-menu"></div>
-                </div>
-
-                <!-- Restaurant Dropdown -->
-                <div class="relative">
-                    <button class="page-selector-btn" onclick="toggleMenu(event, 'dropdown-menu-rb')">
-                        <span id="current-rb-label">i-Tea</span>
-                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                    </button>
-                    <div id="dropdown-menu-rb" class="dropdown-menu"></div>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <button class="btn-toggle" id="btn-desktop" onclick="setViewport('desktop')"><i
-                        class="fa-solid fa-desktop mr-2"></i>Desktop</button>
-                <button class="btn-toggle" id="btn-mobile" onclick="setViewport('mobile')"><i
-                        class="fa-solid fa-mobile-screen-button mr-2"></i>Mobile</button>
-                <button class="btn-toggle" id="btn-tablet" onclick="setViewport('tablet')"><i
-                        class="fa-solid fa-tablet-screen-button mr-2"></i>Tablet</button>
-            </div>
-    `;
-}
-
 window.addEventListener('DOMContentLoaded', () => {
-    renderWorkspaceHeader();
-
-    // Dynamic version badge: V{month}.{day}.{24h}.{mm}
-    const _v = new Date();
-    const _vStr = `V${_v.getMonth() + 1}.${_v.getDate()}.${String(_v.getHours()).padStart(2,'0')}.${String(_v.getMinutes()).padStart(2,'0')}`;
-    const badge = document.getElementById('version-badge');
-    if (badge) badge.textContent = _vStr;
-
-    applyViewport();
     renderPage();
-    renderDropdownMenu();
 });
