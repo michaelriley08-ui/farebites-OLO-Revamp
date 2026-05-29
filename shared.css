@@ -193,3 +193,8 @@
                 left: auto;
             }
         }
+
+        /* Privacy Page Font Override */
+        .privacy-override .font-medium {
+            font-weight: 300 !important;
+        }
