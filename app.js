@@ -3525,130 +3525,130 @@ const routes = {
                         <div class="w-10"></div>
                     </div>
                 </header>
-                <div class="flex-1 overflow-y-auto px-6 py-8 flex ${isDesktop ? 'flex-row gap-8 items-start' : 'flex-col gap-6'} w-full max-w-[1080px] mx-auto">
+                <div class="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6 w-full ${isDesktop ? 'max-w-2xl' : 'max-w-[1080px]'} mx-auto">
                     
-                    <!-- Left Column (Desktop) uses skill wrapper -->
-                    <div class="${isDesktop ? 'flex flex-col gap-6 w-2/3 shrink' : 'contents'}">
+                    <div class="contents">
                         <div class="text-center">
-                        <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 mx-auto shadow-inner">
-                            <i class="fa-solid fa-check text-5xl"></i>
+                            <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 mx-auto shadow-inner">
+                                <i class="fa-solid fa-check text-5xl"></i>
+                            </div>
+                            <h1 class="text-4xl font-black text-gray-900 uppercase tracking-tighter mb-2">Order Confirmed!</h1>
+                            <p class="text-gray-500 font-medium mb-8">Your order #FB-9824 is being sent to the kitchen.</p>
                         </div>
-                        <h1 class="text-4xl font-black text-gray-900 uppercase tracking-tighter mb-2">Order Confirmed!</h1>
-                        <p class="text-gray-500 font-medium mb-8">Your order #FB-9824 is being sent to the kitchen.</p>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Pick Up Time</div>
+                                <div class="text-2xl font-black text-gray-900 uppercase">8:02 PM</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Location</div>
+                                <div class="text-base font-black text-gray-900 uppercase truncate">i-Tea Tempe</div>
+                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight mt-1 truncate">825 W. University Dr</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Pick Up Time</div>
-                            <div class="text-2xl font-black text-gray-900 uppercase">8:02 PM</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Location</div>
-                            <div class="text-base font-black text-gray-900 uppercase truncate">i-Tea Tempe</div>
-                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight mt-1 truncate">825 W. University Dr</div>
-                        </div>
-                        </div>
-                    </div> <!-- End Left Column -->
-
-                    <!-- Right Column (Desktop) uses skill wrapper -->
-                    <div class="${isDesktop ? 'flex flex-col gap-6 w-1/3 shrink sticky top-8' : 'contents'}">
+                    <div class="contents">
                         <div class="flex gap-2 overflow-x-auto scrollbar-hide shrink-0 pb-2">
-                        <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
-                            <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
-                            <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
-                        </button>
-                    </div>
-
-                    ${mockupState.orderDetailsExpanded ? `
-                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
-                                <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
-                            </div>
-                            <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
-                                <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
-                            </div>
+                            <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
+                                <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
+                                <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
+                            </button>
                         </div>
 
-                        <div class="space-y-4">
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba3}" class="w-full h-full object-cover object-top">
+                        ${mockupState.orderDetailsExpanded ? `
+                        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
+                                    <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
                                 </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Brown Sugar Pearl</h4>
-                                        <span class="text-sm font-black text-gray-900">$6.50</span>
-                                    </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Large • Less Ice • 75% Sweet</p>
+                                <div>
+                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
+                                    <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
                                 </div>
                             </div>
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba4}" class="w-full h-full object-cover object-top">
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Protein Bowl</h4>
-                                        <span class="text-sm font-black text-gray-900">$12.50</span>
+
+                            <div class="space-y-4">
+                                <div class="flex gap-4">
+                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
+                                        <img src="${assets.boba3}" class="w-full h-full object-cover object-top">
                                     </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Chicken • Quinoa • Avocado</p>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Brown Sugar Pearl</h4>
+                                            <span class="text-sm font-black text-gray-900">$6.50</span>
+                                        </div>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Large • Less Ice • 75% Sweet</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
+                                        <img src="${assets.boba4}" class="w-full h-full object-cover object-top">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Protein Bowl</h4>
+                                            <span class="text-sm font-black text-gray-900">$12.50</span>
+                                        </div>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Chicken • Quinoa • Avocado</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
+                                        <img src="${assets.boba1}" class="w-full h-full object-cover object-top">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × M7 Boba Milk Tea</h4>
+                                            <span class="text-sm font-black text-gray-900">$5.50</span>
+                                        </div>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Regular • Classic Tea</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba1}" class="w-full h-full object-cover object-top">
+
+                            <div class="space-y-2 pt-4 border-t border-gray-100">
+                                <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
+                                    <span>Subtotal</span>
+                                    <span>$24.50</span>
                                 </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × M7 Boba Milk Tea</h4>
-                                        <span class="text-sm font-black text-gray-900">$5.50</span>
+                                <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
+                                    <span>Tax</span>
+                                    <span>$2.32</span>
+                                </div>
+                                <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
+                                    <span>Total</span>
+                                    <span>$31.81</span>
+                                </div>
+                            </div>
+
+                            <div class="pt-6 border-t border-gray-100">
+                                <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Payment</h2>
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center shrink-0">
+                                            <i class="fa-brands fa-apple-pay text-3xl"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Apple Pay...3580</p>
+                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">3/14/26, 1:14 PM</p>
+                                        </div>
                                     </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Regular • Classic Tea</p>
+                                    <span class="text-base font-black text-gray-900">$31.81</span>
                                 </div>
                             </div>
                         </div>
+                        ` : ''}
 
-                        <div class="space-y-2 pt-4 border-t border-gray-100">
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Subtotal</span>
-                                <span>$24.50</span>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Tax</span>
-                                <span>$2.32</span>
-                            </div>
-                            <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
-                                <span>Total</span>
-                                <span>$31.81</span>
-                            </div>
+                        <div class="w-full space-y-4 pt-4">
+                            <button onclick="navigateTo('directions')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Get Directions</button>
+                            <button onclick="navigateTo('track-order')" class="w-full bg-white border-2 border-gray-100 text-gray-900 py-4 rounded-full font-black text-lg active:scale-95 transition-all uppercase tracking-wider hover:bg-gray-50 shadow-sm">Track Order</button>
+                            <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                         </div>
-
-                        <div class="pt-6 border-t border-gray-100">
-                            <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Payment</h2>
-                            <div class="flex items-start justify-between">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center shrink-0">
-                                        <i class="fa-brands fa-apple-pay text-3xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Apple Pay...3580</p>
-                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">3/14/26, 1:14 PM</p>
-                                    </div>
-                                </div>
-                                <span class="text-base font-black text-gray-900">$31.81</span>
-                            </div>
-                        </div>
-                    </div>
-                    ` : ''}
-
-                    <div class="w-full space-y-4 pt-4">
-                        <button onclick="navigateTo('directions')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Get Directions</button>
-                        <button onclick="navigateTo('track-order')" class="w-full bg-white border-2 border-gray-100 text-gray-900 py-4 rounded-full font-black text-lg active:scale-95 transition-all uppercase tracking-wider hover:bg-gray-50 shadow-sm">Track Order</button>
-                        <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                     </div>
                 </div>
+            </div>
         `;
     },
     'checkout': () => {
