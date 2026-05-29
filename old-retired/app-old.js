@@ -1,15 +1,15 @@
 const PAGE_FILE_MAP = {
     "landing": "landing.html",
-    "home": "home.html",
+    "home": "index.html",
     "sign-in": "sign-in.html",
     "cart": "cart.html",
-    "customize": "customize.html",
+    "customize": "order-customize.html",
     "checkout": "checkout.html",
     "order-confirm": "order-confirm.html",
     "order-status": "order-status.html",
-    "restaurant-home": "restaurant-home.html",
+    "restaurant-home": "index.html",
     "restaurant-home-logo": "restaurant-home-logo.html",
-    "restaurant-landing": "restaurant-landing.html",
+    "restaurant-landing": "restaurant-login.html",
     "restaurant-sign-in": "restaurant-sign-in.html",
     "order-details": "order-details.html",
     "qr-code-guide": "qr-code-guide.html",
@@ -22,7 +22,7 @@ const PAGE_FILE_MAP = {
     "privacy": "privacy.html",
     "dashboard": "dashboard.html",
     "index": "index.html",
-    "manage-favorites": "manage-favorites.html",
+    "menu-favorites": "menu-favorites.html",
     "directions": "directions.html",
     "registration": "registration.html"
 };
@@ -49,7 +49,7 @@ const PAGE_LABELS = {
     "account": "My Account",
     "privacy": "Privacy Policy",
     "dashboard": "Merchant Dashboard",
-    "manage-favorites": "Manage Favorites",
+    "menu-favorites": "Menu Favorites",
     "directions": "Directions",
     "registration": "Registration Form"
 };
@@ -1575,7 +1575,7 @@ const routes = {
                         </div>
 
                         <div class="p-6 border-t border-gray-100">
-                            <button onclick="updateMockupState('modalOpen', null); navigateTo('manage-favorites')" class="w-full py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">Manage All Favorites</button>
+                            <button onclick="updateMockupState('modalOpen', null); navigateTo('menu-favorites')" class="w-full py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">Manage All Favorites</button>
                         </div>
                     </div>
                 </div>
@@ -3432,7 +3432,7 @@ const routes = {
                 </div>
             </div>
         `,
-    'manage-favorites': () => {
+    'menu-favorites': () => {
         const isDesktop = currentViewport === 'desktop';
         const favorites = mockupState.favorites || [];
 
@@ -3443,7 +3443,7 @@ const routes = {
                     <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
                         <i class="fa-solid fa-chevron-left text-gray-600"></i>
                     </button>
-                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Manage Favorites</span>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Menu Favorites</span>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
 
@@ -3451,7 +3451,7 @@ const routes = {
                     <div class="mb-8">
                         <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1 uppercase">Your Favorites</h1>
                         <p class="text-gray-600 font-medium mb-4">Keep track of the items you love most.</p>
-                        ${!isDesktop ? '<button class="w-full py-3 bg-violet-600 text-white rounded-full font-black uppercase text-sm shadow-lg tracking-widest mb-2">Manage Favorites</button>' : ''}
+                        ${!isDesktop ? '<button class="w-full py-3 bg-violet-600 text-white rounded-full font-black uppercase text-sm shadow-lg tracking-widest mb-2">Menu Favorites</button>' : ''}
                     </div>
 
                     ${favorites.length === 0 ? `
@@ -3764,7 +3764,7 @@ function renderDropdownMenu() {
     const fbPagesList = ['landing', 'home', 'privacy', 'dashboard'];
     const rbPagesList = [
         'restaurant-landing', 'restaurant-sign-in', 'registration', 'restaurant-home', 'restaurant-home-logo', 
-        'menu', 'location-pick', 'location-favorites', 'manage-favorites', 'order-details', 
+        'menu', 'location-pick', 'location-favorites', 'menu-favorites', 'order-details', 
         'customize', 'cart', 'checkout', 'order-confirm', 'order-status', 'track-order', 'qr-code-guide', 'directions', 'account'
     ];
 
