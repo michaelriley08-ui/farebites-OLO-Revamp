@@ -12,13 +12,13 @@ const PAGE_FILE_MAP = {
     "restaurant-landing": "restaurant-login.html",
     "restaurant-sign-in": "restaurant-sign-in.html",
     "order-details": "order-details.html",
-    "qr-code-guide": "qr-code-guide.html",
+    "menu-scan": "menu-scan.html",
     "menu": "menu.html",
     "location-pick": "location-pick.html",
     "location-favorites": "location-favorites.html",
     "login": "login.html",
     "sign-up": "sign-up.html",
-    "account": "account.html",
+    "account": "user-profile.html",
     "privacy": "privacy.html",
     "dashboard": "dashboard.html",
     "index": "index.html",
@@ -40,7 +40,7 @@ const PAGE_LABELS = {
     "restaurant-landing": "i-Tea Landing Page",
     "restaurant-sign-in": "i-Tea Sign In",
     "order-details": "Order Details",
-    "qr-code-guide": "QR Code Guide",
+    "menu-scan": "Scan",
     "menu": "Menu",
     "location-pick": "Pick a Location",
     "location-favorites": "Saved Locations",
@@ -380,7 +380,7 @@ function hamburgerDrawerHTML() {
         { label: 'Menu',          icon: 'fa-utensils',           page: 'menu' },
         { label: 'Locations',     icon: 'fa-location-dot',       page: 'location-pick' },
         { label: 'Rewards',       icon: 'fa-award',              page: 'account' },
-        { label: 'Scan QR Code',  icon: 'fa-qrcode',             page: 'qr-code-guide' },
+        { label: 'Scan QR Code',  icon: 'fa-qrcode',             page: 'menu-scan' },
         { label: 'Cart',          icon: 'fa-bag-shopping',       page: 'cart' },
         { label: 'Order Status',  icon: 'fa-clock-rotate-left',  page: 'order-status' },
         { label: 'My Account',    icon: 'fa-user',               page: 'account' },
@@ -757,7 +757,7 @@ const routes = {
                 <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
                     <div class="flex items-center gap-3">
                         <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
-                        <button onclick="navigateTo('qr-code-guide')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
+                        <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
                     <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('location-pick')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
@@ -963,7 +963,7 @@ const routes = {
                 <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
                     <div class="flex items-center gap-3">
                         <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
-                        <button onclick="navigateTo('qr-code-guide')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
+                        <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
                     <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('location-pick')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">DELIVERY</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
@@ -1341,7 +1341,7 @@ const routes = {
     'order-details': () => {
         const btn = (icon, label) => {
             const isActive = mockupState.fulfillmentMode === label;
-            const clickHandler = label === 'Dine In' ? `navigateTo('qr-code-guide')` : `updateMockupState('fulfillmentMode', '${label}')`;
+            const clickHandler = label === 'Dine In' ? `navigateTo('menu-scan')` : `updateMockupState('fulfillmentMode', '${label}')`;
             return `
                     <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-1 py-3 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-800 border-gray-100'}">
                         <i class="fa-solid ${icon} text-xl ${isActive ? 'text-white' : 'text-violet-600'}"></i>
@@ -1546,10 +1546,11 @@ const routes = {
 
                 </div>`;
     },
-    'qr-code-guide': () => {
+    'menu-scan': () => {
+        const isDesktop = currentViewport === 'desktop';
         const isDesktopOrTablet = currentViewport === 'desktop' || currentViewport === 'tablet';
         return `
-            <div class="flex flex-col h-full bg-white relative">
+            <div class="flex flex-col ${isDesktop ? 'min-h-[60vh] py-12' : 'h-full'} bg-white relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
                         <i class="fa-solid fa-bars text-xl"></i>
@@ -1557,21 +1558,17 @@ const routes = {
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Scan to Dine In</span>
                     <div class="w-10"></div>
                 </header>
-                <div class="${isDesktopOrTablet ? 'flex-1 flex flex-col items-center justify-center p-6 md:p-8 max-w-3xl mx-auto w-full text-center' : 'flex-1 flex flex-col items-center justify-center px-6 text-center'}">
-                    <div class="w-full ${isDesktopOrTablet ? 'max-w-md' : ''} aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-12">
+                <div class="${isDesktopOrTablet ? 'flex-1 flex flex-col items-center justify-center p-6 md:p-8 max-w-3xl mx-auto w-full text-center' : 'flex-1 flex flex-col items-center justify-start px-6 pt-6 text-center'}">
+                    <div class="w-full ${isDesktopOrTablet ? 'max-w-md' : ''} aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-8 md:mb-12">
                         <img src="images/qr-scan-table.jpg" class="w-full h-full object-cover">
                     </div>
                     <h2 class="text-2xl font-black mb-6 uppercase tracking-tight font-black text-gray-900 leading-tight">Ready to Dine In?</h2>
-                    <div class="space-y-4 text-left uppercase font-black text-gray-600">
+                    <div class="space-y-4 text-left uppercase font-black text-gray-600 mb-8">
                         <p class="text-sm">1. Find the QR code on your table.</p>
                         <p class="text-sm">2. Tap the button below to open camera.</p>
                         <p class="text-sm">3. Scan to start your order.</p>
                     </div>
-                </div>
-                <div class="border-t sticky bottom-0 bg-white">
-                    <div class="p-6 w-full ${isDesktopOrTablet ? 'max-w-3xl mx-auto' : ''}">
-                        <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] flex items-center justify-center gap-3 active:scale-95 transition-all uppercase shadow-violet-100 font-black"><i class="fa-solid fa-camera"></i><span>SCAN TABLE QR</span></button>
-                    </div>
+                    <button onclick="navigateTo('menu')" class="w-[80%] ${isDesktopOrTablet ? 'max-w-[358px]' : 'max-w-xs'} bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] flex items-center justify-center gap-3 active:scale-95 transition-all uppercase shadow-violet-100 font-black"><i class="fa-solid fa-camera"></i><span>SCAN TABLE QR</span></button>
                 </div>
             </div>`;
     },
@@ -4489,7 +4486,7 @@ function renderViewportSwitcher() {
     const activeClass = 'bg-violet-600 text-white';
     const inactiveClass = 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200';
 
-    const col1Keys = ['restaurant-home', 'restaurant-home-logo', 'menu', 'location-pick', 'location-favorites', 'menu-favorites', 'account', 'qr-code-guide', 'directions'];
+    const col1Keys = ['restaurant-home', 'restaurant-home-logo', 'menu', 'location-pick', 'location-favorites', 'menu-favorites', 'account', 'menu-scan', 'directions'];
     const col2Keys = ['cart', 'checkout', 'order-details', 'customize', 'order-confirm', 'order-status', 'track-order'];
     const col3Keys = ['restaurant-landing', 'restaurant-sign-in', 'registration'];
     const fbKeys = ['landing', 'home', 'privacy', 'dashboard'];

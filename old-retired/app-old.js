@@ -12,13 +12,13 @@ const PAGE_FILE_MAP = {
     "restaurant-landing": "restaurant-login.html",
     "restaurant-sign-in": "restaurant-sign-in.html",
     "order-details": "order-details.html",
-    "qr-code-guide": "qr-code-guide.html",
+    "menu-scan": "menu-scan.html",
     "menu": "menu.html",
     "location-pick": "location-pick.html",
     "location-favorites": "location-favorites.html",
     "login": "login.html",
     "sign-up": "sign-up.html",
-    "account": "account.html",
+    "account": "user-profile.html",
     "privacy": "privacy.html",
     "dashboard": "dashboard.html",
     "index": "index.html",
@@ -40,7 +40,7 @@ const PAGE_LABELS = {
     "restaurant-landing": "i-Tea Landing Page",
     "restaurant-sign-in": "i-Tea Sign In",
     "order-details": "Order Details",
-    "qr-code-guide": "QR Code Guide",
+    "menu-scan": "Scan",
     "menu": "Menu",
     "location-pick": "Pick a Location",
     "location-favorites": "Saved Locations",
@@ -696,7 +696,7 @@ const routes = {
                     <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu')">MENU</button>
                     <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('cart')">REORDER</button>
                     <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('account')">REWARDS</button>
-                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('qr-code-guide')">SCAN</button>
+                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu-scan')">SCAN</button>
                 </div>
             </div>`;
     },
@@ -800,7 +800,7 @@ const routes = {
                     <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu')">MENU</button>
                     <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('cart')">REORDER</button>
                     <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('account')">REWARDS</button>
-                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('qr-code-guide')">SCAN</button>
+                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu-scan')">SCAN</button>
                 </div>
             </div>`;
     },
@@ -1004,7 +1004,7 @@ const routes = {
     'order-details': () => {
         const btn = (icon, label) => {
             const isActive = mockupState.fulfillmentMode === label;
-            const clickHandler = label === 'Dine In' ? `navigateTo('qr-code-guide')` : `updateMockupState('fulfillmentMode', '${label}')`;
+            const clickHandler = label === 'Dine In' ? `navigateTo('menu-scan')` : `updateMockupState('fulfillmentMode', '${label}')`;
             return `
                     <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-1 py-3 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-800 border-gray-100'}">
                         <i class="fa-solid ${icon} text-xl ${isActive ? 'text-white' : 'text-violet-600'}"></i>
@@ -1209,7 +1209,7 @@ const routes = {
 
                 </div>`;
     },
-    'qr-code-guide': () => `
+    'menu-scan': () => `
             <div class="flex flex-col h-full bg-white relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black"><button onclick="navigateTo('order-details')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">i-Tea</span><div class="w-6"></div></header>
                 <div class="flex-1 flex flex-col items-center justify-center px-6 text-center">
@@ -3765,7 +3765,7 @@ function renderDropdownMenu() {
     const rbPagesList = [
         'restaurant-landing', 'restaurant-sign-in', 'registration', 'restaurant-home', 'restaurant-home-logo', 
         'menu', 'location-pick', 'location-favorites', 'menu-favorites', 'order-details', 
-        'customize', 'cart', 'checkout', 'order-confirm', 'order-status', 'track-order', 'qr-code-guide', 'directions', 'account'
+        'customize', 'cart', 'checkout', 'order-confirm', 'order-status', 'track-order', 'menu-scan', 'directions', 'account'
     ];
 
     const fbPages = fbPagesList
