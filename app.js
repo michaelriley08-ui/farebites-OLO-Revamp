@@ -108,13 +108,7 @@ const DEFAULT_STATE = {
     featuredSlideIndex: 0
 };
 
-/* ==========================================================================
-   TEMPORARY VIEWPORT OVERRIDE FOR DEMO & TESTING
-   ========================================================================== */
-let forcedViewport = sessionStorage.getItem('farebitesForcedViewport') || null;
-
 function getCurrentViewport() {
-    if (forcedViewport) return forcedViewport;
     if (window.innerWidth >= 1024) return 'desktop';
     if (window.innerWidth >= 640) return 'tablet';
     return 'mobile';
@@ -122,7 +116,6 @@ function getCurrentViewport() {
 let currentViewport = getCurrentViewport();
 
 window.addEventListener('resize', () => {
-    if (forcedViewport) return; // Ignore resize if viewport is forced
     const newViewport = getCurrentViewport();
     if (newViewport !== currentViewport) {
         currentViewport = newViewport;
@@ -3480,15 +3473,6 @@ const routes = {
     },
     'directions': () => `
             <div class="flex flex-col h-full bg-white relative">
-                <!-- Status Bar Mockup -->
-                <div class="bg-white px-6 py-2 flex justify-between items-center z-50">
-                    <span class="text-sm font-black text-gray-900 leading-none">9:41</span>
-                    <div class="flex gap-2 items-center text-gray-900">
-                        <i class="fa-solid fa-signal text-xs"></i>
-                        <i class="fa-solid fa-wifi text-xs"></i>
-                        <i class="fa-solid fa-battery-full text-sm"></i>
-                    </div>
-                </div>
 
                 <!-- Map Area -->
                 <div class="flex-1 relative bg-gray-100 overflow-hidden">
@@ -4277,9 +4261,7 @@ function renderPage() {
     const viewport = document.getElementById('app-viewport');
     if (!viewport) return;
     
-    // Apply temporary demo/testing viewport styling wrapper
-    applyViewportContainerStyles();
-    
+
     let contentHtml = routes[currentPage]
         ? routes[currentPage]()
         : `<div class="p-10 text-center uppercase font-black">404 - Page Not Found</div>`;
@@ -4432,135 +4414,9 @@ function renderPage() {
         }
     }
     
-    // Render the temporary viewport switcher widget
-    renderViewportSwitcher();
 }
 
-/* ==========================================================================
-   TEMPORARY VIEWPORT SWITCHER UTILITIES (DEMO/TEST MODE ONLY)
-   Delete this block and setForcedViewport/renderViewportSwitcher calls before live.
-   ========================================================================== */
-function applyViewportContainerStyles() {
-    const viewport = document.getElementById('app-viewport');
-    if (!viewport) return;
-    
-    // Reset body classes and viewport styles
-    document.body.className = '';
-    viewport.className = 'app-content';
-    viewport.style.cssText = '';
-    
-    // Remove simulated notch if present
-    const existingNotch = document.getElementById('simulated-notch');
-    if (existingNotch) existingNotch.remove();
-    
-    if (forcedViewport === 'mobile') {
-        document.body.className = 'bg-slate-900 flex items-center justify-center min-h-screen overflow-hidden';
-        // 375x667 represents a realistic mobile web viewport height (subtracting Safari/Chrome chrome)
-        viewport.className = 'app-content relative w-[375px] h-[667px] bg-white rounded-3xl shadow-2xl border-[8px] border-slate-800 overflow-y-auto overflow-x-hidden flex flex-col scrollbar-hide';
-        viewport.style.transform = 'scale(0.9)';
-        viewport.style.transformOrigin = 'center center';
-    } else if (forcedViewport === 'tablet') {
-        document.body.className = 'bg-slate-900 flex items-center justify-center min-h-screen overflow-hidden';
-        // 768x920 represents a realistic tablet web viewport height
-        viewport.className = 'app-content relative w-[768px] h-[920px] bg-white rounded-2xl shadow-2xl border-[10px] border-slate-800 overflow-y-auto overflow-x-hidden flex flex-col scrollbar-hide';
-        viewport.style.transform = 'scale(0.72)';
-        viewport.style.transformOrigin = 'center center';
-    } else if (forcedViewport === 'desktop') {
-        document.body.className = 'bg-slate-50 min-h-screen flex flex-col';
-        viewport.className = 'app-content w-full min-h-screen bg-white relative flex-1';
-    } else {
-        // Auto mode
-        document.body.className = 'bg-white';
-        viewport.className = 'app-content w-full min-h-screen relative';
-    }
-}
 
-function renderViewportSwitcher() {
-    let switcher = document.getElementById('dev-viewport-switcher');
-    if (!switcher) {
-        switcher = document.createElement('div');
-        switcher.id = 'dev-viewport-switcher';
-        document.body.appendChild(switcher);
-    }
-    
-    const activeClass = 'bg-violet-600 text-white';
-    const inactiveClass = 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200';
-
-    const col1Keys = ['restaurant-home', 'restaurant-home-logo', 'menu', 'location-pick', 'location-favorites', 'menu-favorites', 'account', 'menu-scan', 'directions'];
-    const col2Keys = ['cart', 'checkout', 'order-details', 'customize', 'order-confirm', 'order-status', 'track-order'];
-    const col3Keys = ['restaurant-landing', 'restaurant-sign-in', 'registration'];
-    const fbKeys = ['landing', 'home', 'privacy', 'dashboard'];
-    const oldKeys = ['restaurant-home-old', 'menu-old'];
-
-    const makeColHTML = (keys, title) => {
-        const itemsHTML = keys
-            .filter(key => routes[key])
-            .map(key => {
-                const label = PAGE_LABELS[key] || key.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
-                const activeClass = currentPage === key ? 'active' : '';
-                return `<div class="dropdown-item ${activeClass}" onclick="navigateTo('${key}')">${label}</div>`;
-            }).join('');
-        return `
-            <div class="flex flex-col gap-1">
-                <div class="dropdown-column-title">${title}</div>
-                ${itemsHTML}
-            </div>
-        `;
-    };
-
-    const col1HTML = makeColHTML(col1Keys, 'i-Tea Ordering');
-    const col2HTML = makeColHTML(col2Keys, 'i-Tea Checkout');
-    const iTeaGatesHTML = makeColHTML(col3Keys, 'i-Tea Gateways');
-    const fbHTML = makeColHTML(fbKeys, 'FareBites Pages');
-    const archiveHTML = makeColHTML(oldKeys, 'Archived Pages');
-
-    const col3HTML = `
-        <div class="flex flex-col gap-4">
-            ${iTeaGatesHTML}
-            ${fbHTML}
-            ${archiveHTML}
-        </div>
-    `;
-    
-    switcher.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 lg:bottom-auto lg:top-0 lg:right-4 lg:left-auto lg:translate-x-0 z-[999999] flex items-center gap-1.5 lg:gap-1 p-1.5 lg:p-1 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl lg:rounded-t-none lg:rounded-b-xl transition-all duration-300';
-    switcher.innerHTML = `
-        <div class="text-[9px] lg:text-[7.5px] font-black text-slate-400 uppercase tracking-widest px-2.5 lg:px-1.5 select-none hidden sm:block">Demo Switcher</div>
-        <div class="relative">
-            <button onclick="toggleMenu(event, 'all-pages-dropdown')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all bg-violet-500 text-white hover:bg-violet-600 shadow-md">
-                <span>Sitemap</span><i class="fa-solid fa-chevron-down text-[8px] lg:text-[7px] ml-1"></i>
-            </button>
-            <div id="all-pages-dropdown" class="dropdown-menu">
-                ${col1HTML}
-                ${col2HTML}
-                ${col3HTML}
-            </div>
-        </div>
-        <button onclick="setForcedViewport(null)" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${!forcedViewport ? activeClass : inactiveClass}">
-            <i class="fa-solid fa-wand-magic-sparkles text-[10px] lg:text-[8px]"></i><span>Auto</span>
-        </button>
-        <button onclick="setForcedViewport('mobile')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${forcedViewport === 'mobile' ? activeClass : inactiveClass}">
-            <i class="fa-solid fa-mobile-screen-button text-[10px] lg:text-[8px]"></i><span>Mobile</span>
-        </button>
-        <button onclick="setForcedViewport('tablet')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${forcedViewport === 'tablet' ? activeClass : inactiveClass}">
-            <i class="fa-solid fa-tablet-screen-button text-[10px] lg:text-[8px]"></i><span>Tablet</span>
-        </button>
-        <button onclick="setForcedViewport('desktop')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${forcedViewport === 'desktop' ? activeClass : inactiveClass}">
-            <i class="fa-solid fa-laptop text-[10px] lg:text-[8px]"></i><span>Desktop</span>
-        </button>
-    `;
-}
-
-function setForcedViewport(mode) {
-    if (mode === null) {
-        sessionStorage.removeItem('farebitesForcedViewport');
-        forcedViewport = null;
-    } else {
-        sessionStorage.setItem('farebitesForcedViewport', mode);
-        forcedViewport = mode;
-    }
-    currentViewport = getCurrentViewport();
-    renderPage();
-}
 
 function adjustBagQuantity(delta) {
     mockupState.bagQuantity = Math.max(0, mockupState.bagQuantity + delta);
