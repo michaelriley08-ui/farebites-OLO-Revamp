@@ -77,6 +77,8 @@ const assets = {
     googleMapsEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.8329606830704!2d-111.9525413!3d33.4211153!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08de64c1bf87%3A0x7d022b7a9de3e878!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1716768000000!5m2!1sen!2sus"
 };
 
+const API_BASE_URL = 'https://olowebapidev2.azurewebsites.net';
+
 const DEFAULT_STATE = {
     fulfillmentMode: 'In-store',
     orderTime: 'ASAP',
@@ -105,7 +107,11 @@ const DEFAULT_STATE = {
         { id: 3, name: "M8 Taro Boba Purée Latte", price: 5.75, image: assets.boba3, category: "Tea Spresso Series" },
         { id: 4, name: "P1 Super Fruit Tea", price: 5.95, image: assets.boba4, category: "Tea Spresso Series" }
     ],
-    featuredSlideIndex: 0
+    featuredSlideIndex: 0,
+    apiLocations: [],
+    apiCategories: [],
+    apiMenuItems: [],
+    selectedLocationId: null
 };
 
 function getCurrentViewport() {
@@ -140,23 +146,156 @@ function persistAllState() {
     sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
 }
 
+function resolveImageUrl(url, defaultUrl) {
+    if (!url) return defaultUrl || '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    
+    // Check if it's an old site asset path
+    const isOldSiteAsset = url.startsWith('/imagescategories/') || 
+                           url.startsWith('/imagesmenu/') || 
+                           url.startsWith('/ImagesLogos/') || 
+                           url.startsWith('/ImagesMenu/') ||
+                           url.startsWith('imagescategories/') || 
+                           url.startsWith('imagesmenu/') || 
+                           url.startsWith('ImagesLogos/') || 
+                           url.startsWith('ImagesMenu/');
+                           
+    if (isOldSiteAsset) {
+        const cleanPath = url.startsWith('/') ? url.slice(1) : url;
+        return `https://olodev.azurewebsites.net/${cleanPath}`;
+    }
+    
+    // Otherwise return as is
+    return url;
+}
+
+function getFallbackCategoryImg() {
+    return 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg';
+}
+
+function getFallbackItemImg() {
+    return 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=400&q=80';
+}
+
+async function fetchLocations() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/Locations`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        if (data && data.length > 0) {
+            // Filter to include only i-Tea locations
+            const iteaLocations = data.filter(loc => 
+                loc.locationName && (loc.locationName.toLowerCase().includes('i-tea') || loc.locationName.toLowerCase().includes('itea'))
+            );
+            if (iteaLocations.length > 0) {
+                mockupState.apiLocations = iteaLocations.map(loc => ({
+                    locationId: loc.locationId,
+                    name: loc.locationName || 'Unnamed Location',
+                    address: `${loc.address || ''}, ${loc.city || ''}, ${loc.state || ''} ${loc.zipCode || ''}`.trim().replace(/^,|,$/g, '').trim(),
+                    dist: 'Nearby',
+                    fav: false,
+                    hours: '11:30 AM to 9:30 PM'
+                }));
+                persistAllState();
+            }
+        }
+    } catch (error) {
+        console.error('Failed to fetch locations from API, using fallback:', error);
+    }
+}
+
+async function fetchMenuAndItems(locationId) {
+    if (!locationId) return;
+    mockupState.isLoading = true;
+    renderPage();
+    try {
+        const menuResponse = await fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/menu`);
+        if (!menuResponse.ok) throw new Error('Menu response was not ok');
+        const menuData = await menuResponse.json();
+        
+        if (menuData && menuData.categories) {
+            mockupState.apiCategories = menuData.categories.map(cat => ({
+                categoryId: cat.categoryId,
+                name: cat.name,
+                imgUrl: resolveImageUrl(cat.imgUrl, getFallbackCategoryImg())
+            }));
+            
+            let allItems = [];
+            for (const cat of menuData.categories) {
+                try {
+                    const itemsResponse = await fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/category/${cat.categoryId}/items`);
+                    if (itemsResponse.ok) {
+                        const itemsData = await itemsResponse.json();
+                        if (itemsData) {
+                            allItems = allItems.concat(itemsData.map(item => ({
+                                id: item.menuItemId,
+                                name: item.name,
+                                description: item.description || '',
+                                price: item.price,
+                                image: resolveImageUrl(item.productImage || item.image, getFallbackItemImg()),
+                                category: cat.name,
+                                categoryId: cat.categoryId
+                            })));
+                        }
+                    }
+                } catch (catError) {
+                    console.error(`Failed to fetch items for category ${cat.name}:`, catError);
+                }
+            }
+            mockupState.apiMenuItems = allItems;
+            persistAllState();
+        }
+    } catch (error) {
+        console.error('Failed to fetch menu and items from API:', error);
+    } finally {
+        mockupState.isLoading = false;
+        renderPage();
+    }
+}
+
+function getActiveCategories() {
+    if (mockupState.apiCategories && mockupState.apiCategories.length > 0) {
+        return mockupState.apiCategories.map(cat => ({
+            name: cat.name,
+            id: `category-section-${cat.categoryId}`,
+            img: cat.imgUrl || 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg',
+            categoryId: cat.categoryId,
+            categoryKey: cat.name
+        }));
+    }
+    return [
+        { name: 'Featured Items', id: 'featured-items-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
+        { name: 'Tea Spresso', id: 'teaspresso-section', img: assets.boba1, categoryKey: 'Tea Spresso Series' },
+        { name: 'Milk Tea', id: 'milk-tea-section', img: assets.boba2, categoryKey: 'Milk Tea' },
+        { name: 'Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg', categoryKey: 'Fruit Tea' },
+        { name: 'Dessert Drinks', id: 'dessert-section', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg', categoryKey: 'Dessert Drink' }
+    ];
+}
+
+function getActiveMenuItems() {
+    if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
+        return mockupState.apiMenuItems;
+    }
+    return MENU_ITEMS;
+}
+
 const LOCATIONS = [
-    { name: "i-Tea - TEMPE", address: "825 W UNIVERSITY, Tempe, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM" },
-    { name: "i-Tea - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "1.2 mi", fav: false, hours: "12:00 PM to 9:30 PM" },
-    { name: "i-Tea - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM" },
-    { name: "i-Tea - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM" },
-    { name: "i-Tea - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM" },
-    { name: "i-Tea - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM" },
-    { name: "i-Tea - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM" },
-    { name: "i-Tea - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM" },
-    { name: "i-Tea - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM" },
-    { name: "i-Tea - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM" },
-    { name: "i-Tea - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM" },
-    { name: "i-Tea - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM" },
-    { name: "i-Tea - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM" },
-    { name: "i-Tea - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM" },
-    { name: "i-Tea - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM" },
-    { name: "i-Tea - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours" }
+    { name: "i-Tea - TEMPE", address: "825 W UNIVERSITY, Tempe, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM", locationId: 7 },
+    { name: "i-Tea - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "1.2 mi", fav: false, hours: "12:00 PM to 9:30 PM", locationId: 9 },
+    { name: "i-Tea - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM", locationId: 7 },
+    { name: "i-Tea - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM", locationId: 10 },
+    { name: "i-Tea - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM", locationId: 7 },
+    { name: "i-Tea - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM", locationId: 9 },
+    { name: "i-Tea - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 10 },
+    { name: "i-Tea - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM", locationId: 7 },
+    { name: "i-Tea - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 9 },
+    { name: "i-Tea - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM", locationId: 9 },
+    { name: "i-Tea - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM", locationId: 10 },
+    { name: "i-Tea - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM", locationId: 7 },
+    { name: "i-Tea - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM", locationId: 9 },
+    { name: "i-Tea - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM", locationId: 10 },
+    { name: "i-Tea - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM", locationId: 7 },
+    { name: "i-Tea - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours", locationId: 10 }
 ];
 
 const MENU_ITEMS = [
@@ -833,14 +972,8 @@ const routes = {
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Select a category to start ordering</p>
                             
                             <div class="grid grid-cols-3 gap-6 justify-items-center mb-8">
-                                ${[
-                                    { name: 'Featured Items', id: 'featured-items-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
-                                    { name: 'Tea Spresso', id: 'teaspresso-section', img: assets.boba1 },
-                                    { name: 'Milk Tea', id: 'milk-tea-section', img: assets.boba2 },
-                                    { name: 'Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
-                                    { name: 'Dessert Drinks', id: 'dessert-section', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg' }
-                                ].map(cat => `
-                                    <div onclick="navigateTo('menu');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
+                                ${getActiveCategories().map(cat => `
+                                    <div onclick="navigateTo('menu#${cat.id}');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
                                         <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top">
                                         </div>
@@ -1048,7 +1181,7 @@ const routes = {
                                     { name: 'Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
                                     { name: 'Dessert Drinks', id: 'dessert-section', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg' }
                                 ].map(cat => `
-                                    <div onclick="navigateTo('menu');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
+                                    <div onclick="navigateTo('menu#${cat.id}');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
                                         <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top">
                                         </div>
@@ -1119,11 +1252,16 @@ const routes = {
     },
     'location-pick': () => {
         const getSet = () => {
-            if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return LOCATIONS;
-            if (mockupState.locationFilter === 'Favorites') return LOCATIONS.filter(loc => loc.fav);
-            if (mockupState.locationFilter === 'Previous') return [LOCATIONS[13], LOCATIONS[0], LOCATIONS[9]]; // TEARAY, TEMPE, OAKLAND
+            const list = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
+                ? mockupState.apiLocations
+                : LOCATIONS;
+            if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return list;
+            if (mockupState.locationFilter === 'Favorites') return list.filter(loc => loc.fav);
+            if (mockupState.locationFilter === 'Previous') {
+                return list.length >= 3 ? [list[2 % list.length], list[0], list[1 % list.length]] : list;
+            }
             
-            return LOCATIONS;
+            return list;
         };
 
         if (currentViewport === 'desktop') {
@@ -1156,11 +1294,11 @@ const routes = {
                                     <p class="text-xs font-black text-gray-800 truncate">i-Tea – Tempe &nbsp;·&nbsp; 0.3 mi</p>
                                 </div>
                             </div>
-                            <button onclick="updateMockupState('selectedLocation', 'TEMPE'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
+                            <button onclick="selectLocation(7, 'i-Tea - TEMPE', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - TEMPE') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')">
+                                <div class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - TEMPE') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
@@ -1202,7 +1340,7 @@ const routes = {
                                 <p class="text-xs font-black text-gray-800 truncate">i-Tea – Tempe &nbsp;·&nbsp; 0.3 mi</p>
                             </div>
                         </div>
-                        <button onclick="updateMockupState('selectedLocation', 'TEMPE'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
+                        <button onclick="selectLocation(7, 'i-Tea - TEMPE', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
                     </div>
 
                     <div class="w-full h-[35%] min-h-[220px] shrink-0 relative z-0">
@@ -1225,7 +1363,7 @@ const routes = {
 
                         <div class="p-4 space-y-3 flex-1 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - TEMPE') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); updateMockupState('selectedAddress', '${s.address}'); updateMockupState('selectedDistance', '${s.dist}'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')">
+                                <div class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - TEMPE') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
@@ -1569,13 +1707,7 @@ const routes = {
         const isDesktop = currentViewport === 'desktop';
         const categoryModalClass = mockupState.modalOpen === 'categories' ? 'flex' : 'hidden';
 
-        const categories = [
-            { id: 'featured-items-section', name: 'FEATURED ITEMS', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
-            { id: 'teaspresso-section', name: 'TEASPRESSO SERIES', img: assets.boba1 },
-            { id: 'milk-tea-section', name: 'MILK TEA SPECIALTY', img: assets.boba2 },
-            { id: 'fruit-tea-section', name: 'I-TEA FRUIT TEA', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
-            { id: 'dessert-section', name: 'DESSERT DRINKS', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg' }
-        ];
+        const categories = getActiveCategories();
 
         return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative ${(!isDesktop && mockupState.modalOpen) ? 'overflow-hidden' : 'overflow-y-auto'} scrollbar-hide">
@@ -1719,7 +1851,7 @@ const routes = {
                             // Search filter: when a query is active, show flat filtered results
                             if (mockupState.menuSearchQuery && mockupState.menuSearchQuery.trim().length > 0) {
                                 const query = mockupState.menuSearchQuery.toLowerCase();
-                                const filtered = MENU_ITEMS.filter(item =>
+                                const filtered = getActiveMenuItems().filter(item =>
                                     item.name.toLowerCase().includes(query) ||
                                     (item.description && item.description.toLowerCase().includes(query)) ||
                                     item.category.toLowerCase().includes(query)
@@ -1737,7 +1869,7 @@ const routes = {
                                         <p class="text-[11px] font-black text-gray-400 uppercase tracking-widest px-1 mb-4">${filtered.length} result${filtered.length !== 1 ? 's' : ''}</p>
                                         <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 gap-[10px]'}">
                                             ${filtered.map(item => {
-                                                const actualIndex = MENU_ITEMS.indexOf(item);
+                                                const actualIndex = getActiveMenuItems().indexOf(item);
                                                 return `
                                                     <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                                         <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -1799,26 +1931,21 @@ const routes = {
                                 <!-- Menu Feed (Categories) -->
                                 <div class="space-y-12">
                                     ${featuredPromoHtml}
-                                    ${[
-                                        { id: 'featured-section', name: 'FEATURED ITEMS', isFeatured: true },
-                                        { id: 'teaspresso-section', name: 'TEASPRESSO SERIES', categoryKey: 'Tea Spresso Series' },
-                                        { id: 'milk-tea-section', name: 'MILK TEA SPECIALTY', categoryKey: 'Milk Tea' },
-                                        { id: 'fruit-tea-section', name: 'I-TEA FRUIT TEA', categoryKey: 'Fruit Tea' },
-                                        { id: 'dessert-section', name: 'DESSERT DRINKS', categoryKey: 'Dessert Drink' }
-                                    ].map(section => {
+                                    ${getActiveCategories().map(section => {
+                                        const items = getActiveMenuItems();
                                         const sectionItems = section.isFeatured 
-                                            ? MENU_ITEMS.slice(0, 6)
-                                            : MENU_ITEMS.filter(item => item.category === section.categoryKey);
+                                            ? items.slice(0, 6)
+                                            : items.filter(item => item.categoryId === section.categoryId || item.category === section.categoryKey);
                                         if (sectionItems.length === 0) return '';
                                         return `
-                                            <div id="${section.id}" class="pt-4 scroll-mt-24">
+                                            <div id="${section.id}" class="pt-4 scroll-mt-24 lg:scroll-mt-36">
                                                 <div class="flex justify-between items-end mb-4 px-1">
                                                     <h3 class="${isDesktop ? 'text-3xl' : 'text-2xl'} font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
                                                     <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
                                                 </div>
                                                 <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
                                                     ${sectionItems.map(item => {
-                                                        const actualIndex = MENU_ITEMS.indexOf(item);
+                                                        const actualIndex = items.indexOf(item);
                                                         return `
                                                             <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                                                 <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -2608,9 +2735,9 @@ const routes = {
                     <div class="shrink-0">
                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-3 px-1">You May Also Like</h3>
                         <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2">
-                            ${MENU_ITEMS.slice(4, 9).map((item, index) => {
-                                // Find the actual index in MENU_ITEMS for the onclick handler
-                                const actualIndex = MENU_ITEMS.indexOf(item);
+                            ${getActiveMenuItems().slice(4, 9).map((item, index) => {
+                                // Find the actual index in getActiveMenuItems() for the onclick handler
+                                const actualIndex = getActiveMenuItems().indexOf(item);
                                 return `
                                     <div class="snap-center shrink-0 ${isDesktop ? 'w-auto flex-1' : 'w-[140px]'} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md">
                                         <div class="${isDesktop ? 'h-36' : 'h-24'} relative cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">
@@ -4260,7 +4387,18 @@ routes['privacy'] = () => {
 function renderPage() {
     const viewport = document.getElementById('app-viewport');
     if (!viewport) return;
-    
+
+    let loadingOverlayHtml = '';
+    if (mockupState.isLoading) {
+        loadingOverlayHtml = `
+            <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 backdrop-blur-[1px] transition-all">
+                <div class="flex flex-col items-center gap-3">
+                    <div class="w-10 h-10 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin"></div>
+                    <span class="text-xs font-black text-violet-600 uppercase tracking-widest animate-pulse">Loading Menu...</span>
+                </div>
+            </div>
+        `;
+    }
 
     let contentHtml = routes[currentPage]
         ? routes[currentPage]()
@@ -4377,8 +4515,21 @@ function renderPage() {
         contentHtml += hamburgerDrawerHTML();
     }
 
-    viewport.innerHTML = contentHtml;
-    window.scrollTo(0, 0);
+    viewport.innerHTML = contentHtml + loadingOverlayHtml;
+    let scrolledToHash = false;
+    if (window.location.hash) {
+        const hashId = window.location.hash.slice(1);
+        const element = document.getElementById(hashId);
+        if (element) {
+            setTimeout(() => {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+            scrolledToHash = true;
+        }
+    }
+    if (!scrolledToHash) {
+        window.scrollTo(0, 0);
+    }
     persistAllState();
     document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
 
@@ -4440,7 +4591,7 @@ function adjustBagQuantity(delta) {
 }
 
 function selectItemAndNavigate(index) {
-    const item = MENU_ITEMS[index];
+    const item = getActiveMenuItems()[index];
     mockupState.selectedItem = item;
     // Reset quantity and customization defaults for new item
     mockupState.itemQuantity = 1;
@@ -4490,16 +4641,53 @@ function removeFavorite(id) {
     renderPage();
 }
 
+function selectLocation(locationId, locationName, locationAddress, locationDistance) {
+    mockupState.selectedLocation = locationName;
+    mockupState.selectedLocationId = locationId || null;
+    if (locationAddress) mockupState.selectedAddress = locationAddress;
+    if (locationDistance) mockupState.selectedDistance = locationDistance;
+    mockupState.orderTime = 'ASAP';
+    
+    mockupState.apiCategories = [];
+    mockupState.apiMenuItems = [];
+    persistAllState();
+    
+    if (locationId) {
+        fetchMenuAndItems(locationId);
+    }
+    
+    navigateTo('order-details');
+}
+
 function navigateTo(pageId) {
     persistAllState();
-    if (pageId === currentPage) {
-        renderPage();
+    const [basePageId, hash] = pageId.split('#');
+    if (basePageId === currentPage) {
+        if (hash) {
+            const element = document.getElementById(hash);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+                window.location.hash = hash;
+            }
+        } else {
+            renderPage();
+        }
         return;
     }
-    const nextFile = PAGE_FILE_MAP[pageId] || `${pageId}.html`;
-    window.location.href = nextFile;
+    const nextFile = PAGE_FILE_MAP[basePageId] || `${basePageId}.html`;
+    window.location.href = hash ? `${nextFile}#${hash}` : nextFile;
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    fetchLocations().then(() => {
+        if (currentPage === 'location-pick') {
+            renderPage();
+        }
+    });
+
+    if (mockupState.selectedLocationId && mockupState.apiMenuItems.length === 0) {
+        fetchMenuAndItems(mockupState.selectedLocationId);
+    }
+
     renderPage();
 });
