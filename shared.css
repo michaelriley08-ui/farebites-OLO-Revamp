@@ -188,9 +188,11 @@
                 display: grid !important;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
                 width: 720px;
+                max-width: 95vw;
                 gap: 24px;
-                right: 0;
-                left: auto;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
             }
         }
 
@@ -205,4 +207,34 @@
         .text-\[\#1A1A1A\],
         .text-\[\#1a1a1a\] {
             color: #1f0b35 !important;
+        }
+
+        /* Animated under-line expanding from center for navigation items */
+        .nav-link-animated {
+            position: relative;
+            display: inline-block;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link-animated::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            transform: scaleX(0);
+            height: 3px;
+            bottom: -4px;
+            left: 0;
+            background-color: #7c3aed; /* violet-600 */
+            transform-origin: bottom center;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .nav-link-animated:hover {
+            color: #7c3aed !important;
+        }
+        
+        .nav-link-animated:hover::after,
+        .cursor-pointer:hover .nav-link-animated::after,
+        button:hover .nav-link-animated::after {
+            transform: scaleX(1);
         }
