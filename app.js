@@ -149,6 +149,12 @@ function persistAllState() {
 function resolveImageUrl(url, defaultUrl) {
     if (!url) return defaultUrl || '';
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    if (url.startsWith('images/')) return url; // local images
+    
+    // Check if it's a bare filename (no slashes)
+    if (!url.includes('/')) {
+        return `https://olodev.azurewebsites.net/imagesmenu/${url}`;
+    }
     
     // Check if it's an old site asset path
     const isOldSiteAsset = url.startsWith('/imagescategories/') || 
