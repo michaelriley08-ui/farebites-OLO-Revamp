@@ -4667,7 +4667,14 @@ function selectLocation(locationId, locationName, locationAddress, locationDista
 
 function navigateTo(pageId) {
     persistAllState();
-    const [basePageId, hash] = pageId.split('#');
+    let [basePageId, hash] = pageId.split('#');
+    
+    // Redirect to location selector if accessing menu or customization without a selected store
+    if ((basePageId === 'menu' || basePageId === 'customize') && !mockupState.selectedLocationId) {
+        basePageId = 'location-pick';
+        hash = '';
+    }
+
     if (basePageId === currentPage) {
         if (hash) {
             const element = document.getElementById(hash);
@@ -4685,6 +4692,12 @@ function navigateTo(pageId) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    // Redirect to location selector if landing directly on menu or customization without a selected store
+    if ((currentPage === 'menu' || currentPage === 'customize') && !mockupState.selectedLocationId) {
+        window.location.href = 'location-pick.html';
+        return;
+    }
+
     fetchLocations().then(() => {
         if (currentPage === 'location-pick') {
             renderPage();
