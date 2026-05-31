@@ -288,10 +288,14 @@ function getActiveCategories() {
             }));
     }
     return [
-        { name: 'Featured Items', id: 'featured-items-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
+        { name: 'New Items', id: 'new-items-section', img: assets.menuHero, categoryKey: 'New Items' },
         { name: 'Tea Spresso', id: 'teaspresso-section', img: assets.boba1, categoryKey: 'Tea Spresso Series' },
         { name: 'Milk Tea', id: 'milk-tea-section', img: assets.boba2, categoryKey: 'Milk Tea' },
+        { name: 'Specialty Iced Tea', id: 'specialty-iced-tea-section', img: assets.icedMatcha, categoryKey: 'Specialty Iced Tea' },
         { name: 'Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg', categoryKey: 'Fruit Tea' },
+        { name: 'Sea Salt Crema', id: 'sea-salt-crema-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P5-Sun-Moon-Lake-Cheesma.jpg', categoryKey: 'Sea Salt Crema' },
+        { name: 'Summer Frosty', id: 'summer-frosty-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P2-Super-Lime-Sijichun.jpg', categoryKey: 'Summer Frosty' },
+        { name: 'Signature Iced Milk', id: 'signature-iced-milk-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg', categoryKey: 'Signature Iced Milk' },
         { name: 'Dessert Drinks', id: 'dessert-section', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg', categoryKey: 'Dessert Drink' }
     ];
 }
