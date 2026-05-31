@@ -14,7 +14,7 @@ const PAGE_FILE_MAP = {
     "order-details": "order-details.html",
     "menu-scan": "menu-scan.html",
     "menu": "menu.html",
-    "location-pick": "location-pick.html",
+    "locations": "locations.html",
     "location-favorites": "location-favorites.html",
     "login": "login.html",
     "sign-up": "sign-up.html",
@@ -24,7 +24,9 @@ const PAGE_FILE_MAP = {
     "index": "index.html",
     "menu-favorites": "menu-favorites.html",
     "directions": "directions.html",
-    "registration": "registration.html"
+    "registration": "registration.html",
+    "sections": "sections.html",
+    "accessibility": "accessibility.html"
 };
 const PAGE_LABELS = {
     "landing": "FareBites Landing Page",
@@ -42,7 +44,7 @@ const PAGE_LABELS = {
     "order-details": "Order Details",
     "menu-scan": "Scan",
     "menu": "Menu",
-    "location-pick": "Pick a Location",
+    "locations": "Pick a Location",
     "location-favorites": "Saved Locations",
     "login": "Login (Phone)",
     "sign-up": "Sign Up",
@@ -53,7 +55,9 @@ const PAGE_LABELS = {
     "directions": "Directions",
     "registration": "Registration Form",
     "menu-old": "Menu (Old)",
-    "restaurant-home-old": "i-Tea Homepage (Old)"
+    "restaurant-home-old": "i-Tea Homepage (Old)",
+    "sections": "Retired Sections",
+    "accessibility": "Web Accessibility"
 };
 const STORAGE_KEYS = {
     state: 'farebitesMockupState',
@@ -194,14 +198,19 @@ async function fetchLocations() {
                 loc.locationName && (loc.locationName.toLowerCase().includes('i-tea') || loc.locationName.toLowerCase().includes('itea'))
             );
             if (iteaLocations.length > 0) {
-                mockupState.apiLocations = iteaLocations.map(loc => ({
-                    locationId: loc.locationId,
-                    name: loc.locationName || 'Unnamed Location',
-                    address: `${loc.address || ''}, ${loc.city || ''}, ${loc.state || ''} ${loc.zipCode || ''}`.trim().replace(/^,|,$/g, '').trim(),
-                    dist: 'Nearby',
-                    fav: false,
-                    hours: '11:30 AM to 9:30 PM'
-                }));
+                mockupState.apiLocations = iteaLocations.map(loc => {
+                    const fallback = LOCATIONS.find(l => l.name.toLowerCase() === (loc.locationName || '').toLowerCase());
+                    return {
+                        locationId: loc.locationId,
+                        name: loc.locationName || 'Unnamed Location',
+                        address: `${loc.address || ''}, ${loc.city || ''}, ${loc.state || ''} ${loc.zipCode || ''}`.trim().replace(/^,|,$/g, '').trim(),
+                        dist: 'Nearby',
+                        fav: false,
+                        hours: '11:30 AM to 9:30 PM',
+                        lat: loc.latitude || (fallback ? fallback.lat : 37.7749),
+                        lng: loc.longitude || (fallback ? fallback.lng : -122.4194)
+                    };
+                });
                 persistAllState();
             }
         }
@@ -220,14 +229,18 @@ async function fetchMenuAndItems(locationId) {
         const menuData = await menuResponse.json();
         
         if (menuData && menuData.categories) {
-            mockupState.apiCategories = menuData.categories.map(cat => ({
+            const filteredCategories = menuData.categories.filter(cat => {
+                const name = (cat.name || '').toLowerCase().trim();
+                return name !== 'bag' && name !== 'bags';
+            });
+            mockupState.apiCategories = filteredCategories.map(cat => ({
                 categoryId: cat.categoryId,
                 name: cat.name,
                 imgUrl: resolveImageUrl(cat.imgUrl, getFallbackCategoryImg())
             }));
             
             let allItems = [];
-            for (const cat of menuData.categories) {
+            for (const cat of filteredCategories) {
                 try {
                     const itemsResponse = await fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/category/${cat.categoryId}/items`);
                     if (itemsResponse.ok) {
@@ -261,13 +274,18 @@ async function fetchMenuAndItems(locationId) {
 
 function getActiveCategories() {
     if (mockupState.apiCategories && mockupState.apiCategories.length > 0) {
-        return mockupState.apiCategories.map(cat => ({
-            name: cat.name,
-            id: `category-section-${cat.categoryId}`,
-            img: cat.imgUrl || 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg',
-            categoryId: cat.categoryId,
-            categoryKey: cat.name
-        }));
+        return mockupState.apiCategories
+            .filter(cat => {
+                const name = (cat.name || '').toLowerCase().trim();
+                return name !== 'bag' && name !== 'bags';
+            })
+            .map(cat => ({
+                name: cat.name,
+                id: `category-section-${cat.categoryId}`,
+                img: cat.imgUrl || 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg',
+                categoryId: cat.categoryId,
+                categoryKey: cat.name
+            }));
     }
     return [
         { name: 'Featured Items', id: 'featured-items-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
@@ -280,28 +298,32 @@ function getActiveCategories() {
 
 function getActiveMenuItems() {
     if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
-        return mockupState.apiMenuItems;
+        return mockupState.apiMenuItems.filter(item => {
+            const cat = (item.category || '').toLowerCase().trim();
+            const name = (item.name || '').toLowerCase().trim();
+            return cat !== 'bag' && cat !== 'bags' && name !== 'bag' && name !== 'bags';
+        });
     }
     return MENU_ITEMS;
 }
 
 const LOCATIONS = [
-    { name: "i-Tea - TEMPE", address: "825 W UNIVERSITY, Tempe, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM", locationId: 7 },
-    { name: "i-Tea - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "1.2 mi", fav: false, hours: "12:00 PM to 9:30 PM", locationId: 9 },
-    { name: "i-Tea - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM", locationId: 7 },
-    { name: "i-Tea - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM", locationId: 10 },
-    { name: "i-Tea - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM", locationId: 7 },
-    { name: "i-Tea - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM", locationId: 9 },
-    { name: "i-Tea - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 10 },
-    { name: "i-Tea - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM", locationId: 7 },
-    { name: "i-Tea - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 9 },
-    { name: "i-Tea - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM", locationId: 9 },
-    { name: "i-Tea - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM", locationId: 10 },
-    { name: "i-Tea - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM", locationId: 7 },
-    { name: "i-Tea - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM", locationId: 9 },
-    { name: "i-Tea - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM", locationId: 10 },
-    { name: "i-Tea - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM", locationId: 7 },
-    { name: "i-Tea - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours", locationId: 10 }
+    { name: "i-Tea - Tempe", address: "825 W UNIVERSITY, Tempe, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM", locationId: 7, lat: 33.4223, lng: -111.9514 },
+    { name: "i-Tea - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "1.2 mi", fav: false, hours: "12:00 PM to 9:30 PM", locationId: 9, lat: 37.7624, lng: -122.2435 },
+    { name: "i-Tea - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM", locationId: 7, lat: 37.6974, lng: -122.0722 },
+    { name: "i-Tea - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM", locationId: 10, lat: 38.5414, lng: -121.7482 },
+    { name: "i-Tea - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM", locationId: 7, lat: 37.5186, lng: -121.9702 },
+    { name: "i-Tea - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM", locationId: 9, lat: 36.8087, lng: -119.7801 },
+    { name: "i-Tea - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 10, lat: 37.4332, lng: -121.8795 },
+    { name: "i-Tea - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM", locationId: 7, lat: 37.8351, lng: -122.1297 },
+    { name: "i-Tea - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 9, lat: 37.5255, lng: -122.0463 },
+    { name: "i-Tea - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM", locationId: 9, lat: 37.8009, lng: -122.2709 },
+    { name: "i-Tea - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM", locationId: 10, lat: 38.0135, lng: -121.8767 },
+    { name: "i-Tea - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM", locationId: 7, lat: 37.6627, lng: -121.8744 },
+    { name: "i-Tea - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM", locationId: 9, lat: 38.4870, lng: -121.4320 },
+    { name: "i-Tea - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM", locationId: 10, lat: 37.7905, lng: -122.4042 },
+    { name: "i-Tea - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM", locationId: 7, lat: 37.3195, lng: -121.8157 },
+    { name: "i-Tea - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours", locationId: 10, lat: 37.7247, lng: -122.1558 }
 ];
 
 const MENU_ITEMS = [
@@ -516,7 +538,7 @@ function hamburgerDrawerHTML() {
     const navItems = [
         { label: 'Home',          icon: 'fa-house',              page: 'restaurant-home' },
         { label: 'Menu',          icon: 'fa-utensils',           page: 'menu' },
-        { label: 'Locations',     icon: 'fa-location-dot',       page: 'location-pick' },
+        { label: 'Locations',     icon: 'fa-location-dot',       page: 'locations' },
         { label: 'Rewards',       icon: 'fa-award',              page: 'account' },
         { label: 'Scan QR Code',  icon: 'fa-qrcode',             page: 'menu-scan' },
         { label: 'Cart',          icon: 'fa-bag-shopping',       page: 'cart' },
@@ -546,10 +568,9 @@ function hamburgerDrawerHTML() {
                 <nav class="flex-1 overflow-y-auto py-3">
                     ${navItems.map(item => `
                         <button onclick="closeHamburger(); navigateTo('${item.page}');" 
-                            class="w-full text-left px-6 py-4 text-[17px] font-black tracking-tight flex items-center gap-4 transition-colors hover:bg-violet-50 ${
+                            class="w-full text-left px-6 py-4 text-[17px] font-black tracking-tight transition-colors hover:bg-violet-50 ${
                                 currentPage === item.page ? 'text-violet-600' : 'text-gray-900'
                             }">
-                            <i class="fa-solid ${item.icon} w-5 text-center text-sm ${currentPage === item.page ? 'text-violet-600' : 'text-gray-300'}"></i>
                             ${item.label}
                         </button>
                     `).join('')}
@@ -921,7 +942,7 @@ const routes = {
                                 <i class="fa-regular fa-heart text-4xl text-violet-200"></i>
                             </h1>
                             <p class="text-base font-semibold text-white/90 mb-6 leading-relaxed">Refreshing flavors. Chewy boba. Made for every moment.</p>
-                            <button onclick="navigateTo('location-pick')" class="inline-flex items-center gap-3 bg-white text-violet-700 hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
+                            <button onclick="navigateTo('locations')" class="inline-flex items-center gap-3 bg-white text-violet-700 hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
                                 <span>Order Now</span>
                                 <i class="fa-solid fa-arrow-right"></i>
                             </button>
@@ -939,10 +960,10 @@ const routes = {
                         <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
                         <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
-                    <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('location-pick')">
+                    <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('locations')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
                         <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
-                    </div>
+                    </div>      </div>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                         ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
@@ -1025,7 +1046,7 @@ const routes = {
                                         <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top">
                                         </div>
-                                        <h3 class="font-branding font-black text-2xl text-gray-800 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
+                                        <h3 class="font-branding font-black text-2xl text-violet-600 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
                                         <div class="text-lg font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <span>Order Now</span><i class="fa-solid fa-arrow-right text-[9px]"></i>
                                         </div>
@@ -1086,7 +1107,7 @@ const routes = {
                 ${!isDesktop ? `
                 <!-- Order Now Button (Fixed above bottom nav on mobile/tablet) -->
                 <div class="px-6 pb-6 pt-2 relative z-20 shrink-0">
-                    <button onclick="navigateTo('location-pick')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
+                    <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
                 </div>` : ''}
             </div>`;
     },
@@ -1121,7 +1142,7 @@ const routes = {
                                 <i class="fa-regular fa-heart text-4xl text-violet-200"></i>
                             </h1>
                             <p class="text-base font-semibold text-white/90 mb-6 leading-relaxed">Refreshing flavors. Chewy boba. Made for every moment.</p>
-                            <button onclick="navigateTo('location-pick')" class="inline-flex items-center gap-3 bg-white text-violet-700 hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
+                            <button onclick="navigateTo('locations')" class="inline-flex items-center gap-3 bg-white text-violet-700 hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
                                 <span>Order Now</span>
                                 <i class="fa-solid fa-arrow-right"></i>
                             </button>
@@ -1139,7 +1160,7 @@ const routes = {
                         <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
                         <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
-                    <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('location-pick')">
+                    <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('locations')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">DELIVERY</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
                         <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
                     </div>
@@ -1233,7 +1254,7 @@ const routes = {
                                         <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top">
                                         </div>
-                                        <h3 class="font-branding font-black text-2xl text-gray-800 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
+                                        <h3 class="font-branding font-black text-2xl text-violet-600 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
                                         <div class="text-lg font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <span>Order Now</span><i class="fa-solid fa-arrow-right text-[9px]"></i>
                                         </div>
@@ -1294,11 +1315,11 @@ const routes = {
                 ${!isDesktop ? `
                 <!-- Order Now Button (Fixed above bottom nav on mobile/tablet) -->
                 <div class="px-6 pb-6 pt-2 relative z-20 shrink-0">
-                    <button onclick="navigateTo('location-pick')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
+                    <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
                 </div>` : ''}
             </div>`;
     },
-    'location-pick': () => {
+    'locations': () => {
         const getSet = () => {
             const list = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
                 ? mockupState.apiLocations
@@ -1314,7 +1335,7 @@ const routes = {
 
         if (currentViewport === 'desktop') {
             return `
-                <div class="flex flex-row h-full bg-white">
+                <div class="flex flex-row bg-white" style="height: calc(100vh - 70px);">
                     <div class="w-[450px] flex flex-col shrink-0 border-r border-gray-200 z-10 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.05)]">
                         <header class="p-4 border-b border-gray-100 flex items-center bg-white">
                             <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
@@ -1339,14 +1360,14 @@ const routes = {
                                 </div>
                                 <div class="min-w-0">
                                     <p class="text-[9px] font-black text-violet-500 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
-                                    <p class="text-xs font-black text-gray-800 truncate">i-Tea – Tempe &nbsp;·&nbsp; 0.3 mi</p>
+                                    <p class="text-xs font-black text-gray-800 truncate">i-Tea - Tempe &nbsp;·&nbsp; 0.3 mi</p>
                                 </div>
                             </div>
-                            <button onclick="selectLocation(7, 'i-Tea - TEMPE', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
+                            <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - TEMPE') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')">
+                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="focusLocation('${s.name}')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
@@ -1358,15 +1379,16 @@ const routes = {
                                             <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-square-parking"></i> Curbside</span>
                                         </div>
                                     </div>
-                                    <div class="flex flex-col items-end justify-between h-full gap-4">
+                                    <div class="flex flex-col items-end justify-between h-full gap-2">
                                         <div class="text-xs font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
-                                        <span class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest shadow-sm hover:bg-violet-700 transition" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
+                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[10px] px-4 py-2 rounded-full uppercase font-black tracking-widest shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
+                                        <span class="text-[10px] text-gray-400 underline uppercase font-bold hover:text-violet-600" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
                                     </div>
                                 </div>`).join('')}
                         </div>
                     </div>
                     <div class="flex-1 relative bg-[#e5e3df]">
-                        <iframe src="${assets.googleMapsEmbed}" class="absolute inset-0 w-full h-full border-0" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <div id="locations-map" class="absolute inset-0 w-full h-full"></div>
                     </div>
                 </div>`;
         } else {
@@ -1385,14 +1407,14 @@ const routes = {
                             </div>
                             <div class="min-w-0">
                                 <p class="text-[9px] font-black text-violet-500 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
-                                <p class="text-xs font-black text-gray-800 truncate">i-Tea – Tempe &nbsp;·&nbsp; 0.3 mi</p>
+                                <p class="text-xs font-black text-gray-800 truncate">i-Tea - Tempe &nbsp;·&nbsp; 0.3 mi</p>
                             </div>
                         </div>
-                        <button onclick="selectLocation(7, 'i-Tea - TEMPE', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
+                        <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
                     </div>
 
                     <div class="w-full h-[35%] min-h-[220px] shrink-0 relative z-0">
-                        <iframe src="${assets.googleMapsEmbed}" class="absolute inset-0 w-full h-full border-0" allowfullscreen="" loading="lazy"></iframe>
+                        <div id="locations-map" class="absolute inset-0 w-full h-full"></div>
                     </div>
 
                     <div class="flex-1 overflow-y-auto bg-white z-10 -mt-6 rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.12)] flex flex-col relative pb-6">
@@ -1411,7 +1433,7 @@ const routes = {
 
                         <div class="p-4 space-y-3 flex-1 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - TEMPE') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')">
+                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="focusLocation('${s.name}')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
@@ -1423,9 +1445,10 @@ const routes = {
                                             <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-square-parking text-[13px]"></i> Curbside</span>
                                         </div>
                                     </div>
-                                    <div class="flex flex-col items-end justify-between h-full gap-4">
+                                    <div class="flex flex-col items-end justify-between h-full gap-2">
                                         <div class="text-[11px] font-black text-gray-400 uppercase font-mono">${s.dist}</div>
-                                        <span class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest shadow-sm" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
+                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest shadow-sm active:scale-95">Order Here</button>
+                                        <span class="text-[10px] text-gray-400 underline uppercase font-bold" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
                                     </div>
                                 </div>`).join('')}
                         </div>
@@ -1438,7 +1461,7 @@ const routes = {
         return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('location-pick')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
+                    <button onclick="navigateTo('locations')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Favorite Locations</span>
                     <div class="w-10"></div>
                 </header>
@@ -1505,13 +1528,13 @@ const routes = {
 
                     ${isDesktop ? `
                     <div class="flex justify-start pt-2">
-                        <button onclick="navigateTo('location-pick')" class="w-1/3 bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] hover:bg-violet-700 transition-all">Save Changes</button>
+                        <button onclick="navigateTo('locations')" class="w-1/3 bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] hover:bg-violet-700 transition-all">Save Changes</button>
                     </div>
                     ` : ''}
                 </div>
                 ${!isDesktop ? `
                 <div class="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
-                    <button onclick="navigateTo('location-pick')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] transition-all">Save Changes</button>
+                    <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] transition-all">Save Changes</button>
                 </div>
                 ` : ''}
             </div>
@@ -1567,10 +1590,10 @@ const routes = {
 
         return `
                 <div class="flex flex-col h-full bg-[#FAF9F6] relative overflow-hidden">
-                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black"><button onclick="navigateTo('location-pick')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span><button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button></header>
+                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black"><button onclick="navigateTo('locations')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span><button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button></header>
                     <div class="flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full pb-32">
                         <!-- Location Info Card -->
-                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('location-pick')">
+                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('locations')">
                             <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
                                 <i class="fa-solid fa-location-dot text-xl"></i>
                             </div>
@@ -1919,7 +1942,7 @@ const routes = {
                                             ${filtered.map(item => {
                                                 const actualIndex = getActiveMenuItems().indexOf(item);
                                                 return `
-                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                                         <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                             <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
                                                         </div>
@@ -1995,7 +2018,7 @@ const routes = {
                                                     ${sectionItems.map(item => {
                                                         const actualIndex = items.indexOf(item);
                                                         return `
-                                                            <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                                            <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                                                 <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                                     <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
                                                                 </div>
@@ -2015,89 +2038,9 @@ const routes = {
                                 </div>
                             `;
                         } else if (mockupState.menuTab === 'featured') {
-                            const slideIndex = mockupState.featuredSlideIndex || 0;
-                            const isDesktopOrTablet = currentViewport === 'desktop' || currentViewport === 'tablet';
-
-                            let heroCardHtml = '';
-                            if (isDesktopOrTablet) {
-                                if (slideIndex === 0) {
-                                    heroCardHtml = `
-                                        <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[340px] flex flex-col justify-end p-8 transition-all duration-500 ease-in-out">
-                                            <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
-                                            <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
-                                            
-                                            <div class="relative z-10 w-full max-w-md">
-                                                <span class="bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Featured</span>
-                                                <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4 font-branding">Brown Sugar<br>Boba Latte</h2>
-                                                <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P4 • Creamy, caramelized milk tea perfection.</p>
-                                                <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
-                                            </div>
-                                            
-                                            <!-- White caret bracket facing east to slide to Grapefruit -->
-                                            <button onclick="updateMockupState('featuredSlideIndex', 1)" class="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer">
-                                                <i class="fa-solid fa-chevron-right text-lg"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <!-- Carousel indicator dots -->
-                                        <div class="flex justify-center gap-2 mt-4">
-                                            <button onclick="updateMockupState('featuredSlideIndex', 0)" class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-violet-600 w-6"></button>
-                                            <button onclick="updateMockupState('featuredSlideIndex', 1)" class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-gray-300"></button>
-                                        </div>
-                                    `;
-                                } else {
-                                    const grapefruitImg = MENU_ITEMS[5] ? MENU_ITEMS[5].image : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
-                                    heroCardHtml = `
-                                        <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[340px] flex flex-col justify-end p-8 transition-all duration-500 ease-in-out">
-                                            <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover">
-                                            <!-- Orange gradient overlay replacing drop shadow -->
-                                            <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
-                                            
-                                            <div class="relative z-10 w-full max-w-md">
-                                                <!-- Orange Featured Badge -->
-                                                <span class="bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Featured</span>
-                                                <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4 font-branding">P3 Super<br>Grapefruit</h2>
-                                                <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P3 • Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
-                                                <!-- White button, orange text -->
-                                                <button onclick="selectItemAndNavigate(5)" class="bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
-                                            </div>
-                                            
-                                            <!-- White caret bracket facing east to slide back to Boba -->
-                                            <button onclick="updateMockupState('featuredSlideIndex', 0)" class="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer">
-                                                <i class="fa-solid fa-chevron-right text-lg"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <!-- Carousel indicator dots -->
-                                        <div class="flex justify-center gap-2 mt-4">
-                                            <button onclick="updateMockupState('featuredSlideIndex', 0)" class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-gray-300"></button>
-                                            <button onclick="updateMockupState('featuredSlideIndex', 1)" class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-orange-600 w-6"></button>
-                                        </div>
-                                    `;
-                                }
-                            } else {
-                                // Mobile view: single card
-                                heroCardHtml = `
-                                    <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[300px] flex flex-col justify-end p-8">
-                                        <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
-                                        
-                                        <div class="relative z-10 w-full max-w-md">
-                                            <span class="bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Featured</span>
-                                            <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4 font-branding">Brown Sugar<br>Boba Latte</h2>
-                                            <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P4 • Creamy, caramelized milk tea perfection.</p>
-                                            <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
-                                        </div>
-                                    </div>
-                                `;
-                            }
-
                             return `
                                 <!-- Featured View -->
                                 <div class="space-y-12">
-                                    <!-- Hero Special Card / Carousel -->
-                                    ${heroCardHtml}
-
                                     <!-- Featured Items Grid (Large Premium Cards) -->
                                     <div>
                                         <div class="flex justify-between items-end mb-6 px-1">
@@ -2107,10 +2050,10 @@ const routes = {
                                             ${MENU_ITEMS.slice(0, 6).map((item) => {
                                                 const actualIndex = MENU_ITEMS.indexOf(item);
                                                 return `
-                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                                         <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                             <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
-                                                            <div class="absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm">Popular</div>
+                                                            <div class="absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm">Featured</div>
                                                         </div>
                                                         <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                             <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
@@ -2138,7 +2081,7 @@ const routes = {
                                                 const originalIndex = MENU_ITEMS.findIndex(item => item.name === fav.name);
                                                 const actualIndex = originalIndex >= 0 ? originalIndex : 0;
                                                 return `
-                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card">
+                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card">
                                                         <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                             <img src="${fav.image}" class="w-full h-full object-cover object-top group-hover/card:scale-105 transition-transform duration-500">
                                                             <button onclick="event.stopPropagation(); toggleFavorite(${fav.id})" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white text-red-500 shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-transform">
@@ -2176,7 +2119,7 @@ const routes = {
                                 const gridItemsHTML = historyItems.map((hist, i) => {
                                     const item = MENU_ITEMS[hist.index];
                                     return `
-                                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center justify-between group">
+                                        <div class="bg-white rounded-2xl p-2.5 shadow-sm border border-gray-100 flex items-center justify-between group">
                                             <div class="flex items-center gap-4 min-w-0">
                                                 <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 cursor-pointer" onclick="selectItemAndNavigate(${hist.index})">
                                                     <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-300">
@@ -2243,16 +2186,6 @@ const routes = {
                         }
                     })()}
                 </div>
-
-                        ${isDesktop ? `
-                        <!-- Promo Card (Desktop Bottom) -->
-                        <div class="bg-[#0b132b] rounded-2xl p-6 relative overflow-hidden text-white shadow-xl mt-8">
-                            <i class="fa-solid fa-tag absolute -right-3 -top-3 text-7xl text-white/5 rotate-12"></i>
-                            <h3 class="font-black text-xl tracking-tight mb-2 relative z-10">Free Desert</h3>
-                            <p class="text-xs text-blue-100/80 font-medium mb-5 relative z-10 leading-relaxed pr-6">On orders over $35. Valid for your next 3 orders.</p>
-                            <div class="text-[11px] font-black text-violet-500 uppercase tracking-widest relative z-10">CODE: BITESFREE35</div>
-                        </div>
-                        ` : ''}
                     </div>
                     
                 </div>
@@ -2686,11 +2619,11 @@ const routes = {
                                     <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
                                 </div>
                                 <div>
-                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${(mockupState.selectedLocation || "i-Tea - TEMPE").replace(/\b\d{5}\b/g, '').trim()}</h3>
+                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${(mockupState.selectedLocation || "i-Tea - Tempe").replace(/\b\d{5}\b/g, '').trim()}</h3>
                                     <p class="text-[10px] font-bold text-gray-400 mt-1 tracking-wide uppercase">${mockupState.selectedDistance || "0.8 mi"}</p>
                                 </div>
                             </div>
-                            <button onclick="navigateTo('location-pick')" class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-violet-600 hover:border-violet-100 transition-all">
+                            <button onclick="navigateTo('locations')" class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-violet-600 hover:border-violet-100 transition-all">
                                 <i class="fa-solid fa-chevron-right text-[10px]"></i>
                             </button>
                         </div>
@@ -3187,7 +3120,7 @@ const routes = {
                                 <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
                             </div>
                             <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
+                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - Tempe'}</h3>
                                 <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
                             </div>
                         </div>
@@ -3369,7 +3302,7 @@ const routes = {
                                 <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
                             </div>
                             <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
+                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - Tempe'}</h3>
                                 <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
                             </div>
                         </div>
@@ -3759,7 +3692,7 @@ const routes = {
                                     <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
                                 </div>
                                 <div>
-                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
+                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - Tempe'}</h3>
                                     <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
                                 </div>
                             </div>
@@ -4092,7 +4025,7 @@ const routes = {
         return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('location-pick')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
+                    <button onclick="navigateTo('locations')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Favorite Locations</span>
                     <div class="w-10"></div>
                 </header>
@@ -4159,13 +4092,13 @@ const routes = {
 
                     ${isDesktop ? `
                     <div class="flex justify-start pt-2">
-                        <button onclick="navigateTo('location-pick')" class="w-1/3 bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] hover:bg-violet-700 transition-all">Save Changes</button>
+                        <button onclick="navigateTo('locations')" class="w-1/3 bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] hover:bg-violet-700 transition-all">Save Changes</button>
                     </div>
                     ` : ''}
                 </div>
                 ${!isDesktop ? `
                 <div class="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
-                    <button onclick="navigateTo('location-pick')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] transition-all">Save Changes</button>
+                    <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] transition-all">Save Changes</button>
                 </div>
                 ` : ''}
             </div>
@@ -4432,6 +4365,179 @@ routes['privacy'] = () => {
     `;
 };
 
+routes['sections'] = () => {
+    const grapefruitImg = MENU_ITEMS[5] ? MENU_ITEMS[5].image : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
+    return `
+        <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto">
+            <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shrink-0">
+                <div class="px-3 py-4 flex items-center justify-between w-full max-w-[1080px] mx-auto">
+                    <span class="text-lg font-black text-violet-600 uppercase tracking-tight">Component Sandbox</span>
+                    <span class="text-xs bg-gray-100 text-gray-500 font-bold px-2.5 py-1 rounded-full">Retired Cards</span>
+                </div>
+            </header>
+
+            <div class="p-6 max-w-[1080px] mx-auto w-full space-y-12 pb-24">
+                <!-- P3 Super Grapefruit Card -->
+                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                    <h3 class="text-sm font-black text-gray-400 uppercase tracking-widest mb-4">P3 Super Grapefruit Featured Card</h3>
+                    <div class="w-full">
+                        <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[300px] flex flex-col justify-end p-8">
+                            <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
+                            
+                            <div class="relative z-10 w-full max-w-md text-left">
+                                <span class="bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Featured</span>
+                                <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4 font-branding">P3 Super<br>Grapefruit</h2>
+                                <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P3 • Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
+                                <button onclick="selectItemAndNavigate(5)" class="bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Brown Sugar Boba Latte Card -->
+                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                    <h3 class="text-sm font-black text-gray-400 uppercase tracking-widest mb-4">P4 Brown Sugar Boba Latte Featured Card</h3>
+                    <div class="w-full">
+                        <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[300px] flex flex-col justify-end p-8">
+                            <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
+                            
+                            <div class="relative z-10 w-full max-w-md text-left">
+                                <span class="bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Featured</span>
+                                <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4 font-branding">Brown Sugar<br>Boba Latte</h2>
+                                <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P4 • Creamy, caramelized milk tea perfection.</p>
+                                <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Combined Carousel Card -->
+                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                    <h3 class="text-sm font-black text-gray-400 uppercase tracking-widest mb-4">Interactive Toggle Carousel Card (Combined)</h3>
+                    <div class="w-full">
+                        <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[300px] flex flex-col justify-end p-8 transition-all duration-500">
+                            ${(() => {
+                                const activeSlide = mockupState.sectionsCarouselIndex || 0;
+                                if (activeSlide === 0) {
+                                    return `
+                                        <!-- Grapefruit Slide -->
+                                        <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover animate-[fadeIn_0.5s_ease-out]">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
+                                        
+                                        <div class="relative z-10 w-full max-w-md text-left pr-12 pb-6 animate-[fadeIn_0.5s_ease-out]">
+                                            <span class="bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Featured</span>
+                                            <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4 font-branding">P3 Super<br>Grapefruit</h2>
+                                            <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P3 • Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
+                                            <button onclick="selectItemAndNavigate(5)" class="bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
+                                        </div>
+                                    `;
+                                } else {
+                                    return `
+                                        <!-- Boba Latte Slide -->
+                                        <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover animate-[fadeIn_0.5s_ease-out]">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
+                                        
+                                        <div class="relative z-10 w-full max-w-md text-left pr-12 pb-6 animate-[fadeIn_0.5s_ease-out]">
+                                            <span class="bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block shadow-sm">Featured</span>
+                                            <h2 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-4 font-branding">Brown Sugar<br>Boba Latte</h2>
+                                            <p class="text-gray-200 font-medium mb-6 text-sm leading-relaxed max-w-xs">P4 • Creamy, caramelized milk tea perfection.</p>
+                                            <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
+                                        </div>
+                                    `;
+                                }
+                            })()}
+                            
+                            <!-- Pagination Dots -->
+                            <div class="absolute bottom-4 left-8 flex items-center gap-1.5 z-20">
+                                <span onclick="updateMockupState('sectionsCarouselIndex', 0); navigateTo('sections');" class="cursor-pointer h-1.5 rounded-full transition-all duration-300 ${ (mockupState.sectionsCarouselIndex || 0) === 0 ? 'bg-orange-500 w-6' : 'bg-white/40 w-3' }"></span>
+                                <span onclick="updateMockupState('sectionsCarouselIndex', 1); navigateTo('sections');" class="cursor-pointer h-1.5 rounded-full transition-all duration-300 ${ (mockupState.sectionsCarouselIndex || 0) === 1 ? 'bg-violet-500 w-6' : 'bg-white/40 w-3' }"></span>
+                            </div>
+                            
+                            <!-- White Caret Toggle Bracket -->
+                            <button onclick="updateMockupState('sectionsCarouselIndex', ${(mockupState.sectionsCarouselIndex || 0) === 0 ? 1 : 0}); navigateTo('sections');" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/45 active:scale-90 border border-white/30 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all shadow-md z-30 cursor-pointer">
+                                <i class="fa-solid fa-chevron-right text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Free Dessert Card with Background Depth & Cupcake Outline Overlay -->
+                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                    <h3 class="text-sm font-black text-gray-400 uppercase tracking-widest mb-4">Free Dessert Promo Card (With Depth & Cupcake Overlay)</h3>
+                    <div class="w-full">
+                        <div class="bg-[#0b132b] bg-gradient-to-br from-indigo-950 via-[#0b132b] to-[#121c3b] rounded-2xl p-6 relative overflow-hidden text-white shadow-xl mt-2 group border border-white/5">
+                            <!-- Cupcake SVG Overlay -->
+                            <svg class="absolute -right-12 -bottom-16 w-72 h-72 text-white/5 group-hover:scale-105 group-hover:rotate-6 transition-transform duration-700 pointer-events-none z-0" fill="none" stroke="currentColor" stroke-width="1.25" viewBox="0 0 24 24">
+                                <!-- Cup wrapper -->
+                                <path d="M7 14 L8.5 21 L15.5 21 L17 14 Z" />
+                                <path d="M9.5 21 L8.5 14" />
+                                <path d="M11 21 L10.5 14" />
+                                <path d="M13 21 L13.5 14" />
+                                <path d="M14.5 21 L15.5 14" />
+                                <!-- Frosting bottom wave -->
+                                <path d="M5.5 14 C 5.5 12.5, 7.5 11.5, 9.5 12.5 C 10.5 11.5, 13.5 11.5, 14.5 12.5 C 16.5 11.5, 18.5 12.5, 18.5 14 Z" />
+                                <!-- Frosting middle layer -->
+                                <path d="M7 12 C 7 9.5, 17 9.5, 17 12" />
+                                <!-- Frosting top layer -->
+                                <path d="M9.5 9.5 C 9.5 7.5, 14.5 7.5, 14.5 9.5" />
+                                <!-- Cherry -->
+                                <circle cx="12" cy="6" r="1.25" fill="currentColor" />
+                                <path d="M12 4.75 Q 13.5 2.5 15.5 3.5" />
+                            </svg>
+                            
+                            <!-- Font Awesome Tag Icon as a layered backdrop -->
+                            <i class="fa-solid fa-tag absolute -right-3 -top-3 text-7xl text-white/[0.03] rotate-12 pointer-events-none"></i>
+                            
+                            <h3 class="font-black text-xl tracking-tight mb-2 relative z-10">Free Desert</h3>
+                            <p class="text-xs text-blue-100/80 font-medium mb-5 relative z-10 leading-relaxed pr-6">On orders over $35. Valid for your next 3 orders.</p>
+                            <div class="text-[11px] font-black text-violet-500 uppercase tracking-widest relative z-10">CODE: BITESFREE35</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+routes['accessibility'] = () => {
+    const isDesktop = currentViewport === 'desktop';
+    return `
+        <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto pb-24">
+            <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
+                <div class="w-full max-w-[1080px] flex items-center">
+                    <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                    </button>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Web Accessibility</span>
+                    <div class="w-10"></div>
+                </div>
+            </header>
+
+            <div class="p-6 max-w-[800px] mx-auto w-full space-y-6 mt-6">
+                <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-6">
+                    <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Accessibility Statement</h1>
+                    <p class="text-sm text-gray-500 font-bold uppercase tracking-widest border-b border-gray-100 pb-2">Commitment to Accessibility</p>
+                    
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        We are committed to facilitating the accessibility and usability of our website for all customers, including individuals with disabilities. We strive to provide a clean and seamless web experience that conforms to the Web Content Accessibility Guidelines (WCAG) 2.1 Level AA standards.
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        Please check back soon for our full, detailed accessibility policy and documentation. If you require assistance or wish to report an issue, please contact us.
+                    </p>
+
+                    <p class="text-sm text-gray-500 font-bold uppercase tracking-widest border-b border-gray-100 pb-2 mt-6">Disclaimer</p>
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        Please be aware that our efforts to maintain accessibility and usability are ongoing. While we strive to make the website as accessible as possible some issues can be encountered by different assistive technology as the range of assistive technology is wide and varied.
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
 function renderPage() {
     const viewport = document.getElementById('app-viewport');
     if (!viewport) return;
@@ -4459,28 +4565,31 @@ function renderPage() {
         contentHtml = contentHtml.replace(/<header\b[^>]*>([\s\S]*?)<\/header>/i, '');
         
         const desktopNavHtml = `
-            <nav class="hidden lg:flex md:flex justify-between items-center px-4 lg:px-8 h-[70px] bg-white sticky top-0 z-[100] border-b border-gray-100 shadow-sm w-full shrink-0">
+            <nav class="hidden lg:flex md:flex justify-between items-center px-4 lg:px-8 h-[70px] bg-white sticky top-0 z-[9999] border-b border-gray-100 shadow-sm w-full shrink-0">
                 <div class="flex items-center gap-4 lg:gap-8">
                     <div class="w-16 h-12 lg:w-20 lg:h-14 flex items-center justify-center cursor-pointer shrink-0" onclick="navigateTo('restaurant-home')">
                         <img src="images/nav-logo.png" class="w-full h-full object-contain">
                     </div>
                     <div class="flex items-center gap-3 lg:gap-6 text-[16px] lg:text-[1.3rem] font-black uppercase tracking-tight text-[#1f0b35] ml-2">
-                        <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('restaurant-home')">Home</span>
-                        <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('menu')">Menu</span>
-                        <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('location-pick')">Order</span>
-                        <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('account')">Rewards</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('restaurant-home')">Home</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('menu')">Menu</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('locations')">Order</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('account')">Rewards</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap flex items-center gap-1" onclick="toggleMenu(event, 'all-pages-dropdown')">
+                            Pages <i class="fa-solid fa-chevron-down text-[10px] text-gray-400"></i>
+                        </span>
                     </div>
                 </div>
                 <div class="flex items-center gap-4 lg:gap-8 text-[14px] lg:text-[16px] font-black uppercase tracking-tight text-[#1f0b35]">
-                    <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1f0b35]" onclick="navigateTo('location-pick')">
+                    <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1f0b35]" onclick="navigateTo('locations')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
-                        <span>Locations</span>
+                        <span class="nav-link-animated">Locations</span>
                     </div>
                     ${mockupState.isLoggedIn ? `
                         <div class="relative">
                             <button class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1f0b35]" onclick="toggleMenu(event, 'user-profile-dropdown')">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-                                <span>${mockupState.userName}</span>
+                                <span class="nav-link-animated">${mockupState.userName}</span>
                                 <i class="fa-solid fa-chevron-down text-[10px] ml-1 text-gray-400"></i>
                             </button>
                             <div id="user-profile-dropdown" class="dropdown-menu">
@@ -4494,12 +4603,45 @@ function renderPage() {
                     ` : `
                         <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('restaurant-sign-in')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-                            <span>Sign In / Join</span>
+                            <span class="nav-link-animated">Sign In / Join</span>
                         </div>
                     `}
                     <div class="cursor-pointer relative hover:text-violet-600 transition-colors shrink-0 w-10 h-10 lg:w-11 lg:h-11 flex items-center justify-center -mr-2" onclick="navigateTo('cart')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                         ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                    </div>
+                </div>
+                
+                <!-- Centered pages dropdown -->
+                <div id="all-pages-dropdown" class="dropdown-menu hidden normal-case">
+                    <div class="flex flex-col gap-2">
+                        <div class="dropdown-column-title">Core Pages</div>
+                        <a href="index.html" class="dropdown-item lowercase">index.html</a>
+                        <a href="menu.html" class="dropdown-item lowercase">menu.html</a>
+                        <a href="locations.html" class="dropdown-item lowercase">locations.html</a>
+                        <a href="location-favorites.html" class="dropdown-item lowercase">location-favorites.html</a>
+                        <a href="cart.html" class="dropdown-item lowercase">cart.html</a>
+                        <a href="checkout.html" class="dropdown-item lowercase">checkout.html</a>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <div class="dropdown-column-title">Ordering & Account</div>
+                        <a href="order-customize.html" class="dropdown-item lowercase">order-customize.html</a>
+                        <a href="order-confirm.html" class="dropdown-item lowercase">order-confirm.html</a>
+                        <a href="order-status.html" class="dropdown-item lowercase">order-status.html</a>
+                        <a href="order-details.html" class="dropdown-item lowercase">order-details.html</a>
+                        <a href="track-order.html" class="dropdown-item lowercase">track-order.html</a>
+                        <a href="user-profile.html" class="dropdown-item lowercase">user-profile.html</a>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <div class="dropdown-column-title">Other Pages</div>
+                        <a href="registration.html" class="dropdown-item lowercase">registration.html</a>
+                        <a href="restaurant-sign-in.html" class="dropdown-item lowercase">restaurant-sign-in.html</a>
+                        <a href="menu-favorites.html" class="dropdown-item lowercase">menu-favorites.html</a>
+                        <a href="menu-scan.html" class="dropdown-item lowercase">menu-scan.html</a>
+                        <a href="directions.html" class="dropdown-item lowercase">directions.html</a>
+                        <a href="privacy.html" class="dropdown-item lowercase">privacy.html</a>
+                        <a href="accessibility.html" class="dropdown-item lowercase">accessibility.html</a>
+                        <a href="sections.html" class="dropdown-item lowercase">sections.html* (demos)</a>
                     </div>
                 </div>
             </nav>
@@ -4509,9 +4651,11 @@ function renderPage() {
 
     const noFooterPages = [];
     if (!noFooterPages.includes(currentPage) && currentViewport === 'desktop') {
+        const showLinks = currentPage === 'sections';
         const globalFooter = `
             <div class="hidden lg:block w-full bg-white shrink-0">
-                <div class="max-w-[1080px] mx-auto px-6 border-t border-gray-200 mt-16 pt-10">
+                <div class="max-w-[1080px] mx-auto px-6 border-t border-gray-200 ${showLinks ? 'mt-16 pt-10' : 'mt-6 pt-6'}">
+                    ${showLinks ? `
                     <!-- Logo Section -->
                     <div class="mb-6 flex flex-col items-center justify-center">
                         <img src="images/nav-logo.png" alt="i-Tea" class="h-14 w-auto object-contain">
@@ -4543,12 +4687,24 @@ function renderPage() {
                             </ul>
                         </div>
                     </div>
+                    ` : `
+                    <!-- Logo Section (Moved Down) -->
+                    <div class="mb-4 flex flex-col items-center justify-center">
+                        <img src="images/nav-logo.png" alt="i-Tea" class="h-10 w-auto object-contain">
+                    </div>
+                    `}
                     <div class="flex flex-col-reverse md:flex-row justify-between items-center py-6 border-t border-gray-100 text-[11px] text-gray-400 font-medium gap-4">
-                        <p>© 2026 i-Tea Inc. All rights reserved. | <a href="privacy.html" class="hover:text-violet-600 transition-colors">Privacy Policy</a> <span class="ml-2 opacity-50">${VERSION_STR}</span></p>
-                        <div class="flex gap-5 text-gray-400">
-                            <i class="fa-solid fa-award text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
-                            <i class="fa-regular fa-star text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
-                            <i class="fa-regular fa-envelope text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
+                        <p>© 2026 i-Tea Inc. All rights reserved. | <a href="privacy.html" class="hover:text-violet-600 transition-colors">Privacy Policy</a> | <a href="accessibility.html" class="hover:text-violet-600 transition-colors">Web Accessibility</a> <span class="ml-2 opacity-50">${VERSION_STR}</span></p>
+                        <div class="flex gap-5 text-gray-400 items-center">
+                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="hover:text-violet-600 transition-colors">
+                                <i class="fa-brands fa-facebook text-lg"></i>
+                            </a>
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="hover:text-violet-600 transition-colors">
+                                <i class="fa-brands fa-instagram text-lg"></i>
+                            </a>
+                            <a href="mailto:support@farebites.com" class="hover:text-violet-600 transition-colors">
+                                <i class="fa-regular fa-envelope text-lg"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -4579,6 +4735,10 @@ function renderPage() {
     }
     persistAllState();
     document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
+
+    if (currentPage === 'locations') {
+        initLocationsMap();
+    }
 
     // Re-focus menu search input after render (keeps cursor active while typing)
     if (currentPage === 'menu' && mockupState.menuSearchOpen) {
@@ -4706,13 +4866,170 @@ function selectLocation(locationId, locationName, locationAddress, locationDista
     navigateTo('order-details');
 }
 
+let leafletMap = null;
+let mapMarkers = {};
+
+function getNearbyLocationsCount(targetLat, targetLng, radiusMiles = 15) {
+    let count = 0;
+    LOCATIONS.forEach(loc => {
+        const dLat = (loc.lat - targetLat) * Math.PI / 180;
+        const dLng = (loc.lng - targetLng) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(targetLat * Math.PI / 180) * Math.cos(loc.lat * Math.PI / 180) *
+                  Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distanceMiles = 3959 * c;
+        if (distanceMiles > 0.1 && distanceMiles <= radiusMiles) {
+            count++;
+        }
+    });
+    return count;
+}
+
+function initLocationsMap() {
+    const mapElement = document.getElementById('locations-map');
+    if (!mapElement) return;
+
+    // Default center at Tempe, AZ or first location
+    const centerLat = 37.7749; // Bay Area general center
+    const centerLng = -122.4194;
+    
+    let startLat = centerLat;
+    let startLng = centerLng;
+    let startZoom = 9;
+
+    const currentLoc = LOCATIONS.find(l => l.name === mockupState.selectedLocation);
+    if (currentLoc) {
+        startLat = currentLoc.lat;
+        startLng = currentLoc.lng;
+        // Auto zoom based on density on initial load
+        const nearbyCount = getNearbyLocationsCount(startLat, startLng, 15);
+        startZoom = nearbyCount > 0 ? 12 : 15;
+    } else if (LOCATIONS.length > 0) {
+        startLat = LOCATIONS[0].lat;
+        startLng = LOCATIONS[0].lng;
+    }
+
+    try {
+        if (leafletMap) {
+            leafletMap.remove();
+        }
+        
+        leafletMap = L.map('locations-map', {
+            zoomControl: true,
+            scrollWheelZoom: true
+        }).setView([startLat, startLng], startZoom);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors © CARTO'
+        }).addTo(leafletMap);
+
+        mapMarkers = {};
+        LOCATIONS.forEach(s => {
+            const customIcon = L.divIcon({
+                html: `
+                    <div class="relative flex flex-col items-center group">
+                        <!-- Pin circle with logo inside -->
+                        <div class="w-9 h-9 rounded-full bg-white border-2 border-violet-600 flex items-center justify-center shadow-md overflow-hidden transform transition-transform group-hover:scale-110 duration-200">
+                            <img src="images/itea_logo.png" class="w-full h-full object-contain p-1">
+                        </div>
+                        <!-- Arrow down -->
+                        <div class="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-violet-600 -mt-[1px]"></div>
+                        <!-- Label -->
+                        <div class="bg-violet-950/90 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-sm whitespace-nowrap mt-1 leading-none border border-violet-800/30">
+                            i-Tea
+                        </div>
+                    </div>
+                `,
+                className: 'custom-div-icon',
+                iconSize: [60, 60],
+                iconAnchor: [30, 45]
+            });
+
+            const marker = L.marker([s.lat, s.lng], { icon: customIcon }).addTo(leafletMap);
+            
+            const popupContent = `
+                <div class="p-3 font-sans min-w-[200px]">
+                    <h4 class="font-black text-sm uppercase tracking-tight text-violet-700 mb-1">${s.name}</h4>
+                    <p class="text-xs text-gray-500 font-semibold mb-2">${s.address}</p>
+                    <p class="text-[10px] font-black text-gray-400 uppercase mb-3"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
+                    <button onclick="selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="w-full bg-violet-600 text-white text-[10px] font-black uppercase tracking-wider py-2 rounded-full shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
+                </div>
+            `;
+            marker.bindPopup(popupContent);
+            
+            marker.on('click', () => {
+                focusLocation(s.name, false);
+            });
+
+            mapMarkers[s.name.toLowerCase()] = marker;
+        });
+
+        if (currentLoc && mapMarkers[currentLoc.name.toLowerCase()]) {
+            setTimeout(() => {
+                mapMarkers[currentLoc.name.toLowerCase()].openPopup();
+            }, 300);
+        }
+
+    } catch (e) {
+        console.error("Map initialization failed", e);
+    }
+}
+
+function focusLocation(name, openPopup = true) {
+    const list = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
+        ? mockupState.apiLocations
+        : LOCATIONS;
+    const store = list.find(l => l.name.toLowerCase() === name.toLowerCase()) || LOCATIONS.find(l => l.name.toLowerCase() === name.toLowerCase());
+
+    if (!store) {
+        console.error("Store not found:", name);
+        return;
+    }
+
+    const parsedLat = parseFloat(store.lat);
+    const parsedLng = parseFloat(store.lng);
+
+    if (isNaN(parsedLat) || isNaN(parsedLng)) {
+        console.error("Store coordinates invalid:", store);
+        return;
+    }
+
+    if (leafletMap) {
+        leafletMap.invalidateSize();
+        // Dynamically calculate zoom: zoom out if there are nearby alternative locations
+        const nearbyCount = getNearbyLocationsCount(parsedLat, parsedLng, 15);
+        const zoomLevel = nearbyCount > 0 ? 12 : 15;
+        
+        leafletMap.setView([parsedLat, parsedLng], zoomLevel, { animate: true, duration: 0.8 });
+    }
+
+    const key = name.toLowerCase();
+    if (openPopup && mapMarkers[key]) {
+        mapMarkers[key].openPopup();
+    }
+
+    const cards = document.querySelectorAll('[data-location-card]');
+    cards.forEach(card => {
+        const cardName = card.getAttribute('data-location-card');
+        if (cardName.toLowerCase() === name.toLowerCase()) {
+            card.classList.remove('border-gray-200', 'bg-white');
+            card.classList.add('border-violet-600', 'bg-violet-50/10', 'shadow-md');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            card.classList.remove('border-violet-600', 'bg-violet-50/10', 'shadow-md');
+            card.classList.add('border-gray-200', 'bg-white');
+        }
+    });
+}
+
 function navigateTo(pageId) {
     persistAllState();
     let [basePageId, hash] = pageId.split('#');
     
     // Redirect to location selector if accessing menu or customization without a selected store
     if ((basePageId === 'menu' || basePageId === 'customize') && !mockupState.selectedLocationId) {
-        basePageId = 'location-pick';
+        basePageId = 'locations';
         hash = '';
     }
 
@@ -4735,12 +5052,12 @@ function navigateTo(pageId) {
 window.addEventListener('DOMContentLoaded', () => {
     // Redirect to location selector if landing directly on menu or customization without a selected store
     if ((currentPage === 'menu' || currentPage === 'customize') && !mockupState.selectedLocationId) {
-        window.location.href = 'location-pick.html';
+        window.location.href = 'locations.html';
         return;
     }
 
     fetchLocations().then(() => {
-        if (currentPage === 'location-pick') {
+        if (currentPage === 'locations') {
             renderPage();
         }
     });
