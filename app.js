@@ -288,15 +288,20 @@ function getActiveCategories() {
             }));
     }
     return [
-        { name: 'New Items', id: 'new-items-section', img: assets.menuHero, categoryKey: 'New Items' },
-        { name: 'Tea Spresso', id: 'teaspresso-section', img: assets.boba1, categoryKey: 'Tea Spresso Series' },
-        { name: 'Milk Tea', id: 'milk-tea-section', img: assets.boba2, categoryKey: 'Milk Tea' },
-        { name: 'Specialty Iced Tea', id: 'specialty-iced-tea-section', img: assets.icedMatcha, categoryKey: 'Specialty Iced Tea' },
-        { name: 'Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg', categoryKey: 'Fruit Tea' },
-        { name: 'Sea Salt Crema', id: 'sea-salt-crema-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P5-Sun-Moon-Lake-Cheesma.jpg', categoryKey: 'Sea Salt Crema' },
-        { name: 'Summer Frosty', id: 'summer-frosty-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P2-Super-Lime-Sijichun.jpg', categoryKey: 'Summer Frosty' },
-        { name: 'Signature Iced Milk', id: 'signature-iced-milk-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg', categoryKey: 'Signature Iced Milk' },
-        { name: 'Dessert Drinks', id: 'dessert-section', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg', categoryKey: 'Dessert Drink' }
+        { name: 'New Items', id: 'new-items-section', img: 'https://olodev.azurewebsites.net/imagescategories/New%20Items.jpg', categoryKey: 'New Items' },
+        { name: 'Teaspresso Series', id: 'teaspresso-section', img: 'https://olodev.azurewebsites.net/imagescategories/Teaspresso.jpg', categoryKey: 'Teaspresso Series' },
+        { name: 'Milk Tea Specialty', id: 'milk-tea-section', img: 'https://olodev.azurewebsites.net/imagescategories/Milk%20Tea.jpg', categoryKey: 'Milk Tea Specialty' },
+        { name: 'i-Tea Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagescategories/Fruit%20Tea.jpg', categoryKey: 'i-Tea Fruit Tea' },
+        { name: 'Sea Salt Kreama', id: 'sea-salt-kreama-section', img: 'https://olodev.azurewebsites.net/imagescategories/Kreama.jpg', categoryKey: 'Sea Salt Kreama' },
+        { name: 'Summer Frosty', id: 'summer-frosty-section', img: 'https://olodev.azurewebsites.net/imagescategories/Frosty.jpg', categoryKey: 'Summer Frosty' },
+        { name: 'Signature Iced Milk', id: 'signature-iced-milk-section', img: 'https://olodev.azurewebsites.net/imagescategories/Signature%20Ice%20Milk.jpg', categoryKey: 'Signature Iced Milk' },
+        { name: 'Dessert Drinks', id: 'dessert-drinks-section', img: 'https://olodev.azurewebsites.net/imagescategories/Dessert%20Drink%20Series.jpg', categoryKey: 'Dessert Drinks' },
+        { name: 'Hot Drink', id: 'hot-drink-section', img: 'https://olodev.azurewebsites.net/imagescategories/Hot%20Drink.jpg', categoryKey: 'Hot Drink' },
+        { name: 'Premium Tea Taiwan', id: 'premium-tea-section', img: 'https://olodev.azurewebsites.net/imagescategories/Premium%20Tea.jpg', categoryKey: 'Premium Tea Taiwan' },
+        { name: 'Cold Brew', id: 'cold-brew-section', img: 'https://olodev.azurewebsites.net/imagescategories/Cold%20Brew%201.jpg', categoryKey: 'Cold Brew ' },
+        { name: 'Snack Menu', id: 'snack-menu-section', img: 'https://olodev.azurewebsites.net/imagescategories/Snack.jpg', categoryKey: 'Snack Menu' },
+        { name: 'Okinawa Onigiri Series', id: 'onigiri-section', img: 'https://olodev.azurewebsites.net/imagescategories/Okinawa%20Onigiri.jpg', categoryKey: 'Okinawa Onigiri Series' },
+        { name: 'Food Menu', id: 'food-menu-section', img: 'https://olodev.azurewebsites.net/imagescategories/Food.jpg', categoryKey: 'Food Menu' }
     ];
 }
 
@@ -932,7 +937,7 @@ const routes = {
         }
 
         return `
-            <div class="flex flex-col h-full relative overflow-hidden bg-slate-50">
+            <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
                 <!-- Hero Banner / Background Section -->
                 <div class="${isDesktop ? 'relative h-[480px] w-full shrink-0 overflow-hidden flex items-center bg-violet-600' : 'absolute inset-0 z-0'}">
                     ${isDesktop ? `
@@ -953,9 +958,9 @@ const routes = {
                         </div>
                     </div>
                     ` : `
-                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0">
+                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <!-- Subtle gradient to ensure text readability -->
-                    <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90 z-0"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90 z-10"></div>
                     `}
                 </div>
 
@@ -967,7 +972,7 @@ const routes = {
                     <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('locations')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
                         <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
-                    </div>      </div>
+                    </div>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                         ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
@@ -988,8 +993,8 @@ const routes = {
                     
                     <!-- Carousel Container -->
                     ${!isDesktop ? `
-                    <div class="relative z-20 w-full mt-auto shrink-0 pb-2 px-6">
-                        <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory ${carouselAlign}">
+                    <div class="relative z-20 w-full mt-auto shrink-0 pb-2">
+                        <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-6 ${carouselAlign}">
                             <!-- Card 1 -->
                             <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
@@ -1046,7 +1051,7 @@ const routes = {
                             
                             <div class="grid grid-cols-3 gap-6 justify-items-center mb-8">
                                 ${getActiveCategories().map(cat => `
-                                    <div onclick="navigateTo('menu#${cat.id}');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
+                                    <div onclick="navigateTo('locations');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
                                         <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top">
                                         </div>
@@ -1132,7 +1137,7 @@ const routes = {
         }
 
         return `
-            <div class="flex flex-col h-full relative overflow-hidden bg-slate-50">
+            <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
                 <!-- Hero Banner / Background Section -->
                 <div class="${isDesktop ? 'relative h-[480px] w-full shrink-0 overflow-hidden flex items-center bg-violet-600' : 'absolute inset-0 z-0'}">
                     ${isDesktop ? `
@@ -1153,9 +1158,9 @@ const routes = {
                         </div>
                     </div>
                     ` : `
-                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0">
+                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <!-- Subtle gradient to ensure text readability -->
-                    <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90 z-0"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90 z-10"></div>
                     `}
                 </div>
 
@@ -1190,8 +1195,8 @@ const routes = {
                     
                     <!-- Carousel Container -->
                     ${!isDesktop ? `
-                    <div class="relative z-20 w-full mt-auto shrink-0 pb-2 px-6">
-                        <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory ${carouselAlign}">
+                    <div class="relative z-20 w-full mt-auto shrink-0 pb-2">
+                        <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-6 ${carouselAlign}">
                             <!-- Card 1 -->
                             <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
                                 <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
@@ -1247,14 +1252,8 @@ const routes = {
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Select a category to start ordering</p>
                             
                             <div class="grid grid-cols-3 gap-6 justify-items-center mb-8">
-                                ${[
-                                    { name: 'Featured Items', id: 'featured-items-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
-                                    { name: 'Tea Spresso', id: 'teaspresso-section', img: assets.boba1 },
-                                    { name: 'Milk Tea', id: 'milk-tea-section', img: assets.boba2 },
-                                    { name: 'Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
-                                    { name: 'Dessert Drinks', id: 'dessert-section', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg' }
-                                ].map(cat => `
-                                    <div onclick="navigateTo('menu#${cat.id}');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
+                                ${getActiveCategories().map(cat => `
+                                    <div onclick="navigateTo('locations');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
                                         <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top">
                                         </div>
@@ -4698,7 +4697,7 @@ function renderPage() {
                     </div>
                     `}
                     <div class="flex flex-col-reverse md:flex-row justify-between items-center py-6 border-t border-gray-100 text-[11px] text-gray-400 font-medium gap-4">
-                        <p>© 2026 i-Tea Inc. All rights reserved. | <a href="privacy.html" class="hover:text-violet-600 transition-colors">Privacy Policy</a> | <a href="accessibility.html" class="hover:text-violet-600 transition-colors">Web Accessibility</a> <span class="ml-2 opacity-50">${VERSION_STR}</span></p>
+                        <p>© 2026 iTea Online Ordering. All rights reserved. | <a href="privacy.html" class="hover:text-violet-600 transition-colors">Privacy Policy</a> | <a href="accessibility.html" class="hover:text-violet-600 transition-colors">Web Accessibility</a> <span class="ml-2 opacity-50">${VERSION_STR}</span></p>
                         <div class="flex gap-5 text-gray-400 items-center">
                             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="hover:text-violet-600 transition-colors">
                                 <i class="fa-brands fa-facebook text-lg"></i>
