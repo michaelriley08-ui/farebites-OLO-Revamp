@@ -1,28 +1,28 @@
 const PAGE_FILE_MAP = {
     "landing": "landing.html",
-    "home": "restaurant-home.html",
+    "home": "index.html",
     "sign-in": "sign-in.html",
     "cart": "cart.html",
-    "customize": "customize.html",
+    "customize": "order-customize.html",
     "checkout": "checkout.html",
     "order-confirm": "order-confirm.html",
     "order-status": "order-status.html",
-    "restaurant-home": "restaurant-home.html",
+    "restaurant-home": "index.html",
     "restaurant-home-logo": "restaurant-home-logo.html",
-    "restaurant-landing": "restaurant-landing.html",
+    "restaurant-landing": "restaurant-login.html",
     "restaurant-sign-in": "restaurant-sign-in.html",
     "order-details": "order-details.html",
-    "qr-code-guide": "qr-code-guide.html",
+    "menu-scan": "menu-scan.html",
     "menu": "menu.html",
     "location-pick": "location-pick.html",
     "location-favorites": "location-favorites.html",
     "login": "login.html",
     "sign-up": "sign-up.html",
-    "account": "account.html",
+    "account": "user-profile.html",
     "privacy": "privacy.html",
     "dashboard": "dashboard.html",
     "index": "index.html",
-    "manage-favorites": "manage-favorites.html",
+    "menu-favorites": "menu-favorites.html",
     "directions": "directions.html",
     "registration": "registration.html"
 };
@@ -40,7 +40,7 @@ const PAGE_LABELS = {
     "restaurant-landing": "i-Tea Landing Page",
     "restaurant-sign-in": "i-Tea Sign In",
     "order-details": "Order Details",
-    "qr-code-guide": "QR Code Guide",
+    "menu-scan": "Scan",
     "menu": "Menu",
     "location-pick": "Pick a Location",
     "location-favorites": "Saved Locations",
@@ -49,7 +49,7 @@ const PAGE_LABELS = {
     "account": "My Account",
     "privacy": "Privacy Policy",
     "dashboard": "Merchant Dashboard",
-    "manage-favorites": "Manage Favorites",
+    "menu-favorites": "Menu Favorites",
     "directions": "Directions",
     "registration": "Registration Form",
     "menu-old": "Menu (Old)",
@@ -76,6 +76,8 @@ const assets = {
     restaurantHero: "https://order-iteausa.com/imagesmenu/N9-Fresh-Strawberry-Mango-Fruit-Tea.jpg",
     googleMapsEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.8329606830704!2d-111.9525413!3d33.4211153!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08de64c1bf87%3A0x7d022b7a9de3e878!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1716768000000!5m2!1sen!2sus"
 };
+
+const API_BASE_URL = 'https://olowebapidev2.azurewebsites.net';
 
 const DEFAULT_STATE = {
     fulfillmentMode: 'In-store',
@@ -105,16 +107,14 @@ const DEFAULT_STATE = {
         { id: 3, name: "M8 Taro Boba Purée Latte", price: 5.75, image: assets.boba3, category: "Tea Spresso Series" },
         { id: 4, name: "P1 Super Fruit Tea", price: 5.95, image: assets.boba4, category: "Tea Spresso Series" }
     ],
-    featuredSlideIndex: 0
+    featuredSlideIndex: 0,
+    apiLocations: [],
+    apiCategories: [],
+    apiMenuItems: [],
+    selectedLocationId: null
 };
 
-/* ==========================================================================
-   TEMPORARY VIEWPORT OVERRIDE FOR DEMO & TESTING
-   ========================================================================== */
-let forcedViewport = sessionStorage.getItem('farebitesForcedViewport') || null;
-
 function getCurrentViewport() {
-    if (forcedViewport) return forcedViewport;
     if (window.innerWidth >= 1024) return 'desktop';
     if (window.innerWidth >= 640) return 'tablet';
     return 'mobile';
@@ -122,7 +122,6 @@ function getCurrentViewport() {
 let currentViewport = getCurrentViewport();
 
 window.addEventListener('resize', () => {
-    if (forcedViewport) return; // Ignore resize if viewport is forced
     const newViewport = getCurrentViewport();
     if (newViewport !== currentViewport) {
         currentViewport = newViewport;
@@ -147,23 +146,156 @@ function persistAllState() {
     sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
 }
 
+function resolveImageUrl(url, defaultUrl) {
+    if (!url) return defaultUrl || '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    
+    // Check if it's an old site asset path
+    const isOldSiteAsset = url.startsWith('/imagescategories/') || 
+                           url.startsWith('/imagesmenu/') || 
+                           url.startsWith('/ImagesLogos/') || 
+                           url.startsWith('/ImagesMenu/') ||
+                           url.startsWith('imagescategories/') || 
+                           url.startsWith('imagesmenu/') || 
+                           url.startsWith('ImagesLogos/') || 
+                           url.startsWith('ImagesMenu/');
+                           
+    if (isOldSiteAsset) {
+        const cleanPath = url.startsWith('/') ? url.slice(1) : url;
+        return `https://olodev.azurewebsites.net/${cleanPath}`;
+    }
+    
+    // Otherwise return as is
+    return url;
+}
+
+function getFallbackCategoryImg() {
+    return 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg';
+}
+
+function getFallbackItemImg() {
+    return 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=400&q=80';
+}
+
+async function fetchLocations() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/Locations`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        if (data && data.length > 0) {
+            // Filter to include only i-Tea locations
+            const iteaLocations = data.filter(loc => 
+                loc.locationName && (loc.locationName.toLowerCase().includes('i-tea') || loc.locationName.toLowerCase().includes('itea'))
+            );
+            if (iteaLocations.length > 0) {
+                mockupState.apiLocations = iteaLocations.map(loc => ({
+                    locationId: loc.locationId,
+                    name: loc.locationName || 'Unnamed Location',
+                    address: `${loc.address || ''}, ${loc.city || ''}, ${loc.state || ''} ${loc.zipCode || ''}`.trim().replace(/^,|,$/g, '').trim(),
+                    dist: 'Nearby',
+                    fav: false,
+                    hours: '11:30 AM to 9:30 PM'
+                }));
+                persistAllState();
+            }
+        }
+    } catch (error) {
+        console.error('Failed to fetch locations from API, using fallback:', error);
+    }
+}
+
+async function fetchMenuAndItems(locationId) {
+    if (!locationId) return;
+    mockupState.isLoading = true;
+    renderPage();
+    try {
+        const menuResponse = await fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/menu`);
+        if (!menuResponse.ok) throw new Error('Menu response was not ok');
+        const menuData = await menuResponse.json();
+        
+        if (menuData && menuData.categories) {
+            mockupState.apiCategories = menuData.categories.map(cat => ({
+                categoryId: cat.categoryId,
+                name: cat.name,
+                imgUrl: resolveImageUrl(cat.imgUrl, getFallbackCategoryImg())
+            }));
+            
+            let allItems = [];
+            for (const cat of menuData.categories) {
+                try {
+                    const itemsResponse = await fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/category/${cat.categoryId}/items`);
+                    if (itemsResponse.ok) {
+                        const itemsData = await itemsResponse.json();
+                        if (itemsData) {
+                            allItems = allItems.concat(itemsData.map(item => ({
+                                id: item.menuItemId,
+                                name: item.name,
+                                description: item.description || '',
+                                price: item.price,
+                                image: resolveImageUrl(item.productImage || item.image, getFallbackItemImg()),
+                                category: cat.name,
+                                categoryId: cat.categoryId
+                            })));
+                        }
+                    }
+                } catch (catError) {
+                    console.error(`Failed to fetch items for category ${cat.name}:`, catError);
+                }
+            }
+            mockupState.apiMenuItems = allItems;
+            persistAllState();
+        }
+    } catch (error) {
+        console.error('Failed to fetch menu and items from API:', error);
+    } finally {
+        mockupState.isLoading = false;
+        renderPage();
+    }
+}
+
+function getActiveCategories() {
+    if (mockupState.apiCategories && mockupState.apiCategories.length > 0) {
+        return mockupState.apiCategories.map(cat => ({
+            name: cat.name,
+            id: `category-section-${cat.categoryId}`,
+            img: cat.imgUrl || 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg',
+            categoryId: cat.categoryId,
+            categoryKey: cat.name
+        }));
+    }
+    return [
+        { name: 'Featured Items', id: 'featured-items-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
+        { name: 'Tea Spresso', id: 'teaspresso-section', img: assets.boba1, categoryKey: 'Tea Spresso Series' },
+        { name: 'Milk Tea', id: 'milk-tea-section', img: assets.boba2, categoryKey: 'Milk Tea' },
+        { name: 'Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg', categoryKey: 'Fruit Tea' },
+        { name: 'Dessert Drinks', id: 'dessert-section', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg', categoryKey: 'Dessert Drink' }
+    ];
+}
+
+function getActiveMenuItems() {
+    if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
+        return mockupState.apiMenuItems;
+    }
+    return MENU_ITEMS;
+}
+
 const LOCATIONS = [
-    { name: "i-Tea - TEMPE", address: "825 W UNIVERSITY, Tempe, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM" },
-    { name: "i-Tea - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "1.2 mi", fav: false, hours: "12:00 PM to 9:30 PM" },
-    { name: "i-Tea - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM" },
-    { name: "i-Tea - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM" },
-    { name: "i-Tea - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM" },
-    { name: "i-Tea - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM" },
-    { name: "i-Tea - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM" },
-    { name: "i-Tea - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM" },
-    { name: "i-Tea - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM" },
-    { name: "i-Tea - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM" },
-    { name: "i-Tea - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM" },
-    { name: "i-Tea - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM" },
-    { name: "i-Tea - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM" },
-    { name: "i-Tea - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM" },
-    { name: "i-Tea - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM" },
-    { name: "i-Tea - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours" }
+    { name: "i-Tea - TEMPE", address: "825 W UNIVERSITY, Tempe, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM", locationId: 7 },
+    { name: "i-Tea - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "1.2 mi", fav: false, hours: "12:00 PM to 9:30 PM", locationId: 9 },
+    { name: "i-Tea - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM", locationId: 7 },
+    { name: "i-Tea - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM", locationId: 10 },
+    { name: "i-Tea - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM", locationId: 7 },
+    { name: "i-Tea - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM", locationId: 9 },
+    { name: "i-Tea - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 10 },
+    { name: "i-Tea - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM", locationId: 7 },
+    { name: "i-Tea - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 9 },
+    { name: "i-Tea - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM", locationId: 9 },
+    { name: "i-Tea - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM", locationId: 10 },
+    { name: "i-Tea - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM", locationId: 7 },
+    { name: "i-Tea - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM", locationId: 9 },
+    { name: "i-Tea - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM", locationId: 10 },
+    { name: "i-Tea - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM", locationId: 7 },
+    { name: "i-Tea - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours", locationId: 10 }
 ];
 
 const MENU_ITEMS = [
@@ -380,7 +512,7 @@ function hamburgerDrawerHTML() {
         { label: 'Menu',          icon: 'fa-utensils',           page: 'menu' },
         { label: 'Locations',     icon: 'fa-location-dot',       page: 'location-pick' },
         { label: 'Rewards',       icon: 'fa-award',              page: 'account' },
-        { label: 'Scan QR Code',  icon: 'fa-qrcode',             page: 'qr-code-guide' },
+        { label: 'Scan QR Code',  icon: 'fa-qrcode',             page: 'menu-scan' },
         { label: 'Cart',          icon: 'fa-bag-shopping',       page: 'cart' },
         { label: 'Order Status',  icon: 'fa-clock-rotate-left',  page: 'order-status' },
         { label: 'My Account',    icon: 'fa-user',               page: 'account' },
@@ -757,7 +889,7 @@ const routes = {
                 <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
                     <div class="flex items-center gap-3">
                         <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
-                        <button onclick="navigateTo('qr-code-guide')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
+                        <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
                     <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('location-pick')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
@@ -834,25 +966,19 @@ const routes = {
                     ` : ''}
                     <!-- Desktop Categories Section -->
                     ${isDesktop ? `
-                    <div class="bg-white pt-24 pb-24 px-12 rounded-t-[40px] -mt-16 w-full shrink-0 relative z-30 shadow-[0_-15px_30px_-5px_rgba(0,0,0,0.05)]">
+                    <div class="bg-white pt-24 pb-12 px-12 rounded-t-[40px] -mt-16 w-full shrink-0 relative z-30 shadow-[0_-15px_30px_-5px_rgba(0,0,0,0.05)]">
                         <div class="max-w-[1080px] mx-auto text-center">
                             <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Explore Our Menu</h2>
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Select a category to start ordering</p>
                             
-                            <div class="grid grid-cols-5 gap-6 justify-items-center mb-16">
-                                ${[
-                                    { name: 'Featured Items', id: 'featured-items-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
-                                    { name: 'Tea Spresso', id: 'teaspresso-section', img: assets.boba1 },
-                                    { name: 'Milk Tea', id: 'milk-tea-section', img: assets.boba2 },
-                                    { name: 'Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
-                                    { name: 'Dessert Drinks', id: 'dessert-section', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg' }
-                                ].map(cat => `
-                                    <div onclick="navigateTo('menu');" class="flex flex-col items-center cursor-pointer group max-w-[200px]">
-                                        <div class="w-44 h-28 rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
+                            <div class="grid grid-cols-3 gap-6 justify-items-center mb-8">
+                                ${getActiveCategories().map(cat => `
+                                    <div onclick="navigateTo('menu#${cat.id}');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
+                                        <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top">
                                         </div>
-                                        <h3 class="font-branding font-black text-base text-gray-800 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
-                                        <div class="text-[10px] font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <h3 class="font-branding font-black text-2xl text-gray-800 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
+                                        <div class="text-lg font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <span>Order Now</span><i class="fa-solid fa-arrow-right text-[9px]"></i>
                                         </div>
                                     </div>
@@ -860,7 +986,7 @@ const routes = {
                             </div>
 
                             <!-- Divider -->
-                            <div class="h-px bg-gray-100 w-full mb-16"></div>
+                            <div class="h-px bg-gray-100 w-full mb-8"></div>
 
                             <!-- Featured Items Section -->
                             <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Featured Items</h2>
@@ -963,7 +1089,7 @@ const routes = {
                 <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
                     <div class="flex items-center gap-3">
                         <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
-                        <button onclick="navigateTo('qr-code-guide')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
+                        <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
                     <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('location-pick')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">DELIVERY</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
@@ -1042,12 +1168,12 @@ const routes = {
                     ` : ''}
                     <!-- Desktop Categories Section -->
                     ${isDesktop ? `
-                    <div class="bg-white pt-24 pb-24 px-12 rounded-t-[40px] -mt-16 w-full shrink-0 relative z-30 shadow-[0_-15px_30px_-5px_rgba(0,0,0,0.05)]">
+                    <div class="bg-white pt-24 pb-12 px-12 rounded-t-[40px] -mt-16 w-full shrink-0 relative z-30 shadow-[0_-15px_30px_-5px_rgba(0,0,0,0.05)]">
                         <div class="max-w-[1080px] mx-auto text-center">
                             <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Explore Our Menu</h2>
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Select a category to start ordering</p>
                             
-                            <div class="grid grid-cols-5 gap-6 justify-items-center mb-16">
+                            <div class="grid grid-cols-3 gap-6 justify-items-center mb-8">
                                 ${[
                                     { name: 'Featured Items', id: 'featured-items-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
                                     { name: 'Tea Spresso', id: 'teaspresso-section', img: assets.boba1 },
@@ -1055,12 +1181,12 @@ const routes = {
                                     { name: 'Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
                                     { name: 'Dessert Drinks', id: 'dessert-section', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg' }
                                 ].map(cat => `
-                                    <div onclick="navigateTo('menu');" class="flex flex-col items-center cursor-pointer group max-w-[200px]">
-                                        <div class="w-44 h-28 rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
+                                    <div onclick="navigateTo('menu#${cat.id}');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
+                                        <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top">
                                         </div>
-                                        <h3 class="font-branding font-black text-base text-gray-800 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
-                                        <div class="text-[10px] font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <h3 class="font-branding font-black text-2xl text-gray-800 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
+                                        <div class="text-lg font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <span>Order Now</span><i class="fa-solid fa-arrow-right text-[9px]"></i>
                                         </div>
                                     </div>
@@ -1068,7 +1194,7 @@ const routes = {
                             </div>
 
                             <!-- Divider -->
-                            <div class="h-px bg-gray-100 w-full mb-16"></div>
+                            <div class="h-px bg-gray-100 w-full mb-8"></div>
 
                             <!-- Featured Items Section -->
                             <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Featured Items</h2>
@@ -1126,11 +1252,16 @@ const routes = {
     },
     'location-pick': () => {
         const getSet = () => {
-            if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return LOCATIONS;
-            if (mockupState.locationFilter === 'Favorites') return LOCATIONS.filter(loc => loc.fav);
-            if (mockupState.locationFilter === 'Previous') return [LOCATIONS[13], LOCATIONS[0], LOCATIONS[9]]; // TEARAY, TEMPE, OAKLAND
+            const list = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
+                ? mockupState.apiLocations
+                : LOCATIONS;
+            if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return list;
+            if (mockupState.locationFilter === 'Favorites') return list.filter(loc => loc.fav);
+            if (mockupState.locationFilter === 'Previous') {
+                return list.length >= 3 ? [list[2 % list.length], list[0], list[1 % list.length]] : list;
+            }
             
-            return LOCATIONS;
+            return list;
         };
 
         if (currentViewport === 'desktop') {
@@ -1163,11 +1294,11 @@ const routes = {
                                     <p class="text-xs font-black text-gray-800 truncate">i-Tea – Tempe &nbsp;·&nbsp; 0.3 mi</p>
                                 </div>
                             </div>
-                            <button onclick="updateMockupState('selectedLocation', 'TEMPE'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
+                            <button onclick="selectLocation(7, 'i-Tea - TEMPE', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - TEMPE') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')">
+                                <div class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - TEMPE') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
@@ -1209,7 +1340,7 @@ const routes = {
                                 <p class="text-xs font-black text-gray-800 truncate">i-Tea – Tempe &nbsp;·&nbsp; 0.3 mi</p>
                             </div>
                         </div>
-                        <button onclick="updateMockupState('selectedLocation', 'TEMPE'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
+                        <button onclick="selectLocation(7, 'i-Tea - TEMPE', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
                     </div>
 
                     <div class="w-full h-[35%] min-h-[220px] shrink-0 relative z-0">
@@ -1232,7 +1363,7 @@ const routes = {
 
                         <div class="p-4 space-y-3 flex-1 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - TEMPE') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="updateMockupState('selectedLocation', '${s.name}'); updateMockupState('selectedAddress', '${s.address}'); updateMockupState('selectedDistance', '${s.dist}'); updateMockupState('orderTime', 'ASAP'); navigateTo('order-details')">
+                                <div class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - TEMPE') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
@@ -1341,7 +1472,7 @@ const routes = {
     'order-details': () => {
         const btn = (icon, label) => {
             const isActive = mockupState.fulfillmentMode === label;
-            const clickHandler = label === 'Dine In' ? `navigateTo('qr-code-guide')` : `updateMockupState('fulfillmentMode', '${label}')`;
+            const clickHandler = label === 'Dine In' ? `navigateTo('menu-scan')` : `updateMockupState('fulfillmentMode', '${label}')`;
             return `
                     <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-1 py-3 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-800 border-gray-100'}">
                         <i class="fa-solid ${icon} text-xl ${isActive ? 'text-white' : 'text-violet-600'}"></i>
@@ -1546,10 +1677,11 @@ const routes = {
 
                 </div>`;
     },
-    'qr-code-guide': () => {
+    'menu-scan': () => {
+        const isDesktop = currentViewport === 'desktop';
         const isDesktopOrTablet = currentViewport === 'desktop' || currentViewport === 'tablet';
         return `
-            <div class="flex flex-col h-full bg-white relative">
+            <div class="flex flex-col ${isDesktop ? 'min-h-[60vh] py-12' : 'h-full'} bg-white relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
                         <i class="fa-solid fa-bars text-xl"></i>
@@ -1557,21 +1689,17 @@ const routes = {
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Scan to Dine In</span>
                     <div class="w-10"></div>
                 </header>
-                <div class="${isDesktopOrTablet ? 'flex-1 flex flex-col items-center justify-center p-6 md:p-8 max-w-3xl mx-auto w-full text-center' : 'flex-1 flex flex-col items-center justify-center px-6 text-center'}">
-                    <div class="w-full ${isDesktopOrTablet ? 'max-w-md' : ''} aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-12">
+                <div class="${isDesktopOrTablet ? 'flex-1 flex flex-col items-center justify-center p-6 md:p-8 max-w-3xl mx-auto w-full text-center' : 'flex-1 flex flex-col items-center justify-start px-6 pt-6 text-center'}">
+                    <div class="w-full ${isDesktopOrTablet ? 'max-w-md' : ''} aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-8 md:mb-12">
                         <img src="images/qr-scan-table.jpg" class="w-full h-full object-cover">
                     </div>
                     <h2 class="text-2xl font-black mb-6 uppercase tracking-tight font-black text-gray-900 leading-tight">Ready to Dine In?</h2>
-                    <div class="space-y-4 text-left uppercase font-black text-gray-600">
+                    <div class="space-y-4 text-left uppercase font-black text-gray-600 mb-8">
                         <p class="text-sm">1. Find the QR code on your table.</p>
                         <p class="text-sm">2. Tap the button below to open camera.</p>
                         <p class="text-sm">3. Scan to start your order.</p>
                     </div>
-                </div>
-                <div class="border-t sticky bottom-0 bg-white">
-                    <div class="p-6 w-full ${isDesktopOrTablet ? 'max-w-3xl mx-auto' : ''}">
-                        <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] flex items-center justify-center gap-3 active:scale-95 transition-all uppercase shadow-violet-100 font-black"><i class="fa-solid fa-camera"></i><span>SCAN TABLE QR</span></button>
-                    </div>
+                    <button onclick="navigateTo('menu')" class="w-[80%] ${isDesktopOrTablet ? 'max-w-[358px]' : 'max-w-xs'} bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] flex items-center justify-center gap-3 active:scale-95 transition-all uppercase shadow-violet-100 font-black"><i class="fa-solid fa-camera"></i><span>SCAN TABLE QR</span></button>
                 </div>
             </div>`;
     },
@@ -1579,13 +1707,7 @@ const routes = {
         const isDesktop = currentViewport === 'desktop';
         const categoryModalClass = mockupState.modalOpen === 'categories' ? 'flex' : 'hidden';
 
-        const categories = [
-            { id: 'featured-items-section', name: 'FEATURED ITEMS', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
-            { id: 'teaspresso-section', name: 'TEASPRESSO SERIES', img: assets.boba1 },
-            { id: 'milk-tea-section', name: 'MILK TEA SPECIALTY', img: assets.boba2 },
-            { id: 'fruit-tea-section', name: 'I-TEA FRUIT TEA', img: 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg' },
-            { id: 'dessert-section', name: 'DESSERT DRINKS', img: 'https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg' }
-        ];
+        const categories = getActiveCategories();
 
         return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative ${(!isDesktop && mockupState.modalOpen) ? 'overflow-hidden' : 'overflow-y-auto'} scrollbar-hide">
@@ -1729,7 +1851,7 @@ const routes = {
                             // Search filter: when a query is active, show flat filtered results
                             if (mockupState.menuSearchQuery && mockupState.menuSearchQuery.trim().length > 0) {
                                 const query = mockupState.menuSearchQuery.toLowerCase();
-                                const filtered = MENU_ITEMS.filter(item =>
+                                const filtered = getActiveMenuItems().filter(item =>
                                     item.name.toLowerCase().includes(query) ||
                                     (item.description && item.description.toLowerCase().includes(query)) ||
                                     item.category.toLowerCase().includes(query)
@@ -1747,7 +1869,7 @@ const routes = {
                                         <p class="text-[11px] font-black text-gray-400 uppercase tracking-widest px-1 mb-4">${filtered.length} result${filtered.length !== 1 ? 's' : ''}</p>
                                         <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 gap-[10px]'}">
                                             ${filtered.map(item => {
-                                                const actualIndex = MENU_ITEMS.indexOf(item);
+                                                const actualIndex = getActiveMenuItems().indexOf(item);
                                                 return `
                                                     <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                                         <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -1767,29 +1889,63 @@ const routes = {
                                 `;
                             }
 
+                            const grapefruitImg = MENU_ITEMS[5] ? MENU_ITEMS[5].image : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
+                            const featuredPromoHtml = isDesktop ? `
+                                <div class="grid grid-cols-2 gap-6 mb-8">
+                                    <!-- Boba Slide -->
+                                    <div class="relative w-full rounded-3xl overflow-hidden shadow-lg h-[160px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                        <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
+                                        
+                                        <!-- Absolute top-left badge -->
+                                        <span class="absolute top-4 left-6 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                        
+                                        <div class="relative z-10 w-full pr-36">
+                                            <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-1 font-branding">Brown Sugar<br>Boba Latte</h2>
+                                            <p class="text-gray-200 font-medium text-xs leading-snug max-w-[200px]">Creamy, caramelized milk tea perfection.</p>
+                                        </div>
+                                        
+                                        <!-- Hover reveal button -->
+                                        <button onclick="selectItemAndNavigate(6)" class="absolute right-6 bottom-4 lg:bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 text-violet-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                                    </div>
+                                    <!-- Grapefruit Slide -->
+                                    <div class="relative w-full rounded-3xl overflow-hidden shadow-lg h-[160px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                        <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
+                                        
+                                        <!-- Absolute top-left badge -->
+                                        <span class="absolute top-4 left-6 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                        
+                                        <div class="relative z-10 w-full pr-36">
+                                            <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-1 font-branding">P3 Super<br>Grapefruit</h2>
+                                            <p class="text-gray-200 font-medium text-xs leading-snug max-w-[200px]">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
+                                        </div>
+                                        
+                                        <!-- Hover reveal button -->
+                                        <button onclick="selectItemAndNavigate(5)" class="absolute right-6 bottom-4 lg:bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                                    </div>
+                                </div>
+                            ` : '';
+
                             return `
                                 <!-- Menu Feed (Categories) -->
                                 <div class="space-y-12">
-                                    ${[
-                                        { id: 'featured-section', name: 'FEATURED ITEMS', isFeatured: true },
-                                        { id: 'teaspresso-section', name: 'TEASPRESSO SERIES', categoryKey: 'Tea Spresso Series' },
-                                        { id: 'milk-tea-section', name: 'MILK TEA SPECIALTY', categoryKey: 'Milk Tea' },
-                                        { id: 'fruit-tea-section', name: 'I-TEA FRUIT TEA', categoryKey: 'Fruit Tea' },
-                                        { id: 'dessert-section', name: 'DESSERT DRINKS', categoryKey: 'Dessert Drink' }
-                                    ].map(section => {
+                                    ${featuredPromoHtml}
+                                    ${getActiveCategories().map(section => {
+                                        const items = getActiveMenuItems();
                                         const sectionItems = section.isFeatured 
-                                            ? MENU_ITEMS.slice(0, 6)
-                                            : MENU_ITEMS.filter(item => item.category === section.categoryKey);
+                                            ? items.slice(0, 6)
+                                            : items.filter(item => item.categoryId === section.categoryId || item.category === section.categoryKey);
                                         if (sectionItems.length === 0) return '';
                                         return `
-                                            <div id="${section.id}" class="pt-4 scroll-mt-24">
+                                            <div id="${section.id}" class="pt-4 scroll-mt-24 lg:scroll-mt-36">
                                                 <div class="flex justify-between items-end mb-4 px-1">
                                                     <h3 class="${isDesktop ? 'text-3xl' : 'text-2xl'} font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
                                                     <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
                                                 </div>
                                                 <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
                                                     ${sectionItems.map(item => {
-                                                        const actualIndex = MENU_ITEMS.indexOf(item);
+                                                        const actualIndex = items.indexOf(item);
                                                         return `
                                                             <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                                                 <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -2090,7 +2246,7 @@ const routes = {
                         </div>
 
                         <div class="p-6 border-t border-gray-100">
-                            <button onclick="updateMockupState('modalOpen', null); navigateTo('manage-favorites')" class="w-full py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">Manage All Favorites</button>
+                            <button onclick="updateMockupState('modalOpen', null); navigateTo('menu-favorites')" class="w-full py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">Manage All Favorites</button>
                         </div>
                     </div>
                 </div>
@@ -2579,9 +2735,9 @@ const routes = {
                     <div class="shrink-0">
                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-3 px-1">You May Also Like</h3>
                         <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2">
-                            ${MENU_ITEMS.slice(4, 9).map((item, index) => {
-                                // Find the actual index in MENU_ITEMS for the onclick handler
-                                const actualIndex = MENU_ITEMS.indexOf(item);
+                            ${getActiveMenuItems().slice(4, 9).map((item, index) => {
+                                // Find the actual index in getActiveMenuItems() for the onclick handler
+                                const actualIndex = getActiveMenuItems().indexOf(item);
                                 return `
                                     <div class="snap-center shrink-0 ${isDesktop ? 'w-auto flex-1' : 'w-[140px]'} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md">
                                         <div class="${isDesktop ? 'h-36' : 'h-24'} relative cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">
@@ -3444,15 +3600,6 @@ const routes = {
     },
     'directions': () => `
             <div class="flex flex-col h-full bg-white relative">
-                <!-- Status Bar Mockup -->
-                <div class="bg-white px-6 py-2 flex justify-between items-center z-50">
-                    <span class="text-sm font-black text-gray-900 leading-none">9:41</span>
-                    <div class="flex gap-2 items-center text-gray-900">
-                        <i class="fa-solid fa-signal text-xs"></i>
-                        <i class="fa-solid fa-wifi text-xs"></i>
-                        <i class="fa-solid fa-battery-full text-sm"></i>
-                    </div>
-                </div>
 
                 <!-- Map Area -->
                 <div class="flex-1 relative bg-gray-100 overflow-hidden">
@@ -3525,130 +3672,130 @@ const routes = {
                         <div class="w-10"></div>
                     </div>
                 </header>
-                <div class="flex-1 overflow-y-auto px-6 py-8 flex ${isDesktop ? 'flex-row gap-8 items-start' : 'flex-col gap-6'} w-full max-w-[1080px] mx-auto">
+                <div class="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6 w-full ${isDesktop ? 'max-w-2xl' : 'max-w-[1080px]'} mx-auto">
                     
-                    <!-- Left Column (Desktop) uses skill wrapper -->
-                    <div class="${isDesktop ? 'flex flex-col gap-6 w-2/3 shrink' : 'contents'}">
+                    <div class="contents">
                         <div class="text-center">
-                        <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 mx-auto shadow-inner">
-                            <i class="fa-solid fa-check text-5xl"></i>
+                            <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 mx-auto shadow-inner">
+                                <i class="fa-solid fa-check text-5xl"></i>
+                            </div>
+                            <h1 class="text-4xl font-black text-gray-900 uppercase tracking-tighter mb-2">Order Confirmed!</h1>
+                            <p class="text-gray-500 font-medium mb-8">Your order #FB-9824 is being sent to the kitchen.</p>
                         </div>
-                        <h1 class="text-4xl font-black text-gray-900 uppercase tracking-tighter mb-2">Order Confirmed!</h1>
-                        <p class="text-gray-500 font-medium mb-8">Your order #FB-9824 is being sent to the kitchen.</p>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Pick Up Time</div>
+                                <div class="text-2xl font-black text-gray-900 uppercase">8:02 PM</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Location</div>
+                                <div class="text-base font-black text-gray-900 uppercase truncate">i-Tea Tempe</div>
+                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight mt-1 truncate">825 W. University Dr</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Pick Up Time</div>
-                            <div class="text-2xl font-black text-gray-900 uppercase">8:02 PM</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Location</div>
-                            <div class="text-base font-black text-gray-900 uppercase truncate">i-Tea Tempe</div>
-                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight mt-1 truncate">825 W. University Dr</div>
-                        </div>
-                        </div>
-                    </div> <!-- End Left Column -->
-
-                    <!-- Right Column (Desktop) uses skill wrapper -->
-                    <div class="${isDesktop ? 'flex flex-col gap-6 w-1/3 shrink sticky top-8' : 'contents'}">
+                    <div class="contents">
                         <div class="flex gap-2 overflow-x-auto scrollbar-hide shrink-0 pb-2">
-                        <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
-                            <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
-                            <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
-                        </button>
-                    </div>
-
-                    ${mockupState.orderDetailsExpanded ? `
-                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
-                                <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
-                            </div>
-                            <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
-                                <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
-                            </div>
+                            <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
+                                <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
+                                <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
+                            </button>
                         </div>
 
-                        <div class="space-y-4">
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba3}" class="w-full h-full object-cover object-top">
+                        ${mockupState.orderDetailsExpanded ? `
+                        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
+                                    <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
                                 </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Brown Sugar Pearl</h4>
-                                        <span class="text-sm font-black text-gray-900">$6.50</span>
-                                    </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Large • Less Ice • 75% Sweet</p>
+                                <div>
+                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
+                                    <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
                                 </div>
                             </div>
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba4}" class="w-full h-full object-cover object-top">
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Protein Bowl</h4>
-                                        <span class="text-sm font-black text-gray-900">$12.50</span>
+
+                            <div class="space-y-4">
+                                <div class="flex gap-4">
+                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
+                                        <img src="${assets.boba3}" class="w-full h-full object-cover object-top">
                                     </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Chicken • Quinoa • Avocado</p>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Brown Sugar Pearl</h4>
+                                            <span class="text-sm font-black text-gray-900">$6.50</span>
+                                        </div>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Large • Less Ice • 75% Sweet</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
+                                        <img src="${assets.boba4}" class="w-full h-full object-cover object-top">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Protein Bowl</h4>
+                                            <span class="text-sm font-black text-gray-900">$12.50</span>
+                                        </div>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Chicken • Quinoa • Avocado</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
+                                        <img src="${assets.boba1}" class="w-full h-full object-cover object-top">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × M7 Boba Milk Tea</h4>
+                                            <span class="text-sm font-black text-gray-900">$5.50</span>
+                                        </div>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Regular • Classic Tea</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba1}" class="w-full h-full object-cover object-top">
+
+                            <div class="space-y-2 pt-4 border-t border-gray-100">
+                                <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
+                                    <span>Subtotal</span>
+                                    <span>$24.50</span>
                                 </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × M7 Boba Milk Tea</h4>
-                                        <span class="text-sm font-black text-gray-900">$5.50</span>
+                                <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
+                                    <span>Tax</span>
+                                    <span>$2.32</span>
+                                </div>
+                                <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
+                                    <span>Total</span>
+                                    <span>$31.81</span>
+                                </div>
+                            </div>
+
+                            <div class="pt-6 border-t border-gray-100">
+                                <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Payment</h2>
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center shrink-0">
+                                            <i class="fa-brands fa-apple-pay text-3xl"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Apple Pay...3580</p>
+                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">3/14/26, 1:14 PM</p>
+                                        </div>
                                     </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Regular • Classic Tea</p>
+                                    <span class="text-base font-black text-gray-900">$31.81</span>
                                 </div>
                             </div>
                         </div>
+                        ` : ''}
 
-                        <div class="space-y-2 pt-4 border-t border-gray-100">
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Subtotal</span>
-                                <span>$24.50</span>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Tax</span>
-                                <span>$2.32</span>
-                            </div>
-                            <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
-                                <span>Total</span>
-                                <span>$31.81</span>
-                            </div>
+                        <div class="w-full space-y-4 pt-4">
+                            <button onclick="navigateTo('directions')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Get Directions</button>
+                            <button onclick="navigateTo('track-order')" class="w-full bg-white border-2 border-gray-100 text-gray-900 py-4 rounded-full font-black text-lg active:scale-95 transition-all uppercase tracking-wider hover:bg-gray-50 shadow-sm">Track Order</button>
+                            <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                         </div>
-
-                        <div class="pt-6 border-t border-gray-100">
-                            <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Payment</h2>
-                            <div class="flex items-start justify-between">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center shrink-0">
-                                        <i class="fa-brands fa-apple-pay text-3xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Apple Pay...3580</p>
-                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">3/14/26, 1:14 PM</p>
-                                    </div>
-                                </div>
-                                <span class="text-base font-black text-gray-900">$31.81</span>
-                            </div>
-                        </div>
-                    </div>
-                    ` : ''}
-
-                    <div class="w-full space-y-4 pt-4">
-                        <button onclick="navigateTo('directions')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Get Directions</button>
-                        <button onclick="navigateTo('track-order')" class="w-full bg-white border-2 border-gray-100 text-gray-900 py-4 rounded-full font-black text-lg active:scale-95 transition-all uppercase tracking-wider hover:bg-gray-50 shadow-sm">Track Order</button>
-                        <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                     </div>
                 </div>
+            </div>
         `;
     },
     'checkout': () => {
@@ -3976,7 +4123,7 @@ const routes = {
             </div>
         `;
     },
-    'manage-favorites': () => {
+    'menu-favorites': () => {
         const isDesktop = currentViewport === 'desktop';
         const favorites = mockupState.favorites || [];
 
@@ -3987,7 +4134,7 @@ const routes = {
                     <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
                         <i class="fa-solid fa-chevron-left text-gray-600"></i>
                     </button>
-                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Manage Favorites</span>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Menu Favorites</span>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
 
@@ -3995,7 +4142,7 @@ const routes = {
                     <div class="mb-8">
                         <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1 uppercase">Your Favorites</h1>
                         <p class="text-gray-600 font-medium mb-4">Keep track of the items you love most.</p>
-                        ${!isDesktop ? '<button class="w-full py-3 bg-violet-600 text-white rounded-full font-black uppercase text-sm shadow-lg tracking-widest mb-2">Manage Favorites</button>' : ''}
+                        ${!isDesktop ? '<button class="w-full py-3 bg-violet-600 text-white rounded-full font-black uppercase text-sm shadow-lg tracking-widest mb-2">Menu Favorites</button>' : ''}
                     </div>
 
                     ${favorites.length === 0 ? `
@@ -4049,23 +4196,217 @@ const routes = {
 
 
 
-routes['bobs-boba-auth'] = routes['restaurant-home'];
 routes['menu-old'] = () => { window.location.href = 'menu-old.html'; return ''; };
-routes['restaurant-home-old'] = () => { window.location.href = 'restaurant-home-old.html'; return ''; };
+routes['restaurant-home-old'] = () => { window.location.href = 'old-retired/restaurant-home-old.html'; return ''; };
+
+routes['privacy'] = () => {
+    const isDesktop = currentViewport === 'desktop';
+    return `
+        <div class="flex flex-col ${isDesktop ? 'min-h-screen' : 'h-full'} bg-[#f9fafb] relative ${isDesktop ? '' : 'overflow-y-auto scrollbar-hide'} privacy-override">
+            <!-- Header Component -->
+            <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
+                <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
+                    <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                </button>
+                <span class="text-lg font-black text-violet-600 flex-1 text-center">Privacy Policy & Terms</span>
+                <div class="w-10"></div>
+            </header>
+
+            <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 ${isDesktop ? 'pb-12' : 'pb-24'}">
+                <div class="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100 p-6 md:p-8 space-y-6 text-left">
+                    <h1 class="text-2xl font-black text-gray-900 mb-6 uppercase tracking-tight">Web Site Privacy Policy and Terms of Use</h1>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        Please contact us via postal mail with any questions and concerns about the following privacy policy and/or terms of use.
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-bold leading-relaxed">
+                        Customer Service<br>
+                        Farebites, LLC<br>
+                        18191 W Banff Lane<br>
+                        Surprise, AZ 85388<br>
+                        support@farebites.com
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        The term “we,” “us” “our” or “Farebites” as used in this Policy shall mean, unless specifically stated otherwise in the context of such use, Farebites, LLC., and its affiliates.
+                    </p>
+
+                    <h2 class="text-base font-black text-gray-900 uppercase mt-8 border-b pb-2 tracking-tight">OUR WEBSITE PRIVACY POLICY</h2>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        This website privacy policy (“Policy”) describes the collection, use, maintenance and disclosure of Personally Identifiable Information collected through this website, i.e. www.farebites.com (this “Site”). Personally Identifiable Information is used amongst Farebites, LLC. and its affiliates, as described above. By using this Site, “you”, the user, agree to be bound to the following:
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        We collect information when you interact with us on-line by your visits to and use of the Site. That information may be Personally Identifiable Information or it may be Aggregate Information. Aggregate information is information about user and browsing behavior that does not contain any Personally Identifiable Information or from which any Personally Identifiable Information has been removed. For example, for each visitor to the Site, our web server automatically recognizes the consumer’s domain name or IP address. We also may use “cookies”. Cookies are record-keeping tracking tools electronically placed on your hard drive through your use of the Site that may automatically track and collect information about your use of the Site, such as, by way of example not limitation, what pages you access or visit and when. Cookies can be used to customize, monitor or regulate the use of the Site and/or to personalize your experience on the Site. Through the use of cookies, we can track the performance of our on-line promotional campaigns and customize the Site for a richer web site experience to individual visitors. We may also use Aggregate Information for historical, statistical or analytical purposes. We may share information about the users of our Site with our advertising sources. You acknowledge and agree that we may collect, compile, store and otherwise disclosure or use any and all Aggregate Information collected on the Site.
+                    </p>
+
+                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight mt-6">What Personally Identifiable Information is collected through this Site?</h3>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        Personally Identifiable Information collected through this Site may include, without limitation:
+                    </p>
+
+                    <ul class="list-disc pl-5 space-y-2 text-sm text-gray-600 font-medium leading-relaxed">
+                        <li>first and last name;</li>
+                        <li>home or other physical address;</li>
+                        <li>e-mail address;</li>
+                        <li>telephone number; and/or</li>
+                        <li>other identifier collected from you through your use of this Site that allows us to contact you online.</li>
+                    </ul>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        For example, if you register for an account, we may collect your name, phone number, email address, and/or address for deliver. Such information is collected from you only if you voluntarily submit such information. You can always choose not to supply Personally Identifiable Information, except that may prevent you from engaging in certain Site related activities.
+                    </p>
+
+                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight mt-6">How do we use the Personally Identifiable Information that is collected on this Site?</h3>
+
+                    <ul class="list-disc pl-5 space-y-2 text-sm text-gray-600 font-medium leading-relaxed">
+                        <li>To respond to your request or inquiry;</li>
+                        <li>To send you periodic email from us, including without limitation topics such as new products and services, or upcoming events or promotions;</li>
+                        <li>To analyze and improve our products and services and for related business purposes. For example, to understand what our customers are looking for in products and services;</li>
+                        <li>To determine, analyze and run our promotions, surveys or other Site features;</li>
+                        <li>To support our marketing, sales and other business operations and opportunities;</li>
+                        <li>To send you information or communications about transactions between you and us;</li>
+                        <li>To comply with legal requirements, such as if we are required to do so by law or to the extent necessary to comply with law, respond to or defend claims or to protect our rights;</li>
+                        <li>To direct you to particular information on the Site or otherwise personalize your user experience of the Site; and</li>
+                        <li>For any other lawful purpose.</li>
+                    </ul>
+
+                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight mt-6">How do we respond to “do not track” signals?</h3>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        This Site does not monitor or identify “do not track signals” from your computer, and such signals will not impact the general operation of this Site. We track whatever information gets transmitted to us. You can choose to adjust your web browser to alert you or disable tracking tools like cookies. However, we provide you with no assurances that any such options from your internet provider operate properly to prohibit tracking when you use this Site. Nevertheless, keep in mind that if you do not give us certain information or turn off tracking tools, your experience on the Site may be different. Note: You can also choose whether or not to voluntarily supply us with contact information by not submitting on-line requests on this Site.
+                    </p>
+
+                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight mt-6">Your Personally Identifiable Information collected through this Site may be used by what third party persons or entities?</h3>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        WE DO NOT SELL YOUR INFORMATION. Your information may be used by restaurants, service providers, vendors, consultants, agents or representatives in connection with the operations of our businesses, including without limitation our financial institutions, financial service providers, marketing and sales consultants, cloud-based information management systems or email marketing technology solutions; With third parties for the purpose of helping us gather, store, use and maintain data (on-line or otherwise) or to operate the Site; In the event of the sale of all or any portion of our business or companies, with such purchaser and its representatives to the extent relevant to such transaction; and Such third parties as is required, permitted or authorized by law.
+                    </p>
+
+                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight mt-6">How can you review and request changes to YOUR Personally Identifiable Information collected through this Site?</h3>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        You can correct or update your contact information by using the “My Account” link after you log into the Site.
+                    </p>
+
+                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight mt-6">The right to delete Personal Data.</h3>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        You have the right to request the deletion of Your Personal Data via the address or email provided at the top of the privacy policy, subject to certain exceptions. Once We receive and confirm Your request, We will delete (and direct Our Service Providers to delete) Your personal information from our records, unless an exception applies. We may deny Your deletion request if retaining the information is necessary for Us or Our Service Providers to:
+                    </p>
+                    <ul class="list-disc pl-5 space-y-2 text-sm text-gray-600 font-medium leading-relaxed">
+                        <li>Complete the transaction for which We collected the personal information, provide a good or service that You requested, take actions reasonably anticipated within the context of our ongoing business relationship with You, or otherwise perform our contract with You.</li>
+                        <li>Detect security incidents, protect against malicious, deceptive, fraudulent, or illegal activity, or prosecute those responsible for such activities.</li>
+                        <li>Debug products to identify and repair errors that impair existing intended functionality.</li>
+                        <li>Exercise free speech, ensure the right of another consumer to exercise their free speech rights, or exercise another right provided for by law.</li>
+                        <li>Comply with the California Electronic Communications Privacy Act (Cal. Penal Code § 1546 et. seq.).</li>
+                        <li>Engage in public or peer-reviewed scientific, historical, or statistical research in the public interest that adheres to all other applicable ethics and privacy laws, when the information's deletion may likely render impossible or seriously impair the research's achievement, if You previously provided informed consent.</li>
+                        <li>Enable solely internal uses that are reasonably aligned with consumer expectations based on Your relationship with Us.</li>
+                        <li>Comply with a legal obligation.</li>
+                        <li>Make other internal and lawful uses of that information that are compatible with the context in which You provided it.</li>
+                    </ul>
+
+                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight mt-6">How do we protect the Personally Identifiable Information collected through this Site?</h3>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        We adopt reasonable and appropriate data collection, storage and processing practices and security measures to seek to protect against unauthorized access, alteration, disclosure or destruction of your Personally Identifiable Information collected through this Site. Those processes, practices and procedures may change from time to time. While protecting consumer privacy is important to us, and efforts are made to secure such Personally Identifiable Information, no website or procedure is 100% secure.
+                    </p>
+
+                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight mt-6">What is the Effective Date of this Privacy Policy and will it change?</h3>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        This document was last updated on June 17, 2020. We reserve the right to change this policy from time to time. We will notify you of changes to this Policy by updating this Policy on the Site and setting forth the date on which the update was made. The most recent version of this Policy will be posted here. Therefore, we encourage you to check this Policy on the Site from time to time for updates. You acknowledge and agree that it is your responsibility to review this Policy periodically and become aware of any changes.
+                    </p>
+
+                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight mt-6">ATTENTION CALIFORNIA RESIDENTS-YOUR CALIFORNIA PRIVACY RIGHTS</h3>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        We have a policy of not disclosing personal information of California resident customers to third parties (except to the extent permitted by California Civil Code Section 1798.83) for the third parties’ direct marketing purposes if the customer has exercised an option that prohibits that information from being disclosed to third parties for those purposes, unless such customer first affirmatively agrees to that disclosure. For purposes of this California privacy rights, “personal information” shall have the meaning set forth in California Civil Code Section 1798.83(e)(7).
+                    </p>
+
+                    <h2 class="text-base font-black text-gray-900 uppercase mt-8 border-b pb-2 tracking-tight">OUR WEBSITE TERMS OF USE</h2>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        By using this Site, you, the user, agree to be bound to the following “Terms of Use:”
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        Although we use reasonable efforts to make the content of this Site accurate, typographical errors and inaccuracies may occur and the information may not be current. The content and use of this web site, is presented “As is” and without warranty. We do not make any representations and warranties and provide no guarantee of the accuracy and completeness of all information on the Site and disclaim all warranties, express or implied, including without limitation implied warranties or conditions of merchantability or fitness for a particular purpose or non-infringement, with respect to this Site and any content, information, products or services stated on this Site. Without limiting the foregoing, any price published on this Site is subject to change without notice. All products and services referenced on this Site are subject to their terms and conditions as well as applicable law. We reserve the right to remove and/or change any images, information or any other aspect of the Site at any time without notice. We also reserve the right to suspend and/or terminate your access to the Site or any portion thereof, at any time, for any or no reason, without notice.
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed font-semibold">
+                        TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL WE HAVE ANY LIABILITY WHATSOVER ARISING FROM OR RELATED TO YOUR USE OF OR THE PERFORMANCE OF THE SITE, ANY CONTENT OR INFORMATION OBTAINED THROUGH THIS SITE OR OTHERWISE ARISNG OUT OF THE USE OF THIS SITE OR THE INABILTIY TO USE THIS SITE. WE SHALL NOT BE LIABLE FOR ANY INDIRECT, SPECIAL, INCIDENTIAL OR CONSEQUENTIAL DAMAGES (INCLUDING BUT NOT LIMITED TO LOSS OF BUSINESS, LOSS OF PROFITS OR LOSS OF OPPORUNITY), WHETHER BASED ON BREACH OF CONTRACT, BREACH OF WARRANTY, TORT (INCLUDING BUT NOT LIMITED TO, NEGLIGENCE) OR OTHERWISE, EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBLITY OF SUCH DAMAGES.
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        You understand and agree that your use of the Site is at your own risk and that we do not represent or warrant that the Site is completely free from virus, other harmful data or components or that your use of the Site may otherwise cause damage to your computer system or loss of data or other damage to you or your property.
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        To the maximum extent permitted by applicable law, the Policy and the Terms of Use shall be interpreted in accordance with the laws of the state of Arizona without regard to the conflict of law provisions and any disputes concerning the Site, including without limitation the use thereof, the contents thereof or the performance thereof, shall be brought solely in a court of competent jurisdiction located in Maricopa County, Arizona. You hereby consent to the exclusive jurisdiction of the above venue.
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        We do not knowingly collect information from children under the age of 13. We do not target or direct this Site to children. This Site is intended for users over the age of 18 and no person 18 years of age or under should use or submit information through this Site.
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        This Site may contain links to third party websites, by way of example, not limitation, advertising or other content. We do not control any such links or third party websites and we are not responsible for their content, their practices or their privacy policies or any damage caused to you by such other website. In addition, those sites or services, including their content and links, may change from time to time. Any information that you provide to such third party websites are not subject to this privacy policy; rather they are subject to the privacy policy of that website. Similarly, such websites may have their own customer service policies and terms of use. You should review the terms of use and privacy policy of each website you visit or link to. Any such links are provided for your convenience only. Any such link is not intended to and should not be interpreted to endorse, sponsor, create a joint venture or any other affiliation between us and such third party. Browsing and interaction on any other website, including websites which have a link to our site, is subject to that website’s terms.
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        This Site and all of its contents are our property and shall not be reproduced, copied, distributed or used, in whole or in part, without our express written permission. Without limiting the foregoing, we are the owners of certain trademarks, tradenames and servicemarks, whether or not they are specifically marked as such and whether or not they are or are not registered with any applicable site or federal governmental agency, used on this Site. A number of these tradenames, trademarks or service marks are registered with the Arizona Corporation Commission and/or the United States Patent and Trademark Office. In addition, the Site may also contain trademarks, tradenames and service marks that belong to third parties. Such other trademarks, tradenames and service marks are the property of their respective third party owners. Any unauthorized use of any trademarks, tradenames, service marks, copyrights or other intellectual property, whether registered or unregistered, on this Site is strictly prohibited.
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        This Site may be accessed by users throughout the United States and internationally. It may contain information about products or services that are not available for sale in your state or country as a result of the lack of our registration/licensing or the registration/licensing of such product or otherwise. Such information is not intended as solicitation or offer of such products or services in states or countries in which we are not authorized to conduct business or where the offer and sale of such products or services is otherwise in violation of law.
+                    </p>
+
+                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight mt-6">Your Acceptance of the Privacy Policy and Terms of Use</h3>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        By using this Site, including without limitation submitting any Personally Identifiable Information through this Site, you agree to the then current terms of this Policy and the Terms of Use. If you do not agree to this Policy or the Terms of Use, do not use the Site. To the fullest extent permitted by law, your continued use of the Site following the posting of any changes to this Policy or the Term of Use will be deemed your acceptance of those changes. You further agree that you are responsible for all information, data, images and files that you (or someone using your account) transmit via this Site. You represent, warranty and agree that (i) you are at least 18 years of age; (ii) your use of the Site is legal in and does not violate the laws of the jurisdiction in which you reside or from which you use or access the Site; (iii) all information, data, images and files that you (or someone using your account) transmit via this Site are correct and virus free; (iv) you (or the person using your account has) have the requisite legal right and authority to transmit such information, data, images and files transmitted via this Site; (v) you are using this Site only for your own personal general reference; and (vi) you have the legal right, capacity and authority to agree to the Policy and Terms of Use and do agree to use the Site in accordance with the Policy and Terms of Use and in accordance with all applicable law. You agree to indemnify, defend and hold us and our owners, officers, directors, employees, agents, contractors and representatives harmless for, from and against any and all liability, damages, loss, claim and expense (including without limitation, reasonable attorneys’ fees and other enforcement costs) related to or arising from any of your representations and warranties set forth in the Policy and Terms of Use and/or your failure to comply with any of the terms of the Policy or Terms of Use.
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        If any provision of the Policy or Terms of Use is deemed unlawful, void or unenforceable, that provision shall be deemed severable from and shall not affect the validity or enforceability of the remaining provisions of the Policy and Terms of Use.
+                    </p>
+
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">
+                        If you feel that this Site is not following this Policy or the Terms of Use, please promptly contact us at the above postal address with your concern.
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+};
 
 function renderPage() {
     const viewport = document.getElementById('app-viewport');
     if (!viewport) return;
-    
-    // Apply temporary demo/testing viewport styling wrapper
-    applyViewportContainerStyles();
-    
+
+    let loadingOverlayHtml = '';
+    if (mockupState.isLoading) {
+        loadingOverlayHtml = `
+            <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 backdrop-blur-[1px] transition-all">
+                <div class="flex flex-col items-center gap-3">
+                    <div class="w-10 h-10 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin"></div>
+                    <span class="text-xs font-black text-violet-600 uppercase tracking-widest animate-pulse">Loading Menu...</span>
+                </div>
+            </div>
+        `;
+    }
+
     let contentHtml = routes[currentPage]
         ? routes[currentPage]()
         : `<div class="p-10 text-center uppercase font-black">404 - Page Not Found</div>`;
 
     const isRestaurantPage = !['landing', 'home', 'sign-in', 'dashboard', 'privacy'].includes(currentPage);
-    if (currentViewport === 'desktop' && isRestaurantPage) {
+    const showDesktopNav = isRestaurantPage || currentPage === 'privacy';
+    if (currentViewport === 'desktop' && showDesktopNav) {
         // Strip the mobile header before injecting the desktop nav
         contentHtml = contentHtml.replace(/<header\b[^>]*>([\s\S]*?)<\/header>/i, '');
         
@@ -4124,10 +4465,9 @@ function renderPage() {
             <div class="hidden lg:block w-full bg-white shrink-0">
                 <div class="max-w-[1080px] mx-auto px-6 border-t border-gray-200 mt-16 pt-10">
                     <!-- Logo Section -->
-                    <div class="mb-6 text-center md:text-left">
-                        <div class="font-black text-violet-600 text-xl tracking-tighter flex items-center justify-center md:justify-start whitespace-nowrap leading-none">
-                            <img src="images/itea_logo.png" alt="i-Tea" class="h-8 w-auto mr-3 object-contain">i-Tea
-                        </div>
+                    <div class="mb-6 flex flex-col items-center justify-center">
+                        <img src="images/nav-logo.png" alt="i-Tea" class="h-14 w-auto mb-2 object-contain">
+                        <span class="font-branding font-black text-violet-600 text-2xl tracking-tighter leading-none">i-Tea</span>
                     </div>
                     
                     <!-- Links Section -->
@@ -4175,8 +4515,21 @@ function renderPage() {
         contentHtml += hamburgerDrawerHTML();
     }
 
-    viewport.innerHTML = contentHtml;
-    window.scrollTo(0, 0);
+    viewport.innerHTML = contentHtml + loadingOverlayHtml;
+    let scrolledToHash = false;
+    if (window.location.hash) {
+        const hashId = window.location.hash.slice(1);
+        const element = document.getElementById(hashId);
+        if (element) {
+            setTimeout(() => {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+            scrolledToHash = true;
+        }
+    }
+    if (!scrolledToHash) {
+        window.scrollTo(0, 0);
+    }
     persistAllState();
     document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
 
@@ -4212,135 +4565,9 @@ function renderPage() {
         }
     }
     
-    // Render the temporary viewport switcher widget
-    renderViewportSwitcher();
 }
 
-/* ==========================================================================
-   TEMPORARY VIEWPORT SWITCHER UTILITIES (DEMO/TEST MODE ONLY)
-   Delete this block and setForcedViewport/renderViewportSwitcher calls before live.
-   ========================================================================== */
-function applyViewportContainerStyles() {
-    const viewport = document.getElementById('app-viewport');
-    if (!viewport) return;
-    
-    // Reset body classes and viewport styles
-    document.body.className = '';
-    viewport.className = 'app-content';
-    viewport.style.cssText = '';
-    
-    // Remove simulated notch if present
-    const existingNotch = document.getElementById('simulated-notch');
-    if (existingNotch) existingNotch.remove();
-    
-    if (forcedViewport === 'mobile') {
-        document.body.className = 'bg-slate-900 flex items-center justify-center min-h-screen overflow-hidden';
-        // 375x667 represents a realistic mobile web viewport height (subtracting Safari/Chrome chrome)
-        viewport.className = 'app-content relative w-[375px] h-[667px] bg-white rounded-3xl shadow-2xl border-[8px] border-slate-800 overflow-y-auto overflow-x-hidden flex flex-col scrollbar-hide';
-        viewport.style.transform = 'scale(0.9)';
-        viewport.style.transformOrigin = 'center center';
-    } else if (forcedViewport === 'tablet') {
-        document.body.className = 'bg-slate-900 flex items-center justify-center min-h-screen overflow-hidden';
-        // 768x920 represents a realistic tablet web viewport height
-        viewport.className = 'app-content relative w-[768px] h-[920px] bg-white rounded-2xl shadow-2xl border-[10px] border-slate-800 overflow-y-auto overflow-x-hidden flex flex-col scrollbar-hide';
-        viewport.style.transform = 'scale(0.72)';
-        viewport.style.transformOrigin = 'center center';
-    } else if (forcedViewport === 'desktop') {
-        document.body.className = 'bg-slate-50 min-h-screen flex flex-col';
-        viewport.className = 'app-content w-full min-h-screen bg-white relative flex-1';
-    } else {
-        // Auto mode
-        document.body.className = 'bg-white';
-        viewport.className = 'app-content w-full min-h-screen relative';
-    }
-}
 
-function renderViewportSwitcher() {
-    let switcher = document.getElementById('dev-viewport-switcher');
-    if (!switcher) {
-        switcher = document.createElement('div');
-        switcher.id = 'dev-viewport-switcher';
-        document.body.appendChild(switcher);
-    }
-    
-    const activeClass = 'bg-violet-600 text-white';
-    const inactiveClass = 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200';
-
-    const col1Keys = ['restaurant-home', 'restaurant-home-logo', 'menu', 'location-pick', 'location-favorites', 'manage-favorites', 'account', 'qr-code-guide', 'directions'];
-    const col2Keys = ['cart', 'checkout', 'order-details', 'customize', 'order-confirm', 'order-status', 'track-order'];
-    const col3Keys = ['restaurant-landing', 'restaurant-sign-in', 'registration'];
-    const fbKeys = ['landing', 'home', 'privacy', 'dashboard'];
-    const oldKeys = ['restaurant-home-old', 'menu-old'];
-
-    const makeColHTML = (keys, title) => {
-        const itemsHTML = keys
-            .filter(key => routes[key])
-            .map(key => {
-                const label = PAGE_LABELS[key] || key.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
-                const activeClass = currentPage === key ? 'active' : '';
-                return `<div class="dropdown-item ${activeClass}" onclick="navigateTo('${key}')">${label}</div>`;
-            }).join('');
-        return `
-            <div class="flex flex-col gap-1">
-                <div class="dropdown-column-title">${title}</div>
-                ${itemsHTML}
-            </div>
-        `;
-    };
-
-    const col1HTML = makeColHTML(col1Keys, 'i-Tea Ordering');
-    const col2HTML = makeColHTML(col2Keys, 'i-Tea Checkout');
-    const iTeaGatesHTML = makeColHTML(col3Keys, 'i-Tea Gateways');
-    const fbHTML = makeColHTML(fbKeys, 'FareBites Pages');
-    const archiveHTML = makeColHTML(oldKeys, 'Archived Pages');
-
-    const col3HTML = `
-        <div class="flex flex-col gap-4">
-            ${iTeaGatesHTML}
-            ${fbHTML}
-            ${archiveHTML}
-        </div>
-    `;
-    
-    switcher.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 lg:bottom-auto lg:top-0 lg:right-4 lg:left-auto lg:translate-x-0 z-[999999] flex items-center gap-1.5 lg:gap-1 p-1.5 lg:p-1 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl lg:rounded-t-none lg:rounded-b-xl transition-all duration-300';
-    switcher.innerHTML = `
-        <div class="text-[9px] lg:text-[7.5px] font-black text-slate-400 uppercase tracking-widest px-2.5 lg:px-1.5 select-none hidden sm:block">Demo Switcher</div>
-        <div class="relative">
-            <button onclick="toggleMenu(event, 'all-pages-dropdown')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all bg-violet-500 text-white hover:bg-violet-600 shadow-md">
-                <span>Sitemap</span><i class="fa-solid fa-chevron-down text-[8px] lg:text-[7px] ml-1"></i>
-            </button>
-            <div id="all-pages-dropdown" class="dropdown-menu">
-                ${col1HTML}
-                ${col2HTML}
-                ${col3HTML}
-            </div>
-        </div>
-        <button onclick="setForcedViewport(null)" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${!forcedViewport ? activeClass : inactiveClass}">
-            <i class="fa-solid fa-wand-magic-sparkles text-[10px] lg:text-[8px]"></i><span>Auto</span>
-        </button>
-        <button onclick="setForcedViewport('mobile')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${forcedViewport === 'mobile' ? activeClass : inactiveClass}">
-            <i class="fa-solid fa-mobile-screen-button text-[10px] lg:text-[8px]"></i><span>Mobile</span>
-        </button>
-        <button onclick="setForcedViewport('tablet')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${forcedViewport === 'tablet' ? activeClass : inactiveClass}">
-            <i class="fa-solid fa-tablet-screen-button text-[10px] lg:text-[8px]"></i><span>Tablet</span>
-        </button>
-        <button onclick="setForcedViewport('desktop')" class="flex items-center gap-1.5 lg:gap-1 px-3 lg:px-2 py-2 lg:py-1 rounded-xl lg:rounded-lg text-xs lg:text-[9.5px] font-black uppercase tracking-wider transition-all ${forcedViewport === 'desktop' ? activeClass : inactiveClass}">
-            <i class="fa-solid fa-laptop text-[10px] lg:text-[8px]"></i><span>Desktop</span>
-        </button>
-    `;
-}
-
-function setForcedViewport(mode) {
-    if (mode === null) {
-        sessionStorage.removeItem('farebitesForcedViewport');
-        forcedViewport = null;
-    } else {
-        sessionStorage.setItem('farebitesForcedViewport', mode);
-        forcedViewport = mode;
-    }
-    currentViewport = getCurrentViewport();
-    renderPage();
-}
 
 function adjustBagQuantity(delta) {
     mockupState.bagQuantity = Math.max(0, mockupState.bagQuantity + delta);
@@ -4364,7 +4591,7 @@ function adjustBagQuantity(delta) {
 }
 
 function selectItemAndNavigate(index) {
-    const item = MENU_ITEMS[index];
+    const item = getActiveMenuItems()[index];
     mockupState.selectedItem = item;
     // Reset quantity and customization defaults for new item
     mockupState.itemQuantity = 1;
@@ -4414,16 +4641,53 @@ function removeFavorite(id) {
     renderPage();
 }
 
+function selectLocation(locationId, locationName, locationAddress, locationDistance) {
+    mockupState.selectedLocation = locationName;
+    mockupState.selectedLocationId = locationId || null;
+    if (locationAddress) mockupState.selectedAddress = locationAddress;
+    if (locationDistance) mockupState.selectedDistance = locationDistance;
+    mockupState.orderTime = 'ASAP';
+    
+    mockupState.apiCategories = [];
+    mockupState.apiMenuItems = [];
+    persistAllState();
+    
+    if (locationId) {
+        fetchMenuAndItems(locationId);
+    }
+    
+    navigateTo('order-details');
+}
+
 function navigateTo(pageId) {
     persistAllState();
-    if (pageId === currentPage) {
-        renderPage();
+    const [basePageId, hash] = pageId.split('#');
+    if (basePageId === currentPage) {
+        if (hash) {
+            const element = document.getElementById(hash);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+                window.location.hash = hash;
+            }
+        } else {
+            renderPage();
+        }
         return;
     }
-    const nextFile = PAGE_FILE_MAP[pageId] || `${pageId}.html`;
-    window.location.href = nextFile;
+    const nextFile = PAGE_FILE_MAP[basePageId] || `${basePageId}.html`;
+    window.location.href = hash ? `${nextFile}#${hash}` : nextFile;
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    fetchLocations().then(() => {
+        if (currentPage === 'location-pick') {
+            renderPage();
+        }
+    });
+
+    if (mockupState.selectedLocationId && mockupState.apiMenuItems.length === 0) {
+        fetchMenuAndItems(mockupState.selectedLocationId);
+    }
+
     renderPage();
 });

@@ -1,28 +1,28 @@
 const PAGE_FILE_MAP = {
     "landing": "landing.html",
-    "home": "home.html",
+    "home": "index.html",
     "sign-in": "sign-in.html",
     "cart": "cart.html",
-    "customize": "customize.html",
+    "customize": "order-customize.html",
     "checkout": "checkout.html",
     "order-confirm": "order-confirm.html",
     "order-status": "order-status.html",
-    "restaurant-home": "restaurant-home.html",
+    "restaurant-home": "index.html",
     "restaurant-home-logo": "restaurant-home-logo.html",
-    "restaurant-landing": "restaurant-landing.html",
+    "restaurant-landing": "restaurant-login.html",
     "restaurant-sign-in": "restaurant-sign-in.html",
     "order-details": "order-details.html",
-    "qr-code-guide": "qr-code-guide.html",
+    "menu-scan": "menu-scan.html",
     "menu": "menu.html",
     "location-pick": "location-pick.html",
     "location-favorites": "location-favorites.html",
     "login": "login.html",
     "sign-up": "sign-up.html",
-    "account": "account.html",
+    "account": "user-profile.html",
     "privacy": "privacy.html",
     "dashboard": "dashboard.html",
     "index": "index.html",
-    "manage-favorites": "manage-favorites.html",
+    "menu-favorites": "menu-favorites.html",
     "directions": "directions.html",
     "registration": "registration.html"
 };
@@ -40,7 +40,7 @@ const PAGE_LABELS = {
     "restaurant-landing": "i-Tea Landing Page",
     "restaurant-sign-in": "i-Tea Sign In",
     "order-details": "Order Details",
-    "qr-code-guide": "QR Code Guide",
+    "menu-scan": "Scan",
     "menu": "Menu",
     "location-pick": "Pick a Location",
     "location-favorites": "Saved Locations",
@@ -49,7 +49,7 @@ const PAGE_LABELS = {
     "account": "My Account",
     "privacy": "Privacy Policy",
     "dashboard": "Merchant Dashboard",
-    "manage-favorites": "Manage Favorites",
+    "menu-favorites": "Menu Favorites",
     "directions": "Directions",
     "registration": "Registration Form"
 };
@@ -696,7 +696,7 @@ const routes = {
                     <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu')">MENU</button>
                     <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('cart')">REORDER</button>
                     <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('account')">REWARDS</button>
-                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('qr-code-guide')">SCAN</button>
+                    <button class="text-[#1A1A1A] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu-scan')">SCAN</button>
                 </div>
             </div>`;
     },
@@ -800,7 +800,7 @@ const routes = {
                     <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu')">MENU</button>
                     <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('cart')">REORDER</button>
                     <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('account')">REWARDS</button>
-                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('qr-code-guide')">SCAN</button>
+                    <button class="text-[#EAEAEA] font-black text-[14px] uppercase tracking-tighter scale-y-110" onclick="navigateTo('menu-scan')">SCAN</button>
                 </div>
             </div>`;
     },
@@ -1004,7 +1004,7 @@ const routes = {
     'order-details': () => {
         const btn = (icon, label) => {
             const isActive = mockupState.fulfillmentMode === label;
-            const clickHandler = label === 'Dine In' ? `navigateTo('qr-code-guide')` : `updateMockupState('fulfillmentMode', '${label}')`;
+            const clickHandler = label === 'Dine In' ? `navigateTo('menu-scan')` : `updateMockupState('fulfillmentMode', '${label}')`;
             return `
                     <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-1 py-3 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-800 border-gray-100'}">
                         <i class="fa-solid ${icon} text-xl ${isActive ? 'text-white' : 'text-violet-600'}"></i>
@@ -1209,7 +1209,7 @@ const routes = {
 
                 </div>`;
     },
-    'qr-code-guide': () => `
+    'menu-scan': () => `
             <div class="flex flex-col h-full bg-white relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black"><button onclick="navigateTo('order-details')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">i-Tea</span><div class="w-6"></div></header>
                 <div class="flex-1 flex flex-col items-center justify-center px-6 text-center">
@@ -1575,7 +1575,7 @@ const routes = {
                         </div>
 
                         <div class="p-6 border-t border-gray-100">
-                            <button onclick="updateMockupState('modalOpen', null); navigateTo('manage-favorites')" class="w-full py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">Manage All Favorites</button>
+                            <button onclick="updateMockupState('modalOpen', null); navigateTo('menu-favorites')" class="w-full py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">Manage All Favorites</button>
                         </div>
                     </div>
                 </div>
@@ -3000,130 +3000,130 @@ const routes = {
                         <div class="w-10"></div>
                     </div>
                 </header>
-                <div class="flex-1 overflow-y-auto px-6 py-8 flex ${isDesktop ? 'flex-row gap-8 items-start' : 'flex-col gap-6'} w-full max-w-[1080px] mx-auto">
+                <div class="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6 w-full ${isDesktop ? 'max-w-2xl' : 'max-w-[1080px]'} mx-auto">
                     
-                    <!-- Left Column (Desktop) uses skill wrapper -->
-                    <div class="${isDesktop ? 'flex flex-col gap-6 w-2/3 shrink' : 'contents'}">
+                    <div class="contents">
                         <div class="text-center">
-                        <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 mx-auto shadow-inner">
-                            <i class="fa-solid fa-check text-5xl"></i>
+                            <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-8 mx-auto shadow-inner">
+                                <i class="fa-solid fa-check text-5xl"></i>
+                            </div>
+                            <h1 class="text-4xl font-black text-gray-900 uppercase tracking-tighter mb-2">Order Confirmed!</h1>
+                            <p class="text-gray-500 font-medium mb-8">Your order #FB-9824 is being sent to the kitchen.</p>
                         </div>
-                        <h1 class="text-4xl font-black text-gray-900 uppercase tracking-tighter mb-2">Order Confirmed!</h1>
-                        <p class="text-gray-500 font-medium mb-8">Your order #FB-9824 is being sent to the kitchen.</p>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Pick Up Time</div>
+                                <div class="text-2xl font-black text-gray-900 uppercase">8:02 PM</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Location</div>
+                                <div class="text-base font-black text-gray-900 uppercase truncate">i-Tea Tempe</div>
+                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight mt-1 truncate">825 W. University Dr</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Pick Up Time</div>
-                            <div class="text-2xl font-black text-gray-900 uppercase">8:02 PM</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Location</div>
-                            <div class="text-base font-black text-gray-900 uppercase truncate">i-Tea Tempe</div>
-                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight mt-1 truncate">825 W. University Dr</div>
-                        </div>
-                        </div>
-                    </div> <!-- End Left Column -->
-
-                    <!-- Right Column (Desktop) uses skill wrapper -->
-                    <div class="${isDesktop ? 'flex flex-col gap-6 w-1/3 shrink sticky top-8' : 'contents'}">
+                    <div class="contents">
                         <div class="flex gap-2 overflow-x-auto scrollbar-hide shrink-0 pb-2">
-                        <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
-                            <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
-                            <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
-                        </button>
-                    </div>
-
-                    ${mockupState.orderDetailsExpanded ? `
-                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
-                                <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
-                            </div>
-                            <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
-                                <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
-                            </div>
+                            <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
+                                <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
+                                <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
+                            </button>
                         </div>
 
-                        <div class="space-y-4">
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba3}" class="w-full h-full object-cover object-top">
+                        ${mockupState.orderDetailsExpanded ? `
+                        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
+                                    <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
                                 </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Brown Sugar Pearl</h4>
-                                        <span class="text-sm font-black text-gray-900">$6.50</span>
-                                    </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Large • Less Ice • 75% Sweet</p>
+                                <div>
+                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - TEMPE'}</h3>
+                                    <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
                                 </div>
                             </div>
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba4}" class="w-full h-full object-cover object-top">
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Protein Bowl</h4>
-                                        <span class="text-sm font-black text-gray-900">$12.50</span>
+
+                            <div class="space-y-4">
+                                <div class="flex gap-4">
+                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
+                                        <img src="${assets.boba3}" class="w-full h-full object-cover object-top">
                                     </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Chicken • Quinoa • Avocado</p>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Brown Sugar Pearl</h4>
+                                            <span class="text-sm font-black text-gray-900">$6.50</span>
+                                        </div>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Large • Less Ice • 75% Sweet</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
+                                        <img src="${assets.boba4}" class="w-full h-full object-cover object-top">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Protein Bowl</h4>
+                                            <span class="text-sm font-black text-gray-900">$12.50</span>
+                                        </div>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Chicken • Quinoa • Avocado</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
+                                        <img src="${assets.boba1}" class="w-full h-full object-cover object-top">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × M7 Boba Milk Tea</h4>
+                                            <span class="text-sm font-black text-gray-900">$5.50</span>
+                                        </div>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Regular • Classic Tea</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba1}" class="w-full h-full object-cover object-top">
+
+                            <div class="space-y-2 pt-4 border-t border-gray-100">
+                                <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
+                                    <span>Subtotal</span>
+                                    <span>$24.50</span>
                                 </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × M7 Boba Milk Tea</h4>
-                                        <span class="text-sm font-black text-gray-900">$5.50</span>
+                                <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
+                                    <span>Tax</span>
+                                    <span>$2.32</span>
+                                </div>
+                                <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
+                                    <span>Total</span>
+                                    <span>$31.81</span>
+                                </div>
+                            </div>
+
+                            <div class="pt-6 border-t border-gray-100">
+                                <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Payment</h2>
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center shrink-0">
+                                            <i class="fa-brands fa-apple-pay text-3xl"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Apple Pay...3580</p>
+                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">3/14/26, 1:14 PM</p>
+                                        </div>
                                     </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Regular • Classic Tea</p>
+                                    <span class="text-base font-black text-gray-900">$31.81</span>
                                 </div>
                             </div>
                         </div>
+                        ` : ''}
 
-                        <div class="space-y-2 pt-4 border-t border-gray-100">
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Subtotal</span>
-                                <span>$24.50</span>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Tax</span>
-                                <span>$2.32</span>
-                            </div>
-                            <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
-                                <span>Total</span>
-                                <span>$31.81</span>
-                            </div>
+                        <div class="w-full space-y-4 pt-4">
+                            <button onclick="navigateTo('directions')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Get Directions</button>
+                            <button onclick="navigateTo('track-order')" class="w-full bg-white border-2 border-gray-100 text-gray-900 py-4 rounded-full font-black text-lg active:scale-95 transition-all uppercase tracking-wider hover:bg-gray-50 shadow-sm">Track Order</button>
+                            <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                         </div>
-
-                        <div class="pt-6 border-t border-gray-100">
-                            <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Payment</h2>
-                            <div class="flex items-start justify-between">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center shrink-0">
-                                        <i class="fa-brands fa-apple-pay text-3xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Apple Pay...3580</p>
-                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">3/14/26, 1:14 PM</p>
-                                    </div>
-                                </div>
-                                <span class="text-base font-black text-gray-900">$31.81</span>
-                            </div>
-                        </div>
-                    </div>
-                    ` : ''}
-
-                    <div class="w-full space-y-4 pt-4">
-                        <button onclick="navigateTo('directions')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Get Directions</button>
-                        <button onclick="navigateTo('track-order')" class="w-full bg-white border-2 border-gray-100 text-gray-900 py-4 rounded-full font-black text-lg active:scale-95 transition-all uppercase tracking-wider hover:bg-gray-50 shadow-sm">Track Order</button>
-                        <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                     </div>
                 </div>
+            </div>
         `;
     },
     'checkout': () => {
@@ -3432,7 +3432,7 @@ const routes = {
                 </div>
             </div>
         `,
-    'manage-favorites': () => {
+    'menu-favorites': () => {
         const isDesktop = currentViewport === 'desktop';
         const favorites = mockupState.favorites || [];
 
@@ -3443,7 +3443,7 @@ const routes = {
                     <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
                         <i class="fa-solid fa-chevron-left text-gray-600"></i>
                     </button>
-                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Manage Favorites</span>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Menu Favorites</span>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
 
@@ -3451,7 +3451,7 @@ const routes = {
                     <div class="mb-8">
                         <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1 uppercase">Your Favorites</h1>
                         <p class="text-gray-600 font-medium mb-4">Keep track of the items you love most.</p>
-                        ${!isDesktop ? '<button class="w-full py-3 bg-violet-600 text-white rounded-full font-black uppercase text-sm shadow-lg tracking-widest mb-2">Manage Favorites</button>' : ''}
+                        ${!isDesktop ? '<button class="w-full py-3 bg-violet-600 text-white rounded-full font-black uppercase text-sm shadow-lg tracking-widest mb-2">Menu Favorites</button>' : ''}
                     </div>
 
                     ${favorites.length === 0 ? `
@@ -3764,8 +3764,8 @@ function renderDropdownMenu() {
     const fbPagesList = ['landing', 'home', 'privacy', 'dashboard'];
     const rbPagesList = [
         'restaurant-landing', 'restaurant-sign-in', 'registration', 'restaurant-home', 'restaurant-home-logo', 
-        'menu', 'location-pick', 'location-favorites', 'manage-favorites', 'order-details', 
-        'customize', 'cart', 'checkout', 'order-confirm', 'order-status', 'track-order', 'qr-code-guide', 'directions', 'account'
+        'menu', 'location-pick', 'location-favorites', 'menu-favorites', 'order-details', 
+        'customize', 'cart', 'checkout', 'order-confirm', 'order-status', 'track-order', 'menu-scan', 'directions', 'account'
     ];
 
     const fbPages = fbPagesList
