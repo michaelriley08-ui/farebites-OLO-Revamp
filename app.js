@@ -730,50 +730,68 @@ const routes = {
                 </div>`;
         }
     },
-    'sign-in': () => `
+    'sign-in': () => {
+        const isDesktop = currentViewport === 'desktop';
+        return `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.featured}')"></div>
             <div class="modal-overlay" onclick="navigateTo('home')">
-                <div class="modal-content" onclick="event.stopPropagation()">
-                    <button class="absolute top-6 left-6 text-gray-500" onclick="navigateTo('home')"><i class="fa-solid fa-xmark text-2xl"></i></button>
-                    <div class="text-center mb-6 mt-6 uppercase"><span class="text-2xl font-black text-red-600 tracking-tighter uppercase font-black">FAREBITES</span></div>
-                    <h2 class="text-3xl font-black text-center mb-8 uppercase tracking-tight">Sign in / Sign up</h2>
+                <div class="modal-content ${isDesktop ? 'lg:p-6' : ''}" onclick="event.stopPropagation()">
+                    <button class="absolute ${isDesktop ? 'top-4 left-4' : 'top-6 left-6'} text-gray-500" onclick="navigateTo('home')"><i class="fa-solid fa-xmark text-2xl"></i></button>
+                    <div class="text-center ${isDesktop ? 'mb-4 mt-2' : 'mb-6 mt-6'} uppercase"><span class="text-2xl font-black text-red-600 tracking-tighter uppercase font-black">FAREBITES</span></div>
+                    <h2 class="text-2xl lg:text-3xl font-black text-center ${isDesktop ? 'mb-4' : 'mb-8'} uppercase tracking-tight">Sign in / Sign up</h2>
                     <div class="space-y-4">
                         <div class="flex gap-2">
-                            <div class="bg-gray-100 px-4 py-4 rounded-xl font-bold text-gray-700 min-w-[100px] flex items-center justify-center">+1 <i class="fa-solid fa-chevron-down text-[10px] ml-2"></i></div>
-                            <input type="tel" id="auth-mobile-input" placeholder="Mobile Number" class="flex-1 min-w-0 bg-gray-100 px-4 py-4 rounded-xl border-2 border-transparent focus:border-black outline-none font-bold text-lg">
+                            <div class="bg-gray-100 px-4 ${isDesktop ? 'py-3' : 'py-4'} rounded-xl font-bold text-gray-700 min-w-[100px] flex items-center justify-center">+1 <i class="fa-solid fa-chevron-down text-[10px] ml-2"></i></div>
+                            <input type="tel" id="auth-mobile-input" placeholder="Mobile Number" class="flex-1 min-w-0 bg-gray-100 px-4 ${isDesktop ? 'py-3' : 'py-4'} rounded-xl border-2 border-transparent focus:border-black outline-none font-bold text-lg">
                         </div>
                         <div id="auth-error" class="text-xs font-bold text-red-500 px-2 h-4 transition-all opacity-0">Invalid passcode. Please try again.</div>
-                        <button onclick="checkAuthPasscode()" class="w-full bg-red-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(220,38,38,0.5)] active:scale-95 transition-all uppercase font-black">Continue</button>
+                        <button onclick="checkAuthPasscode()" class="w-full bg-red-600 text-white ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(220,38,38,0.5)] active:scale-95 transition-all uppercase font-black">Continue</button>
                         
-                        <div class="flex items-center gap-4 py-2">
+                        <div class="flex items-center gap-4 ${isDesktop ? 'py-1' : 'py-2'}">
                             <div class="flex-1 h-px bg-gray-200"></div>
                             <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">or</span>
                             <div class="flex-1 h-px bg-gray-200"></div>
                         </div>
 
-                        <div class="space-y-3">
-                            <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-                                <div class="flex items-center gap-4 w-52">
-                                    <i class="fa-brands fa-google text-lg text-red-500 w-6 text-center"></i>
-                                    <span>Continue with Google</span>
-                                </div>
-                            </button>
-                            <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-                                <div class="flex items-center gap-4 w-52">
-                                    <i class="fa-brands fa-apple text-lg text-black w-6 text-center"></i>
-                                    <span>Continue with Apple</span>
-                                </div>
-                            </button>
-                            <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-                                <div class="flex items-center gap-4 w-52">
-                                    <i class="fa-brands fa-facebook text-lg text-[#1877F2] w-6 text-center"></i>
-                                    <span>Continue with Facebook</span>
-                                </div>
-                            </button>
-                        </div>
+                        ${isDesktop ? `
+                            <div class="flex justify-center gap-4 pt-1">
+                                <button class="w-12 h-12 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm" title="Continue with Google">
+                                    <i class="fa-brands fa-google text-lg text-red-500"></i>
+                                </button>
+                                <button class="w-12 h-12 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm" title="Continue with Apple">
+                                    <i class="fa-brands fa-apple text-lg text-black"></i>
+                                </button>
+                                <button class="w-12 h-12 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm" title="Continue with Facebook">
+                                    <i class="fa-brands fa-facebook text-lg text-[#1877F2]"></i>
+                                </button>
+                            </div>
+                        ` : `
+                            <div class="space-y-3">
+                                <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
+                                    <div class="flex items-center gap-4 w-52">
+                                        <i class="fa-brands fa-google text-lg text-red-500 w-6 text-center"></i>
+                                        <span>Continue with Google</span>
+                                    </div>
+                                </button>
+                                <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
+                                    <div class="flex items-center gap-4 w-52">
+                                        <i class="fa-brands fa-apple text-lg text-black w-6 text-center"></i>
+                                        <span>Continue with Apple</span>
+                                    </div>
+                                </button>
+                                <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
+                                    <div class="flex items-center gap-4 w-52">
+                                        <i class="fa-brands fa-facebook text-lg text-[#1877F2] w-6 text-center"></i>
+                                        <span>Continue with Facebook</span>
+                                    </div>
+                                </button>
+                            </div>
+                        `}
                     </div>
                 </div>
-            </div>`,
+            </div>
+        `;
+    },
     'restaurant-landing': () => `
             <div class="flex flex-col h-full relative overflow-hidden bg-white">
                 <div class="absolute inset-0 z-0">
@@ -795,33 +813,55 @@ const routes = {
                     <button onclick="navigateTo('restaurant-sign-in')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-transform uppercase tracking-wider">Log In</button>
                 </div>
             </div>`,
-    'restaurant-sign-in': () => `
+    'restaurant-sign-in': () => {
+        const isDesktop = currentViewport === 'desktop';
+        return `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
             <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
             <div class="modal-overlay" onclick="navigateTo('restaurant-landing')">
-                <div class="modal-content max-w-[380px]" onclick="event.stopPropagation()">
-                    <button class="absolute top-6 left-6 text-gray-500" onclick="navigateTo('restaurant-landing')"><i class="fa-solid fa-xmark text-2xl"></i></button>
-                    <div class="w-full max-h-[52px] flex items-center justify-center mb-1 mt-4">
-                         <img src="images/i-tea-logo-new.png" class="h-full max-h-[52px] w-auto object-contain">
+                <div class="modal-content max-w-[380px] ${isDesktop ? 'lg:p-6' : ''}" onclick="event.stopPropagation()">
+                    <button class="absolute ${isDesktop ? 'top-4 left-4' : 'top-6 left-6'} text-gray-500" onclick="navigateTo('restaurant-landing')"><i class="fa-solid fa-xmark text-2xl"></i></button>
+                    <div class="w-full ${isDesktop ? 'max-h-[36px] mb-2 mt-2' : 'max-h-[52px] mb-1 mt-4'} flex items-center justify-center">
+                         <img src="images/i-tea-logo-new.png" class="h-full ${isDesktop ? 'max-h-[36px]' : 'max-h-[52px]'} w-auto object-contain">
                     </div>
-                    <h2 class="text-2xl font-black text-center mb-4 uppercase tracking-tight text-gray-900 leading-tight">Sign in /<br>Create Account</h2>
+                    <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? 'mb-2' : 'mb-4'} uppercase tracking-tight text-gray-900 leading-tight">Sign In</h2>
                     <div class="space-y-3">
                         <div class="relative group">
-                            <input type="email" id="auth-email-input" placeholder="Email Address" class="w-full bg-white px-8 py-4 rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
+                            <input type="email" id="auth-email-input" placeholder="Email Address" class="w-full bg-white px-8 ${isDesktop ? 'py-3' : 'py-4'} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
                             <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
+                        </div>
+                        <div class="relative group">
+                            <input type="password" id="auth-password-input" placeholder="Password" class="w-full bg-white pl-8 pr-12 ${isDesktop ? 'py-3' : 'py-4'} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
+                            <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
+                            <button type="button" onclick="const p = document.getElementById('auth-password-input'); const i = this.querySelector('i'); if(p.type==='password'){p.type='text'; i.className='fa-solid fa-eye-slash text-gray-400';}else{p.type='password'; i.className='fa-solid fa-eye text-gray-400';}" class="absolute right-6 top-1/2 -translate-y-1/2 focus:outline-none">
+                                <i class="fa-solid fa-eye text-gray-400"></i>
+                            </button>
                         </div>
                         <div id="auth-error" class="text-xs font-bold text-red-500 px-6 h-1 transition-all opacity-0"></div>
                         <div class="space-y-2">
-                            <button onclick="checkAuthPasscode()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase">Sign In</button>
-                            <button onclick="navigateTo('registration')" class="w-full bg-white border-2 border-violet-600 text-violet-600 py-4 rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 hover:bg-violet-50/50 active:scale-95 transition-all uppercase">Create an Account</button>
+                            <button onclick="checkAuthPasscode()" class="w-full bg-violet-600 text-white ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase">Sign In</button>
+                            <button onclick="navigateTo('registration')" class="w-full bg-white border-2 border-violet-600 text-violet-600 ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 hover:bg-violet-50/50 active:scale-95 transition-all uppercase">Create an Account</button>
                         </div>
                     </div>
-                        <div class="flex items-center gap-4 py-2">
-                            <div class="flex-1 h-px bg-gray-100"></div>
-                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">or</span>
-                            <div class="flex-1 h-px bg-gray-100"></div>
-                        </div>
+                    <div class="flex items-center gap-4 ${isDesktop ? 'py-1' : 'py-2'}">
+                        <div class="flex-1 h-px bg-gray-100"></div>
+                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">or</span>
+                        <div class="flex-1 h-px bg-gray-100"></div>
+                    </div>
 
+                    ${isDesktop ? `
+                        <div class="flex justify-center gap-4 pt-1">
+                            <button class="w-12 h-12 rounded-full bg-white border-2 border-violet-50 flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm" title="Continue with Google">
+                                <i class="fa-brands fa-google text-lg text-red-500"></i>
+                            </button>
+                            <button class="w-12 h-12 rounded-full bg-white border-2 border-violet-50 flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm" title="Continue with Apple">
+                                <i class="fa-brands fa-apple text-lg text-black"></i>
+                            </button>
+                            <button class="w-12 h-12 rounded-full bg-white border-2 border-violet-50 flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm" title="Continue with Facebook">
+                                <i class="fa-brands fa-facebook text-lg text-[#1877F2]"></i>
+                            </button>
+                        </div>
+                    ` : `
                         <div class="space-y-3">
                             <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm">
                                 <div class="flex items-center gap-4 w-52">
@@ -842,12 +882,14 @@ const routes = {
                                 </div>
                             </button>
                         </div>
-                        <div class="mt-2 text-center px-4">
-                            <p class="text-[10px] text-gray-400 font-bold tracking-widest">By continuing, you agree to i-Tea Terms & Privacy Policy</p>
-                        </div>
+                    `}
+                    <div class="mt-2 text-center px-4">
+                        <p class="text-[10px] text-gray-400 font-bold tracking-widest">By continuing, you agree to i-Tea Terms & Privacy Policy</p>
                     </div>
                 </div>
-            </div>`,
+            </div>
+        `;
+    },
     'restaurant-home': () => {
         const isDesktop = currentViewport === 'desktop';
         
@@ -2741,7 +2783,7 @@ const routes = {
                     <div class="shrink-0">
                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-3 px-1">You May Also Like</h3>
                         <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2">
-                            ${getActiveMenuItems().slice(4, 9).map((item, index) => {
+                            ${getActiveMenuItems().slice(4, isDesktop ? 8 : 9).map((item, index) => {
                                 // Find the actual index in getActiveMenuItems() for the onclick handler
                                 const actualIndex = getActiveMenuItems().indexOf(item);
                                 return `
@@ -2750,7 +2792,7 @@ const routes = {
                                             <img src="${item.image}" class="w-full h-full object-cover object-top">
                                         </div>
                                         <div class="p-3 md:p-4 text-left flex flex-col flex-1">
-                                            <h4 class="text-xs md:text-sm font-black text-gray-900 uppercase tracking-tight truncate cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">${item.name}</h4>
+                                            <h4 class="text-xs md:text-sm font-black text-gray-900 uppercase tracking-tight h-8 md:h-10 overflow-hidden line-clamp-2 cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">${item.name}</h4>
                                             <div class="flex justify-between items-center mt-auto pt-2">
                                                 <span class="text-sm md:text-base font-black text-violet-600">$${item.price.toFixed(2)}</span>
                                                 <button onclick="selectItemAndNavigate(${actualIndex})" class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px] md:text-xs"></i></button>
@@ -4417,26 +4459,26 @@ function renderPage() {
         contentHtml = contentHtml.replace(/<header\b[^>]*>([\s\S]*?)<\/header>/i, '');
         
         const desktopNavHtml = `
-            <nav class="hidden lg:flex md:flex justify-between items-center px-4 lg:px-8 py-3 lg:py-4 bg-white sticky top-0 z-[100] border-b border-gray-100 shadow-sm w-full shrink-0">
+            <nav class="hidden lg:flex md:flex justify-between items-center px-4 lg:px-8 h-[70px] bg-white sticky top-0 z-[100] border-b border-gray-100 shadow-sm w-full shrink-0">
                 <div class="flex items-center gap-4 lg:gap-8">
-                    <div class="w-12 h-12 lg:w-24 lg:h-24 flex items-center justify-center cursor-pointer shrink-0" onclick="navigateTo('restaurant-home')">
+                    <div class="w-16 h-12 lg:w-20 lg:h-14 flex items-center justify-center cursor-pointer shrink-0" onclick="navigateTo('restaurant-home')">
                         <img src="images/nav-logo.png" class="w-full h-full object-contain">
                     </div>
-                    <div class="flex items-center gap-3 lg:gap-6 text-[16px] lg:text-[18px] font-black uppercase tracking-tight text-[#1A1A1A] ml-2">
+                    <div class="flex items-center gap-3 lg:gap-6 text-[16px] lg:text-[1.3rem] font-black uppercase tracking-tight text-[#1f0b35] ml-2">
                         <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('restaurant-home')">Home</span>
                         <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('menu')">Menu</span>
                         <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('location-pick')">Order</span>
                         <span class="cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('account')">Rewards</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-4 lg:gap-8 text-[14px] lg:text-[16px] font-black uppercase tracking-tight text-[#1A1A1A]">
-                    <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1A1A1A]" onclick="navigateTo('location-pick')">
+                <div class="flex items-center gap-4 lg:gap-8 text-[14px] lg:text-[16px] font-black uppercase tracking-tight text-[#1f0b35]">
+                    <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1f0b35]" onclick="navigateTo('location-pick')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
                         <span>Locations</span>
                     </div>
                     ${mockupState.isLoggedIn ? `
                         <div class="relative">
-                            <button class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1A1A1A]" onclick="toggleMenu(event, 'user-profile-dropdown')">
+                            <button class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1f0b35]" onclick="toggleMenu(event, 'user-profile-dropdown')">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                                 <span>${mockupState.userName}</span>
                                 <i class="fa-solid fa-chevron-down text-[10px] ml-1 text-gray-400"></i>
@@ -4472,8 +4514,7 @@ function renderPage() {
                 <div class="max-w-[1080px] mx-auto px-6 border-t border-gray-200 mt-16 pt-10">
                     <!-- Logo Section -->
                     <div class="mb-6 flex flex-col items-center justify-center">
-                        <img src="images/nav-logo.png" alt="i-Tea" class="h-14 w-auto mb-2 object-contain">
-                        <span class="font-branding font-black text-violet-600 text-2xl tracking-tighter leading-none">i-Tea</span>
+                        <img src="images/nav-logo.png" alt="i-Tea" class="h-14 w-auto object-contain">
                     </div>
                     
                     <!-- Links Section -->
@@ -4503,7 +4544,7 @@ function renderPage() {
                         </div>
                     </div>
                     <div class="flex flex-col-reverse md:flex-row justify-between items-center py-6 border-t border-gray-100 text-[11px] text-gray-400 font-medium gap-4">
-                        <p>© 2026 i-Tea Inc. All rights reserved. <span class="ml-2 opacity-50">${VERSION_STR}</span></p>
+                        <p>© 2026 i-Tea Inc. All rights reserved. | <a href="privacy.html" class="hover:text-violet-600 transition-colors">Privacy Policy</a> <span class="ml-2 opacity-50">${VERSION_STR}</span></p>
                         <div class="flex gap-5 text-gray-400">
                             <i class="fa-solid fa-award text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>
                             <i class="fa-regular fa-star text-lg hover:text-violet-600 transition-colors cursor-pointer"></i>

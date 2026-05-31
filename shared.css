@@ -198,3 +198,11 @@
         .privacy-override .font-medium {
             font-weight: 300 !important;
         }
+
+        /* Global brand overrides: change all dark/black text utilities to Deep Cosmic Violet (#1f0b35) */
+        .text-gray-900,
+        .text-black,
+        .text-\[\#1A1A1A\],
+        .text-\[\#1a1a1a\] {
+            color: #1f0b35 !important;
+        }
