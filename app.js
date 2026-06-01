@@ -8,9 +8,7 @@ const PAGE_FILE_MAP = {
     "order-confirm": "order-confirm.html",
     "order-status": "order-status.html",
     "restaurant-home": "index.html",
-    "restaurant-home-logo": "restaurant-home-logo.html",
-    "restaurant-landing": "restaurant-login.html",
-    "restaurant-sign-in": "restaurant-sign-in.html",
+    "restaurant-sign-in": "sign-in.html",
     "order-details": "order-details.html",
     "order-details-alt": "order-details-alt.html",
     "menu-scan": "menu-scan.html",
@@ -39,8 +37,6 @@ const PAGE_LABELS = {
     "order-confirm": "Order Confirmation",
     "order-status": "Order Status",
     "restaurant-home": "i-Tea Homepage",
-    "restaurant-home-logo": "i-Tea Homepage (Logo)",
-    "restaurant-landing": "i-Tea Landing Page",
     "restaurant-sign-in": "i-Tea Sign In",
     "order-details": "Order Details",
     "order-details-alt": "Order Details (Alternative)",
@@ -56,8 +52,6 @@ const PAGE_LABELS = {
     "menu-favorites": "Menu Favorites",
     "directions": "Directions",
     "registration": "Registration Form",
-    "menu-old": "Menu (Old)",
-    "restaurant-home-old": "i-Tea Homepage (Old)",
     "sections": "Retired Sections",
     "accessibility": "Web Accessibility"
 };
@@ -93,7 +87,7 @@ const DEFAULT_STATE = {
     selectedTimeSlot: '12:30 PM',
     sugarLevel: '50%',
     itemQuantity: 1,
-    cartItemCount: 1,
+    cartItemCount: 0,
     bagQuantity: 0,
     noBagsSelected: false,
     toppings: ['BOBA'],
@@ -117,7 +111,14 @@ const DEFAULT_STATE = {
     apiLocations: [],
     apiCategories: [],
     apiMenuItems: [],
-    selectedLocationId: null
+    selectedLocationId: null,
+    // Phase 4: Cart & Order state
+    cart: [],                    // Array of cart items with real menuItemId & selectedSubItems
+    selectedRestaurantId: null,  // Extracted from API sub-item data (e.g., 7 for i-Tea)
+    selectedItemDetail: null,    // Full MenuItemDetailDto from API for customize page
+    lastOrder: null,             // Stores last successful order API response
+    locationTaxRate: 0.0925,     // Tax rate from location menu response
+    locationConvenienceFee: 0    // Convenience fee from location menu response
 };
 
 function getCurrentViewport() {
@@ -136,8 +137,9 @@ window.addEventListener('resize', () => {
 });
 const _v = new Date();
 const VERSION_STR = `V${_v.getMonth() + 1}.${_v.getDate()}.${String(_v.getHours()).padStart(2,'0')}.${String(_v.getMinutes()).padStart(2,'0')}`;
-let currentPage = document.body.dataset.page || 'restaurant-landing';
+let currentPage = document.body.dataset.page || 'restaurant-home';
 let mockupState = loadMockupState();
+mockupState.isLoading = false;
 let isUpdatingMockupState = false;
 
 function loadMockupState() {
@@ -232,6 +234,10 @@ async function fetchMenuAndItems(locationId) {
         const menuData = await menuResponse.json();
         
         if (menuData && menuData.categories) {
+            // Store location-specific pricing info
+            if (menuData.taxRate != null) mockupState.locationTaxRate = menuData.taxRate;
+            if (menuData.convenienceFee != null) mockupState.locationConvenienceFee = menuData.convenienceFee;
+
             const filteredCategories = menuData.categories.filter(cat => {
                 const name = (cat.name || '').toLowerCase().trim();
                 return name !== 'bag' && name !== 'bags';
@@ -851,9 +857,9 @@ const routes = {
         return `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
             <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
-            <div class="modal-overlay" onclick="navigateTo('restaurant-landing')">
+            <div class="modal-overlay" onclick="navigateTo('restaurant-home')">
                 <div class="modal-content max-w-[380px] ${isDesktop ? 'lg:p-6' : ''}" onclick="event.stopPropagation()">
-                    <button class="absolute ${isDesktop ? 'top-4 left-4' : 'top-6 left-6'} text-gray-500" onclick="navigateTo('restaurant-landing')"><i class="fa-solid fa-xmark text-2xl"></i></button>
+                    <button class="absolute ${isDesktop ? 'top-4 left-4' : 'top-6 left-6'} text-gray-500" onclick="navigateTo('restaurant-home')"><i class="fa-solid fa-xmark text-2xl"></i></button>
                     <div class="w-full ${isDesktop ? 'max-h-[36px] mb-2 mt-2' : 'max-h-[52px] mb-1 mt-4'} flex items-center justify-center">
                          <img src="images/i-tea-logo-new.png" class="h-full ${isDesktop ? 'max-h-[36px]' : 'max-h-[52px]'} w-auto object-contain">
                     </div>
@@ -870,9 +876,9 @@ const routes = {
                                 <i class="fa-solid fa-eye text-gray-400"></i>
                             </button>
                         </div>
-                        <div id="auth-error" class="text-xs font-bold text-red-500 px-6 h-1 transition-all opacity-0"></div>
+                        <div id="auth-error" class="text-xs font-bold text-red-500 px-6 h-4 mb-2 transition-all opacity-0"></div>
                         <div class="space-y-2">
-                            <button onclick="checkAuthPasscode()" class="w-full bg-violet-600 text-white ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase">Sign In</button>
+                            <button onclick="handleLogin()" class="w-full bg-violet-600 text-white ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase">Sign In</button>
                             <button onclick="navigateTo('registration')" class="w-full bg-white border-2 border-violet-600 text-violet-600 ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 hover:bg-violet-50/50 active:scale-95 transition-all uppercase">Create an Account</button>
                         </div>
                     </div>
@@ -1149,234 +1155,7 @@ const routes = {
                 </div>` : ''}
             </div>`;
     },
-    'restaurant-home-logo': () => {
-        const isDesktop = currentViewport === 'desktop';
-        
-        let cardWidthClass = '';
-        let carouselAlign = '';
-        if (currentViewport === 'desktop') {
-            cardWidthClass = 'w-[23%] min-w-[200px] max-w-[260px] snap-align-none';
-            carouselAlign = 'lg:justify-center lg:overflow-x-visible';
-        } else if (currentViewport === 'tablet') {
-            cardWidthClass = 'w-[47%] shrink-0 snap-center';
-            carouselAlign = 'justify-start';
-        } else {
-            cardWidthClass = 'w-full shrink-0 snap-center';
-            carouselAlign = 'justify-start';
-        }
 
-        return `
-            <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
-                <!-- Hero Banner / Background Section -->
-                <div class="${isDesktop ? 'relative h-[480px] mx-1.5 mt-1.5 rounded-2xl shrink-0 overflow-hidden flex items-center bg-violet-600 shadow-md' : 'absolute inset-0 z-0'}">
-                    ${isDesktop ? `
-                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
-                    <div class="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-violet-950/30 to-transparent z-0"></div>
-                    <div class="relative z-10 w-full max-w-[1080px] mx-auto px-12 text-left flex flex-col justify-center h-full">
-                        <div class="max-w-[480px] pt-2 flex flex-col items-start">
-                            <h2 class="font-branding font-black text-5xl tracking-tight text-white uppercase leading-none">SIP THE</h2>
-                            <h1 class="font-branding font-extrabold text-7xl text-white tracking-tight mt-1 mb-4 flex items-center gap-3 leading-none">
-                                <span class="italic font-serif" style="font-family: 'Outfit', sans-serif;">Goodness</span>
-                                <i class="fa-regular fa-heart text-4xl text-violet-200"></i>
-                            </h1>
-                            <p class="text-base font-semibold text-white/90 mb-6 leading-relaxed">Refreshing flavors. Chewy boba. Made for every moment.</p>
-                            <button onclick="navigateTo('locations')" class="inline-flex items-center gap-3 bg-white text-violet-700 hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
-                                <span>Order Now</span>
-                                <i class="fa-solid fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                    ` : `
-                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
-                    <!-- Subtle gradient to ensure text readability -->
-                    <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90 z-10"></div>
-                    `}
-                </div>
-
-                <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
-                    <div class="flex items-center gap-3">
-                        <button onclick="navigateTo('account')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
-                        <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
-                    </div>
-                    <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('locations')">
-                        <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">DELIVERY</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
-                        <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
-                    </div>
-                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
-                    </button>
-                </header>
-                
-                <div class="flex-1 overflow-y-auto relative scrollbar-hide z-10 flex flex-col">
-                    <!-- Logo + CTA for Mobile/Tablet -->
-                    ${!isDesktop ? `
-                    <div class="text-center pt-24 relative z-10 shrink-0 flex flex-col items-center">
-                        <div class="text-violet-600 text-[11px] font-black tracking-[0.2em] uppercase mb-2">Open 24 Hours</div>
-                        <div class="w-28 h-28 bg-white rounded-full overflow-hidden border-4 border-violet-600 shadow-[0_8px_32px_-4px_rgba(124,58,237,0.55)] mb-2 flex items-center justify-center">
-                            <img src="images/itea_logo.png" alt="i-Tea" class="w-full h-full object-contain p-2">
-                        </div>
-                    </div>
-                    ` : ''}
-                    
-                    <!-- Spacer so background image can be seen before the carousel -->
-                    ${!isDesktop ? '<div class="w-full flex-1 min-h-[140px]"></div>' : ''}
-                    
-                    <!-- Carousel Container -->
-                    ${!isDesktop ? `
-                    <div class="relative z-20 w-full mt-auto shrink-0 pb-2">
-                        <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-6 ${carouselAlign}">
-                            <!-- Card 1 -->
-                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
-                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
-                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
-                                </div>
-                            </div>
-                            <!-- Card 2 -->
-                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
-                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
-                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
-                                </div>
-                            </div>
-                            <!-- Card 3 -->
-                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
-                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
-                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
-                                </div>
-                            </div>
-                            <!-- Card 4 -->
-                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
-                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
-                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.95</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Pagination Dots -->
-                        <div class="flex justify-center items-center gap-2 mt-2 mb-4 lg:hidden" style="padding-right: 0;">
-                            <div id="carousel-dot-0" class="w-2 h-2 rounded-full bg-violet-600 transition-colors duration-300"></div>
-                            <div id="carousel-dot-1" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
-                            <div id="carousel-dot-2" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
-                            <div id="carousel-dot-3" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
-                        </div>
-                    </div>
-                    ` : ''}
-                    <!-- Desktop Categories Section -->
-                    ${isDesktop ? `
-                    <div class="bg-white pt-24 pb-12 px-12 rounded-t-[40px] -mt-16 w-full shrink-0 relative z-30 shadow-[0_-15px_30px_-5px_rgba(0,0,0,0.05)]">
-                        <div class="max-w-[1080px] mx-auto text-center">
-                            <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Explore Our Menu</h2>
-                            <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Select a category to start ordering</p>
-                            
-                            <div class="grid grid-cols-3 gap-6 justify-items-center mb-8">
-                                ${getActiveCategories().map(cat => `
-                                    <div onclick="navigateTo('locations');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
-                                        <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
-                                            <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                                        </div>
-                                        <h3 class="font-branding font-black text-2xl text-violet-600 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
-                                        <div class="text-lg font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <span>Order Now</span><i class="fa-solid fa-arrow-right text-[9px]"></i>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-
-                            <!-- Divider -->
-                            <div class="h-px bg-gray-100 w-full mb-8"></div>
-
-                            <!-- Featured Items Section -->
-                            <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Featured Items</h2>
-                            <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Our handcrafted favorites</p>
-
-                            <div class="grid grid-cols-4 gap-6 justify-items-center w-full">
-                                <!-- Card 1 -->
-                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
-                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
-                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
-                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
-                                    </div>
-                                </div>
-                                <!-- Card 2 -->
-                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
-                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
-                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
-                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
-                                    </div>
-                                </div>
-                                <!-- Card 3 -->
-                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
-                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
-                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
-                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
-                                    </div>
-                                </div>
-                                <!-- Card 4 -->
-                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
-                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
-                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
-                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.95</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Rewards Banner Section -->
-                            <div class="mt-12 w-full">
-                                <div class="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-violet-50 shadow-sm flex items-center justify-between px-10 py-8 gap-8">
-                                    <!-- Decorative background blobs -->
-                                    <div class="absolute -top-10 -left-10 w-48 h-48 bg-violet-200/30 rounded-full blur-3xl pointer-events-none"></div>
-                                    <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-violet-200/30 rounded-full blur-3xl pointer-events-none"></div>
-
-                                    <!-- Left: Text Content -->
-                                    <div class="relative z-10 text-left flex-1 min-w-0">
-                                        <p class="text-violet-600 text-xs font-black uppercase tracking-[0.25em] mb-1">Join Rewards</p>
-                                        <h2 class="font-branding font-black text-4xl text-gray-900 uppercase tracking-tight leading-none mb-2">Get Rewarded</h2>
-                                        <p class="text-sm font-semibold text-gray-500">The easiest way to free i-Tea</p>
-                                    </div>
-
-                                    <!-- Right: Buttons -->
-                                    <div class="relative z-10 flex flex-col items-center gap-3 shrink-0">
-                                        <button onclick="navigateTo('registration')" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=''" class="px-10 py-3 rounded-xl border-2 border-gray-900 text-gray-900 font-black text-sm uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-all duration-200 shadow-sm active:scale-95 whitespace-nowrap">
-                                            Join Now
-                                        </button>
-                                        <button onclick="navigateTo('registration')" class="text-violet-600 font-black text-xs uppercase tracking-widest hover:text-violet-800 transition-colors active:scale-95 whitespace-nowrap">
-                                            Learn More
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    ` : ''}
-                </div>
-
-                ${!isDesktop ? `
-                <!-- Order Now Button (Fixed above bottom nav on mobile/tablet) -->
-                <div class="px-6 pb-6 pt-2 relative z-20 shrink-0">
-                    <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
-                </div>` : ''}
-            </div>`;
-    },
     'locations': () => {
         const getSet = () => {
             const list = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
@@ -2735,84 +2514,124 @@ const routes = {
         const isDesktop = currentViewport === 'desktop';
         const item = mockupState.selectedItem || MENU_ITEMS[1]; // Fallback to Taro Latte
         const basePrice = item.price;
+        const detail = mockupState.selectedItemDetail;
+        const groups = (detail && detail.menuSubItemGroups) || [];
+        const sels = mockupState._customizeSubItems || {};
 
-        // --- Extra Toppings definition (with price per unit) ---
-        const EXTRA_TOPPINGS = [
-            { id: 'agarBoba',    name: 'AGAR BOBA',   price: 0.75 },
-            { id: 'almondMilk',  name: 'ALMOND MILK', price: 0.75 },
-            { id: 'aloeVera',    name: 'ALOE VERA',   price: 0.50 },
-            { id: 'boba',        name: 'BOBA',        price: 0.00 },
-            { id: 'chiaSeed',    name: 'CHIA SEED',   price: 0.00 },
-        ];
-
-        // --- Cup Options (add-on, qty-based) ---
-        const CUP_OPTIONS = [
-            { id: 'afterCup', name: 'AFTER CUP', price: 1.00 },
-            { id: 'saltCup',  name: 'SALT CUP',  price: 0.40 },
-        ];
-
-        // --- Free toppings checklist (large list from screenshot) ---
-        const FREE_TOPPINGS = [
-            'FLAN', 'CRYSTAL JELLY', 'EGG PUDDING', 'COCONUT JELLY', 'ANNA',
-            'LEMON TEA', 'LYCHEE JELLY', 'PASSION JELLY', 'TARO ANNA', 'RED BEAN',
-            'COFFEE JELLY', 'BLUE BOBA (FIL.)', 'PINEAPPLE JELLY', 'PLANTAINS PUDDING',
-            'M PUDDING', 'PANDA JELLY', 'PAMELA LOTTE', 'STRAWBERRY POBAL', 'MANGO BOBA',
-            'GROUND COCONUT LOTTE', 'CREPE JELLY', 'CINNAMON COCONUT JELLY',
-        ];
-
-        // init topping quantities if needed
-        if (!mockupState.toppingQty) mockupState.toppingQty = {};
-        if (!mockupState.cupQty)     mockupState.cupQty = {};
-        if (!mockupState.freeToppings) mockupState.freeToppings = [];
-        if (!mockupState.iceLevel)   mockupState.iceLevel = 'ICE';
-
-        // --- Dynamic total calculation ---
+        // --- Dynamic total calculation from selected sub-items ---
         let extrasTotal = 0;
-        EXTRA_TOPPINGS.forEach(t => {
-            extrasTotal += (mockupState.toppingQty[t.id] || 0) * t.price;
-        });
-        CUP_OPTIONS.forEach(c => {
-            extrasTotal += (mockupState.cupQty[c.id] || 0) * c.price;
-        });
+        for (const gid in sels) {
+            const groupItems = sels[gid]?.items || {};
+            for (const sid in groupItems) {
+                extrasTotal += (groupItems[sid].price || 0) * (groupItems[sid].quantity || 1);
+            }
+        }
         const totalPrice = ((basePrice + extrasTotal) * mockupState.itemQuantity).toFixed(2);
 
-        // --- Helper: stepper button for toppings/cups ---
-        const stepperRow = (id, name, price, stateKey, qty) => {
-            const fmtPrice = price === 0 ? 'FREE' : `+$${price.toFixed(2)}`;
-            return `
-                <div class="flex justify-between items-center py-2.5">
+        // --- Section header helper ---
+        const sectionHeader = (label, required) => `
+            <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
+                <span class="text-xs font-black text-violet-600 uppercase tracking-widest">${label}</span>
+                ${required ? '<span class="text-[9px] font-bold text-red-400 uppercase tracking-widest">Required</span>' : ''}
+            </div>`;
+
+        // --- Render a single-select group (radio pills) ---
+        const renderRadioGroup = (group) => {
+            const gid = group.menuSubItemGroupId;
+            const prices = (group.groupPrices || []);
+            const selectedId = Object.keys(sels[gid]?.items || {})[0];
+            return prices.map(p => {
+                const sub = p.menuSubItem || {};
+                const name = (sub.name || '').toUpperCase();
+                const isSelected = String(p.menuSubItemId) === String(selectedId);
+                return `
+                <button onclick="window._selectSubItem(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${name.replace(/'/g, "\\'")}', ${p.price || 0}, true)" class="w-full flex justify-between items-center py-2 group">
+                    <span class="text-sm font-black text-gray-700 uppercase tracking-tight">${name}</span>
+                    <div class="w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${isSelected ? 'border-violet-600 bg-violet-600' : 'border-gray-200 group-hover:border-violet-300'}">
+                        ${isSelected ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ''}
+                    </div>
+                </button>`;
+            }).join('');
+        };
+
+        // --- Render a multi-select group (stepper rows) ---
+        const renderStepperGroup = (group) => {
+            const gid = group.menuSubItemGroupId;
+            const prices = (group.groupPrices || []);
+            return prices.map(p => {
+                const sub = p.menuSubItem || {};
+                const name = (sub.name || '').toUpperCase();
+                const price = p.price || 0;
+                const fmtPrice = price === 0 ? 'FREE' : `+$${price.toFixed(2)}`;
+                const qty = (sels[gid]?.items?.[p.menuSubItemId]?.quantity) || 0;
+                const safeName = name.replace(/'/g, "\\'");
+                return `
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-50">
                     <div class="flex flex-col">
                         <span class="text-sm font-black text-gray-800 uppercase tracking-tight">${name}</span>
                         <span class="text-[11px] font-bold text-gray-400">${fmtPrice}</span>
                     </div>
                     <div class="flex items-center gap-3">
-                        <button onclick="(() => { const q = {...(mockupState.${stateKey} || {})}; q['${id}'] = Math.max(0, (q['${id}'] || 0) - 1); updateMockupState('${stateKey}', q); })()" class="w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 transition-all active:scale-90 text-xs">
+                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${safeName}', ${price}, -1)" class="w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 transition-all active:scale-90 text-xs">
                             <i class="fa-solid fa-minus"></i>
                         </button>
                         <span class="font-black text-gray-900 w-4 text-center text-sm">${qty}</span>
-                        <button onclick="(() => { const q = {...(mockupState.${stateKey} || {})}; q['${id}'] = (q['${id}'] || 0) + 1; updateMockupState('${stateKey}', q); })()" class="w-7 h-7 rounded-full border border-violet-200 bg-violet-50 flex items-center justify-center text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all active:scale-90 text-xs">
+                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${safeName}', ${price}, 1)" class="w-7 h-7 rounded-full border border-violet-200 bg-violet-50 flex items-center justify-center text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all active:scale-90 text-xs">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </div>
                 </div>`;
+            }).join('');
         };
 
-        // --- Helper: radio row ---
-        const radioRow = (label, stateKey, value, activeValue) => `
-            <button onclick="updateMockupState('${stateKey}', '${value}')" class="w-full flex justify-between items-center py-2 group">
-                <span class="text-sm font-black text-gray-700 uppercase tracking-tight">${label}</span>
-                <div class="w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${activeValue === value ? 'border-violet-600 bg-violet-600' : 'border-gray-200 group-hover:border-violet-300'}">
-                    ${activeValue === value ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ''}
-                </div>
-            </button>`;
+        // --- Render modifier groups dynamically ---
+        const renderGroups = (colLayout) => {
+            if (!groups.length) {
+                return `<div class="text-center py-8 text-gray-400 text-sm font-bold uppercase tracking-widest">
+                    ${mockupState.isLoading ? '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading customizations...' : 'No customization options available'}
+                </div>`;
+            }
+            // Separate single-select (radio) and multi-select (stepper) groups
+            const radioGroups = groups.filter(g => (g.maxSelect || 1) === 1);
+            const stepperGroups = groups.filter(g => (g.maxSelect || 1) > 1);
 
-        // --- Section header ---
-        const sectionHeader = (label) => `
-            <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
-                <span class="text-xs font-black text-violet-600 uppercase tracking-widest">${label}</span>
-            </div>`;
+            let html = '';
+            // Radio groups
+            for (const g of radioGroups) {
+                const isRequired = (g.minSelect || 0) >= 1;
+                html += `<div>
+                    ${sectionHeader(g.displayName || g.groupName || 'Options', isRequired)}
+                    <div class="${colLayout === 'grid' ? 'grid grid-cols-3 gap-x-8 gap-y-1' : 'space-y-1'}">
+                        ${renderRadioGroup(g)}
+                    </div>
+                </div>`;
+            }
+            // Stepper groups
+            if (stepperGroups.length > 0) {
+                if (colLayout === 'grid') {
+                    // Desktop: side-by-side columns
+                    html += `<div class="grid grid-cols-2 gap-8">`;
+                    for (const g of stepperGroups) {
+                        html += `<div>
+                            ${sectionHeader(g.displayName || g.groupName || 'Options', false)}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">${renderStepperGroup(g)}</div>
+                        </div>`;
+                    }
+                    html += `</div>`;
+                } else {
+                    // Mobile: stacked
+                    for (const g of stepperGroups) {
+                        html += `<div>
+                            ${sectionHeader(g.displayName || g.groupName || 'Options', false)}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">${renderStepperGroup(g)}</div>
+                        </div>`;
+                    }
+                }
+            }
+            return html;
+        };
 
-        // ---- DESKTOP LAYOUT (registration-style full page, single column) ----
+        // ---- DESKTOP LAYOUT ----
         if (isDesktop) {
             return `
                 <div class="flex flex-col h-full bg-[#f6f6f6] relative overflow-y-auto">
@@ -2835,7 +2654,7 @@ const routes = {
                                 <div>
                                     <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
                                     <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-2">${item.name}</h3>
-                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description}</p>
+                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || (detail?.description || '')}</p>
                                 </div>
                                 <!-- Quantity inline -->
                                 <div class="flex items-center gap-4">
@@ -2851,63 +2670,14 @@ const routes = {
 
                         <!-- Customization Options Card -->
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col gap-7">
-
-                            <!-- Sugar Level -->
-                            <div>
-                                ${sectionHeader('Sugar Level')}
-                                <div class="grid grid-cols-3 gap-x-8 gap-y-1">
-                                    ${['SUGAR 0%', 'SUGAR 30%', 'SUGAR 50%', 'SUGAR 80%', 'SUGAR 100%'].map(lvl => radioRow(lvl, 'sugarLevel', lvl, mockupState.sugarLevel)).join('')}
-                                </div>
-                            </div>
-
-                            <!-- Ice Level -->
-                            <div>
-                                ${sectionHeader('Ice Level')}
-                                <div class="grid grid-cols-3 gap-x-8 gap-y-1">
-                                    ${['PLAIN', 'LESS ICE', 'ICE', 'MORE ICE', 'HOT', 'HOT CHOICE'].map(lvl => radioRow(lvl, 'iceLevel', lvl, mockupState.iceLevel)).join('')}
-                                </div>
-                            </div>
-
-                            <!-- Extra Toppings + Cup Options side by side -->
-                            <div class="grid grid-cols-2 gap-8">
-                                <div>
-                                    ${sectionHeader('Extra Toppings')}
-                                    <div class="divide-y divide-gray-50">
-                                        ${EXTRA_TOPPINGS.map(t => stepperRow(t.id, t.name, t.price, 'toppingQty', mockupState.toppingQty[t.id] || 0)).join('')}
-                                    </div>
-                                </div>
-                                <div>
-                                    ${sectionHeader('Cup Options')}
-                                    <div class="divide-y divide-gray-50">
-                                        ${CUP_OPTIONS.map(c => stepperRow(c.id, c.name, c.price, 'cupQty', mockupState.cupQty[c.id] || 0)).join('')}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Free Topping Checklist -->
-                            <div>
-                                ${sectionHeader('Add Toppings')}
-                                <div class="grid grid-cols-4 gap-x-4 gap-y-3">
-                                    ${FREE_TOPPINGS.map(t => {
-                                        const isChecked = (mockupState.freeToppings || []).includes(t);
-                                        const safeT = t.replace(/'/g, "\\'");
-                                        return `
-                                        <label class="flex items-center gap-2 cursor-pointer group">
-                                            <button onclick="(() => { let ft = [...(mockupState.freeToppings || [])]; const i = ft.indexOf('${safeT}'); if(i > -1) ft.splice(i,1); else ft.push('${safeT}'); updateMockupState('freeToppings', ft); })()"
-                                                class="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${isChecked ? 'border-violet-600 bg-violet-600' : 'border-gray-200 group-hover:border-violet-300'}">
-                                                ${isChecked ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ''}
-                                            </button>
-                                            <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight">${t}</span>
-                                        </label>`;
-                                    }).join('')}
-                                </div>
-                            </div>
+                            ${renderGroups('grid')}
 
                             <!-- Special Instructions -->
+                            ${detail && !detail.disableSpecialInstruction ? `
                             <div>
                                 <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions <span class="text-gray-300">(Max 250 Characters)</span></div>
-                                <textarea maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors"></textarea>
-                            </div>
+                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ''}</textarea>
+                            </div>` : ''}
                         </div>
 
                         <!-- Add to Cart Card (bottom) -->
@@ -2916,7 +2686,7 @@ const routes = {
                                 <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Options Total</span>
                                 <span class="text-lg font-black text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                             </div>
-                            <button onclick="updateMockupState('cartItemCount', mockupState.cartItemCount + mockupState.itemQuantity); navigateTo('cart')" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">Add to Cart — $${totalPrice}</button>
+                            <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">Add to Cart — $${totalPrice}</button>
                             <button onclick="navigateTo('menu')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
                         </div>
 
@@ -2925,7 +2695,7 @@ const routes = {
             `;
         }
 
-        // ---- MOBILE LAYOUT (unchanged) ----
+        // ---- MOBILE LAYOUT ----
         return `
                 <div class="flex flex-col h-full bg-white">
                     <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
@@ -2950,7 +2720,7 @@ const routes = {
                         <div class="px-6 pt-5 pb-4 text-center border-b border-gray-100">
                             <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
                             <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-1">${item.name}</h3>
-                            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description}</p>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || (detail?.description || '')}</p>
                         </div>
 
                         <!-- Customizations -->
@@ -2966,64 +2736,14 @@ const routes = {
                                 </div>
                             </div>
 
-                            <!-- Sugar Level -->
-                            <div>
-                                ${sectionHeader('Sugar Level')}
-                                <div class="space-y-1">
-                                    ${['SUGAR 0%', 'SUGAR 30%', 'SUGAR 50%', 'SUGAR 80%', 'SUGAR 100%'].map(lvl => radioRow(lvl, 'sugarLevel', lvl, mockupState.sugarLevel)).join('')}
-                                </div>
-                            </div>
-
-                            <!-- Ice Level -->
-                            <div>
-                                ${sectionHeader('Ice Level')}
-                                <div class="space-y-1">
-                                    ${['PLAIN', 'LESS ICE', 'ICE', 'MORE ICE', 'HOT', 'HOT CHOICE'].map(lvl => radioRow(lvl, 'iceLevel', lvl, mockupState.iceLevel)).join('')}
-                                </div>
-                            </div>
-
-                            <!-- Extra Toppings -->
-                            <div>
-                                ${sectionHeader('Extra Toppings')}
-                                <div class="divide-y divide-gray-50">
-                                    ${EXTRA_TOPPINGS.map(t => stepperRow(t.id, t.name, t.price, 'toppingQty', mockupState.toppingQty[t.id] || 0)).join('')}
-                                </div>
-                                <p class="text-[10px] font-bold text-gray-400 mt-3 uppercase tracking-widest">Note: Not charged for free toppings</p>
-                            </div>
-
-                            <!-- Cup Options -->
-                            <div>
-                                ${sectionHeader('Cup Options')}
-                                <div class="divide-y divide-gray-50">
-                                    ${CUP_OPTIONS.map(c => stepperRow(c.id, c.name, c.price, 'cupQty', mockupState.cupQty[c.id] || 0)).join('')}
-                                </div>
-                                <p class="text-[10px] font-bold text-gray-400 mt-3 uppercase tracking-widest">Note: Not charged for free toppings</p>
-                            </div>
-
-                            <!-- Free Topping Checklist -->
-                            <div>
-                                ${sectionHeader('Add Toppings')}
-                                <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-                                    ${FREE_TOPPINGS.map(t => {
-                                        const isChecked = (mockupState.freeToppings || []).includes(t);
-                                        const safeT = t.replace(/'/g, "\\'");
-                                        return `
-                                        <label class="flex items-center gap-2 cursor-pointer group">
-                                            <button onclick="(() => { let ft = [...(mockupState.freeToppings || [])]; const i = ft.indexOf('${safeT}'); if(i > -1) ft.splice(i,1); else ft.push('${safeT}'); updateMockupState('freeToppings', ft); })()"
-                                                class="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${isChecked ? 'border-violet-600 bg-violet-600' : 'border-gray-200 group-hover:border-violet-300'}">
-                                                ${isChecked ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ''}
-                                             </button>
-                                            <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight">${t}</span>
-                                        </label>`;
-                                    }).join('')}
-                                </div>
-                            </div>
+                            ${renderGroups('stacked')}
 
                             <!-- Special Instructions -->
+                            ${detail && !detail.disableSpecialInstruction ? `
                             <div>
                                 <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions <span class="text-gray-300">(Max 250 Characters)</span></div>
-                                <textarea maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors"></textarea>
-                            </div>
+                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ''}</textarea>
+                            </div>` : ''}
 
                         </div>
                     </div>
@@ -3034,21 +2754,79 @@ const routes = {
                             <span>Options Total</span>
                             <span class="text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                         </div>
-                        <button onclick="updateMockupState('cartItemCount', mockupState.cartItemCount + mockupState.itemQuantity); navigateTo('cart')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Add to Cart - $${totalPrice}</button>
+                        <button onclick="window._addToCart()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Add to Cart - $${totalPrice}</button>
                     </div>
                 </div>
             `;
     },
-
     'cart': () => {
         const isDesktop = currentViewport === 'desktop';
         const bagFee = (mockupState.bagQuantity * 0.10);
-        const subtotal = 19.00;
-        const taxes = 2.45;
-        const finalTotal = (subtotal + taxes + bagFee).toFixed(2);
+        // Dynamic pricing from cart
+        const cart = mockupState.cart || [];
+        const subtotal = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+        const taxRate = mockupState.locationTaxRate || 0.0925;
+        const taxes = subtotal * taxRate;
+        const convenienceFee = mockupState.locationConvenienceFee || 0;
+        const finalTotal = (subtotal + taxes + bagFee + convenienceFee).toFixed(2);
 
         const selectionNotMade = mockupState.bagQuantity === 0 && !mockupState.noBagsSelected;
         const paymentAction = selectionNotMade ? `updateMockupState('modalOpen', 'bag-alert')` : `navigateTo('checkout')`;
+
+        // Render cart items dynamically
+        const renderCartItems = () => {
+            if (cart.length === 0) {
+                return `
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
+                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-bag-shopping text-2xl text-gray-300"></i>
+                    </div>
+                    <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-2">Your cart is empty</h3>
+                    <p class="text-xs text-gray-400 font-medium mb-4">Add items from the menu to get started</p>
+                    <button onclick="navigateTo('menu')" class="bg-violet-600 text-white px-6 py-3 rounded-full font-black text-sm uppercase tracking-wider hover:bg-violet-700 active:scale-95 transition-all">
+                        Browse Menu
+                    </button>
+                </div>`;
+            }
+            return `
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 divide-y divide-gray-100">
+                ${cart.map((item, idx) => {
+                    // Build customization summary text
+                    const customSummary = (item.selectedSubItems || [])
+                        .map(s => s.quantity > 1 ? `${s.name} x${s.quantity}` : s.name)
+                        .join(', ') || 'No customizations';
+                    const itemTotal = (item.unitPrice * item.quantity).toFixed(2);
+
+                    return `
+                    <div class="flex justify-between items-start ${idx > 0 ? 'pt-5' : ''} ${idx < cart.length - 1 ? 'pb-5' : ''}">
+                        <div class="flex gap-4 items-start">
+                            <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0">
+                                <img src="${item.image}" class="w-full h-full object-cover object-top">
+                            </div>
+                            <div>
+                                <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight">${item.name}</h3>
+                                <div class="flex items-start gap-2 mb-3">
+                                    <p class="text-[11px] text-gray-500 font-medium line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed flex-1" id="desc-${idx}" onclick="this.classList.toggle('line-clamp-2')">${customSummary}${item.specialInstruction ? ' • ' + item.specialInstruction : ''}</p>
+                                </div>
+                                <!-- Quantity Controls -->
+                                <div class="flex items-center bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-50 px-3 py-1.5 gap-5 w-fit">
+                                    <button onclick="window._updateCartQty(${idx}, ${item.quantity === 1 ? 0 : item.quantity - 1})" class="text-gray-900 hover:text-red-500 transition-colors active:scale-90">
+                                        <i class="fa-${item.quantity === 1 ? 'regular fa-trash-can' : 'solid fa-minus'} text-[13px]"></i>
+                                    </button>
+                                    <span class="font-black text-[13px] text-gray-900 min-w-[8px] text-center">${item.quantity}</span>
+                                    <button onclick="window._updateCartQty(${idx}, ${item.quantity + 1})" class="text-gray-900 hover:text-violet-600 transition-colors active:scale-90">
+                                        <i class="fa-solid fa-plus text-[13px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-black text-gray-900">$${itemTotal}</span>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>`;
+        };
 
         return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
@@ -3085,7 +2863,6 @@ const routes = {
 
                         <!-- Pickup Details (Compact Grid) -->
                         <div class="grid grid-cols-2 gap-4">
-                            <!-- Pickup Method -->
                             <div onclick="navigateTo('order-details')" class="flex gap-3 items-center cursor-pointer group">
                                 <div class="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
                                     <i class="fa-solid ${mockupState.fulfillmentMode === 'Delivery' ? 'fa-truck' : mockupState.fulfillmentMode === 'Curbside' ? 'fa-car' : mockupState.fulfillmentMode === 'DriveUp' ? 'fa-car-side' : 'fa-shop'} text-white text-sm"></i>
@@ -3095,7 +2872,6 @@ const routes = {
                                     <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight">${mockupState.fulfillmentMode || 'Pickup'}</span>
                                 </div>
                             </div>
-                            <!-- Pickup Time -->
                             <div onclick="navigateTo('order-details')" class="flex gap-3 items-center cursor-pointer group border-l border-gray-50 pl-2">
                                 <div class="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
                                     <i class="fa-regular fa-clock text-white text-sm"></i>
@@ -3108,60 +2884,8 @@ const routes = {
                         </div>
                     </div>
 
-                    <div>
-                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 divide-y divide-gray-100">
-                            <!-- Item 1 -->
-                            <div class="flex justify-between items-start pb-5 mb-5">
-                                <div class="flex gap-4 items-start">
-                                    <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba2}" class="w-full h-full object-cover object-top"></div>
-                                    <div>
-                                        <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight cursor-pointer" onclick="navigateTo('customize')">Brown Sugar Pearl</h3>
-                                        <div class="flex items-start gap-2 mb-3">
-                                            <p class="text-[11px] text-gray-500 font-medium cursor-pointer line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed flex-1" id="desc-1" onclick="this.classList.toggle('line-clamp-2'); document.getElementById('desc-icon-1').classList.toggle('rotate-180')" title="Click to expand/collapse customizations">Large, Less Ice, Extra Boba, Oat Milk, 50% Sweetness, No Foam, Double Pearl, Less Sweet, Extra Ice, Cheese Foam, Lychee Jelly</p>
-                                            <button onclick="document.getElementById('desc-1').click()" class="w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors shrink-0 mt-0.5">
-                                                <i id="desc-icon-1" class="fa-solid fa-chevron-down text-[8px] transition-transform duration-300"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <!-- Quantity Selector Pill -->
-                                        <div class="flex items-center bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-50 px-3 py-1.5 gap-5 w-fit">
-                                            <button class="text-gray-900 hover:text-red-500 transition-colors active:scale-90"><i class="fa-regular fa-trash-can text-[13px]"></i></button>
-                                            <span class="font-black text-[13px] text-gray-900 min-w-[8px] text-center">1</span>
-                                            <button class="text-gray-900 hover:text-violet-600 transition-colors active:scale-90"><i class="fa-solid fa-plus text-[13px]"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <span class="font-black text-gray-900">$6.50</span>
-                                </div>
-                            </div>
-                            <!-- Item 2 -->
-                            <div class="flex justify-between items-start pt-5">
-                                <div class="flex gap-4 items-start">
-                                    <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 cursor-pointer" onclick="navigateTo('customize')"><img src="${assets.boba1}" class="w-full h-full object-cover object-top"></div>
-                                    <div>
-                                        <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight cursor-pointer" onclick="navigateTo('customize')">Protein Bowl</h3>
-                                        <div class="flex items-start gap-2 mb-3">
-                                            <p class="text-[11px] text-gray-500 font-medium cursor-pointer line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed flex-1" id="desc-2" onclick="this.classList.toggle('line-clamp-2'); document.getElementById('desc-icon-2').classList.toggle('rotate-180')">Extra Chicken</p>
-                                            <button onclick="document.getElementById('desc-2').click()" class="w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors shrink-0 mt-0.5">
-                                                <i id="desc-icon-2" class="fa-solid fa-chevron-down text-[8px] transition-transform duration-300"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <!-- Quantity Selector Pill -->
-                                        <div class="flex items-center bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-50 px-3 py-1.5 gap-5 w-fit">
-                                            <button class="text-gray-900 hover:text-red-500 transition-colors active:scale-90"><i class="fa-regular fa-trash-can text-[13px]"></i></button>
-                                            <span class="font-black text-[13px] text-gray-900 min-w-[8px] text-center">1</span>
-                                            <button class="text-gray-900 hover:text-violet-600 transition-colors active:scale-90"><i class="fa-solid fa-plus text-[13px]"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <span class="font-black text-gray-900">$12.50</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Cart Items -->
+                    ${renderCartItems()}
                     
                     <button onclick="updateMockupState('menuTab', 'menu'); navigateTo('menu')" class="w-full bg-transparent border-2 border-violet-600 text-violet-600 py-3.5 rounded-full font-black text-sm shadow-[0_8px_25px_-5px_rgba(124,58,237,0.2)] hover:bg-violet-50 active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2 shrink-0">
                         <i class="fa-solid fa-plus"></i> Add another menu item
@@ -3230,6 +2954,7 @@ const routes = {
                     <div class="mt-auto bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3 shrink-0">
                         <div class="flex justify-between text-sm font-bold text-gray-600"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
                         <div class="flex justify-between text-sm font-bold text-gray-600"><span>Taxes & Fees</span><span>$${taxes.toFixed(2)}</span></div>
+                        ${convenienceFee > 0 ? `<div class="flex justify-between text-sm font-bold text-gray-600"><span>Convenience Fee</span><span>$${convenienceFee.toFixed(2)}</span></div>` : ''}
                         ${mockupState.bagQuantity > 0 ? `<div class="flex justify-between text-sm font-bold text-gray-600"><span>Plastic Bag(s)</span><span>$${bagFee.toFixed(2)}</span></div>` : ''}
                         <div class="h-px bg-gray-200 w-full my-2"></div>
                         <div class="flex justify-between text-lg font-black text-gray-900 uppercase"><span>Total</span><span>$${finalTotal}</span></div>
@@ -3303,8 +3028,14 @@ const routes = {
 
                     <!-- Greeting -->
                     <div class="mb-2">
-                        <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1">Hi Michaelangelo!</h1>
+                        <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1">Hi ${mockupState.userName}!</h1>
                         <p class="text-gray-500 font-medium">Manage your account settings and order history.</p>
+                        <div class="mt-4 p-3 bg-gray-100 border-2 border-gray-200 rounded-xl text-xs font-mono text-gray-600">
+                            <strong>Debug Info:</strong><br>
+                            Token: ${window.ApiService?.getToken() ? 'YES' : 'NO'}<br>
+                            isLoggedIn: ${mockupState.isLoggedIn}<br>
+                            Profile Data: ${JSON.stringify(mockupState.userProfile || null)}
+                        </div>
                     </div>
 
                     <!-- Personal Info Card -->
@@ -3323,26 +3054,20 @@ const routes = {
                         <div class="px-5 py-4 grid grid-cols-2 gap-x-8 gap-y-4">
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">First Name</p>
-                                <p class="font-bold text-gray-800 text-sm">Michaelangelo</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.firstName || 'Not set'}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Last Name</p>
-                                <p class="font-bold text-gray-800 text-sm">Riley</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.lastName || 'Not set'}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Email</p>
-                                <p class="font-bold text-violet-600 text-sm truncate">michaelriley08@gmail.com</p>
+                                <p class="font-bold text-violet-600 text-sm truncate">${mockupState.userProfile?.email || 'Not set'}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Phone</p>
-                                <p class="font-bold text-gray-800 text-sm">732-539-2167</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.phoneNumber || 'Not set'}</p>
                             </div>
-                        </div>
-                        <!-- Address -->
-                        <div class="px-5 py-4 border-t border-gray-100">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Address</p>
-                            <p class="font-bold text-gray-800 text-sm">1705 W. Ruby Dr #105</p>
-                            <p class="font-bold text-gray-500 text-sm">Tempe, AZ 85284</p>
                         </div>
                     </div>
 
@@ -3357,44 +3082,58 @@ const routes = {
                                 </button>
                             </div>
                             <div class="flex flex-col gap-4">
+                                <div id="prof-error" class="text-xs font-bold text-red-500 text-center h-4 opacity-0 transition-all"></div>
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">First Name</label>
-                                        <input type="text" value="Michaelangelo" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <input type="text" id="prof-first-name" value="${mockupState.userProfile?.firstName || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                     </div>
                                     <div>
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Last Name</label>
-                                        <input type="text" value="Riley" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <input type="text" id="prof-last-name" value="${mockupState.userProfile?.lastName || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                     </div>
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Email</label>
-                                    <input type="email" value="michaelriley08@gmail.com" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-violet-600 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    <input type="email" id="prof-email" value="${mockupState.userProfile?.email || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-violet-600 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Phone</label>
-                                    <input type="tel" value="732-539-2167" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    <input type="tel" id="prof-phone" value="${mockupState.userProfile?.phoneNumber || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                 </div>
-                                <div>
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Street Address</label>
-                                    <input type="text" value="1705 W. Ruby Dr #105" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
-                                </div>
-                                <div class="grid grid-cols-3 gap-3">
-                                    <div class="col-span-2">
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">City</label>
-                                        <input type="text" value="Tempe" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
-                                    </div>
-                                    <div>
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">State</label>
-                                        <input type="text" value="AZ" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Zip Code</label>
-                                    <input type="text" value="85284" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
-                                </div>
-                                <button onclick="mockupState.modalOpen=null;navigateTo(currentPage);" class="w-full mt-2 py-4 bg-violet-600 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-violet-700 transition-colors active:scale-95">
+                                <button onclick="handleUpdateProfile()" class="w-full mt-2 py-4 bg-violet-600 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-violet-700 transition-colors active:scale-95">
                                     Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>` : ''}
+
+                    <!-- Change Password Modal -->
+                    ${mockupState.modalOpen === 'change-password' ? `
+                    <div class="modal-overlay z-[200]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
+                        <div class="bg-white w-[92%] max-w-[420px] rounded-3xl p-6 relative shadow-2xl">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Change Password</h2>
+                                <button onclick="mockupState.modalOpen=null;navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div class="flex flex-col gap-4">
+                                <div id="pwd-error" class="text-xs font-bold text-red-500 text-center h-4 opacity-0 transition-all"></div>
+                                <div>
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Current Password</label>
+                                    <input type="password" id="pwd-current" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">New Password</label>
+                                    <input type="password" id="pwd-new" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Confirm New Password</label>
+                                    <input type="password" id="pwd-confirm" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                </div>
+                                <button onclick="handleChangePassword()" class="w-full mt-2 py-4 bg-violet-600 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-violet-700 transition-colors active:scale-95">
+                                    Update Password
                                 </button>
                             </div>
                         </div>
@@ -3408,7 +3147,7 @@ const routes = {
                             </div>
                             <span class="font-black uppercase tracking-tight text-gray-900 text-sm">Account Settings</span>
                         </div>
-                        <button class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors active:scale-[0.99] border-b border-gray-50">
+                        <button onclick="mockupState.modalOpen = 'change-password'; navigateTo(currentPage);" class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors active:scale-[0.99] border-b border-gray-50">
                             <div class="flex items-center gap-3">
                                 <i class="fa-solid fa-lock text-gray-400 w-5 text-center"></i>
                                 <span class="font-bold text-gray-800 text-sm">Change Password</span>
@@ -3433,43 +3172,33 @@ const routes = {
                             <span class="font-black uppercase tracking-tight text-gray-900 text-sm">Order History</span>
                         </div>
 
-                        <!-- Order Row 1 -->
-                        <div class="px-5 py-4 border-b border-gray-100">
-                            <div class="flex justify-between items-center mb-2">
-                                <div>
-                                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">2/14/2026</p>
-                                    <p class="font-black text-violet-600 text-sm mt-0.5">i-Tea – Tempe</p>
+                        <div id="order-history-container">
+                            ${mockupState.lastOrder ? `
+                            <!-- Most Recent Order -->
+                            <div class="px-5 py-4 border-b border-gray-100">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div>
+                                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">${new Date(mockupState.lastOrder.placedAt || Date.now()).toLocaleDateString()}</p>
+                                        <p class="font-black text-violet-600 text-sm mt-0.5">${mockupState.selectedLocation || 'i-Tea'}</p>
+                                    </div>
+                                    <span class="font-black text-gray-900 text-base">$${(mockupState.lastOrder.total || 0).toFixed(2)}</span>
                                 </div>
-                                <span class="font-black text-gray-900 text-base">$21.08</span>
-                            </div>
-                            <div class="flex flex-col gap-0.5 mb-3">
-                                <p class="text-xs text-gray-500 font-medium">1 × M7 Crème Brûlée Boba Milk Tea</p>
-                                <p class="text-xs text-gray-500 font-medium">2 × P4 Brown Sugar Boba Latte</p>
-                                <p class="text-xs text-gray-400 font-medium">2 × Bag</p>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="navigateTo('order-status')" class="flex-1 py-2.5 rounded-full border-2 border-violet-600 text-violet-600 font-black text-xs uppercase tracking-widest hover:bg-violet-50 transition-colors">View</button>
-                                <button onclick="navigateTo('cart')" class="flex-1 py-2.5 rounded-full bg-violet-600 text-white font-black text-xs uppercase tracking-widest shadow-md hover:bg-violet-700 transition-colors">Reorder</button>
-                            </div>
-                        </div>
-
-                        <!-- Order Row 2 -->
-                        <div class="px-5 py-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <div>
-                                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">2/12/2026</p>
-                                    <p class="font-black text-violet-600 text-sm mt-0.5">i-Tea – Alameda</p>
+                                <div class="flex flex-col gap-0.5 mb-3">
+                                    ${(mockupState.lastOrder.orderItems || []).map(item =>
+                                        `<p class="text-xs text-gray-500 font-medium">${item.quantity} × ${item.name}</p>`
+                                    ).join('')}
                                 </div>
-                                <span class="font-black text-gray-900 text-base">$14.53</span>
+                                <div class="flex gap-2">
+                                    <button onclick="navigateTo('order-confirm')" class="flex-1 py-2.5 rounded-full border-2 border-violet-600 text-violet-600 font-black text-xs uppercase tracking-widest hover:bg-violet-50 transition-colors">View</button>
+                                    <button onclick="navigateTo('menu')" class="flex-1 py-2.5 rounded-full bg-violet-600 text-white font-black text-xs uppercase tracking-widest shadow-md hover:bg-violet-700 transition-colors">Reorder</button>
+                                </div>
                             </div>
-                            <div class="flex flex-col gap-0.5 mb-3">
-                                <p class="text-xs text-gray-500 font-medium">3 × A1 Premium Green Tea</p>
-                                <p class="text-xs text-gray-400 font-medium">1 × Bag</p>
+                            ` : `
+                            <div class="px-5 py-8 text-center">
+                                <p class="text-sm text-gray-400 font-medium">No orders yet — place your first order!</p>
+                                <button onclick="navigateTo('menu')" class="mt-3 text-violet-600 font-black text-xs uppercase tracking-widest hover:underline">Browse Menu →</button>
                             </div>
-                            <div class="flex gap-2">
-                                <button onclick="navigateTo('order-status')" class="flex-1 py-2.5 rounded-full border-2 border-violet-600 text-violet-600 font-black text-xs uppercase tracking-widest hover:bg-violet-50 transition-colors">View</button>
-                                <button onclick="navigateTo('cart')" class="flex-1 py-2.5 rounded-full bg-violet-600 text-white font-black text-xs uppercase tracking-widest shadow-md hover:bg-violet-700 transition-colors">Reorder</button>
-                            </div>
+                            `}
                         </div>
                     </div>
 
@@ -3533,7 +3262,7 @@ const routes = {
                                 </div>
 
                                 <div class="flex flex-col gap-3">
-                                    <button onclick="const val = document.getElementById('delete-confirm-input').value.toLowerCase(); if(val === 'delete account'){ alert('Account successfully deleted.'); navigateTo('landing'); } else { document.getElementById('delete-confirm-input').classList.add('border-red-500'); setTimeout(() => document.getElementById('delete-confirm-input').classList.remove('border-red-500'), 1000); }" class="w-full py-5 bg-red-600 text-white rounded-full font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-red-200 hover:bg-red-700 transition-all active:scale-95">
+                                    <button onclick="const val = document.getElementById('delete-confirm-input').value.toLowerCase(); if(val === 'delete account'){ alert('Account successfully deleted.'); navigateTo('home'); } else { document.getElementById('delete-confirm-input').classList.add('border-red-500'); setTimeout(() => document.getElementById('delete-confirm-input').classList.remove('border-red-500'), 1000); }" class="w-full py-5 bg-red-600 text-white rounded-full font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-red-200 hover:bg-red-700 transition-all active:scale-95">
                                         DELETE PERMANENTLY
                                     </button>
                                     <button onclick="mockupState.modalOpen=null;navigateTo(currentPage);" class="w-full py-3 text-gray-400 font-extrabold uppercase tracking-widest text-[10px] hover:text-gray-900 transition-colors">
@@ -3915,7 +3644,7 @@ const routes = {
                         <button onclick="alert('Calling store at (602) 555-0123...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
                             <i class="fa-solid fa-phone"></i> Contact Store
                         </button>
-                        <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
+                        <button onclick="navigateTo('home')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                     </div>
                     ` : ''}
                 </div>
@@ -3925,7 +3654,7 @@ const routes = {
                         <button onclick="alert('Calling store at (602) 555-0123...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
                             <i class="fa-solid fa-phone"></i> Contact Store
                         </button>
-                        <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
+                        <button onclick="navigateTo('home')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                     </div>
                 </div>
                 ` : ''}
@@ -3959,7 +3688,7 @@ const routes = {
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Email</label>
                                     <div class="relative">
                                         <i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                        <input type="email" placeholder="email@example.com" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <input type="email" id="reg-email" placeholder="email@example.com" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
                                 </div>
 
@@ -3968,14 +3697,14 @@ const routes = {
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Password</label>
                                         <div class="relative">
                                             <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                            <input type="password" placeholder="Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                            <input type="password" id="reg-password" placeholder="Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                         </div>
                                     </div>
                                     <div class="space-y-1.5">
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Confirm Password</label>
                                         <div class="relative">
                                             <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                            <input type="password" placeholder="Confirm Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                            <input type="password" id="reg-confirm-password" placeholder="Confirm Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                         </div>
                                     </div>
                                 </div>
@@ -3988,11 +3717,11 @@ const routes = {
                                 <div class="space-y-4">
                                     <div class="space-y-1.5">
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">First Name</label>
-                                        <input type="text" placeholder="First Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <input type="text" id="reg-first-name" placeholder="First Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
                                     <div class="space-y-1.5">
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Last Name</label>
-                                        <input type="text" placeholder="Last Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <input type="text" id="reg-last-name" placeholder="Last Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
                                 </div>
 
@@ -4000,7 +3729,7 @@ const routes = {
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Phone Number</label>
                                     <div class="relative">
                                         <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                        <input type="tel" placeholder="(555) 000-0000" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <input type="tel" id="reg-phone" placeholder="(555) 000-0000" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
                                 </div>
 
@@ -4040,11 +3769,12 @@ const routes = {
                         </div>
 
                         <div class="mt-4">
-                            <button onclick="navigateTo('restaurant-home')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase tracking-widest font-black">Create Account</button>
+                            <div id="reg-error" class="text-xs font-bold text-red-500 mb-2 text-center h-4 opacity-0 transition-all"></div>
+                            <button onclick="handleRegistration()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase tracking-widest font-black">Create Account</button>
                         </div>
 
                         <div class="text-center">
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Already have an account? <button onclick="navigateTo('restaurant-sign-in')" class="text-violet-600 ml-1 font-black underline underline-offset-4">Sign In</button></p>
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Already have an account? <button onclick="navigateTo('sign-in')" class="text-violet-600 ml-1 font-black underline underline-offset-4">Sign In</button></p>
                         </div>
                     </div>
                 </div>
@@ -4277,6 +4007,18 @@ const routes = {
 
     'order-confirm': () => {
         const isDesktop = currentViewport === 'desktop';
+        const order = mockupState.lastOrder || {};
+        const orderItems = order.orderItems || [];
+        const orderNum = order.orderId || order.orderNumber || ('FB-' + Math.floor(1000 + Math.random() * 9000));
+        const locationName = mockupState.selectedLocation || 'i-Tea';
+        const now = new Date();
+        const pickupTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        const orderSubtotal = (order.subtotal || 0).toFixed(2);
+        const orderTaxes = (order.taxes || 0).toFixed(2);
+        const orderTip = (order.tipAmount || 0).toFixed(2);
+        const orderTotal = (order.total || 0).toFixed(2);
+        const itemCount = orderItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
+
         return `
             <div class="flex flex-col h-full bg-white relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
@@ -4296,18 +4038,17 @@ const routes = {
                                 <i class="fa-solid fa-check text-5xl"></i>
                             </div>
                             <h1 class="text-4xl font-black text-gray-900 uppercase tracking-tighter mb-2">Order Confirmed!</h1>
-                            <p class="text-gray-500 font-medium mb-8">Your order #FB-9824 is being sent to the kitchen.</p>
+                            <p class="text-gray-500 font-medium mb-8">Your order #${orderNum} is being sent to the kitchen.</p>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
                                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Pick Up Time</div>
-                                <div class="text-2xl font-black text-gray-900 uppercase">8:02 PM</div>
+                                <div class="text-2xl font-black text-gray-900 uppercase">${pickupTime}</div>
                             </div>
                             <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
                                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Location</div>
-                                <div class="text-base font-black text-gray-900 uppercase truncate">i-Tea Tempe</div>
-                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight mt-1 truncate">825 W. University Dr</div>
+                                <div class="text-base font-black text-gray-900 uppercase truncate">${locationName}</div>
                             </div>
                         </div>
                     </div>
@@ -4327,62 +4068,50 @@ const routes = {
                                     <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
                                 </div>
                                 <div>
-                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - Tempe'}</h3>
-                                    <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
+                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${locationName}</h3>
+                                    <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">${itemCount} item${itemCount !== 1 ? 's' : ''}</p>
                                 </div>
                             </div>
 
                             <div class="space-y-4">
-                                <div class="flex gap-4">
-                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                        <img src="${assets.boba3}" class="w-full h-full object-cover object-top">
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="flex justify-between items-start">
-                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Brown Sugar Pearl</h4>
-                                            <span class="text-sm font-black text-gray-900">$6.50</span>
+                                ${orderItems.map(item => {
+                                    const customSummary = (item.selectedSubItems || [])
+                                        .map(s => s.quantity > 1 ? `${s.name} x${s.quantity}` : s.name)
+                                        .join(' • ') || 'Standard';
+                                    const itemTotal = (item.unitPrice * item.quantity).toFixed(2);
+                                    return `
+                                    <div class="flex gap-4">
+                                        <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
+                                            <img src="${item.image}" class="w-full h-full object-cover object-top">
                                         </div>
-                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Large • Less Ice • 75% Sweet</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-4">
-                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                        <img src="${assets.boba4}" class="w-full h-full object-cover object-top">
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="flex justify-between items-start">
-                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Protein Bowl</h4>
-                                            <span class="text-sm font-black text-gray-900">$12.50</span>
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-start">
+                                                <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">${item.quantity} × ${item.name}</h4>
+                                                <span class="text-sm font-black text-gray-900">$${itemTotal}</span>
+                                            </div>
+                                            <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">${customSummary}</p>
                                         </div>
-                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Chicken • Quinoa • Avocado</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-4">
-                                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                        <img src="${assets.boba1}" class="w-full h-full object-cover object-top">
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="flex justify-between items-start">
-                                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × M7 Boba Milk Tea</h4>
-                                            <span class="text-sm font-black text-gray-900">$5.50</span>
-                                        </div>
-                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Regular • Classic Tea</p>
-                                    </div>
-                                </div>
+                                    </div>`;
+                                }).join('')}
                             </div>
 
                             <div class="space-y-2 pt-4 border-t border-gray-100">
                                 <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
                                     <span>Subtotal</span>
-                                    <span>$24.50</span>
+                                    <span>$${orderSubtotal}</span>
                                 </div>
                                 <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
                                     <span>Tax</span>
-                                    <span>$2.32</span>
+                                    <span>$${orderTaxes}</span>
                                 </div>
+                                ${parseFloat(orderTip) > 0 ? `
+                                <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
+                                    <span>Tip</span>
+                                    <span>$${orderTip}</span>
+                                </div>` : ''}
                                 <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
                                     <span>Total</span>
-                                    <span>$31.81</span>
+                                    <span>$${orderTotal}</span>
                                 </div>
                             </div>
 
@@ -4391,23 +4120,22 @@ const routes = {
                                 <div class="flex items-start justify-between">
                                     <div class="flex items-center gap-4">
                                         <div class="w-12 h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center shrink-0">
-                                            <i class="fa-brands fa-apple-pay text-3xl"></i>
+                                            <i class="fa-solid fa-credit-card text-xl text-gray-400"></i>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Apple Pay...3580</p>
-                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">3/14/26, 1:14 PM</p>
+                                            <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Card Payment</p>
+                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">${now.toLocaleDateString('en-US')}, ${pickupTime}</p>
                                         </div>
                                     </div>
-                                    <span class="text-base font-black text-gray-900">$31.81</span>
+                                    <span class="text-base font-black text-gray-900">$${orderTotal}</span>
                                 </div>
                             </div>
                         </div>
                         ` : ''}
 
                         <div class="w-full space-y-4 pt-4">
-                            <button onclick="navigateTo('directions')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Get Directions</button>
-                            <button onclick="navigateTo('track-order')" class="w-full bg-white border-2 border-gray-100 text-gray-900 py-4 rounded-full font-black text-lg active:scale-95 transition-all uppercase tracking-wider hover:bg-gray-50 shadow-sm">Track Order</button>
-                            <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
+                            <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Order Again</button>
+                            <button onclick="navigateTo('home')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                         </div>
                     </div>
                 </div>
@@ -4416,9 +4144,13 @@ const routes = {
     },
     'checkout': () => {
         const isDesktop = currentViewport === 'desktop';
-        const subtotal = 12.50;
-        const taxes = 1.25;
+        // Dynamic pricing from cart
+        const cart = mockupState.cart || [];
+        const subtotal = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+        const taxRate = mockupState.locationTaxRate || 0.0925;
+        const taxes = subtotal * taxRate;
         const bagFee = mockupState.bagQuantity * 0.10;
+        const convenienceFee = mockupState.locationConvenienceFee || 0;
         
         let tipAmount = 0;
         if (mockupState.tipPercentage === 'other') {
@@ -4427,7 +4159,7 @@ const routes = {
             tipAmount = subtotal * (mockupState.tipPercentage / 100);
         }
 
-        const finalTotal = (subtotal + taxes + bagFee + tipAmount).toFixed(2);
+        const finalTotal = (subtotal + taxes + bagFee + convenienceFee + tipAmount).toFixed(2);
 
         const openPaymentModal = (method) => {
             mockupState.paymentMethod = method;
@@ -4521,7 +4253,7 @@ const routes = {
                     ${isDesktop ? `
                     <div class="pt-4 flex justify-between gap-4 w-full">
                         <button onclick="navigateTo('cart')" class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:text-violet-600 hover:bg-violet-50 shadow-md transition-all active:scale-95 shrink-0"><i class="fa-solid fa-arrow-left text-xl"></i></button>
-                        <button onclick="navigateTo('order-confirm')" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">Purchase Order</button>
+                        <button onclick="window._handlePlaceOrder()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">Purchase Order</button>
                     </div>
                     ` : ''}
                 </div>
@@ -4531,7 +4263,7 @@ const routes = {
                 <div class="bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-50">
                     <div class="p-6 flex justify-between gap-4 w-full max-w-[1080px] mx-auto">
                         <button onclick="navigateTo('cart')" class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:text-violet-600 hover:bg-violet-50 shadow-md transition-all active:scale-95 shrink-0"><i class="fa-solid fa-arrow-left text-xl"></i></button>
-                        <button onclick="navigateTo('order-confirm')" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">Purchase Order</button>
+                        <button onclick="window._handlePlaceOrder()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">Purchase Order</button>
                     </div>
                 </div>
                 ` : ''}
@@ -4817,11 +4549,6 @@ const routes = {
 
 
 };
-
-
-
-routes['menu-old'] = () => { window.location.href = 'menu-old.html'; return ''; };
-routes['restaurant-home-old'] = () => { window.location.href = 'old-retired/restaurant-home-old.html'; return ''; };
 
 routes['privacy'] = () => {
     const isDesktop = currentViewport === 'desktop';
@@ -5279,7 +5006,7 @@ function renderPage() {
                     <div class="flex flex-col gap-2">
                         <div class="dropdown-column-title">Other Pages</div>
                         <a href="registration.html" class="dropdown-item lowercase">registration.html</a>
-                        <a href="restaurant-sign-in.html" class="dropdown-item lowercase">restaurant-sign-in.html</a>
+                        <a href="sign-in.html" class="dropdown-item lowercase">sign-in.html</a>
                         <a href="menu-favorites.html" class="dropdown-item lowercase">menu-favorites.html</a>
                         <a href="menu-scan.html" class="dropdown-item lowercase">menu-scan.html</a>
                         <a href="directions.html" class="dropdown-item lowercase">directions.html</a>
@@ -5447,9 +5174,296 @@ function selectItemAndNavigate(index) {
     // Reset quantity and customization defaults for new item
     mockupState.itemQuantity = 1;
     mockupState.sugarLevel = '50%';
+    mockupState.toppingQty = {};
+    mockupState.cupQty = {};
+    mockupState.freeToppings = [];
+    mockupState.iceLevel = 'ICE';
+    // Reset selected sub-items for new customization
+    mockupState._customizeSubItems = {};
+    mockupState.selectedItemDetail = null;
     persistAllState();
-    navigateTo('customize');
+
+    // Fetch full item detail (with sub-item groups) from API
+    if (item.id && mockupState.selectedLocationId && window.ApiService) {
+        mockupState.isLoading = true;
+        renderPage();
+        window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
+            .then(detail => {
+                // Remove inactive modifiers so they aren't displayed or ordered
+                if (detail && detail.menuSubItemGroups) {
+                    detail.menuSubItemGroups.forEach(g => {
+                        if (g.groupPrices) {
+                            // Backend groupPrice.isActive is unreliable (often false for everything).
+                            // Only filter based on the actual sub-item's isActive flag.
+                            g.groupPrices = g.groupPrices.filter(p => !p.menuSubItem || p.menuSubItem.isActive !== false);
+                        }
+                    });
+                }
+                mockupState.selectedItemDetail = detail;
+                // Extract restaurantId from sub-item data
+                if (!mockupState.selectedRestaurantId && detail.menuSubItemGroups) {
+                    for (const g of detail.menuSubItemGroups) {
+                        for (const p of (g.groupPrices || [])) {
+                            const sub = p.menuSubItem || {};
+                            if (sub.restaurantId) {
+                                mockupState.selectedRestaurantId = sub.restaurantId;
+                                break;
+                            }
+                        }
+                        if (mockupState.selectedRestaurantId) break;
+                    }
+                }
+                // Pre-select default sub-items
+                if (detail.menuSubItemGroups) {
+                    const selections = {};
+                    for (const g of detail.menuSubItemGroups) {
+                        const groupId = g.menuSubItemGroupId;
+                        const maxSel = g.maxSelect || 1;
+                        selections[groupId] = { groupName: g.displayName || g.groupName || '', maxSelect: maxSel, minSelect: g.minSelect || 0, items: {} };
+                        for (const p of (g.groupPrices || [])) {
+                            if (p.isDefault) {
+                                selections[groupId].items[p.menuSubItemId] = {
+                                    menuSubItemId: p.menuSubItemId,
+                                    itemTypeId: (p.menuSubItem || {}).itemTypeId || 2,
+                                    itemGroupPriceId: parseInt(groupId),
+                                    quantity: 1,
+                                    name: (p.menuSubItem || {}).name || '',
+                                    price: p.price || 0
+                                };
+                            }
+                        }
+                    }
+                    mockupState._customizeSubItems = selections;
+                }
+                persistAllState();
+            })
+            .catch(err => {
+                console.error('Failed to fetch item detail:', err);
+            })
+            .finally(() => {
+                mockupState.isLoading = false;
+                navigateTo('customize');
+            });
+    } else {
+        mockupState.isLoading = false;
+        navigateTo('customize');
+    }
 }
+
+// --- Customize page helpers (global, called from inline onclick) ---
+
+// Single-select: replaces entire group selection with one item
+window._selectSubItem = function(groupId, subItemId, itemTypeId, name, price, isSingleSelect) {
+    if (!mockupState._customizeSubItems) mockupState._customizeSubItems = {};
+    if (!mockupState._customizeSubItems[groupId]) {
+        mockupState._customizeSubItems[groupId] = { items: {} };
+    }
+    if (isSingleSelect) {
+        // Clear group and set only this item
+        mockupState._customizeSubItems[groupId].items = {};
+    }
+    mockupState._customizeSubItems[groupId].items[subItemId] = {
+        menuSubItemId: subItemId,
+        itemTypeId: itemTypeId,
+        itemGroupPriceId: parseInt(groupId),
+        quantity: 1,
+        name: name,
+        price: price
+    };
+    updateMockupState('_lastUpdated', Date.now());
+};
+
+// Multi-select stepper: increment/decrement quantity for a sub-item
+window._adjustSubItemQty = function(groupId, subItemId, itemTypeId, name, price, delta) {
+    if (!mockupState._customizeSubItems) mockupState._customizeSubItems = {};
+    if (!mockupState._customizeSubItems[groupId]) {
+        mockupState._customizeSubItems[groupId] = { items: {} };
+    }
+    const current = mockupState._customizeSubItems[groupId].items[subItemId];
+    const newQty = Math.max(0, (current ? current.quantity : 0) + delta);
+    if (newQty === 0) {
+        delete mockupState._customizeSubItems[groupId].items[subItemId];
+    } else {
+        mockupState._customizeSubItems[groupId].items[subItemId] = {
+            menuSubItemId: subItemId,
+            itemTypeId: itemTypeId,
+            itemGroupPriceId: parseInt(groupId),
+            quantity: newQty,
+            name: name,
+            price: price
+        };
+    }
+    updateMockupState('_lastUpdated', Date.now());
+};
+
+// Add to Cart: builds cart item from current selections and navigates
+window._addToCart = function() {
+    const item = mockupState.selectedItem;
+    if (!item) return;
+
+    // Collect all selected sub-items across all groups
+    const selectedSubItems = [];
+    const sels = mockupState._customizeSubItems || {};
+    for (const gid in sels) {
+        const groupItems = sels[gid]?.items || {};
+        for (const sid in groupItems) {
+            const s = groupItems[sid];
+            selectedSubItems.push({
+                menuSubItemId: s.menuSubItemId,
+                itemTypeId: s.itemTypeId,
+                itemGroupPriceId: s.itemGroupPriceId,
+                quantity: s.quantity,
+                name: s.name,
+                price: s.price,
+                groupName: sels[gid]?.groupName || ''
+            });
+        }
+    }
+
+    // Get special instruction from textarea
+    const instructionEl = document.getElementById('special-instruction-input');
+    const specialInstruction = instructionEl ? instructionEl.value.trim() : '';
+
+    // Calculate unit price (base + extras)
+    let extrasTotal = 0;
+    selectedSubItems.forEach(s => { extrasTotal += (s.price || 0) * (s.quantity || 1); });
+
+    // Build cart item
+    const cartItem = {
+        cartId: Date.now(), // Unique ID for this cart entry
+        menuItemId: item.id,
+        name: item.name,
+        basePrice: item.price,
+        unitPrice: item.price + extrasTotal,
+        quantity: mockupState.itemQuantity,
+        image: item.image,
+        selectedSubItems: selectedSubItems,
+        specialInstruction: specialInstruction
+    };
+
+    // Add to cart
+    mockupState.cart.push(cartItem);
+    mockupState.cartItemCount = mockupState.cart.reduce((sum, i) => sum + i.quantity, 0);
+
+    // Reset customize state
+    mockupState._customizeSubItems = {};
+    mockupState._specialInstruction = '';
+    mockupState.itemQuantity = 1;
+
+    persistAllState();
+    navigateTo('cart');
+};
+
+// Update cart item quantity (0 = remove)
+window._updateCartQty = function(index, newQty) {
+    if (!mockupState.cart) return;
+    if (newQty <= 0) {
+        mockupState.cart.splice(index, 1);
+    } else {
+        mockupState.cart[index].quantity = newQty;
+    }
+    mockupState.cartItemCount = mockupState.cart.reduce((sum, i) => sum + i.quantity, 0);
+    persistAllState();
+    renderPage();
+};
+
+// Place Order: login gate + API call
+window._handlePlaceOrder = async function() {
+    // Login gate — require authenticated user
+    const token = window.ApiService?.getToken();
+    if (!token) {
+        // Show sign-in modal
+        alert('Please sign in to place your order.');
+        navigateTo('sign-in');
+        return;
+    }
+
+    const cart = mockupState.cart || [];
+    if (cart.length === 0) {
+        alert('Your cart is empty. Add items before placing an order.');
+        return;
+    }
+
+    // Calculate pricing
+    const subtotal = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+    const taxRate = mockupState.locationTaxRate || 0.0925;
+    const taxes = subtotal * taxRate;
+    const bagFee = (mockupState.bagQuantity || 0) * 0.10;
+    const convenienceFee = mockupState.locationConvenienceFee || 0;
+    let tipAmount = 0;
+    if (mockupState.tipPercentage === 'other') {
+        tipAmount = parseFloat(mockupState.customTipAmount) || 0;
+    } else {
+        tipAmount = subtotal * ((mockupState.tipPercentage || 0) / 100);
+    }
+    const finalTotal = subtotal + taxes + bagFee + convenienceFee + tipAmount;
+
+    // Build PlaceOrderRequest
+    const orderData = {
+        orderType: mockupState.fulfillmentMode || 'In-store',
+        locationId: mockupState.selectedLocationId || 7,
+        restaurantId: mockupState.selectedRestaurantId || 7,
+        tipAmount: parseFloat(tipAmount.toFixed(2)),
+        pickUpTime: mockupState.orderTime === 'Later' ? new Date().toISOString() : null,
+        isCustomTime: mockupState.orderTime === 'Later',
+        tableNum: null,
+        isGuestUser: false,
+        items: cart.map(item => ({
+            menuItemId: item.menuItemId,
+            quantity: item.quantity,
+            specialInstruction: item.specialInstruction || null,
+            subItems: (item.selectedSubItems || []).map(sub => ({
+                menuSubItemId: sub.menuSubItemId,
+                itemTypeId: sub.itemTypeId || 2,
+                itemGroupPriceId: sub.itemGroupPriceId || 0,
+                quantity: sub.quantity || 1
+            })),
+            subMenuChoices: []
+        })),
+        payments: [{
+            paymentToken: "test_token_12345",
+            paymentMethodType: "Card",
+            amount: parseFloat(finalTotal.toFixed(2))
+        }]
+    };
+
+    console.log('Placing order:', JSON.stringify(orderData, null, 2));
+
+    // Show loading state
+    const btns = document.querySelectorAll('button');
+    btns.forEach(b => { if (b.textContent.includes('Purchase Order')) { b.textContent = 'Placing Order...'; b.disabled = true; } });
+
+    try {
+        const response = await window.ApiService.placeOrder(orderData);
+        console.log('Order placed successfully:', response);
+
+        // Store order response
+        mockupState.lastOrder = {
+            ...response,
+            orderItems: cart.map(i => ({ ...i })),
+            subtotal,
+            taxes,
+            tipAmount,
+            bagFee,
+            convenienceFee,
+            total: finalTotal,
+            placedAt: new Date().toISOString()
+        };
+
+        // Clear cart
+        mockupState.cart = [];
+        mockupState.cartItemCount = 0;
+
+        persistAllState();
+        navigateTo('order-confirm');
+    } catch (error) {
+        console.error('Failed to place order:', error);
+        const errorMsg = error?.data?.message || error?.data?.title || 'Failed to place order. Please try again.';
+        alert(errorMsg);
+        // Reset buttons
+        btns.forEach(b => { if (b.textContent.includes('Placing')) { b.textContent = 'Purchase Order'; b.disabled = false; } });
+    }
+};
 
 function updateMockupState(key, value) {
     mockupState[key] = value;
@@ -5497,11 +5511,199 @@ function checkAuthPasscode() {
     navigateTo('restaurant-home');
 }
 
-function signOutUser() {
+async function handleRegistration() {
+    const email = document.getElementById('reg-email')?.value;
+    const password = document.getElementById('reg-password')?.value;
+    const confirmPassword = document.getElementById('reg-confirm-password')?.value;
+    const firstName = document.getElementById('reg-first-name')?.value;
+    const lastName = document.getElementById('reg-last-name')?.value;
+    const phoneNumber = document.getElementById('reg-phone')?.value;
+    const errorEl = document.getElementById('reg-error');
+
+    if (errorEl) {
+        errorEl.style.opacity = '0';
+        errorEl.textContent = '';
+    }
+
+    if (!email || !password || !firstName || !lastName || !phoneNumber) {
+        if (errorEl) {
+            errorEl.textContent = 'Please fill out all required fields.';
+            errorEl.style.opacity = '1';
+        }
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        if (errorEl) {
+            errorEl.textContent = 'Passwords do not match.';
+            errorEl.style.opacity = '1';
+        }
+        return;
+    }
+
+    try {
+        if (!window.ApiService) {
+            throw new Error('API Service not loaded');
+        }
+        const data = {
+            firstName,
+            lastName,
+            email,
+            password,
+            phoneNumber
+        };
+        
+        await window.ApiService.register(data);
+        
+        // On success, redirect to login page
+        navigateTo('sign-in');
+    } catch (err) {
+        if (errorEl) {
+            errorEl.textContent = (err.data && err.data.message) ? err.data.message : (err.message || 'Registration failed. Please try again.');
+            errorEl.style.opacity = '1';
+        }
+    }
+}
+
+async function handleLogin() {
+    const email = document.getElementById('auth-email-input')?.value;
+    const password = document.getElementById('auth-password-input')?.value;
+    const errorEl = document.getElementById('auth-error');
+
+    if (errorEl) {
+        errorEl.style.opacity = '0';
+        errorEl.textContent = '';
+    }
+
+    if (!email || !password) {
+        if (errorEl) {
+            errorEl.textContent = 'Please enter both email and password.';
+            errorEl.style.opacity = '1';
+        }
+        return;
+    }
+
+    try {
+        if (!window.ApiService) {
+            throw new Error('API Service not loaded');
+        }
+        const data = await window.ApiService.login(email, password);
+        
+        mockupState.isLoggedIn = true;
+        // Try to get user name from profile
+        try {
+            const profile = await window.ApiService.getProfile();
+            console.log('Successfully fetched profile on login:', profile);
+            mockupState.userName = profile.firstName || profile.email?.split('@')[0] || 'User';
+            mockupState.userProfile = profile;
+        } catch(e) {
+            console.error('Failed to fetch profile on login:', e);
+            mockupState.userName = 'User';
+            mockupState.userProfile = {};
+        }
+
+        persistAllState();
+        navigateTo('restaurant-home');
+    } catch (err) {
+        if (errorEl) {
+            errorEl.textContent = (err.data && err.data.message) ? err.data.message : (err.message || 'Invalid email or password.');
+            errorEl.style.opacity = '1';
+        }
+    }
+}
+
+async function handleUpdateProfile() {
+    const firstName = document.getElementById('prof-first-name')?.value;
+    const lastName = document.getElementById('prof-last-name')?.value;
+    const email = document.getElementById('prof-email')?.value;
+    const phoneNumber = document.getElementById('prof-phone')?.value;
+    const errorEl = document.getElementById('prof-error');
+
+    if (errorEl) {
+        errorEl.style.opacity = '0';
+        errorEl.textContent = '';
+    }
+
+    if (!firstName || !lastName || !email || !phoneNumber) {
+        if (errorEl) {
+            errorEl.textContent = 'Please fill out all fields.';
+            errorEl.style.opacity = '1';
+        }
+        return;
+    }
+
+    try {
+        if (!window.ApiService) throw new Error('API Service not loaded');
+        
+        const data = { firstName, lastName, email, phoneNumber };
+        await window.ApiService.updateProfile(data);
+        
+        // Update local state
+        mockupState.userProfile = data;
+        mockupState.userName = firstName;
+        mockupState.modalOpen = null;
+        persistAllState();
+        navigateTo(currentPage); // reload page
+    } catch (err) {
+        if (errorEl) {
+            errorEl.textContent = (err.data && err.data.message) ? err.data.message : (err.message || 'Update failed. Please try again.');
+            errorEl.style.opacity = '1';
+        }
+    }
+}
+
+async function handleChangePassword() {
+    const currentPwd = document.getElementById('pwd-current')?.value;
+    const newPwd = document.getElementById('pwd-new')?.value;
+    const confirmPwd = document.getElementById('pwd-confirm')?.value;
+    const errorEl = document.getElementById('pwd-error');
+
+    if (errorEl) {
+        errorEl.style.opacity = '0';
+        errorEl.textContent = '';
+    }
+
+    if (!currentPwd || !newPwd || !confirmPwd) {
+        if (errorEl) {
+            errorEl.textContent = 'Please fill out all fields.';
+            errorEl.style.opacity = '1';
+        }
+        return;
+    }
+
+    if (newPwd !== confirmPwd) {
+        if (errorEl) {
+            errorEl.textContent = 'New passwords do not match.';
+            errorEl.style.opacity = '1';
+        }
+        return;
+    }
+
+    try {
+        if (!window.ApiService) throw new Error('API Service not loaded');
+        
+        await window.ApiService.changePassword(currentPwd, newPwd);
+        
+        mockupState.modalOpen = null;
+        persistAllState();
+        navigateTo(currentPage);
+        setTimeout(() => alert('Password updated successfully!'), 100);
+    } catch (err) {
+        if (errorEl) {
+            errorEl.textContent = (err.data && err.data.message) ? err.data.message : (err.message || 'Password update failed.');
+            errorEl.style.opacity = '1';
+        }
+    }
+}
+
+async function signOutUser() {
+    if (window.ApiService) {
+        await window.ApiService.logout();
+    }
     mockupState.isLoggedIn = false;
     mockupState.userName = 'Guest';
     persistAllState();
-    navigateTo('restaurant-landing');
+    navigateTo('sign-in');
 }
 
 function removeFavorite(id) {
@@ -5716,6 +5918,22 @@ window.addEventListener('DOMContentLoaded', () => {
     if ((currentPage === 'menu' || currentPage === 'customize') && !mockupState.selectedLocationId) {
         window.location.href = 'locations.html';
         return;
+    }
+
+    if (window.ApiService && window.ApiService.getToken()) {
+        mockupState.isLoggedIn = true;
+        window.ApiService.getProfile().then(profile => {
+            console.log('Successfully fetched profile on page load:', profile);
+            mockupState.userName = profile.firstName || profile.email?.split('@')[0] || 'User';
+            mockupState.userProfile = profile;
+            persistAllState();
+            renderPage();
+        }).catch(err => {
+            console.error('Failed to auto-fetch profile on start:', err);
+            if (err.status === 401) {
+                signOutUser();
+            }
+        });
     }
 
     fetchLocations().then(() => {
