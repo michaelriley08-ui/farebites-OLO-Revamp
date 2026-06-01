@@ -8,7 +8,7 @@ const PAGE_FILE_MAP = {
     "order-confirm": "order-confirm.html",
     "order-status": "order-status.html",
     "restaurant-home": "index.html",
-    "restaurant-sign-in": "sign-in.html",
+    "sign-in": "sign-in.html",
     "order-details": "order-details.html",
     "order-details-alt": "order-details-alt.html",
     "menu-scan": "menu-scan.html",
@@ -707,7 +707,7 @@ const routes = {
                 <div class="flex flex-col w-full min-h-full">
                     <nav class="flex justify-between items-center px-16 py-6 bg-white sticky top-0 z-50 shadow-sm">
                         <div class="flex items-center gap-8"><span class="text-3xl font-black text-red-600 tracking-tighter cursor-pointer" onclick="navigateTo('home')">FAREBITES</span></div>
-                        <div class="flex items-center gap-6"><span class="font-black text-gray-800">Hi Michaelangelo!</span><div class="w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center border-2 border-transparent group-hover:border-red-600 transition"><i class="fa-solid fa-user text-gray-600"></i></div></div>
+                        <div class="flex items-center gap-6"><span class="font-black text-gray-800">Hi ${mockupState.userName || 'User'}!</span><div class="w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center border-2 border-transparent group-hover:border-red-600 transition"><i class="fa-solid fa-user text-gray-600"></i></div></div>
                     </nav>
                     <div class="desktop-hero" style="background-image: url('${assets.featured}')">
                         <div class="relative z-10 w-full max-w-5xl px-12 text-center text-white py-24">
@@ -769,68 +769,6 @@ const routes = {
                 </div>`;
         }
     },
-    'sign-in': () => {
-        const isDesktop = currentViewport === 'desktop';
-        return `
-            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.featured}')"></div>
-            <div class="modal-overlay" onclick="navigateTo('home')">
-                <div class="modal-content ${isDesktop ? 'lg:p-6' : ''}" onclick="event.stopPropagation()">
-                    <button class="absolute ${isDesktop ? 'top-4 left-4' : 'top-6 left-6'} text-gray-500" onclick="navigateTo('home')"><i class="fa-solid fa-xmark text-2xl"></i></button>
-                    <div class="text-center ${isDesktop ? 'mb-4 mt-2' : 'mb-6 mt-6'} uppercase"><span class="text-2xl font-black text-red-600 tracking-tighter uppercase font-black">FAREBITES</span></div>
-                    <h2 class="text-2xl lg:text-3xl font-black text-center ${isDesktop ? 'mb-4' : 'mb-8'} uppercase tracking-tight">Sign in / Sign up</h2>
-                    <div class="space-y-4">
-                        <div class="flex gap-2">
-                            <div class="bg-gray-100 px-4 ${isDesktop ? 'py-3' : 'py-4'} rounded-xl font-bold text-gray-700 min-w-[100px] flex items-center justify-center">+1 <i class="fa-solid fa-chevron-down text-[10px] ml-2"></i></div>
-                            <input type="tel" id="auth-mobile-input" placeholder="Mobile Number" class="flex-1 min-w-0 bg-gray-100 px-4 ${isDesktop ? 'py-3' : 'py-4'} rounded-xl border-2 border-transparent focus:border-black outline-none font-bold text-lg">
-                        </div>
-                        <div id="auth-error" class="text-xs font-bold text-red-500 px-2 h-4 transition-all opacity-0">Invalid passcode. Please try again.</div>
-                        <button onclick="checkAuthPasscode()" class="w-full bg-red-600 text-white ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(220,38,38,0.5)] active:scale-95 transition-all uppercase font-black">Continue</button>
-                        
-                        <div class="flex items-center gap-4 ${isDesktop ? 'py-1' : 'py-2'}">
-                            <div class="flex-1 h-px bg-gray-200"></div>
-                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">or</span>
-                            <div class="flex-1 h-px bg-gray-200"></div>
-                        </div>
-
-                        ${isDesktop ? `
-                            <div class="flex justify-center gap-4 pt-1">
-                                <button class="w-12 h-12 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm" title="Continue with Google">
-                                    <i class="fa-brands fa-google text-lg text-red-500"></i>
-                                </button>
-                                <button class="w-12 h-12 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm" title="Continue with Apple">
-                                    <i class="fa-brands fa-apple text-lg text-black"></i>
-                                </button>
-                                <button class="w-12 h-12 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm" title="Continue with Facebook">
-                                    <i class="fa-brands fa-facebook text-lg text-[#1877F2]"></i>
-                                </button>
-                            </div>
-                        ` : `
-                            <div class="space-y-3">
-                                <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-                                    <div class="flex items-center gap-4 w-52">
-                                        <i class="fa-brands fa-google text-lg text-red-500 w-6 text-center"></i>
-                                        <span>Continue with Google</span>
-                                    </div>
-                                </button>
-                                <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-                                    <div class="flex items-center gap-4 w-52">
-                                        <i class="fa-brands fa-apple text-lg text-black w-6 text-center"></i>
-                                        <span>Continue with Apple</span>
-                                    </div>
-                                </button>
-                                <button class="w-full bg-white border-2 border-gray-100 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-                                    <div class="flex items-center gap-4 w-52">
-                                        <i class="fa-brands fa-facebook text-lg text-[#1877F2] w-6 text-center"></i>
-                                        <span>Continue with Facebook</span>
-                                    </div>
-                                </button>
-                            </div>
-                        `}
-                    </div>
-                </div>
-            </div>
-        `;
-    },
     'restaurant-landing': () => `
             <div class="flex flex-col h-full relative overflow-hidden bg-white">
                 <div class="absolute inset-0 z-0">
@@ -849,10 +787,10 @@ const routes = {
                 </div>
 
                 <div class="relative z-10 px-6 pb-12 w-full shrink-0">
-                    <button onclick="navigateTo('restaurant-sign-in')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-transform uppercase tracking-wider">Log In</button>
+                    <button onclick="navigateTo('sign-in')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-transform uppercase tracking-wider">Log In</button>
                 </div>
             </div>`,
-    'restaurant-sign-in': () => {
+    'sign-in': () => {
         const isDesktop = currentViewport === 'desktop';
         return `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
@@ -5502,13 +5440,6 @@ function updateMockupState(key, value) {
         restoreContainerScroll();
         setTimeout(restoreContainerScroll, 0);
     });
-}
-
-function checkAuthPasscode() {
-    mockupState.isLoggedIn = true;
-    mockupState.userName = 'Michaelangelo';
-    persistAllState();
-    navigateTo('restaurant-home');
 }
 
 async function handleRegistration() {
