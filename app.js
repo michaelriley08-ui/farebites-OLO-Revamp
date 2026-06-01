@@ -12,6 +12,7 @@ const PAGE_FILE_MAP = {
     "restaurant-landing": "restaurant-login.html",
     "restaurant-sign-in": "restaurant-sign-in.html",
     "order-details": "order-details.html",
+    "order-details-alt": "order-details-alt.html",
     "menu-scan": "menu-scan.html",
     "menu": "menu.html",
     "locations": "locations.html",
@@ -42,6 +43,7 @@ const PAGE_LABELS = {
     "restaurant-landing": "i-Tea Landing Page",
     "restaurant-sign-in": "i-Tea Sign In",
     "order-details": "Order Details",
+    "order-details-alt": "Order Details (Alternative)",
     "menu-scan": "Scan",
     "menu": "Menu",
     "locations": "Pick a Location",
@@ -940,7 +942,7 @@ const routes = {
         return `
             <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
                 <!-- Hero Banner / Background Section -->
-                <div class="${isDesktop ? 'relative h-[480px] w-full shrink-0 overflow-hidden flex items-center bg-violet-600' : 'absolute inset-0 z-0'}">
+                <div class="${isDesktop ? 'relative h-[480px] mx-1.5 mt-1.5 rounded-2xl shrink-0 overflow-hidden flex items-center bg-violet-600' : 'absolute inset-0 z-0'}">
                     ${isDesktop ? `
                     <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <div class="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-violet-950/30 to-transparent z-0"></div>
@@ -1140,7 +1142,7 @@ const routes = {
         return `
             <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
                 <!-- Hero Banner / Background Section -->
-                <div class="${isDesktop ? 'relative h-[480px] w-full shrink-0 overflow-hidden flex items-center bg-violet-600' : 'absolute inset-0 z-0'}">
+                <div class="${isDesktop ? 'relative h-[480px] mx-1.5 mt-1.5 rounded-2xl shrink-0 overflow-hidden flex items-center bg-violet-600' : 'absolute inset-0 z-0'}">
                     ${isDesktop ? `
                     <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <div class="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-violet-950/30 to-transparent z-0"></div>
@@ -1760,29 +1762,329 @@ const routes = {
 
                 </div>`;
     },
+    'order-details-alt': () => {
+        const isDesktop = currentViewport === 'desktop';
+        
+        const options = [
+            {
+                id: 'In-store',
+                label: 'In-Store',
+                icon: 'fa-shop',
+                desc: 'Carry-out, walk-in, or pickup inside the restaurant'
+            },
+            {
+                id: 'Drive Through',
+                label: 'Drive-Thru',
+                icon: 'fa-car',
+                desc: 'Stay in your car and get your order from the window'
+            },
+            {
+                id: 'Curbside',
+                label: 'Curbside',
+                icon: 'fa-square-parking',
+                desc: 'Park in a designated spot and we\'ll bring it to you'
+            },
+            {
+                id: 'Dine In',
+                label: 'Dine In',
+                icon: 'fa-mobile-screen-button',
+                desc: 'Order at your table and dine inside the restaurant'
+            }
+        ];
+
+        const monthOffset = mockupState.monthOffset || 0;
+        const months = [
+            { name: 'March 2026', days: 31, startDay: 0 },
+            { name: 'April 2026', days: 30, startDay: 3 },
+            { name: 'May 2026', days: 31, startDay: 5 }
+        ];
+        const currentMonth = months[monthOffset];
+
+        let calendarCells = '';
+        for (let i = 0; i < currentMonth.startDay; i++) {
+            calendarCells += `<div></div>`;
+        }
+        for (let i = 1; i <= currentMonth.days; i++) {
+            let isPast = monthOffset === 0 && i < 8;
+            if (isPast) {
+                calendarCells += `<div class="py-2 text-gray-300 font-bold text-sm text-center">${i}</div>`;
+            } else {
+                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const dayName = dayNames[(currentMonth.startDay + i - 1) % 7];
+                const monthNameShort = currentMonth.name.split(' ')[0].substring(0, 3);
+                let label = (i === 8 && monthOffset === 0) ? 'Today' : ((i === 9 && monthOffset === 0) ? 'Tomorrow' : `${dayName}, ${monthNameShort} ${i}`);
+                let isSelected = mockupState.selectedDay === label;
+                calendarCells += `<button onclick="updateMockupState('selectedDay', '${label}'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? 'bg-violet-600 text-white shadow-md flex items-center justify-center shrink-0 w-8 h-8 mx-auto' : 'text-gray-800 hover:bg-violet-100 transition-colors flex items-center justify-center shrink-0 w-8 h-8 mx-auto'}">${i}</button>`;
+            }
+        }
+
+        const dateModalClass = mockupState.modalOpen === 'date' ? 'flex' : 'hidden';
+        const timeModalClass = mockupState.modalOpen === 'time' ? 'flex' : 'hidden';
+        const warningModalClass = mockupState.modalOpen === 'warning' ? 'flex' : 'hidden';
+        const scheduleModalClass = mockupState.modalOpen === 'schedule-pickup' ? 'flex' : 'hidden';
+
+        const times15 = ['11:30 AM', '11:45 AM', '12:00 PM', '12:15 PM', '12:30 PM', '12:45 PM', '1:00 PM', '1:15 PM', '1:30 PM', '1:45 PM', '2:00 PM', '2:15 PM', '2:30 PM', '2:45 PM', '3:00 PM', '3:15 PM', '3:30 PM', '3:45 PM', '4:00 PM', '4:15 PM', '4:30 PM', '4:45 PM', '5:00 PM', '5:15 PM', '5:30 PM', '5:45 PM', '6:00 PM', '6:15 PM', '6:30 PM', '6:45 PM', '7:00 PM', '7:15 PM', '7:30 PM', '7:45 PM', '8:00 PM', '8:15 PM', '8:30 PM', '8:45 PM', '9:00 PM'];
+        const isNearClose = mockupState.selectedTimeSlot.includes('8:') || mockupState.selectedTimeSlot.includes('9:');
+        const locationTitle = mockupState.selectedLocation || "i-Tea";
+
+        const renderOptionCard = (opt) => {
+            const isActive = mockupState.fulfillmentMode === opt.id;
+            const clickHandler = opt.id === 'Dine In' ? `navigateTo('menu-scan')` : `updateMockupState('fulfillmentMode', '${opt.id}'); updateMockupState('modalOpen', 'schedule-pickup'); navigateTo(currentPage);`;
+            
+            return `
+                <div onclick="${clickHandler}" class="flex flex-col p-6 bg-white rounded-2xl shadow-sm border-2 cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md ${isActive ? 'border-violet-600 ring-2 ring-violet-100 bg-violet-50/10' : 'border-gray-100 hover:border-violet-300'}">
+                    <div class="flex items-center gap-5 w-full">
+                        <div class="w-14 h-14 bg-violet-50 rounded-xl flex items-center justify-center shrink-0">
+                            <i class="fa-solid ${opt.icon} text-2xl text-violet-600"></i>
+                        </div>
+                        <div class="flex-1 text-left">
+                            <h3 class="font-black text-violet-600 text-lg uppercase tracking-tight leading-tight">${opt.label}</h3>
+                            <p class="text-xs text-gray-500 font-medium mt-1 leading-normal">${opt.desc}</p>
+                        </div>
+                    </div>
+                    ${isActive ? `
+                    <div onclick="event.stopPropagation(); updateMockupState('modalOpen', 'schedule-pickup'); navigateTo(currentPage);" class="mt-4 pt-4 border-t border-violet-200/60 flex flex-col gap-1 w-full text-left">
+                        <div class="flex items-center justify-between text-[10px] text-gray-400 font-black uppercase tracking-widest">
+                            <span>Pickup Time</span>
+                            <span class="text-violet-600 font-black underline cursor-pointer hover:text-violet-700">Change</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-xs text-gray-800 font-black mt-1">
+                            <i class="fa-regular fa-clock text-violet-600 border border-violet-100 rounded p-1 bg-white"></i>
+                            <span>${mockupState.orderTime === 'ASAP' ? `Today ASAP (approx. at ${times15[0]})` : `${mockupState.selectedDay} at ${mockupState.selectedTimeSlot}`}</span>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        };
+
+        const mainContent = `
+            <div class="flex-1 flex flex-col py-6 px-6 md:px-12 max-w-2xl mx-auto w-full">
+                <div class="text-center mb-5 shrink-0">
+                    <h2 class="text-3xl md:text-4xl font-branding font-black text-[#1A1A1A] uppercase tracking-tight leading-tight mb-3">What type of order can we get started for you?</h2>
+                    <p class="text-sm md:text-base font-bold text-gray-400 uppercase tracking-widest leading-relaxed">Order ahead for pickup or dine in</p>
+                </div>
+
+                <div class="${isDesktop ? 'grid grid-cols-2 gap-4' : 'flex flex-col gap-4'} mb-6">
+                    ${options.map(renderOptionCard).join('')}
+                </div>
+
+                <div>
+                    <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black">Start Order</button>
+                </div>
+            </div>
+        `;
+
+        return `
+            <div class="flex flex-col bg-[#FAF9F6] relative overflow-hidden" style="${isDesktop ? 'height: calc(100vh - 70px);' : 'height: 100vh;'}">
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
+                    <button onclick="navigateTo('locations')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span>
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
+                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                    </button>
+                </header>
+
+                <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden h-full">
+                    ${isDesktop ? `
+                    <div class="w-[38%] relative h-full shrink-0 overflow-hidden">
+                        <img src="images/hero2.png" class="w-full h-full object-cover object-right" style="height: 100% !important; object-fit: cover !important;">
+                    </div>
+                    ` : ''}
+
+                    <div class="flex-1 overflow-y-auto pb-12 w-full">
+                        ${mainContent}
+                    </div>
+                </div>
+
+                <!-- Schedule Pickup Modal -->
+                <div id="schedule-pickup-modal" class="absolute inset-0 bg-black/60 z-[90] ${scheduleModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                    <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[85vh]">
+                        <div class="flex justify-between items-center mb-4 shrink-0">
+                            <h3 class="font-black text-xl uppercase text-gray-900">Schedule Pickup</h3>
+                            <button onclick="mockupState.modalOpen = null; navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        
+                        <div class="flex-1 overflow-y-auto scrollbar-hide space-y-4 pr-1">
+                            <!-- Estimated pickup time card above selection -->
+                            <div class="p-4 bg-violet-50/40 rounded-2xl border border-violet-100 text-left">
+                                <p class="text-[10px] font-black text-violet-600 uppercase tracking-widest">Selected Pickup Time</p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <i class="fa-regular fa-clock text-violet-600 border border-violet-100 rounded p-1 bg-white"></i>
+                                    <p class="font-black text-gray-800 text-sm tracking-tight">
+                                        ${mockupState.orderTime === 'ASAP' ? `Today ASAP (approx. at ${times15[0]})` : `${mockupState.selectedDay} at ${mockupState.selectedTimeSlot}`}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 font-black text-left">Ordering For</p>
+                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                    <button onclick="updateMockupState('orderTime', 'ASAP'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === 'ASAP' ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase"><i class="fa-solid fa-bolt text-lg mb-0.5"></i>ASAP</button>
+                                    <button onclick="updateMockupState('orderTime', 'Later'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === 'Later' ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i>Later</button>
+                                </div>
+
+                                ${mockupState.orderTime === 'Later' ? `
+                                <div class="space-y-3">
+                                    <button onclick="mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
+                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay}</span></span>
+                                        <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
+                                    </button>
+                                    <button onclick="mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
+                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedTimeSlot}</span></span>
+                                        <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
+                                    </button>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="shrink-0 pt-4 border-t border-gray-100">
+                            <button onclick="mockupState.modalOpen = null; navigateTo(currentPage);" class="w-full py-4 rounded-full bg-violet-600 text-white font-black uppercase text-sm tracking-widest shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] transition-all active:scale-95">Confirm Time</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date Modal -->
+                <div id="date-modal" class="absolute inset-0 bg-black/60 z-[100] ${dateModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                    <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[85vh]">
+                        <div class="flex justify-between items-center mb-5 shrink-0">
+                            <h3 class="font-black text-xl uppercase text-gray-900">Choose Day</h3>
+                            <button onclick="mockupState.modalOpen = 'schedule-pickup'; navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div class="bg-white rounded-2xl p-4 border border-violet-100 shadow-sm overflow-y-auto scrollbar-hide">
+                            <div class="flex justify-between items-center mb-3 px-1">
+                                <button onclick="mockupState.monthOffset = Math.max(0, (mockupState.monthOffset||0) - 1); navigateTo(currentPage);" class="${monthOffset === 0 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-500 hover:text-violet-600 transition-colors'} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-left text-sm"></i></button>
+                                <span class="font-black text-sm uppercase tracking-widest text-gray-800">${currentMonth.name}</span>
+                                <button onclick="mockupState.monthOffset = Math.min(2, (mockupState.monthOffset||0) + 1); navigateTo(currentPage);" class="${monthOffset === 2 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-500 hover:text-violet-600 transition-colors'} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-right text-sm"></i></button>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                                ${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="text-[10px] font-black text-gray-400">${d}</div>`).join('')}
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 text-center">
+                                ${calendarCells}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Modal -->
+                <div id="time-modal" class="absolute inset-0 bg-black/60 z-[100] ${timeModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                    <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[90vh]">
+                        <div class="flex justify-between items-center mb-5 shrink-0">
+                            <h3 class="font-black text-xl uppercase text-gray-900">Choose Time</h3>
+                            <button onclick="mockupState.modalOpen = 'schedule-pickup'; navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        
+                        <div class="flex-1 flex flex-col min-h-0 bg-gray-50/50 rounded-2xl p-4 border border-gray-100 mb-5">
+                            <div class="overflow-y-auto scrollbar-hide h-[230px] pr-1">
+                                <div class="grid grid-cols-3 gap-2">
+                                    ${times15.map((time, idx) => {
+                                        const isThisTimeNearClose = time.includes('8:') || time.includes('9:');
+                                        const clickAction = isThisTimeNearClose && !mockupState.acknowledgedClose 
+                                            ? `updateMockupState('selectedTimeSlot', '${time}'); mockupState.modalOpen = 'warning'; navigateTo(currentPage);` 
+                                            : `updateMockupState('selectedTimeSlot', '${time}'); navigateTo(currentPage);`;
+                                        
+                                        return `
+                                        <button id="time-slot-${idx}" onclick="${clickAction}" class="py-3 rounded-full border-2 ${mockupState.selectedTimeSlot === time ? 'border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200' : 'border-gray-100 text-gray-700 hover:border-violet-300 bg-white'} font-black text-[11px] transition-all tracking-tight whitespace-nowrap">${time}</button>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-4 border-t border-gray-100 shrink-0">
+                                <label class="block text-[10px] font-black text-violet-600 uppercase tracking-widest mb-3">Or enter a custom pickup time</label>
+                                <div class="flex items-center gap-3">
+                                    <div class="relative flex-1">
+                                        <i class="fa-regular fa-clock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <input type="time" class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-violet-600 focus:ring-0 font-bold text-gray-800 outline-none transition-colors" onchange="let val = this.value; let parts = val.split(':'); let h = parseInt(parts[0]); let ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12; h = h || 12; let formatted = h + ':' + parts[1] + ' ' + ampm; updateMockupState('selectedTimeSlot', formatted); if(h >= 8 && ampm === 'PM') { mockupState.modalOpen = 'warning'; mockupState.acknowledgedClose = false; } navigateTo(currentPage);" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="shrink-0 pb-2">
+                            <button onclick="
+                                if(${isNearClose} && !mockupState.acknowledgedClose) {
+                                    mockupState.modalOpen = 'warning';
+                                    navigateTo(currentPage);
+                                } else {
+                                    mockupState.modalOpen = 'schedule-pickup';
+                                    navigateTo(currentPage);
+                                }
+                            " class="w-full py-4 rounded-full bg-violet-600 text-white font-black uppercase text-sm tracking-widest shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] transition-all active:scale-95">Confirm Time</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="warning-modal" class="absolute inset-0 bg-black/60 z-[110] ${warningModalClass} flex-col justify-center items-center backdrop-blur-sm p-4">
+                    <div class="bg-red-600 w-full sm:w-[380px] max-w-full rounded-3xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
+                            <i class="fa-solid fa-clock text-red-600 text-3xl"></i>
+                        </div>
+                        
+                        <h3 class="font-black text-2xl uppercase text-white mb-2 leading-tight">Store Closes<br>at 9:00 PM</h3>
+                        
+                        <p class="text-red-100 font-bold mb-8 px-2">
+                            ${isNearClose ? "You have selected a pickup time within an hour of close. Please ensure you pick up your order before our doors close." : "Please ensure you pick up your order before our doors close."}
+                        </p>
+                        
+                        <button onclick="updateMockupState('acknowledgedClose', true); mockupState.modalOpen = 'schedule-pickup'; navigateTo(currentPage);" class="w-full py-4 rounded-full bg-white text-red-600 font-black uppercase text-sm tracking-widest shadow-xl hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-check text-lg"></i> I Understand
+                        </button>
+                        
+                        <button onclick="mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="mt-4 text-red-200 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">Go Back</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
     'menu-scan': () => {
         const isDesktop = currentViewport === 'desktop';
         const isDesktopOrTablet = currentViewport === 'desktop' || currentViewport === 'tablet';
+
+        const imageHtml = `
+            <div class="${isDesktop ? 'w-[38%] relative h-full shrink-0 overflow-hidden' : 'w-full max-w-md aspect-square rounded-[32px] overflow-hidden shadow-2xl mt-8 mx-auto'}">
+                <img src="images/qr-scan-table-sm.jpg" class="w-full h-full object-cover object-center" ${isDesktop ? 'style="height: 100% !important; object-fit: cover !important;"' : ''}>
+            </div>
+        `;
+
+        const formContentHtml = `
+            <div class="flex-1 flex flex-col justify-center py-6 px-6 md:px-12 max-w-2xl mx-auto w-full text-center">
+                <h2 class="text-2xl md:text-3xl font-black mb-6 uppercase tracking-tight font-black text-gray-900 leading-tight">Ready to Dine In?</h2>
+                <div class="space-y-4 text-left uppercase font-black text-gray-600 mb-8 max-w-sm mx-auto w-full">
+                    <p class="text-sm flex gap-3"><span class="text-violet-600 font-black">1.</span><span>Find the QR code on your table.</span></p>
+                    <p class="text-sm flex gap-3"><span class="text-violet-600 font-black">2.</span><span>Tap the button below to open camera.</span></p>
+                    <p class="text-sm flex gap-3"><span class="text-violet-600 font-black">3.</span><span>Scan to start your order.</span></p>
+                </div>
+                <div class="w-full max-w-xs mx-auto mb-4">
+                    <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] flex items-center justify-center gap-3 active:scale-95 transition-all uppercase shadow-violet-100 font-black">
+                        <i class="fa-solid fa-camera"></i>
+                        <span>SCAN TABLE QR</span>
+                    </button>
+                </div>
+
+                ${!isDesktop ? imageHtml : ''}
+            </div>
+        `;
+
         return `
-            <div class="flex flex-col ${isDesktop ? 'min-h-[60vh] py-12' : 'h-full'} bg-white relative">
-                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black">
+            <div class="flex flex-col bg-white relative overflow-hidden" style="${isDesktop ? 'height: calc(100vh - 70px);' : 'height: 100vh;'}">
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black shrink-0">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Scan to Dine In</span>
                     <div class="w-10"></div>
                 </header>
-                <div class="${isDesktopOrTablet ? 'flex-1 flex flex-col items-center justify-center p-6 md:p-8 max-w-3xl mx-auto w-full text-center' : 'flex-1 flex flex-col items-center justify-start px-6 pt-6 text-center'}">
-                    <div class="w-full ${isDesktopOrTablet ? 'max-w-md' : ''} aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-8 md:mb-12">
-                        <img src="images/qr-scan-table-sm.jpg" class="w-full h-full object-cover">
+
+                <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden h-full">
+                    ${isDesktop ? imageHtml : ''}
+
+                    <div class="flex-1 overflow-y-auto pb-12 w-full flex items-center justify-center">
+                        ${formContentHtml}
                     </div>
-                    <h2 class="text-2xl font-black mb-6 uppercase tracking-tight font-black text-gray-900 leading-tight">Ready to Dine In?</h2>
-                    <div class="space-y-4 text-left uppercase font-black text-gray-600 mb-8">
-                        <p class="text-sm">1. Find the QR code on your table.</p>
-                        <p class="text-sm">2. Tap the button below to open camera.</p>
-                        <p class="text-sm">3. Scan to start your order.</p>
-                    </div>
-                    <button onclick="navigateTo('menu')" class="w-[80%] ${isDesktopOrTablet ? 'max-w-[358px]' : 'max-w-xs'} bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] flex items-center justify-center gap-3 active:scale-95 transition-all uppercase shadow-violet-100 font-black"><i class="fa-solid fa-camera"></i><span>SCAN TABLE QR</span></button>
                 </div>
             </div>`;
     },
@@ -4666,6 +4968,7 @@ function renderPage() {
                         <a href="order-confirm.html" class="dropdown-item lowercase">order-confirm.html</a>
                         <a href="order-status.html" class="dropdown-item lowercase">order-status.html</a>
                         <a href="order-details.html" class="dropdown-item lowercase">order-details.html</a>
+                        <a href="order-details-alt.html" class="dropdown-item lowercase">order-details-alt.html</a>
                         <a href="track-order.html" class="dropdown-item lowercase">track-order.html</a>
                         <a href="user-profile.html" class="dropdown-item lowercase">user-profile.html</a>
                     </div>
