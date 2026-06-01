@@ -942,7 +942,7 @@ const routes = {
         return `
             <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
                 <!-- Hero Banner / Background Section -->
-                <div class="${isDesktop ? 'relative h-[480px] mx-1.5 mt-1.5 rounded-2xl shrink-0 overflow-hidden flex items-center bg-violet-600' : 'absolute inset-0 z-0'}">
+                <div class="${isDesktop ? 'relative h-[480px] mx-1.5 mt-1.5 rounded-2xl shrink-0 overflow-hidden flex items-center bg-violet-600 shadow-md' : 'absolute inset-0 z-0'}">
                     ${isDesktop ? `
                     <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <div class="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-violet-950/30 to-transparent z-0"></div>
@@ -1056,7 +1056,7 @@ const routes = {
                                 ${getActiveCategories().map(cat => `
                                     <div onclick="navigateTo('locations');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
                                         <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
-                                            <img src="${cat.img}" class="w-full h-full object-cover object-top">
+                                            <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                         </div>
                                         <h3 class="font-branding font-black text-2xl text-violet-600 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
                                         <div class="text-lg font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1111,6 +1111,32 @@ const routes = {
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Rewards Banner Section -->
+                            <div class="mt-12 w-full">
+                                <div class="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-violet-50 shadow-sm flex items-center justify-between px-10 py-8 gap-8">
+                                    <!-- Decorative background blobs -->
+                                    <div class="absolute -top-10 -left-10 w-48 h-48 bg-violet-200/30 rounded-full blur-3xl pointer-events-none"></div>
+                                    <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-violet-200/30 rounded-full blur-3xl pointer-events-none"></div>
+
+                                    <!-- Left: Text Content -->
+                                    <div class="relative z-10 text-left flex-1 min-w-0">
+                                        <p class="text-violet-600 text-xs font-black uppercase tracking-[0.25em] mb-1">Join Rewards</p>
+                                        <h2 class="font-branding font-black text-4xl text-gray-900 uppercase tracking-tight leading-none mb-2">Get Rewarded</h2>
+                                        <p class="text-sm font-semibold text-gray-500">The easiest way to free i-Tea</p>
+                                    </div>
+
+                                    <!-- Right: Buttons -->
+                                    <div class="relative z-10 flex flex-col items-center gap-3 shrink-0">
+                                        <button onclick="navigateTo('registration')" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=''" class="px-10 py-3 rounded-xl border-2 border-gray-900 text-gray-900 font-black text-sm uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-all duration-200 shadow-sm active:scale-95 whitespace-nowrap">
+                                            Join Now
+                                        </button>
+                                        <button onclick="navigateTo('registration')" class="text-violet-600 font-black text-xs uppercase tracking-widest hover:text-violet-800 transition-colors active:scale-95 whitespace-nowrap">
+                                            Learn More
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     ` : ''}
@@ -1142,7 +1168,7 @@ const routes = {
         return `
             <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
                 <!-- Hero Banner / Background Section -->
-                <div class="${isDesktop ? 'relative h-[480px] mx-1.5 mt-1.5 rounded-2xl shrink-0 overflow-hidden flex items-center bg-violet-600' : 'absolute inset-0 z-0'}">
+                <div class="${isDesktop ? 'relative h-[480px] mx-1.5 mt-1.5 rounded-2xl shrink-0 overflow-hidden flex items-center bg-violet-600 shadow-md' : 'absolute inset-0 z-0'}">
                     ${isDesktop ? `
                     <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <div class="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-violet-950/30 to-transparent z-0"></div>
@@ -1258,7 +1284,7 @@ const routes = {
                                 ${getActiveCategories().map(cat => `
                                     <div onclick="navigateTo('locations');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
                                         <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
-                                            <img src="${cat.img}" class="w-full h-full object-cover object-top">
+                                            <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                         </div>
                                         <h3 class="font-branding font-black text-2xl text-violet-600 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
                                         <div class="text-lg font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1310,6 +1336,32 @@ const routes = {
                                         <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
                                         <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
                                         <div class="text-sm font-bold text-gray-500 mt-auto">$5.95</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Rewards Banner Section -->
+                            <div class="mt-12 w-full">
+                                <div class="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-violet-50 shadow-sm flex items-center justify-between px-10 py-8 gap-8">
+                                    <!-- Decorative background blobs -->
+                                    <div class="absolute -top-10 -left-10 w-48 h-48 bg-violet-200/30 rounded-full blur-3xl pointer-events-none"></div>
+                                    <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-violet-200/30 rounded-full blur-3xl pointer-events-none"></div>
+
+                                    <!-- Left: Text Content -->
+                                    <div class="relative z-10 text-left flex-1 min-w-0">
+                                        <p class="text-violet-600 text-xs font-black uppercase tracking-[0.25em] mb-1">Join Rewards</p>
+                                        <h2 class="font-branding font-black text-4xl text-gray-900 uppercase tracking-tight leading-none mb-2">Get Rewarded</h2>
+                                        <p class="text-sm font-semibold text-gray-500">The easiest way to free i-Tea</p>
+                                    </div>
+
+                                    <!-- Right: Buttons -->
+                                    <div class="relative z-10 flex flex-col items-center gap-3 shrink-0">
+                                        <button onclick="navigateTo('registration')" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=''" class="px-10 py-3 rounded-xl border-2 border-gray-900 text-gray-900 font-black text-sm uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-all duration-200 shadow-sm active:scale-95 whitespace-nowrap">
+                                            Join Now
+                                        </button>
+                                        <button onclick="navigateTo('registration')" class="text-violet-600 font-black text-xs uppercase tracking-widest hover:text-violet-800 transition-colors active:scale-95 whitespace-nowrap">
+                                            Learn More
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -2275,42 +2327,81 @@ const routes = {
                             }
 
                             const grapefruitImg = MENU_ITEMS[5] ? MENU_ITEMS[5].image : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
+                            const superFruitImg = MENU_ITEMS[3] ? MENU_ITEMS[3].image : "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg";
                             const featuredPromoHtml = isDesktop ? `
-                                <div class="grid grid-cols-2 gap-[14px] mb-8">
+                                <div class="flex gap-[14px] overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-6 mb-2 pt-2 -mt-2 -mx-2 px-2">
                                     <!-- Boba Slide -->
-                                    <div class="relative w-full rounded-3xl overflow-hidden shadow-lg h-[160px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                    <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
                                         <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
                                         <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
-                                        
                                         <!-- Absolute top-left badge -->
                                         <span class="absolute top-4 left-6 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                        
                                         <div class="relative z-10 w-full pr-36">
-                                            <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-1 font-branding">Brown Sugar<br>Boba Latte</h2>
-                                            <p class="text-gray-200 font-medium text-xs leading-snug max-w-[200px]">Creamy, caramelized milk tea perfection.</p>
+                                            <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">Brown Sugar<br>Boba Latte</h2>
+                                            <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Creamy, caramelized milk tea perfection.</p>
                                         </div>
-                                        
                                         <!-- Hover reveal button -->
-                                        <button onclick="selectItemAndNavigate(6)" class="absolute right-6 bottom-4 lg:bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 text-violet-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                                        <button onclick="selectItemAndNavigate(6)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 text-violet-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
                                     </div>
                                     <!-- Grapefruit Slide -->
-                                    <div class="relative w-full rounded-3xl overflow-hidden shadow-lg h-[160px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                    <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
                                         <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover">
                                         <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
-                                        
                                         <!-- Absolute top-left badge -->
                                         <span class="absolute top-4 left-6 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                        
                                         <div class="relative z-10 w-full pr-36">
-                                            <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-1 font-branding">P3 Super<br>Grapefruit</h2>
-                                            <p class="text-gray-200 font-medium text-xs leading-snug max-w-[200px]">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
+                                            <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P3 Super<br>Grapefruit</h2>
+                                            <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
                                         </div>
-                                        
                                         <!-- Hover reveal button -->
-                                        <button onclick="selectItemAndNavigate(5)" class="absolute right-6 bottom-4 lg:bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                                        <button onclick="selectItemAndNavigate(5)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                                    </div>
+                                    <!-- P1 Super Fruit Tea Slide -->
+                                    <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                        <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-amber-950/90 via-amber-800/55 to-transparent"></div>
+                                        <!-- Absolute top-left badge - tangerine/orange-amber -->
+                                        <span class="absolute top-4 left-6 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
+                                        <div class="relative z-10 w-full pr-36">
+                                            <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P1 Super<br>Fruit Tea</h2>
+                                            <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Pineapple, passion fruit, apple, lime &amp; orange in every sip.</p>
+                                        </div>
+                                        <!-- Hover reveal button -->
+                                        <button onclick="selectItemAndNavigate(3)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-amber-50 text-amber-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
                                     </div>
                                 </div>
-                            ` : '';
+                            ` : `
+                                <!-- Mobile/Tablet hero promo row: horizontal scroll -->
+                                <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 mb-4 -mx-1 px-1">
+                                    <!-- Boba Card -->
+                                    <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
+                                        <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent"></div>
+                                        <span class="absolute top-4 left-5 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                        <div class="relative z-10">
+                                            <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">Brown Sugar<br>Boba Latte</h2>
+                                        </div>
+                                    </div>
+                                    <!-- Grapefruit Card -->
+                                    <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
+                                        <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-orange-950/90 via-orange-900/55 to-transparent"></div>
+                                        <span class="absolute top-4 left-5 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                        <div class="relative z-10">
+                                            <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P3 Super<br>Grapefruit</h2>
+                                        </div>
+                                    </div>
+                                    <!-- P1 Fruit Tea Card -->
+                                    <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
+                                        <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-amber-950/90 via-amber-800/50 to-transparent"></div>
+                                        <span class="absolute top-4 left-5 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
+                                        <div class="relative z-10">
+                                            <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P1 Super<br>Fruit Tea</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
 
                             return `
                                 <!-- Menu Feed (Categories) -->
@@ -2352,6 +2443,24 @@ const routes = {
                                 </div>
                             `;
                         } else if (mockupState.menuTab === 'featured') {
+                            const superFruitItem = MENU_ITEMS[3];
+                            const featuredItems = [...MENU_ITEMS.slice(0, 6)];
+                            // Ensure P1 Super Fruit Tea (index 3) is included but mark it specially
+                            // Build the card for P1 with tangerine badge
+                            const p1Card = `
+                                <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col ${isDesktop ? 'h-full' : 'w-[72vw] max-w-[260px] shrink-0 snap-center'} hover:shadow-md transition-shadow">
+                                    <div class="w-full ${isDesktop ? 'h-44' : 'h-40'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(3)'>
+                                        <img src="${superFruitItem ? superFruitItem.image : 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg'}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
+                                        <div class="absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</div>
+                                    </div>
+                                    <div class="cursor-pointer" onclick='selectItemAndNavigate(3)'>
+                                        <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${superFruitItem ? superFruitItem.name : 'P1 Super Fruit Tea'}</h4>
+                                        <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${ superFruitItem ? superFruitItem.price.toFixed(2) : '5.95'}</div>
+                                    </div>
+                                    ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${superFruitItem ? superFruitItem.description : ''}</p>` : ''}
+                                    <button onclick='selectItemAndNavigate(3)' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                </div>
+                            `;
                             return `
                                 <!-- Featured View -->
                                 <div class="space-y-12">
@@ -2360,28 +2469,60 @@ const routes = {
                                         <div class="flex justify-between items-end mb-6 px-1">
                                             <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Featured Specials</h3>
                                         </div>
-                                        <div class="${isDesktop ? 'grid grid-cols-4 gap-x-3 gap-y-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
-                                            ${MENU_ITEMS.slice(0, 6).map((item) => {
+                                        ${isDesktop ? `
+                                        <div class="grid grid-cols-4 gap-x-3 gap-y-5">
+                                            ${featuredItems.map((item) => {
                                                 const actualIndex = MENU_ITEMS.indexOf(item);
+                                                // Use tangerine badge for P1 (index 3), violet for others
+                                                const isP1 = actualIndex === 3;
+                                                const badgeStyle = isP1 ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"' : '';
+                                                const badgeClass = isP1 ? 'absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm' : 'absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm';
                                                 return `
-                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                                        <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                    <div class="bg-white rounded-2xl pt-2.5 px-2.5 pb-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                                        <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                             <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
-                                                            <div class="absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm">Featured</div>
+                                                            <div class="${badgeClass}" ${badgeStyle}>Featured</div>
                                                         </div>
                                                         <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                            <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
+                                                            <h4 class="font-black text-gray-900 text-lg leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                            <div class="font-black text-violet-600 text-base mb-2">$${ item.price.toFixed(2)}</div>
                                                         </div>
-                                                        ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ''}
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                        <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>
+                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-3 text-sm rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                     </div>
                                                 `;
                                             }).join('')}
+                                            ${p1Card}
                                         </div>
+                                        ` : `
+                                        <!-- Mobile/Tablet: horizontal scrollable row -->
+                                        <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-3 -mx-1 px-1">
+                                            ${featuredItems.map((item) => {
+                                                const actualIndex = MENU_ITEMS.indexOf(item);
+                                                const isP1 = actualIndex === 3;
+                                                const badgeStyle = isP1 ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"' : '';
+                                                const badgeClass = isP1 ? 'absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm' : 'absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm';
+                                                return `
+                                                    <div class="bg-white rounded-2xl pt-1.5 px-1.5 pb-3 shadow-sm border border-gray-100 flex flex-col w-[72vw] max-w-[260px] shrink-0 snap-center hover:shadow-md transition-shadow">
+                                                        <div class="w-full h-40 rounded-xl overflow-hidden mb-3 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                            <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
+                                                            <div class="${badgeClass}" ${badgeStyle}>Featured</div>
+                                                        </div>
+                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                            <h4 class="font-black text-gray-900 text-[15px] leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                            <div class="font-black text-violet-600 text-sm mb-3">$${ item.price.toFixed(2)}</div>
+                                                        </div>
+                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-2 text-[11px] rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                            ${p1Card}
+                                        </div>
+                                        `}
                                     </div>
                                 </div>
                             `;
+
                         } else if (mockupState.menuTab === 'favorites') {
                             const hasFavorites = mockupState.favorites && mockupState.favorites.length > 0;
                             return `
@@ -3910,13 +4051,174 @@ const routes = {
             </div>
         `;
     },
-    'directions': () => `
+    'directions': () => {
+        const isDesktop = currentViewport === 'desktop';
+        const mapSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.9880816825!2d-111.95254172421831!3d33.42224097339947!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08da35c246f9%3A0xe21289658ec91e!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1714088000000!5m2!1sen!2sus";
+
+        if (isDesktop) {
+            return `
+            <div class="flex h-full bg-white overflow-hidden" style="height: calc(100vh - 70px);">
+
+                <!-- ===== LEFT SIDEBAR PANEL ===== -->
+                <div class="w-[400px] shrink-0 flex flex-col bg-white border-r border-gray-100 shadow-[4px_0_24px_rgba(0,0,0,0.06)] z-10 overflow-y-auto scrollbar-hide">
+
+                    <!-- Header -->
+                    <div class="px-7 pt-7 pb-5 border-b border-gray-100">
+                        <div class="flex items-center gap-3 mb-5">
+                            <button onclick="window.history.back()" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 transition-colors shrink-0">
+                                <i class="fa-solid fa-chevron-left text-gray-600 text-sm"></i>
+                            </button>
+                            <span class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Directions</span>
+                        </div>
+
+                        <!-- Location identity -->
+                        <div class="flex items-center gap-4 mb-5">
+                            <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center border-2 border-violet-100 overflow-hidden shadow-sm shrink-0">
+                                <img src="images/itea_logo.png" class="w-10 h-10 object-contain">
+                            </div>
+                            <div class="min-w-0">
+                                <h1 class="text-xl font-black text-gray-900 uppercase tracking-tight leading-tight">i-Tea Tempe</h1>
+                                <p class="text-[11px] font-bold text-gray-500 mt-0.5 uppercase tracking-wider leading-relaxed truncate">825 W University Dr, Tempe, AZ 85281</p>
+                            </div>
+                        </div>
+
+                        <!-- Transport mode tabs -->
+                        <div class="flex gap-2">
+                            <button id="dir-mode-drive" onclick="document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.remove('bg-violet-600','text-white','shadow-md')); document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.add('bg-gray-100','text-gray-600')); this.classList.remove('bg-gray-100','text-gray-600'); this.classList.add('bg-violet-600','text-white','shadow-md');" class="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-violet-600 text-white shadow-md transition-all">
+                                <i class="fa-solid fa-car text-base"></i>
+                                <span class="text-[10px] font-black uppercase tracking-widest">Drive</span>
+                            </button>
+                            <button id="dir-mode-walk" onclick="document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.remove('bg-violet-600','text-white','shadow-md')); document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.add('bg-gray-100','text-gray-600')); this.classList.remove('bg-gray-100','text-gray-600'); this.classList.add('bg-violet-600','text-white','shadow-md');" class="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gray-100 text-gray-600 transition-all">
+                                <i class="fa-solid fa-person-walking text-base"></i>
+                                <span class="text-[10px] font-black uppercase tracking-widest">Walk</span>
+                            </button>
+                            <button id="dir-mode-transit" onclick="document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.remove('bg-violet-600','text-white','shadow-md')); document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.add('bg-gray-100','text-gray-600')); this.classList.remove('bg-gray-100','text-gray-600'); this.classList.add('bg-violet-600','text-white','shadow-md');" class="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gray-100 text-gray-600 transition-all">
+                                <i class="fa-solid fa-bus text-base"></i>
+                                <span class="text-[10px] font-black uppercase tracking-widest">Transit</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ETA + Distance stats -->
+                    <div class="px-7 py-5 border-b border-gray-100">
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="bg-violet-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-violet-100">
+                                <div class="text-violet-600 text-[10px] font-black uppercase tracking-widest mb-1">ETA</div>
+                                <div class="text-2xl font-black text-gray-900">9</div>
+                                <div class="text-[10px] font-bold text-gray-500 uppercase">mins</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
+                                <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Distance</div>
+                                <div class="text-2xl font-black text-gray-900">2.4</div>
+                                <div class="text-[10px] font-bold text-gray-500 uppercase">miles</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
+                                <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Traffic</div>
+                                <div class="text-lg font-black text-green-600">Low</div>
+                                <div class="text-[10px] font-bold text-gray-500 uppercase">Normal</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- From / To route summary -->
+                    <div class="px-7 py-5 border-b border-gray-100">
+                        <div class="flex flex-col gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-circle-dot text-blue-500 text-sm"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">From</div>
+                                    <div class="text-sm font-black text-gray-900 truncate">Your Location</div>
+                                </div>
+                            </div>
+                            <div class="ml-4 w-px h-5 bg-gray-200 self-start ml-[15px]"></div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-location-dot text-white text-sm"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">To</div>
+                                    <div class="text-sm font-black text-gray-900 truncate">i-Tea Tempe · 825 W University Dr</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Turn-by-turn directions -->
+                    <div class="px-7 py-5 flex-1">
+                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Step-by-Step</div>
+                        <div class="space-y-1">
+                            ${[
+                                { icon: 'fa-arrow-right', label: 'Head east on E University Dr', dist: '0.3 mi' },
+                                { icon: 'fa-turn-right', label: 'Turn right onto S Mill Ave', dist: '0.1 mi' },
+                                { icon: 'fa-turn-left', label: 'Turn left onto E 7th St', dist: '0.5 mi' },
+                                { icon: 'fa-turn-right', label: 'Turn right onto S Rural Rd', dist: '0.8 mi' },
+                                { icon: 'fa-turn-left', label: 'Turn left onto E University Dr', dist: '0.4 mi' },
+                                { icon: 'fa-location-dot', label: 'Arrive at i-Tea Tempe', dist: 'Destination' },
+                            ].map((step, i) => `
+                                <div class="flex items-start gap-4 p-3.5 rounded-xl hover:bg-gray-50 transition-colors group cursor-default">
+                                    <div class="w-8 h-8 rounded-full ${i === 5 ? 'bg-violet-600 text-white' : 'bg-gray-100 text-gray-600 group-hover:bg-violet-100 group-hover:text-violet-600'} flex items-center justify-center shrink-0 transition-colors">
+                                        <i class="fa-solid ${step.icon} text-xs"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-bold text-gray-800 leading-snug">${step.label}</div>
+                                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">${step.dist}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- CTA Buttons -->
+                    <div class="px-7 py-6 border-t border-gray-100 space-y-3 shrink-0">
+                        <button class="w-full bg-violet-600 hover:bg-violet-700 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-violet-200 flex items-center justify-center gap-3 active:scale-95 transition-all">
+                            <i class="fa-solid fa-location-arrow"></i> Start Navigation
+                        </button>
+                        <div class="flex gap-3">
+                            <button class="flex-1 bg-white border-2 border-gray-100 text-gray-700 hover:border-violet-200 hover:text-violet-600 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
+                                <i class="fa-solid fa-share-nodes"></i> Share
+                            </button>
+                            <button class="flex-1 bg-white border-2 border-gray-100 text-gray-700 hover:border-violet-200 hover:text-violet-600 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+                            <button onclick="window.history.back()" class="flex-1 bg-white border-2 border-gray-100 text-gray-700 hover:border-red-200 hover:text-red-500 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
+                                <i class="fa-solid fa-xmark"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== RIGHT MAP PANEL ===== -->
+                <div class="flex-1 relative bg-gray-100 overflow-hidden">
+                    <iframe
+                        src="${mapSrc}"
+                        class="w-full h-full border-0"
+                        allowfullscreen=""
+                        loading="lazy">
+                    </iframe>
+                    <!-- Map overlay badge -->
+                    <div class="absolute top-5 right-5 bg-white rounded-2xl shadow-lg px-4 py-3 flex items-center gap-3 border border-gray-100">
+                        <div class="w-8 h-8 bg-violet-600 rounded-full flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-location-dot text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-black text-gray-900 uppercase tracking-tight">i-Tea Tempe</div>
+                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Open Now · 9 min away</div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // ===== MOBILE / TABLET (original layout preserved) =====
+        return `
             <div class="flex flex-col h-full bg-white relative">
 
                 <!-- Map Area -->
                 <div class="flex-1 relative bg-gray-100 overflow-hidden">
                     <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.9880816825!2d-111.95254172421831!3d33.42224097339947!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08da35c246f9%3A0xe21289658ec91e!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1714088000000!5m2!1sen!2sus" 
+                        src="${mapSrc}" 
                         class="w-full h-full border-0" 
                         allowfullscreen="" 
                         loading="lazy">
@@ -3970,7 +4272,9 @@ const routes = {
                     </button>
                 </div>
             </div>
-    `,
+        `;
+    },
+
     'order-confirm': () => {
         const isDesktop = currentViewport === 'desktop';
         return `
