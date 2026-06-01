@@ -1373,7 +1373,7 @@ const routes = {
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" onclick="focusLocation('${s.name}')">
+                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 shadow-md' : ((idx === 0 || idx === 1) ? 'border-violet-200' : (s.fav ? 'border-violet-200' : 'border-gray-200'))} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" style="${(idx === 0 || idx === 1) ? 'background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);' : (s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'background: rgba(124,58,237,0.05);' : '')}" onclick="focusLocation('${s.name}')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
@@ -1416,7 +1416,7 @@ const routes = {
                                 <p class="text-base font-black text-white truncate">i-Tea - Tempe <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; 0.3 mi</span></p>
                             </div>
                         </div>
-                        <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
+                        <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm transition-colors active:scale-95">Order Here</button>
                     </div>
 
                     <div class="w-full h-[35%] min-h-[220px] shrink-0 relative z-0">
@@ -1439,7 +1439,7 @@ const routes = {
 
                         <div class="p-4 space-y-3 flex-1 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
-                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 bg-violet-50/10 shadow-md' : (s.fav ? 'border-violet-200 bg-violet-50/40' : 'border-gray-200 bg-white')} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="focusLocation('${s.name}')">
+                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 shadow-md' : ((idx === 0 || idx === 1) ? 'border-violet-200' : (s.fav ? 'border-violet-200' : 'border-gray-200'))} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" style="${(idx === 0 || idx === 1) ? 'background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);' : (s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'background: rgba(124,58,237,0.05);' : '')}" onclick="focusLocation('${s.name}')">
                                     <div>
                                         ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
@@ -1452,8 +1452,8 @@ const routes = {
                                         </div>
                                     </div>
                                     <div class="flex flex-col items-end justify-between h-full gap-2">
-                                        <div class="text-[11px] font-black text-gray-400 uppercase font-mono">${s.dist}</div>
-                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest shadow-sm active:scale-95">Order Here</button>
+                                        <div class="text-[11px] font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
+                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest whitespace-nowrap shadow-sm active:scale-95">Order Here</button>
                                         <span class="text-[10px] text-gray-400 underline uppercase font-bold" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
                                     </div>
                                 </div>`).join('')}
