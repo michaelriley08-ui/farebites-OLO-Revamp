@@ -136,6 +136,7 @@ const _v = new Date();
 const VERSION_STR = `V${_v.getMonth() + 1}.${_v.getDate()}.${String(_v.getHours()).padStart(2,'0')}.${String(_v.getMinutes()).padStart(2,'0')}`;
 let currentPage = document.body.dataset.page || 'restaurant-landing';
 let mockupState = loadMockupState();
+let isUpdatingMockupState = false;
 
 function loadMockupState() {
     try {
@@ -1594,7 +1595,7 @@ const routes = {
         return `
                 <div class="flex flex-col h-full bg-[#FAF9F6] relative overflow-hidden">
                     <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black"><button onclick="navigateTo('locations')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span><button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button></header>
-                    <div class="flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full pb-32">
+                    <div class="flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full ${currentViewport === 'desktop' ? 'pb-12' : 'pb-32'}">
                         <!-- Location Info Card -->
                         <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('locations')">
                             <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
@@ -1648,9 +1649,17 @@ const routes = {
                                 </div>
                             </div>
                             `}
+
+                            ${currentViewport === 'desktop' ? `
+                            <div class="mt-8">
+                                <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black">Start Order</button>
+                            </div>
+                            ` : ''}
                         </div>
                     </div>
+                    ${currentViewport !== 'desktop' ? `
                     <div class="p-6 bg-white border-t border-gray-100 absolute bottom-0 left-0 right-0 z-50 shadow-lg"><button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black">Start Order</button></div>
+                    ` : ''}
 
                     <!-- Date Modal -->
                     <div id="date-modal" class="absolute inset-0 bg-black/60 z-[100] ${dateModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
@@ -1765,7 +1774,7 @@ const routes = {
                 </header>
                 <div class="${isDesktopOrTablet ? 'flex-1 flex flex-col items-center justify-center p-6 md:p-8 max-w-3xl mx-auto w-full text-center' : 'flex-1 flex flex-col items-center justify-start px-6 pt-6 text-center'}">
                     <div class="w-full ${isDesktopOrTablet ? 'max-w-md' : ''} aspect-square rounded-[32px] overflow-hidden shadow-2xl mb-8 md:mb-12">
-                        <img src="images/qr-scan-table.jpg" class="w-full h-full object-cover">
+                        <img src="images/qr-scan-table-sm.jpg" class="w-full h-full object-cover">
                     </div>
                     <h2 class="text-2xl font-black mb-6 uppercase tracking-tight font-black text-gray-900 leading-tight">Ready to Dine In?</h2>
                     <div class="space-y-4 text-left uppercase font-black text-gray-600 mb-8">
@@ -2711,7 +2720,7 @@ const routes = {
                         </div>
                     </div>
                     
-                    <button onclick="navigateTo('menu')" class="w-full bg-transparent border-2 border-violet-600 text-violet-600 py-3.5 rounded-full font-black text-sm shadow-[0_8px_25px_-5px_rgba(124,58,237,0.2)] hover:bg-violet-50 active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2 shrink-0">
+                    <button onclick="updateMockupState('menuTab', 'menu'); navigateTo('menu')" class="w-full bg-transparent border-2 border-violet-600 text-violet-600 py-3.5 rounded-full font-black text-sm shadow-[0_8px_25px_-5px_rgba(124,58,237,0.2)] hover:bg-violet-50 active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2 shrink-0">
                         <i class="fa-solid fa-plus"></i> Add another menu item
                     </button>
 
@@ -3268,15 +3277,23 @@ const routes = {
                             </div>
                         </div>
                     </div>
+                    ${isDesktop ? `
+                    <div class="pt-4">
+                        <button onclick="navigateTo('cart')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
+                            <i class="fa-solid fa-rotate-left"></i> Reorder
+                        </button>
+                    </div>
+                    ` : ''}
                 </div>
-                
+                ${!isDesktop ? `
                 <div class="bg-white border-t border-gray-100 shrink-0 sticky bottom-0">
-                    <div class="p-6 w-full ${isDesktop ? 'max-w-3xl mx-auto' : ''}">
+                    <div class="p-6 w-full">
                         <button onclick="navigateTo('cart')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
                             <i class="fa-solid fa-rotate-left"></i> Reorder
                         </button>
                     </div>
                 </div>
+                ` : ''}
             </div>`;
     },
     'track-order': () => {
@@ -3450,16 +3467,25 @@ const routes = {
                             </div>
                         </div>
                     </div>
+                    ${isDesktop ? `
+                    <div class="pt-4 space-y-3">
+                        <button onclick="alert('Calling store at (602) 555-0123...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
+                            <i class="fa-solid fa-phone"></i> Contact Store
+                        </button>
+                        <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
+                    </div>
+                    ` : ''}
                 </div>
-                
+                ${!isDesktop ? `
                 <div class="bg-white border-t border-gray-100 shrink-0 sticky bottom-0">
-                    <div class="p-6 w-full ${isDesktop ? 'max-w-3xl mx-auto' : ''} space-y-3">
+                    <div class="p-6 w-full space-y-3">
                         <button onclick="alert('Calling store at (602) 555-0123...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
                             <i class="fa-solid fa-phone"></i> Contact Store
                         </button>
                         <button onclick="navigateTo('landing')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                     </div>
                 </div>
+                ` : ''}
             </div>`;
     },
     'registration': () => {
@@ -3814,7 +3840,7 @@ const routes = {
                     </div>
                 </header>
                 
-                <div id="payment-scroller" class="flex-1 overflow-y-auto ${isDesktop ? 'p-6 md:p-8 space-y-8 w-full max-w-3xl mx-auto' : 'p-4 space-y-6 w-full max-w-[1080px] mx-auto'} scrollbar-hide pb-32">
+                <div id="payment-scroller" class="flex-1 overflow-y-auto ${isDesktop ? 'p-6 md:p-8 space-y-8 w-full max-w-3xl mx-auto pb-12' : 'p-4 space-y-6 w-full max-w-[1080px] mx-auto pb-32'} scrollbar-hide">
                     
                     <!-- Payment Methods -->
                     <div>
@@ -3886,15 +3912,23 @@ const routes = {
                         <div class="h-px bg-gray-50 w-full my-4"></div>
                         <div class="flex justify-between text-xl font-black text-gray-900 uppercase"><span>Total</span><span class="text-violet-600">$${finalTotal}</span></div>
                     </div>
+                    ${isDesktop ? `
+                    <div class="pt-4 flex justify-between gap-4 w-full">
+                        <button onclick="navigateTo('cart')" class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:text-violet-600 hover:bg-violet-50 shadow-md transition-all active:scale-95 shrink-0"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                        <button onclick="navigateTo('order-confirm')" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">Purchase Order</button>
+                    </div>
+                    ` : ''}
                 </div>
 
                 <!-- Footer Action Buttons -->
+                ${!isDesktop ? `
                 <div class="bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-50">
-                    <div class="p-6 flex justify-between gap-4 w-full ${isDesktop ? 'max-w-3xl mx-auto' : 'max-w-[1080px] mx-auto'}">
+                    <div class="p-6 flex justify-between gap-4 w-full max-w-[1080px] mx-auto">
                         <button onclick="navigateTo('cart')" class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:text-violet-600 hover:bg-violet-50 shadow-md transition-all active:scale-95 shrink-0"><i class="fa-solid fa-arrow-left text-xl"></i></button>
                         <button onclick="navigateTo('order-confirm')" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">Purchase Order</button>
                     </div>
                 </div>
+                ` : ''}
 
                 <!-- PAYMENT MODALS -->
                 
@@ -4733,7 +4767,7 @@ function renderPage() {
             scrolledToHash = true;
         }
     }
-    if (!scrolledToHash) {
+    if (!scrolledToHash && !isUpdatingMockupState) {
         window.scrollTo(0, 0);
     }
     persistAllState();
@@ -4821,14 +4855,32 @@ function updateMockupState(key, value) {
         document.getElementById('app-viewport');
 
     const scrollPos = scroller ? scroller.scrollTop : 0;
-    renderPage();
+    const windowScrollPos = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
 
-    const newScroller = document.getElementById('order-details-scroller') ||
-        document.getElementById('cart-scroller') ||
-        document.getElementById('payment-scroller') ||
-        document.querySelector('.overflow-y-auto') ||
-        document.getElementById('app-viewport');
-    if (newScroller) newScroller.scrollTop = scrollPos;
+    isUpdatingMockupState = true;
+    renderPage();
+    isUpdatingMockupState = false;
+
+    // Restore window scroll position (critical for desktop layout where body/window scrolls)
+    window.scrollTo(0, windowScrollPos);
+
+    // Restore element scroll position (synchronously and asynchronously to handle browser rendering delay)
+    const restoreContainerScroll = () => {
+        const newScroller = document.getElementById('order-details-scroller') ||
+            document.getElementById('cart-scroller') ||
+            document.getElementById('payment-scroller') ||
+            document.querySelector('.overflow-y-auto') ||
+            document.getElementById('app-viewport');
+        if (newScroller) {
+            newScroller.scrollTop = scrollPos;
+        }
+    };
+
+    restoreContainerScroll();
+    requestAnimationFrame(() => {
+        restoreContainerScroll();
+        setTimeout(restoreContainerScroll, 0);
+    });
 }
 
 function checkAuthPasscode() {
