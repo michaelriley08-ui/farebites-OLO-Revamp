@@ -1356,17 +1356,17 @@ const routes = {
                             </div>
                         </div>
                         <!-- Default Location Quick-Select -->
-                        <div class="px-5 py-3 border-b border-violet-100 bg-violet-50/60 flex items-center justify-between gap-3">
+                        <div class="p-5 border-b border-violet-700 bg-violet-600 flex items-center justify-between gap-3 text-white">
                             <div class="flex items-center gap-2.5 min-w-0">
-                                <div class="w-7 h-7 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-house text-white text-[10px]"></i>
+                                <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
                                 </div>
                                 <div class="min-w-0">
-                                    <p class="text-[9px] font-black text-violet-500 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
-                                    <p class="text-xs font-black text-gray-800 truncate">i-Tea - Tempe &nbsp;·&nbsp; 0.3 mi</p>
+                                    <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
+                                    <p class="text-base font-black text-white truncate">i-Tea - Tempe <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; 0.3 mi</span></p>
                                 </div>
                             </div>
-                            <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
+                            <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
@@ -1403,17 +1403,17 @@ const routes = {
                     </header>
                     
                     <!-- Previous Order Location Quick-Select -->
-                    <div class="px-4 py-2.5 bg-violet-50/80 border-b border-violet-100 flex items-center justify-between gap-3 shrink-0 z-10">
+                    <div class="p-5 bg-violet-600 border-b border-violet-700 flex items-center justify-between gap-3 shrink-0 z-10 text-white">
                         <div class="flex items-center gap-2.5 min-w-0">
-                            <div class="w-7 h-7 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
-                                <i class="fa-solid fa-house text-white text-[10px]"></i>
+                            <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-[9px] font-black text-violet-500 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
-                                <p class="text-xs font-black text-gray-800 truncate">i-Tea - Tempe &nbsp;·&nbsp; 0.3 mi</p>
+                                <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
+                                <p class="text-base font-black text-white truncate">i-Tea - Tempe <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; 0.3 mi</span></p>
                             </div>
                         </div>
-                        <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-1.5 bg-violet-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors active:scale-95">Order Here</button>
+                        <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
                     </div>
 
                     <div class="w-full h-[35%] min-h-[220px] shrink-0 relative z-0">
