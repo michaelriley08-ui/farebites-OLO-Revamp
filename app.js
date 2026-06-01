@@ -1440,7 +1440,7 @@ const routes = {
                         <div class="p-4 space-y-3 flex-1 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
                                 <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 shadow-md' : ((idx === 0 || idx === 1) ? 'border-violet-200' : (s.fav ? 'border-violet-200' : 'border-gray-200'))} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" style="${(idx === 0 || idx === 1) ? 'background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);' : (s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'background: rgba(124,58,237,0.05);' : '')}" onclick="focusLocation('${s.name}')">
-                                    <div>
+                                    <div class="min-w-0 flex-1">
                                         ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
                                         ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
                                         <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">${s.name} ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-xs"></i>' : ''}</h3>
@@ -1451,7 +1451,7 @@ const routes = {
                                             <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-square-parking text-[13px]"></i> Curbside</span>
                                         </div>
                                     </div>
-                                    <div class="flex flex-col items-end justify-between h-full gap-2">
+                                    <div class="flex flex-col items-end justify-between h-full gap-2 shrink-0 ml-3">
                                         <div class="text-[11px] font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
                                         <button onclick="event.stopPropagation(); selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest whitespace-nowrap shadow-sm active:scale-95">Order Here</button>
                                         <span class="text-[10px] text-gray-400 underline uppercase font-bold" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
@@ -2252,7 +2252,7 @@ const routes = {
                                 return `
                                     <div class="space-y-0">
                                         <p class="text-[11px] font-black text-gray-400 uppercase tracking-widest px-1 mb-4">${filtered.length} result${filtered.length !== 1 ? 's' : ''}</p>
-                                        <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 gap-[10px]'}">
+                                        <div class="${isDesktop ? 'grid grid-cols-4 gap-x-3 gap-y-5' : 'grid grid-cols-1 gap-[10px]'}">
                                             ${filtered.map(item => {
                                                 const actualIndex = getActiveMenuItems().indexOf(item);
                                                 return `
@@ -2276,7 +2276,7 @@ const routes = {
 
                             const grapefruitImg = MENU_ITEMS[5] ? MENU_ITEMS[5].image : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
                             const featuredPromoHtml = isDesktop ? `
-                                <div class="grid grid-cols-2 gap-6 mb-8">
+                                <div class="grid grid-cols-2 gap-[14px] mb-8">
                                     <!-- Boba Slide -->
                                     <div class="relative w-full rounded-3xl overflow-hidden shadow-lg h-[160px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
                                         <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
@@ -2328,7 +2328,7 @@ const routes = {
                                                     <h3 class="${isDesktop ? 'text-3xl' : 'text-2xl'} font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
                                                     <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
                                                 </div>
-                                                <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
+                                                <div class="${isDesktop ? 'grid grid-cols-4 gap-x-3 gap-y-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
                                                     ${sectionItems.map(item => {
                                                         const actualIndex = items.indexOf(item);
                                                         return `
@@ -2360,7 +2360,7 @@ const routes = {
                                         <div class="flex justify-between items-end mb-6 px-1">
                                             <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Featured Specials</h3>
                                         </div>
-                                        <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
+                                        <div class="${isDesktop ? 'grid grid-cols-4 gap-x-3 gap-y-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
                                             ${MENU_ITEMS.slice(0, 6).map((item) => {
                                                 const actualIndex = MENU_ITEMS.indexOf(item);
                                                 return `
