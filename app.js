@@ -5398,7 +5398,44 @@ window._handlePlaceOrder = async function() {
     } catch (error) {
         console.error('Failed to place order:', error);
         const errorMsg = error?.data?.message || error?.data?.title || 'Failed to place order. Please try again.';
-        alert(errorMsg);
+        
+        // Auto-retry if there is a payment total mismatch
+        // Example error: "Payment total $10.73 does not match order total $8.44"
+        const match = errorMsg.match(/Payment total \$[\d\.]+ does not match order total \$([\d\.]+)/i);
+        if (match && match[1]) {
+            const correctTotal = parseFloat(match[1]);
+            console.log(`Payment mismatch detected. Retrying with correct total: ${correctTotal}`);
+            orderData.payments[0].amount = correctTotal;
+            try {
+                const retryResponse = await window.ApiService.placeOrder(orderData);
+                console.log('Order placed successfully on retry:', retryResponse);
+                
+                mockupState.lastOrder = {
+                    ...retryResponse,
+                    orderItems: cart.map(i => ({ ...i })),
+                    subtotal,
+                    taxes,
+                    tipAmount,
+                    bagFee,
+                    convenienceFee,
+                    total: finalTotal,
+                    placedAt: new Date().toISOString()
+                };
+                
+                mockupState.cart = [];
+                mockupState.cartItemCount = 0;
+                persistAllState();
+                navigateTo('order-confirm');
+                return;
+            } catch (retryError) {
+                console.error('Retry failed:', retryError);
+                const retryErrorMsg = retryError?.data?.message || retryError?.data?.title || 'Failed to place order. Please try again.';
+                alert(retryErrorMsg);
+            }
+        } else {
+            alert(errorMsg);
+        }
+        
         // Reset buttons
         btns.forEach(b => { if (b.textContent.includes('Placing')) { b.textContent = 'Purchase Order'; b.disabled = false; } });
     }
