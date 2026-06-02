@@ -1,4 +1,5 @@
-const APP_API_BASE_URL = 'https://olowebapidev2.azurewebsites.net';
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const APP_API_BASE_URL = isLocal ? 'https://olowebapidev2.azurewebsites.net' : '';
 
 const ApiService = {
     getToken() {

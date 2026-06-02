@@ -9,5 +9,11 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://olowebapidev2.azurewebsites.net/api/:path*"
+    }
   ]
 }

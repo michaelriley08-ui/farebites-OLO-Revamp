@@ -77,7 +77,8 @@ const assets = {
     googleMapsEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.8329606830704!2d-111.9525413!3d33.4211153!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08de64c1bf87%3A0x7d022b7a9de3e878!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1716768000000!5m2!1sen!2sus"
 };
 
-const API_BASE_URL = 'https://olowebapidev2.azurewebsites.net';
+const isLocalApp = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE_URL = isLocalApp ? 'https://olowebapidev2.azurewebsites.net' : '';
 
 const DEFAULT_STATE = {
     fulfillmentMode: 'In-store',
