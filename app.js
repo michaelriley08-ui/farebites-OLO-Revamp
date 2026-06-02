@@ -8,7 +8,7 @@ const PAGE_FILE_MAP = {
     "order-confirm": "order-confirm.html",
     "order-status": "order-status.html",
     "restaurant-home": "index.html",
-    "sign-in": "sign-in.html",
+    "restaurant-sign-in": "sign-in.html",
     "order-details": "order-details.html",
     "order-details-alt": "order-details-alt.html",
     "menu-scan": "menu-scan.html",
@@ -575,7 +575,7 @@ function hamburgerDrawerHTML() {
                             <p class="font-black text-[22px] text-gray-900 leading-tight">Hi, ${userName}</p>
                             <button onclick="closeHamburger(); navigateTo('account');" class="text-sm font-bold text-violet-600 mt-1 hover:underline">View My Account</button>
                         ` : `
-                            <button onclick="closeHamburger(); navigateTo('restaurant-sign-in');" class="font-black text-[22px] text-gray-900">Sign In</button>
+                            <button onclick="closeHamburger(); navigateTo('sign-in');" class="font-black text-[22px] text-gray-900">Sign In</button>
                         `}
                     </div>
                     <button onclick="closeHamburger()" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500 shrink-0 mt-1">
@@ -598,7 +598,7 @@ function hamburgerDrawerHTML() {
                     ${isLoggedIn ? `
                         <button onclick="closeHamburger(); signOutUser();" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Sign Out</button>
                     ` : `
-                        <button onclick="closeHamburger(); navigateTo('restaurant-sign-in');" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-violet-600 transition-colors">Sign In / Create Account</button>
+                        <button onclick="closeHamburger(); navigateTo('sign-in');" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-violet-600 transition-colors">Sign In / Create Account</button>
                     `}
                 </div>
             </div>
@@ -4909,7 +4909,7 @@ function renderPage() {
                             </div>
                         </div>
                     ` : `
-                        <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('restaurant-sign-in')">
+                        <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('sign-in')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                             <span class="nav-link-animated">Sign In / Join</span>
                         </div>
