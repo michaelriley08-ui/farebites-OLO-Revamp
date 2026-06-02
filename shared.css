@@ -238,3 +238,19 @@
         button:hover .nav-link-animated::after {
             transform: scaleX(1);
         }
+
+        /* Scanning Laser Sweep Animation */
+        @keyframes scanLaser {
+            0% {
+                top: 0%;
+            }
+            50% {
+                top: 100%;
+            }
+            100% {
+                top: 0%;
+            }
+        }
+        .scan-laser-line {
+            animation: scanLaser 2s infinite linear;
+        }

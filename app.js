@@ -123,6 +123,7 @@ const DEFAULT_STATE = {
     apiCategories: [],
     apiMenuItems: [],
     selectedLocationId: null,
+    isScanning: false,
     // Phase 4: Cart & Order state
     cart: [],                    // Array of cart items with real menuItemId & selectedSubItems
     selectedRestaurantId: null,  // Extracted from API sub-item data (e.g., 7 for i-Tea)
@@ -2913,6 +2914,30 @@ const routes = {
             </div>
         `;
 
+        let scanOverlayHtml = '';
+        if (mockupState.isScanning) {
+            scanOverlayHtml = `
+                <div class="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md transition-all animate-[fadeIn_0.3s_ease-out]">
+                    <!-- Target box -->
+                    <div class="relative w-64 h-64 border-4 border-violet-500 rounded-3xl overflow-hidden flex items-center justify-center shadow-[0_0_50px_rgba(124,58,237,0.3)]">
+                        <!-- Corners indicators -->
+                        <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-violet-400 -mt-1 -ml-1"></div>
+                        <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-violet-400 -mt-1 -mr-1"></div>
+                        <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-violet-400 -mb-1 -ml-1"></div>
+                        <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-violet-400 -mb-1 -mr-1"></div>
+                        
+                        <!-- Moving Laser Line -->
+                        <div class="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-violet-400 to-transparent shadow-[0_0_15px_#7c3aed] scan-laser-line"></div>
+                        
+                        <i class="fa-solid fa-qrcode text-6xl text-violet-400/30"></i>
+                    </div>
+                    
+                    <span class="mt-8 text-sm font-black text-violet-400 uppercase tracking-widest animate-pulse">DECODING QR CODE...</span>
+                    <span class="mt-2 text-xs font-bold text-gray-400 uppercase tracking-wider">DO NOT CLOSE CAMERA</span>
+                </div>
+            `;
+        }
+
         const formContentHtml = `
             <div class="flex-1 flex flex-col justify-center py-6 px-6 md:px-12 max-w-2xl mx-auto w-full text-center">
                 <h2 class="text-2xl md:text-3xl font-black mb-6 uppercase tracking-tight font-black text-gray-900 leading-tight">Ready to Dine In?</h2>
@@ -2922,9 +2947,10 @@ const routes = {
                     <p class="text-sm flex gap-3"><span class="text-violet-600 font-black">3.</span><span>Scan to start your order.</span></p>
                 </div>
                 <div class="w-full max-w-xs mx-auto mb-4">
-                    <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] flex items-center justify-center gap-3 active:scale-95 transition-all uppercase shadow-violet-100 font-black">
+                    <input type="file" id="qr-camera-input" accept="image/*" capture="environment" class="hidden" onchange="window.handleQRCameraCapture(event)">
+                    <button onclick="document.getElementById('qr-camera-input').click();" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] flex items-center justify-center gap-3 active:scale-95 transition-all uppercase shadow-violet-100 font-black">
                         <i class="fa-solid fa-camera"></i>
-                        <span>SCAN TABLE QR</span>
+                        <span>SCAN QR CODE</span>
                     </button>
                 </div>
 
@@ -2934,6 +2960,7 @@ const routes = {
 
         return `
             <div class="flex flex-col bg-white relative overflow-hidden" style="${isDesktop ? 'height: calc(100vh - 70px);' : 'height: 100vh;'}">
+                ${scanOverlayHtml}
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black shrink-0">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
                         <i class="fa-solid fa-bars text-xl"></i>
@@ -7345,3 +7372,18 @@ activityEvents.forEach(event => {
 window.addEventListener('DOMContentLoaded', () => {
     resetInactivityTimer();
 });
+
+// Native camera QR code capture callback
+window.handleQRCameraCapture = function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        // Set scanning state to true, causing the page to render the premium overlay
+        updateMockupState('isScanning', true);
+        
+        // Simulate decoding progress for 1.5 seconds, then transition to menu
+        setTimeout(() => {
+            updateMockupState('isScanning', false);
+            navigateTo('menu');
+        }, 1500);
+    }
+};
