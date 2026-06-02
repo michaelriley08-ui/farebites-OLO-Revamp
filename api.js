@@ -147,7 +147,7 @@ const ApiService = {
     // --- Order Endpoints ---
 
     async placeOrder(orderData) {
-        return await this.request('/api/CustomerOrder', 'POST', orderData);
+        return await this.request('/api/CustomerOrder/guest', 'POST', orderData);
     },
 
     async getOrderDetails(orderId) {

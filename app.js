@@ -3,6 +3,7 @@ const PAGE_FILE_MAP = {
     "home": "index.html",
     "sign-in": "sign-in.html",
     "forgot-password": "forgot-password.html",
+    "rewards": "rewards.html",
     "cart": "cart.html",
     "customize": "order-customize.html",
     "customize-alt": "order-customize-alt.html",
@@ -36,6 +37,7 @@ const PAGE_LABELS = {
     "home": "FareBites Homepage (Logged In)",
     "sign-in": "Sign In / Sign Up",
     "forgot-password": "Forgot Password",
+    "rewards": "Rewards Program",
     "cart": "Cart / Review",
     "customize": "Customize Item",
     "customize-alt": "Customize Item (Alternative)",
@@ -904,8 +906,8 @@ function renderMenuPage(isAlternative) {
                             <div class="flex gap-[14px] overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-6 mb-2 pt-2 -mt-2 -mx-2 px-2">
                                 <!-- Boba Slide -->
                                 <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                    <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
+                                    <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
                                     <!-- Absolute top-left badge -->
                                     <span class="absolute top-4 left-6 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                     <div class="relative z-10 w-full pr-36">
@@ -917,8 +919,8 @@ function renderMenuPage(isAlternative) {
                                 </div>
                                 <!-- Grapefruit Slide -->
                                 <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                    <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
+                                    <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
                                     <!-- Absolute top-left badge -->
                                     <span class="absolute top-4 left-6 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                     <div class="relative z-10 w-full pr-36">
@@ -930,8 +932,8 @@ function renderMenuPage(isAlternative) {
                                 </div>
                                 <!-- P1 Super Fruit Tea Slide -->
                                 <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                    <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-amber-950/90 via-amber-800/55 to-transparent"></div>
+                                    <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-[#f97316]/70 via-[#f97316]/35 to-transparent"></div>
                                     <!-- Absolute top-left badge - tangerine/orange-amber -->
                                     <span class="absolute top-4 left-6 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
                                     <div class="relative z-10 w-full pr-36">
@@ -947,8 +949,8 @@ function renderMenuPage(isAlternative) {
                             <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 mb-4 -mx-1 px-1">
                                 <!-- Boba Card -->
                                 <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
-                                    <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent"></div>
+                                    <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
                                     <span class="absolute top-4 left-5 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                     <div class="relative z-10">
                                         <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">Brown Sugar<br>Boba Latte</h2>
@@ -956,8 +958,8 @@ function renderMenuPage(isAlternative) {
                                 </div>
                                 <!-- Grapefruit Card -->
                                 <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
-                                    <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-950/90 via-orange-900/55 to-transparent"></div>
+                                    <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
                                     <span class="absolute top-4 left-5 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                     <div class="relative z-10">
                                         <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P3 Super<br>Grapefruit</h2>
@@ -965,8 +967,8 @@ function renderMenuPage(isAlternative) {
                                 </div>
                                 <!-- P1 Fruit Tea Card -->
                                 <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
-                                    <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-amber-950/90 via-amber-800/50 to-transparent"></div>
+                                    <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-[#f97316]/70 via-[#f97316]/35 to-transparent"></div>
                                     <span class="absolute top-4 left-5 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
                                     <div class="relative z-10">
                                         <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P1 Super<br>Fruit Tea</h2>
@@ -987,7 +989,7 @@ function renderMenuPage(isAlternative) {
                                         return `
                                             <a href="#${section.id}" 
                                                onclick="event.preventDefault(); document.getElementById('${section.id}')?.scrollIntoView({ behavior: 'smooth', block: 'start' });"
-                                               class="inline-flex items-center bg-gray-400 hover:bg-gray-500 text-white px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 shrink-0 cursor-pointer">
+                                               class="inline-flex items-center bg-[#D6D6D6] hover:bg-[#A8A8A8] text-[#1f0b35] px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 shrink-0 cursor-pointer">
                                                 ${section.name}
                                             </a>
                                         `;
@@ -1661,6 +1663,107 @@ const routes = {
             </div>
         `;
     },
+    'rewards': () => {
+        const isDesktop = currentViewport === 'desktop';
+        return `
+            <div class="flex flex-col min-h-screen bg-slate-50 relative overflow-x-hidden animate-[fadeIn_0.3s_ease-out]">
+                <!-- Compact Header -->
+                <header class="bg-white border-b border-gray-100 sticky top-0 z-50 px-6 py-4 flex justify-between items-center shrink-0 shadow-sm">
+                    <button onclick="navigateTo(mockupState.lastMenuPage || 'restaurant-home')" class="w-10 h-10 flex items-center justify-start text-[#1f0b35] hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-xl"></i>
+                    </button>
+                    <h1 class="font-branding font-black text-[#1f0b35] text-lg uppercase tracking-wider">i-Tea Rewards</h1>
+                    <div class="w-10 h-10"></div> <!-- Spacer -->
+                </header>
+
+                <div class="flex-1 max-w-[640px] mx-auto w-full px-6 py-8 space-y-6">
+                    <!-- Hero Banner -->
+                    <div class="bg-gradient-to-r from-violet-600 to-violet-800 text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
+                        <!-- Decorative background details -->
+                        <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+                        
+                        <div class="relative z-10">
+                            <span class="bg-white/20 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full backdrop-blur-sm">Gold Tier Member</span>
+                            <h2 class="text-4xl font-branding font-black mt-4 mb-1">850 Points</h2>
+                            <p class="text-xs text-violet-100 font-bold uppercase tracking-wide">150 points until your next free drink!</p>
+                            
+                            <!-- Progress Bar -->
+                            <div class="w-full bg-white/20 h-2.5 rounded-full overflow-hidden mt-6 mb-2">
+                                <div class="bg-white h-full w-[85%] rounded-full animate-[slideRight_1.5s_ease-out]"></div>
+                            </div>
+                            <div class="flex justify-between text-[10px] font-black uppercase tracking-wider text-violet-200">
+                                <span>0 Points</span>
+                                <span>1000 Points (Free Drink)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Rewards list -->
+                    <div>
+                        <h3 class="font-branding font-black text-xl text-gray-900 uppercase tracking-tight mb-4">Your Active Rewards</h3>
+                        <div class="space-y-4">
+                            <!-- Coupon Card 1 -->
+                            <div class="bg-white rounded-2xl border border-violet-100 shadow-sm flex items-center justify-between p-5 relative overflow-hidden group hover:shadow-md transition-shadow">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+                                        <i class="fa-solid fa-cookie text-xl"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <h4 class="font-black text-gray-900 uppercase text-sm tracking-tight">Free Extra Topping</h4>
+                                        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mt-0.5">Expires in 14 days</p>
+                                    </div>
+                                </div>
+                                <button class="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 rounded-full font-black text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95">Redeem</button>
+                            </div>
+
+                            <!-- Coupon Card 2 -->
+                            <div class="bg-white rounded-2xl border border-violet-100 shadow-sm flex items-center justify-between p-5 relative overflow-hidden group hover:shadow-md transition-shadow">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                                        <i class="fa-solid fa-mug-hot text-xl"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <h4 class="font-black text-gray-900 uppercase text-sm tracking-tight">Buy 1 Get 1 Free</h4>
+                                        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mt-0.5">Unlock at 1,000 points</p>
+                                    </div>
+                                </div>
+                                <button class="bg-gray-100 text-gray-400 px-5 py-2.5 rounded-full font-black text-[10px] uppercase tracking-wider cursor-not-allowed" disabled>Locked</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- How to Earn Info Section -->
+                    <div class="bg-white rounded-3xl border border-gray-100 p-6 space-y-6 shadow-sm">
+                        <h3 class="font-branding font-black text-lg text-gray-900 uppercase tracking-tight text-center">How to Earn Rewards</h3>
+                        
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-qrcode text-lg"></i>
+                                </div>
+                                <h4 class="font-black text-[11px] text-gray-900 uppercase tracking-tight leading-tight">1. Scan or Order</h4>
+                                <p class="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-wider">10 points per dollar</p>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-gift text-lg"></i>
+                                </div>
+                                <h4 class="font-black text-[11px] text-gray-900 uppercase tracking-tight leading-tight">2. Earn Points</h4>
+                                <p class="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-wider">Watch your points stack up</p>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-glass-water text-lg"></i>
+                                </div>
+                                <h4 class="font-black text-[11px] text-gray-900 uppercase tracking-tight leading-tight">3. Get Free Tea</h4>
+                                <p class="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-wider">Redeem for Boba & more</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
     'restaurant-home': () => {
         const isDesktop = currentViewport === 'desktop';
         
@@ -1743,9 +1846,9 @@ const routes = {
                     <div class="relative z-20 w-full mt-auto shrink-0 pb-2">
                         <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-6 ${carouselAlign}">
                             <!-- Card 1: P4 Brown Sugar Boba Latte -->
-                            <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden shadow-lg h-[250px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${bobaIndex})">
-                                <img src="${bobaItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent"></div>
+                            <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden border-4 border-white h-[250px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${bobaIndex})">
+                                <img src="${bobaItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
                                 <span class="absolute top-4 left-5 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                 <div class="relative z-10 text-left w-full pr-12">
                                     <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding mb-1">Brown Sugar<br>Boba Latte</h2>
@@ -1754,9 +1857,9 @@ const routes = {
                                 </div>
                             </div>
                             <!-- Card 2: P3 Super Grapefruit -->
-                            <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden shadow-lg h-[250px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${grapefruitIndex})">
-                                <img src="${grapefruitItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-r from-orange-950/90 via-orange-900/55 to-transparent"></div>
+                            <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden border-4 border-white h-[250px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${grapefruitIndex})">
+                                <img src="${grapefruitItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
                                 <span class="absolute top-4 left-5 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                 <div class="relative z-10 text-left w-full pr-12">
                                     <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding mb-1">P3 Super<br>Grapefruit</h2>
@@ -1804,8 +1907,8 @@ const routes = {
                             <div class="grid grid-cols-2 gap-8 justify-items-center max-w-[1080px] mx-auto w-full">
                                 <!-- Card 1: P4 Brown Sugar Boba Latte -->
                                 <div class="relative shrink-0 w-full rounded-3xl overflow-hidden shadow-lg h-[300px] flex flex-col justify-end p-8 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group cursor-pointer text-left" onclick="selectItemAndNavigate(${bobaIndex})">
-                                    <img src="${bobaItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
+                                    <img src="${bobaItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
                                     <span class="absolute top-4 left-6 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                     <div class="relative z-10 w-full pr-36">
                                         <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">Brown Sugar<br>Boba Latte</h2>
@@ -1815,8 +1918,8 @@ const routes = {
                                 </div>
                                 <!-- Card 2: P3 Super Grapefruit -->
                                 <div class="relative shrink-0 w-full rounded-3xl overflow-hidden shadow-lg h-[300px] flex flex-col justify-end p-8 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group cursor-pointer text-left" onclick="selectItemAndNavigate(${grapefruitIndex})">
-                                    <img src="${grapefruitItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
+                                    <img src="${grapefruitItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
                                     <span class="absolute top-4 left-6 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                     <div class="relative z-10 w-full pr-36">
                                         <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P3 Super<br>Grapefruit</h2>
@@ -1842,10 +1945,10 @@ const routes = {
 
                                     <!-- Right: Buttons -->
                                     <div class="relative z-10 flex flex-col items-center gap-3 shrink-0">
-                                        <button onclick="navigateTo('registration')" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=''" class="px-10 py-3 rounded-xl border-2 border-gray-900 text-gray-900 font-black text-sm uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-all duration-200 shadow-sm active:scale-95 whitespace-nowrap">
+                                        <button onclick="navigateTo('registration')" class="px-10 py-3 rounded-xl border-2 border-gray-900 text-gray-900 font-black text-sm uppercase tracking-widest hover:bg-violet-600 hover:border-violet-600 hover:!text-white transition-all duration-200 shadow-sm active:scale-95 whitespace-nowrap">
                                             Join Now
                                         </button>
-                                        <button onclick="navigateTo('registration')" class="text-violet-600 font-black text-xs uppercase tracking-widest hover:text-violet-800 transition-colors active:scale-95 whitespace-nowrap">
+                                        <button onclick="navigateTo('rewards')" class="text-violet-600 font-black text-xs uppercase tracking-widest hover:text-violet-800 transition-colors active:scale-95 whitespace-nowrap">
                                             Learn More
                                         </button>
                                     </div>
@@ -3640,6 +3743,9 @@ const routes = {
         const isDesktop = currentViewport === 'desktop';
         return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
+                <!-- Subtle top-aligned brand gradient overlay fading down -->
+                <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
+
                 <!-- Header -->
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
@@ -3652,18 +3758,12 @@ const routes = {
                     </button>
                 </header>
 
-                <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 pb-16">
+                <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 pb-16 relative z-10">
 
                     <!-- Greeting -->
                     <div class="mb-2">
                         <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1">Hi ${mockupState.userName}!</h1>
                         <p class="text-gray-500 font-medium">Manage your account settings and order history.</p>
-                        <div class="mt-4 p-3 bg-gray-100 border-2 border-gray-200 rounded-xl text-xs font-mono text-gray-600">
-                            <strong>Debug Info:</strong><br>
-                            Token: ${window.ApiService?.getToken() ? 'YES' : 'NO'}<br>
-                            isLoggedIn: ${mockupState.isLoggedIn}<br>
-                            Profile Data: ${JSON.stringify(mockupState.userProfile || null)}
-                        </div>
                     </div>
 
                     <!-- Personal Info Card -->
@@ -4639,6 +4739,10 @@ const routes = {
         const orderItems = order.orderItems || [];
         const orderNum = order.orderId || order.orderNumber || ('FB-' + Math.floor(1000 + Math.random() * 9000));
         const locationName = mockupState.selectedLocation || 'i-Tea';
+        const selectedLoc = (mockupState.apiLocations || []).find(loc => loc.locationId === mockupState.selectedLocationId) 
+            || LOCATIONS.find(loc => loc.locationId === mockupState.selectedLocationId) 
+            || LOCATIONS.find(loc => loc.name === locationName) || {};
+        const locationAddress = selectedLoc.address || selectedLoc.streetAddress || '825 W UNIVERSITY, TEMPE, AZ';
         const now = new Date();
         const pickupTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
         const orderSubtotal = (order.subtotal || 0).toFixed(2);
@@ -4666,17 +4770,18 @@ const routes = {
                                 <i class="fa-solid fa-check text-5xl"></i>
                             </div>
                             <h1 class="text-4xl font-black text-gray-900 uppercase tracking-tighter mb-2">Order Confirmed!</h1>
-                            <p class="text-gray-500 font-medium mb-8">Your order #${orderNum} is being sent to the kitchen.</p>
+                            <p class="text-gray-500 font-medium mb-8">Your order <span class="text-violet-600 font-black">#${orderNum}</span> is being sent to the kitchen.</p>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
                                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Pick Up Time</div>
-                                <div class="text-2xl font-black text-gray-900 uppercase">${pickupTime}</div>
+                                <div class="text-2xl font-black text-violet-600 uppercase">${pickupTime}</div>
                             </div>
                             <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
                                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Location</div>
-                                <div class="text-base font-black text-gray-900 uppercase truncate">${locationName}</div>
+                                <div class="text-base font-black text-violet-600 uppercase truncate mb-1">${locationName}</div>
+                                <div class="text-[10px] font-bold text-gray-500 uppercase leading-snug truncate">${locationAddress}</div>
                             </div>
                         </div>
                     </div>
@@ -5182,6 +5287,9 @@ routes['privacy'] = () => {
     const isDesktop = currentViewport === 'desktop';
     return `
         <div class="flex flex-col ${isDesktop ? 'min-h-screen' : 'h-full'} bg-[#f9fafb] relative ${isDesktop ? '' : 'overflow-y-auto scrollbar-hide'} privacy-override">
+            <!-- Subtle top-aligned brand gradient overlay fading down -->
+            <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
+
             <!-- Header Component -->
             <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
                 <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
@@ -5191,7 +5299,7 @@ routes['privacy'] = () => {
                 <div class="w-10"></div>
             </header>
 
-            <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 ${isDesktop ? 'pb-12' : 'pb-24'}">
+            <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 ${isDesktop ? 'pb-12' : 'pb-24'} relative z-10">
                 <div class="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100 p-6 md:p-8 space-y-6 text-left">
                     <h1 class="text-2xl font-black text-gray-900 mb-6 uppercase tracking-tight">Web Site Privacy Policy and Terms of Use</h1>
 
@@ -5552,8 +5660,11 @@ routes['accessibility'] = () => {
     const isDesktop = currentViewport === 'desktop';
     return `
         <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto pb-24">
+            <!-- Subtle top-aligned brand gradient overlay fading down -->
+            <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
+
             <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
-                <div class="w-full max-w-[1080px] flex items-center">
+                <div class="w-full max-w-[1080px] flex items-center relative z-10">
                     <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
                         <i class="fa-solid fa-chevron-left text-gray-600"></i>
                     </button>
@@ -5562,7 +5673,7 @@ routes['accessibility'] = () => {
                 </div>
             </header>
 
-            <div class="p-6 max-w-[800px] mx-auto w-full space-y-6 mt-6">
+            <div class="p-6 max-w-[800px] mx-auto w-full space-y-6 mt-6 relative z-10">
                 <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-6">
                     <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Accessibility Statement</h1>
                     <p class="text-sm text-gray-500 font-bold uppercase tracking-widest border-b border-gray-100 pb-2">Commitment to Accessibility</p>
@@ -5605,8 +5716,8 @@ function renderPage() {
         ? routes[currentPage]()
         : `<div class="p-10 text-center uppercase font-black">404 - Page Not Found</div>`;
 
-    const isRestaurantPage = !['landing', 'home', 'sign-in', 'dashboard', 'privacy', 'forgot-password'].includes(currentPage);
-    const showDesktopNav = isRestaurantPage || currentPage === 'privacy';
+    const isRestaurantPage = !['landing', 'home', 'sign-in', 'dashboard', 'privacy', 'forgot-password', 'rewards'].includes(currentPage);
+    const showDesktopNav = isRestaurantPage || currentPage === 'privacy' || currentPage === 'rewards';
     if (currentViewport === 'desktop' && showDesktopNav) {
         // Strip the mobile header before injecting the desktop nav
         contentHtml = contentHtml.replace(/<header\b[^>]*>([\s\S]*?)<\/header>/i, '');
@@ -5762,7 +5873,7 @@ function renderPage() {
     }
 
     // Inject hamburger drawer for all restaurant pages
-    const nonRestaurantPages = ['landing', 'home', 'sign-in', 'dashboard', 'privacy', 'forgot-password'];
+    const nonRestaurantPages = ['landing', 'home', 'sign-in', 'dashboard', 'privacy', 'forgot-password', 'rewards'];
     if (!nonRestaurantPages.includes(currentPage) && mockupState.hamburgerOpen) {
         contentHtml += hamburgerDrawerHTML();
     }
@@ -6159,24 +6270,25 @@ window._handlePlaceOrder = async function() {
         pickUpTime: mockupState.orderTime === 'Later' ? new Date().toISOString() : null,
         isCustomTime: mockupState.orderTime === 'Later',
         tableNum: null,
-        isGuestUser: false,
+        isGuestUser: true,
+        guestFirstName: mockupState.userProfile?.firstName || 'Guest',
+        guestLastName: mockupState.userProfile?.lastName || 'User',
+        guestPhoneNumber: mockupState.userProfile?.phoneNumber || '0000000000',
+        guestEmailAddress: mockupState.userProfile?.email || 'guest@farebites.com',
         items: cart.map(item => ({
             menuItemId: item.menuItemId,
             quantity: item.quantity,
             specialInstruction: item.specialInstruction || null,
-            subItems: (item.selectedSubItems || []).map(sub => ({
-                menuSubItemId: sub.menuSubItemId,
-                itemTypeId: sub.itemTypeId || 2,
-                itemGroupPriceId: sub.itemGroupPriceId || 0,
-                quantity: sub.quantity || 1
-            })),
+            subItems: (item.selectedSubItems || [])
+                .filter(sub => sub.menuSubItemId < 8000 || sub.menuSubItemId > 8300)
+                .map(sub => ({
+                    menuSubItemId: sub.menuSubItemId,
+                    itemTypeId: sub.itemTypeId || 2,
+                    itemGroupPriceId: sub.itemGroupPriceId || 0,
+                    quantity: sub.quantity || 1
+                })),
             subMenuChoices: []
         })),
-        payments: [{
-            paymentToken: "test_token_12345",
-            paymentMethodType: "Card",
-            amount: parseFloat(finalTotal.toFixed(2))
-        }]
     };
 
     console.log('Placing order:', JSON.stringify(orderData, null, 2));
@@ -6192,6 +6304,7 @@ window._handlePlaceOrder = async function() {
         // Store order response
         mockupState.lastOrder = {
             ...response,
+            orderId: response.data?.orderId || response.orderId,
             orderItems: cart.map(i => ({ ...i })),
             subtotal,
             taxes,
