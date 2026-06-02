@@ -553,7 +553,7 @@ const MENU_ITEMS = [
 
 function toggleMenu(e, menuId) {
     e.stopPropagation();
-    const allMenus = ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown'];
+    const allMenus = ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown', 'mobile-user-profile-dropdown'];
     allMenus.forEach(id => {
         const menu = document.getElementById(id);
         if (!menu) return;
@@ -574,7 +574,7 @@ function toggleMenu(e, menuId) {
 }
 
 document.addEventListener('click', () => {
-    ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown'].forEach(id => {
+    ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown', 'mobile-user-profile-dropdown'].forEach(id => {
         const menu = document.getElementById(id);
         if (menu) {
             menu.classList.remove('show');
@@ -610,6 +610,10 @@ function hamburgerDrawerHTML() {
         { label: 'My Account',    icon: 'fa-user',               page: 'account' },
     ];
 
+    if (isLoggedIn) {
+        navItems.push({ label: 'Log Out', icon: 'fa-arrow-right-from-bracket', page: 'logout' });
+    }
+
     return `
         <div class="absolute inset-0 z-[500] flex">
             <!-- Drawer Panel -->
@@ -630,14 +634,16 @@ function hamburgerDrawerHTML() {
                 </div>
                 <!-- Nav Links -->
                 <nav class="flex-1 overflow-y-auto py-3">
-                    ${navItems.map(item => `
-                        <button onclick="closeHamburger(); navigateTo('${item.page}');" 
+                    ${navItems.map(item => {
+                        const clickAction = item.page === 'logout' ? 'closeHamburger(); signOutUser();' : `closeHamburger(); navigateTo('${item.page}');`;
+                        return `
+                        <button onclick="${clickAction}" 
                             class="w-full text-left px-6 py-4 text-[17px] font-black tracking-tight transition-colors hover:bg-violet-50 ${
                                 currentPage === item.page ? 'text-violet-600' : 'text-gray-900'
                             }">
                             ${item.label}
-                        </button>
-                    `).join('')}
+                        </button>`;
+                    }).join('')}
                 </nav>
                 <!-- Footer -->
                 <div class="px-6 py-6 border-t border-gray-100">
@@ -1504,7 +1510,7 @@ const routes = {
                 <div class="flex flex-col w-full min-h-full">
                     <nav class="flex justify-between items-center px-16 py-6 bg-white sticky top-0 z-50 shadow-sm">
                         <div class="flex items-center gap-8"><span class="text-3xl font-black text-red-600 tracking-tighter cursor-pointer" onclick="navigateTo('home')">FAREBITES</span></div>
-                        <div class="flex items-center gap-6"><span class="font-black text-gray-800">Hi ${mockupState.userName || 'User'}!</span><div class="w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center border-2 border-transparent group-hover:border-red-600 transition"><i class="fa-solid fa-user text-gray-600"></i></div></div>
+                        <div class="flex items-center gap-6 cursor-pointer" onclick="navigateTo(mockupState.isLoggedIn ? 'account' : 'sign-in')"><span class="font-black text-gray-800">Hi ${mockupState.userName || 'User'}!</span><div class="w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center border-2 border-transparent group-hover:border-red-600 transition"><i class="fa-solid fa-user text-gray-600"></i></div></div>
                     </nav>
                     <div class="desktop-hero" style="background-image: url('${assets.featured}')">
                         <div class="relative z-10 w-full max-w-5xl px-12 text-center text-white py-24">
@@ -1860,12 +1866,28 @@ const routes = {
 
                 <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
                     <div class="flex items-center gap-3">
-                        <button onclick="navigateTo('sign-in')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
+                        <div class="relative">
+                            <button onclick="${mockupState.isLoggedIn ? "toggleMenu(event, 'mobile-user-profile-dropdown')" : "navigateTo('sign-in')"}" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
+                            ${mockupState.isLoggedIn ? `
+                            <div id="mobile-user-profile-dropdown" class="dropdown-menu" style="left: 0; right: auto; top: 120%;">
+                                <div class="dropdown-column-title">My Profile</div>
+                                <div class="dropdown-item" onclick="navigateTo('account')"><i class="fa-solid fa-circle-user"></i> Account Details</div>
+                                <div class="dropdown-item" onclick="navigateTo('rewards')"><i class="fa-solid fa-award"></i> Rewards</div>
+                                <div class="h-px bg-violet-100/50 my-2"></div>
+                                <div class="dropdown-item text-red-500 hover:text-red-600" onclick="signOutUser()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</div>
+                            </div>
+                            ` : ''}
+                        </div>
                         <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
                     <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('locations')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
                         <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
+                        ${mockupState.isLoggedIn ? `
+                        <div onclick="event.stopPropagation(); navigateTo('account')" class="mt-1 px-2.5 py-0.5 bg-white text-violet-600 border border-violet-100 rounded-full shadow-sm text-[10px] font-black uppercase tracking-wider whitespace-nowrap active:scale-95 transition-transform">
+                            Hi ${mockupState.userName || 'User'}!
+                        </div>
+                        ` : ''}
                     </div>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
@@ -5926,7 +5948,7 @@ function renderPage() {
                     </div>
                     ${mockupState.isLoggedIn ? `
                         <div class="relative">
-                            <button class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1f0b35]" onclick="toggleMenu(event, 'user-profile-dropdown')">
+                            <button class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1f0b35]" onclick="navigateTo('account')">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                                 <span class="nav-link-animated">${mockupState.userName}</span>
                                 <i class="fa-solid fa-chevron-down text-[10px] ml-1 text-gray-400"></i>
