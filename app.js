@@ -1187,16 +1187,19 @@ function renderMenuPage(isAlternative) {
                         `;
                     } else if (mockupState.menuTab === 'history') {
                         let historyItems = [];
-                        if (mockupState.apiOrders && mockupState.apiOrders.length > 0) {
+                        const ordersList = mockupState.apiOrders ? (Array.isArray(mockupState.apiOrders) ? mockupState.apiOrders : (mockupState.apiOrders.items || mockupState.apiOrders.data || [])) : [];
+                        if (ordersList.length > 0) {
                             // Group by item name
                             const itemCounts = {};
                             const lastOrdered = {};
-                            mockupState.apiOrders.forEach(order => {
-                                const orderDate = new Date(order.orderDate);
-                                order.items.forEach(orderItem => {
-                                    const name = orderItem.name.trim();
+                            ordersList.forEach(order => {
+                                const orderDate = new Date(order.orderDate || order.placedAt || Date.now());
+                                const itemsList = order.orderMenuItems || order.items || order.orderItems || [];
+                                itemsList.forEach(orderItem => {
+                                    const name = (orderItem.name || '').trim();
+                                    if (!name) return;
                                     if (!itemCounts[name]) itemCounts[name] = 0;
-                                    itemCounts[name] += orderItem.quantity;
+                                    itemCounts[name] += orderItem.quantity || 1;
                                     if (!lastOrdered[name] || orderDate > lastOrdered[name]) {
                                         lastOrdered[name] = orderDate;
                                     }
@@ -3639,13 +3642,16 @@ const routes = {
                         <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2">
                             ${(() => {
                                 let crossSellItems = [];
-                                if (mockupState.apiOrders && mockupState.apiOrders.length > 0) {
+                                const ordersList = mockupState.apiOrders ? (Array.isArray(mockupState.apiOrders) ? mockupState.apiOrders : (mockupState.apiOrders.items || mockupState.apiOrders.data || [])) : [];
+                                if (ordersList.length > 0) {
                                     const itemCounts = {};
-                                    mockupState.apiOrders.forEach(order => {
-                                        order.items.forEach(orderItem => {
-                                            const name = orderItem.name.trim();
+                                    ordersList.forEach(order => {
+                                        const itemsList = order.orderMenuItems || order.items || order.orderItems || [];
+                                        itemsList.forEach(orderItem => {
+                                            const name = (orderItem.name || '').trim();
+                                            if (!name) return;
                                             if (!itemCounts[name]) itemCounts[name] = 0;
-                                            itemCounts[name] += orderItem.quantity;
+                                            itemCounts[name] += orderItem.quantity || 1;
                                         });
                                     });
                                     
@@ -3835,40 +3841,74 @@ const routes = {
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Phone</p>
                                 <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.phoneNumber || 'Not set'}</p>
                             </div>
+                            <div class="col-span-2">
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Street Address</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.address || 'Not set'}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">City</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.city || 'Not set'}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">State</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.state || 'Not set'}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Zip Code</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.zipCode || 'Not set'}</p>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Edit Profile Modal -->
                     ${mockupState.modalOpen === 'edit-profile' ? `
-                    <div class="modal-overlay z-[200]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
-                        <div class="bg-white w-[92%] max-w-[420px] rounded-3xl p-6 relative shadow-2xl max-h-[85vh] overflow-y-auto scrollbar-hide">
-                            <div class="flex items-center justify-between mb-6">
-                                <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Edit Profile</h2>
+                    <div class="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center p-4 animate-[fadeIn_0.3s_ease-out]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
+                        <div class="bg-white w-[92%] max-w-[420px] rounded-3xl p-5 relative shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-hide animate-[slideUp_0.3s_ease-out]">
+                            <div class="flex items-center justify-between mb-4">
+                                <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">Edit Profile</h2>
                                 <button onclick="mockupState.modalOpen=null;navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500">
                                     <i class="fa-solid fa-xmark"></i>
                                 </button>
                             </div>
-                            <div class="flex flex-col gap-4">
+                            <div class="flex flex-col gap-2.5">
                                 <div id="prof-error" class="text-xs font-bold text-red-500 text-center h-4 opacity-0 transition-all"></div>
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">First Name</label>
-                                        <input type="text" id="prof-first-name" value="${mockupState.userProfile?.firstName || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">First Name</label>
+                                        <input type="text" id="prof-first-name" value="${mockupState.userProfile?.firstName || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                     </div>
                                     <div>
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Last Name</label>
-                                        <input type="text" id="prof-last-name" value="${mockupState.userProfile?.lastName || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Last Name</label>
+                                        <input type="text" id="prof-last-name" value="${mockupState.userProfile?.lastName || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Email</label>
-                                    <input type="email" id="prof-email" value="${mockupState.userProfile?.email || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-violet-600 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Email (Read-only)</label>
+                                    <input type="email" id="prof-email" value="${mockupState.userProfile?.email || ''}" class="w-full border-2 border-gray-100 bg-gray-50 text-violet-400 rounded-xl px-4 py-2.5 font-bold text-sm focus:outline-none cursor-not-allowed" readonly>
                                 </div>
                                 <div>
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Phone</label>
-                                    <input type="tel" id="prof-phone" value="${mockupState.userProfile?.phoneNumber || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Phone</label>
+                                    <input type="tel" id="prof-phone" value="${mockupState.userProfile?.phoneNumber || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                 </div>
-                                <button onclick="handleUpdateProfile()" class="w-full mt-2 py-4 bg-violet-600 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-violet-700 transition-colors active:scale-95">
+                                <div>
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Street Address</label>
+                                    <input type="text" id="prof-address" value="${mockupState.userProfile?.address || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                </div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="col-span-1">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1 truncate">City</label>
+                                        <input type="text" id="prof-city" value="${mockupState.userProfile?.city || ''}" class="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    </div>
+                                    <div class="col-span-1">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1 truncate">State</label>
+                                        <input type="text" id="prof-state" value="${mockupState.userProfile?.state || ''}" class="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    </div>
+                                    <div class="col-span-1">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1 truncate">Zip Code</label>
+                                        <input type="text" id="prof-zip" value="${mockupState.userProfile?.zipCode || ''}" class="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    </div>
+                                </div>
+                                <button onclick="handleUpdateProfile()" class="w-full mt-2 py-3 bg-violet-600 text-white rounded-full font-black uppercase tracking-widest text-xs shadow-lg hover:bg-violet-700 transition-colors active:scale-95">
                                     Save Changes
                                 </button>
                             </div>
@@ -3877,8 +3917,8 @@ const routes = {
 
                     <!-- Change Password Modal -->
                     ${mockupState.modalOpen === 'change-password' ? `
-                    <div class="modal-overlay z-[200]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
-                        <div class="bg-white w-[92%] max-w-[420px] rounded-3xl p-6 relative shadow-2xl">
+                    <div class="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center p-4 animate-[fadeIn_0.3s_ease-out]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
+                        <div class="bg-white w-[92%] max-w-[420px] rounded-3xl p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out]">
                             <div class="flex items-center justify-between mb-6">
                                 <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Change Password</h2>
                                 <button onclick="mockupState.modalOpen=null;navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500">
@@ -3889,15 +3929,30 @@ const routes = {
                                 <div id="pwd-error" class="text-xs font-bold text-red-500 text-center h-4 opacity-0 transition-all"></div>
                                 <div>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Current Password</label>
-                                    <input type="password" id="pwd-current" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    <div class="relative">
+                                        <input type="password" id="pwd-current" class="w-full border-2 border-gray-100 rounded-xl pl-4 pr-12 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <button type="button" onclick="togglePasswordVisibility('pwd-current', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600 focus:outline-none">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">New Password</label>
-                                    <input type="password" id="pwd-new" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    <div class="relative">
+                                        <input type="password" id="pwd-new" class="w-full border-2 border-gray-100 rounded-xl pl-4 pr-12 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <button type="button" onclick="togglePasswordVisibility('pwd-new', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600 focus:outline-none">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Confirm New Password</label>
-                                    <input type="password" id="pwd-confirm" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    <div class="relative">
+                                        <input type="password" id="pwd-confirm" class="w-full border-2 border-gray-100 rounded-xl pl-4 pr-12 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <button type="button" onclick="togglePasswordVisibility('pwd-confirm', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600 focus:outline-none">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <button onclick="handleChangePassword()" class="w-full mt-2 py-4 bg-violet-600 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-violet-700 transition-colors active:scale-95">
                                     Update Password
@@ -3939,33 +3994,93 @@ const routes = {
                             <span class="font-black uppercase tracking-tight text-gray-900 text-sm">Order History</span>
                         </div>
 
-                        <div id="order-history-container">
-                            ${mockupState.lastOrder ? `
-                            <!-- Most Recent Order -->
-                            <div class="px-5 py-4 border-b border-gray-100">
-                                <div class="flex justify-between items-center mb-2">
-                                    <div>
-                                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">${new Date(mockupState.lastOrder.placedAt || Date.now()).toLocaleDateString()}</p>
-                                        <p class="font-black text-violet-600 text-sm mt-0.5">${mockupState.selectedLocation || 'i-Tea'}</p>
-                                    </div>
-                                    <span class="font-black text-gray-900 text-base">$${(mockupState.lastOrder.total || 0).toFixed(2)}</span>
-                                </div>
-                                <div class="flex flex-col gap-0.5 mb-3">
-                                    ${(mockupState.lastOrder.orderItems || []).map(item =>
-                                        `<p class="text-xs text-gray-500 font-medium">${item.quantity} × ${item.name}</p>`
-                                    ).join('')}
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="navigateTo('order-confirm')" class="flex-1 py-2.5 rounded-full border-2 border-violet-600 text-violet-600 font-black text-xs uppercase tracking-widest hover:bg-violet-50 transition-colors">View</button>
-                                    <button onclick="navigateTo('menu')" class="flex-1 py-2.5 rounded-full bg-violet-600 text-white font-black text-xs uppercase tracking-widest shadow-md hover:bg-violet-700 transition-colors">Reorder</button>
-                                </div>
-                            </div>
-                            ` : `
-                            <div class="px-5 py-8 text-center">
-                                <p class="text-sm text-gray-400 font-medium">No orders yet — place your first order!</p>
-                                <button onclick="navigateTo('menu')" class="mt-3 text-violet-600 font-black text-xs uppercase tracking-widest hover:underline">Browse Menu →</button>
-                            </div>
-                            `}
+                        <div id="order-history-container" class="divide-y divide-gray-100">
+                            ${(() => {
+                                 const ordersList = mockupState.apiOrders ? (Array.isArray(mockupState.apiOrders) ? mockupState.apiOrders : (mockupState.apiOrders.items || mockupState.apiOrders.data || [])) : [];
+                                 
+                                 // Combine local lastOrder and API orders, removing duplicate order IDs
+                                 let allOrders = [...ordersList];
+                                 if (mockupState.lastOrder) {
+                                     const lastOrderId = mockupState.lastOrder.orderId;
+                                     const exists = allOrders.some(o => o.orderId === lastOrderId);
+                                     if (!exists) {
+                                         allOrders.unshift(mockupState.lastOrder);
+                                     }
+                                 }
+                                 
+                                 // Sort by date descending
+                                 const getOrderTime = (order) => {
+                                     const dateStr = order.orderDate || order.placedAt || order.placedDateTime;
+                                     return dateStr ? new Date(dateStr).getTime() : 0;
+                                 };
+                                 allOrders.sort((a, b) => getOrderTime(b) - getOrderTime(a));
+                                 
+                                 if (allOrders.length === 0) {
+                                     return `
+                                         <div class="px-5 py-8 text-center">
+                                             <p class="text-sm text-gray-400 font-medium">No orders yet — place your first order!</p>
+                                             <button onclick="navigateTo('menu')" class="mt-3 text-violet-600 font-black text-xs uppercase tracking-widest hover:underline">Browse Menu →</button>
+                                         </div>
+                                     `;
+                                 }
+                                 
+                                 const showLimit = mockupState.showAllHistory ? 20 : 5;
+                                 const displayedOrders = allOrders.slice(0, showLimit);
+                                 
+                                 let html = displayedOrders.map(order => {
+                                     const orderDate = new Date(order.orderDate || order.placedAt || Date.now()).toLocaleDateString();
+                                     const orderTotal = (order.total || order.subTotal || 0).toFixed(2);
+                                     const orderItems = order.orderMenuItems || order.items || order.orderItems || [];
+                                     const orderNum = order.orderId || order.orderNumber || 'FB-' + Math.floor(1000 + Math.random() * 9000);
+                                     
+                                     // Look up location name
+                                     const foundLoc = LOCATIONS.find(l => l.locationId === order.locationId);
+                                     const locationName = foundLoc ? foundLoc.name : (mockupState.selectedLocation || 'i-Tea');
+                                     
+                                     return `
+                                         <div class="px-5 py-4 flex flex-col gap-3">
+                                             <div class="flex justify-between items-start">
+                                                 <div>
+                                                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">${orderDate} • #${orderNum}</p>
+                                                     <p class="font-black text-violet-600 text-sm mt-0.5">${locationName}</p>
+                                                 </div>
+                                                 <span class="font-black text-gray-900 text-base">$${orderTotal}</span>
+                                             </div>
+                                             <div class="flex flex-col gap-0.5">
+                                                 ${orderItems.map(item =>
+                                                     `<p class="text-xs text-gray-500 font-medium">${item.quantity} × ${item.name}</p>`
+                                                 ).join('')}
+                                             </div>
+                                             <div class="flex gap-2 mt-1">
+                                                 <button onclick="viewPastOrder(${order.orderId || `'${orderNum}'`})" class="flex-1 py-2 rounded-full border-2 border-violet-600 text-violet-600 font-black text-[10px] uppercase tracking-widest hover:bg-violet-50 transition-colors">View</button>
+                                                 <button onclick="reorderPastOrder(${order.orderId || `'${orderNum}'`})" class="flex-1 py-2 rounded-full bg-violet-600 text-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors">Reorder</button>
+                                             </div>
+                                         </div>
+                                     `;
+                                 }).join('');
+                                 
+                                 if (allOrders.length > 5) {
+                                     if (!mockupState.showAllHistory) {
+                                         html += `
+                                             <div class="px-5 py-4 text-center">
+                                                 <button onclick="updateMockupState('showAllHistory', true)" class="w-full py-2.5 rounded-full border-2 border-dashed border-violet-300 text-violet-600 font-black text-xs uppercase tracking-widest hover:border-violet-400 hover:bg-violet-50/50 transition-all flex items-center justify-center gap-2">
+                                                     <i class="fa-solid fa-chevron-down text-[10px]"></i> View More Orders (${allOrders.length - 5} more)
+                                                 </button>
+                                             </div>
+                                         `;
+                                     } else {
+                                         html += `
+                                             <div class="px-5 py-4 text-center">
+                                                 <button onclick="updateMockupState('showAllHistory', false)" class="w-full py-2.5 rounded-full border-2 border-dashed border-gray-200 text-gray-500 font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                                                     <i class="fa-solid fa-chevron-up text-[10px]"></i> Show Less
+                                                 </button>
+                                             </div>
+                                         `;
+                                     }
+                                 }
+                                 
+                                 return html;
+                             })()}
                         </div>
                     </div>
 
@@ -4012,7 +4127,7 @@ const routes = {
 
                     <!-- Delete Account Modal -->
                     ${mockupState.modalOpen === 'delete-account' ? `
-                    <div class="modal-overlay z-[210]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
+                    <div class="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center p-4 animate-[fadeIn_0.3s_ease-out]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
                         <div class="bg-white w-[92%] max-w-[420px] rounded-3xl p-8 relative shadow-2xl animate-[fadeIn_0.3s_ease-out]">
                             <div class="text-center mb-8">
                                 <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-red-100">
@@ -6535,8 +6650,25 @@ async function handleLogin() {
         try {
             const profile = await window.ApiService.getProfile();
             console.log('Successfully fetched profile on login:', profile);
-            mockupState.userName = profile.firstName || profile.email?.split('@')[0] || 'User';
-            mockupState.userProfile = profile;
+            
+            // Merge local address details if they exist in localStorage (since API drops them in GET schema)
+            const emailKey = profile.email || profile.emailAddress || email || mockupState.userEmail;
+            let mergedProfile = { ...profile };
+            if (emailKey) {
+                const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
+                const savedAddress = localStorage.getItem(localAddressKey);
+                if (savedAddress) {
+                    try {
+                        const parsedAddress = JSON.parse(savedAddress);
+                        mergedProfile = { ...mergedProfile, ...parsedAddress };
+                    } catch(e) {
+                        console.error('Error parsing local profile address:', e);
+                    }
+                }
+            }
+            
+            mockupState.userName = mergedProfile.firstName || mergedProfile.email?.split('@')[0] || 'User';
+            mockupState.userProfile = mergedProfile;
         } catch(e) {
             console.error('Failed to fetch profile on login:', e);
             mockupState.userName = 'User';
@@ -6610,6 +6742,10 @@ async function handleUpdateProfile() {
     const lastName = document.getElementById('prof-last-name')?.value;
     const email = document.getElementById('prof-email')?.value;
     const phoneNumber = document.getElementById('prof-phone')?.value;
+    const address = document.getElementById('prof-address')?.value || '';
+    const city = document.getElementById('prof-city')?.value || '';
+    const state = document.getElementById('prof-state')?.value || '';
+    const zipCode = document.getElementById('prof-zip')?.value || '';
     const errorEl = document.getElementById('prof-error');
 
     if (errorEl) {
@@ -6628,11 +6764,21 @@ async function handleUpdateProfile() {
     try {
         if (!window.ApiService) throw new Error('API Service not loaded');
         
-        const data = { firstName, lastName, email, phoneNumber };
-        await window.ApiService.updateProfile(data);
+        const payload = { firstName, lastName, phoneNumber, address, city, state, zipCode };
+        await window.ApiService.updateProfile(payload);
         
-        // Update local state
-        mockupState.userProfile = data;
+        // Save address fields to localStorage so they persist across page refreshes
+        const emailKey = email || mockupState.userEmail || mockupState.userProfile?.email;
+        if (emailKey) {
+            const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
+            localStorage.setItem(localAddressKey, JSON.stringify({ address, city, state, zipCode }));
+        }
+        
+        // Update local state by merging to preserve email
+        mockupState.userProfile = {
+            ...mockupState.userProfile,
+            ...payload
+        };
         mockupState.userName = firstName;
         mockupState.modalOpen = null;
         persistAllState();
@@ -6715,6 +6861,106 @@ async function signOutUser() {
     
     navigateTo('sign-in');
 }
+
+window.togglePasswordVisibility = function(inputId, buttonEl) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const icon = buttonEl.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
+    } else {
+        input.type = 'password';
+        if (icon) {
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+};
+
+window.viewPastOrder = function(orderId) {
+    const apiOrdersList = mockupState.apiOrders ? (Array.isArray(mockupState.apiOrders) ? mockupState.apiOrders : (mockupState.apiOrders.items || mockupState.apiOrders.data || [])) : [];
+    let allOrders = [...apiOrdersList];
+    if (mockupState.lastOrder) {
+        const lastOrderId = mockupState.lastOrder.orderId;
+        const exists = allOrders.some(o => o.orderId === lastOrderId);
+        if (!exists) {
+            allOrders.push(mockupState.lastOrder);
+        }
+    }
+    
+    const order = allOrders.find(o => o.orderId === orderId || String(o.orderId) === String(orderId));
+    if (order) {
+        mockupState.lastOrder = {
+            ...order,
+            orderId: order.orderId,
+            subtotal: order.subTotal || order.subtotal || 0,
+            taxes: order.salesTax || order.taxes || 0,
+            tipAmount: order.tipApplied || order.tipAmount || 0,
+            bagFee: order.bagFeeCharged || order.bagFee || 0,
+            convenienceFee: order.convenienceFeeCharged || order.convenienceFee || 0,
+            total: order.total || 0,
+            orderItems: (order.orderMenuItems || order.items || order.orderItems || []).map(i => ({
+                name: i.name,
+                quantity: i.quantity,
+                price: i.paidPrice || i.unitPrice || i.price || 0
+            })),
+            placedAt: order.orderDate || order.placedAt || new Date().toISOString()
+        };
+        if (order.locationId) {
+            mockupState.selectedLocationId = order.locationId;
+            const foundLoc = LOCATIONS.find(l => l.locationId === order.locationId);
+            if (foundLoc) {
+                mockupState.selectedLocation = foundLoc.name;
+            }
+        }
+        persistAllState();
+        navigateTo('order-confirm');
+    }
+};
+
+window.reorderPastOrder = function(orderId) {
+    const apiOrdersList = mockupState.apiOrders ? (Array.isArray(mockupState.apiOrders) ? mockupState.apiOrders : (mockupState.apiOrders.items || mockupState.apiOrders.data || [])) : [];
+    let allOrders = [...apiOrdersList];
+    if (mockupState.lastOrder) {
+        const lastOrderId = mockupState.lastOrder.orderId;
+        const exists = allOrders.some(o => o.orderId === lastOrderId);
+        if (!exists) {
+            allOrders.push(mockupState.lastOrder);
+        }
+    }
+    
+    const order = allOrders.find(o => o.orderId === orderId || String(o.orderId) === String(orderId));
+    if (order) {
+        const orderItems = order.orderMenuItems || order.items || order.orderItems || [];
+        orderItems.forEach(item => {
+            const menuItem = MENU_ITEMS.find(mi => mi.name.toLowerCase() === item.name.toLowerCase()) || 
+                             (item.menuItemId ? MENU_ITEMS.find(mi => mi.id === item.menuItemId) : null);
+            
+            const basePrice = menuItem ? menuItem.price : (item.unitPrice || item.price || 0);
+            const image = menuItem ? menuItem.image : '';
+            
+            const cartItem = {
+                cartId: Date.now() + Math.random(),
+                menuItemId: item.menuItemId || (menuItem ? menuItem.id : 0),
+                name: item.name,
+                basePrice: basePrice,
+                unitPrice: item.unitPrice || item.price || basePrice,
+                quantity: item.quantity || 1,
+                image: image,
+                selectedSubItems: [],
+                specialInstruction: item.specialInstruction || ''
+            };
+            mockupState.cart.push(cartItem);
+        });
+        mockupState.cartItemCount = mockupState.cart.reduce((sum, i) => sum + i.quantity, 0);
+        persistAllState();
+        navigateTo('cart');
+    }
+};
 
 function removeFavorite(id) {
     mockupState.favorites = mockupState.favorites.filter(item => item.id !== id);
@@ -6949,8 +7195,25 @@ window.addEventListener('DOMContentLoaded', () => {
         // Fetch profile
         window.ApiService.getProfile().then(profile => {
             console.log('Successfully fetched profile on page load:', profile);
-            mockupState.userName = profile.firstName || profile.email?.split('@')[0] || 'User';
-            mockupState.userProfile = profile;
+            
+            // Merge local address details if they exist in localStorage (since API drops them in GET schema)
+            const emailKey = profile.email || profile.emailAddress || mockupState.userEmail;
+            let mergedProfile = { ...profile };
+            if (emailKey) {
+                const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
+                const savedAddress = localStorage.getItem(localAddressKey);
+                if (savedAddress) {
+                    try {
+                        const parsedAddress = JSON.parse(savedAddress);
+                        mergedProfile = { ...mergedProfile, ...parsedAddress };
+                    } catch(e) {
+                        console.error('Error parsing local profile address:', e);
+                    }
+                }
+            }
+            
+            mockupState.userName = mergedProfile.firstName || mergedProfile.email?.split('@')[0] || 'User';
+            mockupState.userProfile = mergedProfile;
             loadCartFromStorage();
             persistAllState();
             if (typeof resetInactivityTimer === 'function') resetInactivityTimer();
