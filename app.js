@@ -2882,24 +2882,53 @@ const routes = {
                     <div class="shrink-0">
                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-3 px-1">You May Also Like</h3>
                         <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2">
-                            ${getActiveMenuItems().slice(4, isDesktop ? 8 : 9).map((item, index) => {
-                                // Find the actual index in getActiveMenuItems() for the onclick handler
-                                const actualIndex = getActiveMenuItems().indexOf(item);
-                                return `
-                                    <div class="snap-center shrink-0 ${isDesktop ? 'w-auto flex-1' : 'w-[140px]'} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md">
-                                        <div class="${isDesktop ? 'h-36' : 'h-24'} relative cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">
-                                            <img src="${item.image}" class="w-full h-full object-cover object-top">
-                                        </div>
-                                        <div class="p-3 md:p-4 text-left flex flex-col flex-1">
-                                            <h4 class="text-xs md:text-sm font-black text-gray-900 uppercase tracking-tight h-8 md:h-10 overflow-hidden line-clamp-2 cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">${item.name}</h4>
-                                            <div class="flex justify-between items-center mt-auto pt-2">
-                                                <span class="text-sm md:text-base font-black text-violet-600">$${item.price.toFixed(2)}</span>
-                                                <button onclick="selectItemAndNavigate(${actualIndex})" class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px] md:text-xs"></i></button>
+                            ${(() => {
+                                let crossSellItems = [];
+                                if (mockupState.apiOrders && mockupState.apiOrders.length > 0) {
+                                    const itemCounts = {};
+                                    mockupState.apiOrders.forEach(order => {
+                                        order.items.forEach(orderItem => {
+                                            const name = orderItem.name.trim();
+                                            if (!itemCounts[name]) itemCounts[name] = 0;
+                                            itemCounts[name] += orderItem.quantity;
+                                        });
+                                    });
+                                    
+                                    const sortedHistoryNames = Object.keys(itemCounts).sort((a, b) => itemCounts[b] - itemCounts[a]);
+                                    crossSellItems = sortedHistoryNames
+                                        .map(name => MENU_ITEMS.find(mi => mi.name.toLowerCase() === name.toLowerCase()))
+                                        .filter(Boolean);
+                                }
+
+                                const cartItemNames = mockupState.cart.map(c => c.name.toLowerCase());
+                                let finalCrossSells = crossSellItems.filter(item => !cartItemNames.includes(item.name.toLowerCase()));
+
+                                const numSells = isDesktop ? 4 : 5;
+                                if (finalCrossSells.length < numSells) {
+                                    const fallbackItems = getActiveMenuItems().filter(item => !cartItemNames.includes(item.name.toLowerCase()) && !finalCrossSells.find(s => s.name === item.name));
+                                    finalCrossSells = [...finalCrossSells, ...fallbackItems].slice(0, numSells);
+                                } else {
+                                    finalCrossSells = finalCrossSells.slice(0, numSells);
+                                }
+
+                                return finalCrossSells.map((item) => {
+                                    const actualIndex = MENU_ITEMS.indexOf(item);
+                                    return `
+                                        <div class="snap-center shrink-0 ${isDesktop ? 'w-auto flex-1' : 'w-[140px]'} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md">
+                                            <div class="${isDesktop ? 'h-36' : 'h-24'} relative cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">
+                                                <img src="${item.image}" class="w-full h-full object-cover object-top">
+                                            </div>
+                                            <div class="p-3 md:p-4 text-left flex flex-col flex-1">
+                                                <h4 class="text-xs md:text-sm font-black text-gray-900 uppercase tracking-tight h-8 md:h-10 overflow-hidden line-clamp-2 cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">${item.name}</h4>
+                                                <div class="flex justify-between items-center mt-auto pt-2">
+                                                    <span class="text-sm md:text-base font-black text-violet-600">$${item.price.toFixed(2)}</span>
+                                                    <button onclick="selectItemAndNavigate(${actualIndex})" class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px] md:text-xs"></i></button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                `;
-                            }).join('')}
+                                    `;
+                                }).join('');
+                            })()}
                         </div>
                     </div>
                     
