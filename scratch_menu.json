@@ -1,0 +1,115 @@
+{
+  "menuId": 14,
+  "locationId": 7,
+  "locationName": "i-Tea - Castro Valley",
+  "taxRate": 0.0925,
+  "convenienceFee": 1.00,
+  "isOpen": true,
+  "allowOrdering": true,
+  "categories": [
+    {
+      "categoryId": 100,
+      "name": "BAG",
+      "position": 0,
+      "isActive": false
+    },
+    {
+      "categoryId": 954,
+      "name": "New Items",
+      "position": 1,
+      "imgUrl": "/imagescategories/New Items.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 97,
+      "name": "Teaspresso Series",
+      "position": 2,
+      "imgUrl": "/imagescategories/Teaspresso.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 87,
+      "name": "Milk Tea Specialty",
+      "position": 4,
+      "imgUrl": "/imagescategories/Milk Tea.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 94,
+      "name": "i-Tea Fruit Tea",
+      "position": 5,
+      "imgUrl": "/imagescategories/Fruit Tea.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 89,
+      "name": "Sea Salt Kreama",
+      "position": 7,
+      "imgUrl": "/imagescategories/Kreama.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 90,
+      "name": "Summer Frosty",
+      "position": 8,
+      "imgUrl": "/imagescategories/Frosty.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 91,
+      "name": "Signature Iced Milk",
+      "position": 9,
+      "imgUrl": "/imagescategories/Signature Ice Milk.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 268,
+      "name": "Dessert Drinks",
+      "position": 10,
+      "imgUrl": "/imagescategories/Dessert Drink Series.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 99,
+      "name": "Hot Drink",
+      "position": 12,
+      "imgUrl": "/imagescategories/Hot Drink.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 96,
+      "name": "Premium Tea Taiwan",
+      "position": 15,
+      "imgUrl": "/imagescategories/Premium Tea.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 101,
+      "name": "Cold Brew ",
+      "position": 16,
+      "imgUrl": "/imagescategories/Cold Brew 1.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 82,
+      "name": "Snack Menu",
+      "position": 17,
+      "imgUrl": "/imagescategories/Snack.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 85,
+      "name": "Okinawa Onigiri Series",
+      "position": 18,
+      "imgUrl": "/imagescategories/Okinawa Onigiri.jpg",
+      "isActive": true
+    },
+    {
+      "categoryId": 83,
+      "name": "Food Menu",
+      "position": 19,
+      "imgUrl": "/imagescategories/Food.jpg",
+      "isActive": true
+    }
+  ]
+}

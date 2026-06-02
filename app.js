@@ -2,8 +2,10 @@ const PAGE_FILE_MAP = {
     "landing": "landing.html",
     "home": "index.html",
     "sign-in": "sign-in.html",
+    "forgot-password": "forgot-password.html",
     "cart": "cart.html",
     "customize": "order-customize.html",
+    "customize-alt": "order-customize-alt.html",
     "checkout": "checkout.html",
     "order-confirm": "order-confirm.html",
     "order-status": "order-status.html",
@@ -13,7 +15,9 @@ const PAGE_FILE_MAP = {
     "order-details-alt": "order-details-alt.html",
     "menu-scan": "menu-scan.html",
     "menu": "menu.html",
+    "menu-alt": "menu-alt.html",
     "locations": "locations.html",
+    "locations-alt": "locations-alt.html",
     "location-favorites": "location-favorites.html",
     "login": "login.html",
     "sign-up": "sign-up.html",
@@ -31,8 +35,10 @@ const PAGE_LABELS = {
     "landing": "FareBites Landing Page",
     "home": "FareBites Homepage (Logged In)",
     "sign-in": "Sign In / Sign Up",
+    "forgot-password": "Forgot Password",
     "cart": "Cart / Review",
     "customize": "Customize Item",
+    "customize-alt": "Customize Item (Alternative)",
     "checkout": "Checkout",
     "order-confirm": "Order Confirmation",
     "order-status": "Order Status",
@@ -42,7 +48,9 @@ const PAGE_LABELS = {
     "order-details-alt": "Order Details (Alternative)",
     "menu-scan": "Scan",
     "menu": "Menu",
+    "menu-alt": "Menu (Alternative)",
     "locations": "Pick a Location",
+    "locations-alt": "Pick a Location (Alternative)",
     "location-favorites": "Saved Locations",
     "login": "Login (Phone)",
     "sign-up": "Sign Up",
@@ -327,7 +335,7 @@ function getActiveMenuItems() {
 }
 
 const LOCATIONS = [
-    { name: "i-Tea - Tempe", address: "825 W UNIVERSITY, Tempe, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM", locationId: 7, lat: 33.4223, lng: -111.9514 },
+    { name: "i-Tea - Tempe", address: "825 W UNIVERSITY, TEMPE, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM", locationId: 7, lat: 33.4223, lng: -111.9514 },
     { name: "i-Tea - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "1.2 mi", fav: false, hours: "12:00 PM to 9:30 PM", locationId: 9, lat: 37.7624, lng: -122.2435 },
     { name: "i-Tea - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM", locationId: 7, lat: 37.6974, lng: -122.0722 },
     { name: "i-Tea - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM", locationId: 10, lat: 38.5414, lng: -121.7482 },
@@ -610,6 +618,754 @@ function hamburgerDrawerHTML() {
 }
 
 
+function renderMenuPage(isAlternative) {
+    const isDesktop = currentViewport === 'desktop';
+    const categoryModalClass = mockupState.modalOpen === 'categories' ? 'flex' : 'hidden';
+
+    const categories = getActiveCategories();
+
+    const mode = mockupState.fulfillmentMode || 'In-store';
+    let modeText = 'IN-STORE PICKUP';
+    if (mode === 'In-store' || mode === 'In-Store') modeText = 'IN-STORE PICKUP';
+    else if (mode === 'Drive Through' || mode === 'Drive-thru') modeText = 'DRIVE-THRU';
+    else if (mode === 'Curbside') modeText = 'CURBSIDE PICKUP';
+    else if (mode === 'Dine In' || mode === 'Dine-In') modeText = 'DINE-IN';
+    else if (mode === 'Delivery') modeText = 'DELIVERY';
+    else modeText = mode.toUpperCase() + ' PICKUP';
+
+    const timeText = mockupState.orderTime === 'Later' 
+        ? `at ${mockupState.selectedTimeSlot}` 
+        : 'ASAP';
+
+    const selectedLoc = mockupState.apiLocations.find(loc => loc.locationId === mockupState.selectedLocationId) 
+        || LOCATIONS.find(loc => loc.locationId === mockupState.selectedLocationId) 
+        || LOCATIONS[0];
+    const addressText = mockupState.selectedAddress || (selectedLoc ? selectedLoc.address : '825 W UNIVERSITY, TEMPE, AZ');
+
+    return `
+        <div class="flex flex-col h-full bg-[#f9fafb] relative ${(!isDesktop && mockupState.modalOpen) ? 'overflow-hidden' : 'overflow-y-auto'} scrollbar-hide">
+            <!-- Compact Sticky Header: ≡ | 🔍 | i-Tea logo | ⭐ | 🛍 -->
+            <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shrink-0">
+                <div class="px-3 py-2 flex items-center gap-2 w-full max-w-[1080px] mx-auto">
+                    <!-- Left: Hamburger -->
+                    <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors shrink-0">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                    <!-- Search icon -->
+                    ${!isAlternative ? `
+                    <button onclick="updateMockupState('menuSearchOpen', ${!mockupState.menuSearchOpen}); updateMockupState('menuSearchQuery', '');" class="w-10 h-10 flex items-center justify-center shrink-0 transition-colors ${mockupState.menuSearchOpen ? 'text-violet-600' : 'text-gray-700 hover:text-violet-600'}">
+                        <i class="fa-solid ${mockupState.menuSearchOpen ? 'fa-xmark' : 'fa-magnifying-glass'} text-xl"></i>
+                    </button>
+                    ` : ''}
+                    <!-- Center: i-Tea logo -->
+                    <div class="flex-1 flex items-center justify-center">
+                        <img src="images/i-tea-logo-new.png" class="h-9 w-auto object-contain" alt="i-Tea">
+                    </div>
+                    <!-- Right: Rewards + Cart -->
+                    ${!isAlternative ? `
+                    <button onclick="updateMockupState('modalOpen', 'rewards'); navigateTo(currentPage)" class="w-10 h-10 flex items-center justify-center text-violet-600 hover:text-violet-700 transition-all active:scale-90 shrink-0">
+                        <i class="fa-solid fa-award text-2xl"></i>
+                    </button>
+                    ` : ''}
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
+                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                    </button>
+                </div>
+
+                <!-- Inline Search Bar (expands below header when open) -->
+                ${(mockupState.menuSearchOpen && !isAlternative) ? `
+                <div class="px-3 pb-2 w-full max-w-[1080px] mx-auto">
+                    <div class="flex items-center bg-gray-100 rounded-full px-4 py-2 gap-3">
+                        <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                        <input
+                            type="text"
+                            id="menu-search-input"
+                            placeholder="Search menu..."
+                            value="${mockupState.menuSearchQuery || ''}"
+                            oninput="mockupState.menuSearchQuery = this.value; persistAllState(); renderPage();"
+                            class="flex-1 bg-transparent text-gray-900 text-sm font-bold outline-none placeholder:text-gray-400 placeholder:font-normal"
+                            autofocus
+                        >
+                        ${mockupState.menuSearchQuery ? `<button onclick="updateMockupState('menuSearchQuery', '');" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-circle-xmark"></i></button>` : ''}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Tab Row -->
+                ${!isAlternative ? `
+                <div class="border-t border-gray-100 px-4 w-full max-w-[1080px] mx-auto">
+                    <div class="flex justify-around">
+                        ${[
+                            { id: 'menu', name: 'All' },
+                            { id: 'featured', name: 'Featured' },
+                            { id: 'favorites', name: 'Favorites' },
+                            { id: 'history', name: 'History' }
+                        ].map(tab => {
+                            const isActive = mockupState.menuTab === tab.id;
+                            const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold';
+                            return `<button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo(currentPage);" class="py-2 text-sm uppercase tracking-wide transition-all ${activeClass}">${tab.name}</button>`;
+                        }).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            </header>
+
+            <!-- Alternative Mode Header (states Menu, fulfillment method, time & address + search/tabs) -->
+            ${isAlternative ? `
+            <div class="bg-white border-b border-gray-100 flex flex-col items-center justify-center text-center w-full shrink-0 animate-[fadeIn_0.3s_ease-out]">
+                <!-- Location details block -->
+                <div class="py-3.5 px-4 w-full">
+                    <h1 class="font-branding font-black text-[#1f0b35] text-[32px] tracking-tight leading-none uppercase mb-2">Menu</h1>
+                    <div onclick="navigateTo('order-details-alt')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
+                        <span class="text-[11px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">
+                            ${modeText}
+                        </span>
+                        <span class="text-[10px] font-bold text-violet-600 uppercase tracking-wide leading-none mb-2">
+                            ${timeText}
+                        </span>
+                        <div class="flex items-center justify-center gap-1.5 text-sm text-[#1f0b35] font-black tracking-tight uppercase">
+                            <span>${addressText}</span>
+                            <i class="fa-solid fa-chevron-right text-[10px] text-violet-600 transition-transform group-hover:translate-x-0.5"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs & Search Row -->
+                <div class="border-t border-gray-100 px-4 py-2 w-full max-w-[1080px] mx-auto min-h-[48px] flex items-center justify-center">
+                    ${mockupState.menuSearchOpen ? `
+                        <!-- Expandable Search Input -->
+                        <div class="flex items-center w-full gap-3 animate-[fadeIn_0.2s_ease-out]">
+                            <div class="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2 gap-2">
+                                <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                                <input
+                                    type="text"
+                                    id="menu-search-input"
+                                    placeholder="Search menu..."
+                                    value="${mockupState.menuSearchQuery || ''}"
+                                    oninput="mockupState.menuSearchQuery = this.value; persistAllState(); renderPage();"
+                                    class="flex-1 bg-transparent text-gray-900 text-sm font-bold outline-none placeholder:text-gray-400 placeholder:font-normal"
+                                    autofocus
+                                >
+                                ${mockupState.menuSearchQuery ? `
+                                    <button onclick="updateMockupState('menuSearchQuery', '');" class="text-gray-400 hover:text-gray-600">
+                                        <i class="fa-solid fa-circle-xmark"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                            <button onclick="updateMockupState('menuSearchOpen', false); updateMockupState('menuSearchQuery', '');" class="text-sm font-black text-violet-600 uppercase tracking-wide hover:opacity-85 transition-opacity">
+                                Cancel
+                            </button>
+                        </div>
+                    ` : `
+                        <!-- Tab Selector + Search Icon -->
+                        <div class="flex items-center justify-between w-full">
+                            <div class="flex justify-around flex-1 lg:flex-initial lg:justify-start lg:gap-8 lg:mr-auto">
+                                ${[
+                                    { id: 'menu', name: 'All' },
+                                    { id: 'featured', name: 'Featured' },
+                                    { id: 'favorites', name: 'Favorites' },
+                                    { id: 'history', name: 'History' }
+                                ].map(tab => {
+                                    const isActive = mockupState.menuTab === tab.id;
+                                    const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
+                                    return `<button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo(currentPage);" class="py-2 lg:pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}">${tab.name}</button>`;
+                                }).join('')}
+                            </div>
+                            <button onclick="updateMockupState('menuSearchOpen', true); updateMockupState('menuSearchQuery', '');" class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-violet-600 transition-colors shrink-0">
+                                <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                            </button>
+                        </div>
+                    `}
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- Rewards Modal -->
+            ${mockupState.modalOpen === 'rewards' ? `
+            <div class="modal-overlay z-[200]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
+                <div class="bg-white w-[92%] max-w-[380px] rounded-[32px] p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out]">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Your Rewards</h2>
+                        <button onclick="mockupState.modalOpen=null;navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-violet-50 rounded-2xl p-6 border border-violet-100 relative overflow-hidden mb-6">
+                        <div class="flex items-center gap-4 mb-5 relative z-10">
+                            <div class="w-12 h-12 rounded-full bg-violet-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                                <i class="fa-solid fa-award text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="text-violet-600 font-black text-sm tracking-tight uppercase">Gold Member</div>
+                                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">1,240 pts until next reward</div>
+                            </div>
+                        </div>
+                        <div class="w-full bg-violet-200/60 h-2 rounded-full overflow-hidden relative z-10">
+                            <div class="bg-violet-600 h-full w-[65%] rounded-full relative overflow-hidden">
+                                <div class="absolute inset-0 bg-white/20 w-full h-full skew-x-12 -translate-x-1/2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-ticket text-violet-600"></i>
+                                <span class="text-sm font-bold text-gray-700 uppercase tracking-tight">Free Topping Coupon</span>
+                            </div>
+                            <span class="text-xs font-black text-violet-600">REDEEM</span>
+                        </div>
+                        <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-percent text-violet-600"></i>
+                                <span class="text-sm font-bold text-gray-700 uppercase tracking-tight">10% Off Next Order</span>
+                            </div>
+                            <span class="text-xs font-black text-gray-400 font-bold">LOCKED</span>
+                        </div>
+                    </div>
+
+                    <button onclick="mockupState.modalOpen=null;navigateTo('account');" class="w-full mt-8 py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">
+                        View Points History
+                    </button>
+                </div>
+            </div>
+            ` : ''}
+
+            <div class="${isDesktop ? 'p-8' : 'p-3'} max-w-[1080px] mx-auto w-full">
+                ${(isDesktop && !isAlternative) ? `
+                <!-- Desktop Tab Selector -->
+                <div class="flex border-b border-gray-100 w-full justify-start gap-8 mb-6 mt-2 pb-2">
+                    ${[
+                        { id: 'menu', name: 'Menu' },
+                        { id: 'featured', name: 'Featured' },
+                        { id: 'favorites', name: 'Favorites' },
+                        { id: 'history', name: 'History' }
+                    ].map(tab => {
+                        const isActive = mockupState.menuTab === tab.id;
+                        const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
+                        return `
+                            <button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo(currentPage);" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}">
+                                ${tab.name}
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+                ` : ''}
+
+                <!-- Render Tab Content Subview -->
+                ${(() => {
+                    if (mockupState.menuTab === 'menu') {
+                        // Search filter: when a query is active, show flat filtered results
+                        if (mockupState.menuSearchQuery && mockupState.menuSearchQuery.trim().length > 0) {
+                            const query = mockupState.menuSearchQuery.toLowerCase();
+                            const filtered = getActiveMenuItems().filter(item =>
+                                item.name.toLowerCase().includes(query) ||
+                                (item.description && item.description.toLowerCase().includes(query)) ||
+                                item.category.toLowerCase().includes(query)
+                            );
+                            if (filtered.length === 0) {
+                                return `<div class="flex flex-col items-center justify-center py-24 text-center px-8">
+                                    <i class="fa-solid fa-magnifying-glass text-gray-200 text-5xl mb-6"></i>
+                                    <p class="font-black text-gray-400 text-lg uppercase tracking-tight">No results for</p>
+                                    <p class="font-black text-gray-600 text-xl mt-1">"${mockupState.menuSearchQuery}"</p>
+                                    <button onclick="updateMockupState('menuSearchQuery', '');" class="mt-8 px-6 py-3 rounded-full border border-violet-200 text-violet-600 text-sm font-black uppercase tracking-wide hover:bg-violet-50 transition-colors">Clear Search</button>
+                                </div>`;
+                            }
+                            return `
+                                <div class="space-y-0">
+                                    <p class="text-[11px] font-black text-gray-400 uppercase tracking-widest px-1 mb-4">${filtered.length} result${filtered.length !== 1 ? 's' : ''}</p>
+                                    <div class="${isDesktop ? 'grid grid-cols-4 gap-x-3 gap-y-5' : 'grid grid-cols-1 gap-[10px]'}">
+                                        ${filtered.map(item => {
+                                            const actualIndex = getActiveMenuItems().indexOf(item);
+                                            return `
+                                                <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                                    <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                    </div>
+                                                    <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">${item.category}</p>
+                                                        <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
+                                                    </div>
+                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        const grapefruitImg = MENU_ITEMS[5] ? MENU_ITEMS[5].image : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
+                        const superFruitImg = MENU_ITEMS[3] ? MENU_ITEMS[3].image : "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg";
+                        const featuredPromoHtml = isDesktop ? `
+                            <div class="flex gap-[14px] overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-6 mb-2 pt-2 -mt-2 -mx-2 px-2">
+                                <!-- Boba Slide -->
+                                <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                    <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
+                                    <!-- Absolute top-left badge -->
+                                    <span class="absolute top-4 left-6 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    <div class="relative z-10 w-full pr-36">
+                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">Brown Sugar<br>Boba Latte</h2>
+                                        <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Creamy, caramelized milk tea perfection.</p>
+                                    </div>
+                                    <!-- Hover reveal button -->
+                                    <button onclick="selectItemAndNavigate(6)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 text-violet-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                                </div>
+                                <!-- Grapefruit Slide -->
+                                <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                    <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
+                                    <!-- Absolute top-left badge -->
+                                    <span class="absolute top-4 left-6 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    <div class="relative z-10 w-full pr-36">
+                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P3 Super<br>Grapefruit</h2>
+                                        <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
+                                    </div>
+                                    <!-- Hover reveal button -->
+                                    <button onclick="selectItemAndNavigate(5)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                                </div>
+                                <!-- P1 Super Fruit Tea Slide -->
+                                <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                    <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-amber-950/90 via-amber-800/55 to-transparent"></div>
+                                    <!-- Absolute top-left badge - tangerine/orange-amber -->
+                                    <span class="absolute top-4 left-6 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
+                                    <div class="relative z-10 w-full pr-36">
+                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P1 Super<br>Fruit Tea</h2>
+                                        <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Pineapple, passion fruit, apple, lime &amp; orange in every sip.</p>
+                                    </div>
+                                    <!-- Hover reveal button -->
+                                    <button onclick="selectItemAndNavigate(3)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-amber-50 text-amber-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                                </div>
+                            </div>
+                        ` : `
+                            <!-- Mobile/Tablet hero promo row: horizontal scroll -->
+                            <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 mb-4 -mx-1 px-1">
+                                <!-- Boba Card -->
+                                <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
+                                    <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent"></div>
+                                    <span class="absolute top-4 left-5 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    <div class="relative z-10">
+                                        <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">Brown Sugar<br>Boba Latte</h2>
+                                    </div>
+                                </div>
+                                <!-- Grapefruit Card -->
+                                <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
+                                    <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-950/90 via-orange-900/55 to-transparent"></div>
+                                    <span class="absolute top-4 left-5 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    <div class="relative z-10">
+                                        <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P3 Super<br>Grapefruit</h2>
+                                    </div>
+                                </div>
+                                <!-- P1 Fruit Tea Card -->
+                                <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
+                                    <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-125 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-amber-950/90 via-amber-800/50 to-transparent"></div>
+                                    <span class="absolute top-4 left-5 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
+                                    <div class="relative z-10">
+                                        <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P1 Super<br>Fruit Tea</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        return `
+                            <!-- Menu Feed (Categories) -->
+                            <div class="space-y-12">
+                                ${featuredPromoHtml}
+                                
+                                ${isAlternative ? `
+                                <!-- Category Navigation Pills -->
+                                <div class="flex overflow-x-auto lg:flex-wrap gap-2.5 py-0.5 px-1 scrollbar-hide whitespace-nowrap lg:whitespace-normal select-none !mt-3 !-mb-8">
+                                    ${getActiveCategories().map(section => {
+                                        return `
+                                            <a href="#${section.id}" 
+                                               onclick="event.preventDefault(); document.getElementById('${section.id}')?.scrollIntoView({ behavior: 'smooth', block: 'start' });"
+                                               class="inline-flex items-center bg-gray-400 hover:bg-gray-500 text-white px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 shrink-0 cursor-pointer">
+                                                ${section.name}
+                                            </a>
+                                        `;
+                                    }).join('')}
+                                </div>
+                                ` : ''}
+
+                                ${getActiveCategories().map(section => {
+                                    const items = getActiveMenuItems();
+                                    const sectionItems = section.isFeatured 
+                                        ? items.slice(0, 6)
+                                        : items.filter(item => item.categoryId === section.categoryId || item.category === section.categoryKey);
+                                    if (sectionItems.length === 0) return '';
+                                    return `
+                                        <div id="${section.id}" class="pt-4 scroll-mt-24 lg:scroll-mt-36">
+                                            <div class="flex justify-between items-end mb-4 px-1">
+                                                <h3 class="${isDesktop ? 'text-3xl' : 'text-2xl'} font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
+                                                <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
+                                            </div>
+                                            <div class="${isDesktop ? 'grid grid-cols-4 gap-x-3 gap-y-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
+                                                ${sectionItems.map(item => {
+                                                    const actualIndex = items.indexOf(item);
+                                                    return `
+                                                        <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                                            <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                                <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                            </div>
+                                                            <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                                <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                                <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
+                                                            </div>
+                                                            ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ''}
+                                                            <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                        </div>
+                                                    `;
+                                                }).join('')}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `;
+                    } else if (mockupState.menuTab === 'featured') {
+                        const superFruitItem = MENU_ITEMS[3];
+                        const featuredItems = [...MENU_ITEMS.slice(0, 6)];
+                        // Ensure P1 Super Fruit Tea (index 3) is included but mark it specially
+                        // Build the card for P1 with tangerine badge
+                        const p1Card = `
+                            <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col ${isDesktop ? 'h-full' : 'w-[72vw] max-w-[260px] shrink-0 snap-center'} hover:shadow-md transition-shadow">
+                                <div class="w-full ${isDesktop ? 'h-44' : 'h-40'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(3)'>
+                                    <img src="${superFruitItem ? superFruitItem.image : 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg'}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                    <div class="absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</div>
+                                </div>
+                                <div class="cursor-pointer" onclick='selectItemAndNavigate(3)'>
+                                    <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${superFruitItem ? superFruitItem.name : 'P1 Super Fruit Tea'}</h4>
+                                    <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${ superFruitItem ? superFruitItem.price.toFixed(2) : '5.95'}</div>
+                                </div>
+                                ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${superFruitItem ? superFruitItem.description : ''}</p>` : ''}
+                                <button onclick='selectItemAndNavigate(3)' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                            </div>
+                        `;
+                        return `
+                            <!-- Featured View -->
+                            <div class="space-y-12">
+                                <!-- Featured Items Grid (Large Premium Cards) -->
+                                <div>
+                                    <div class="flex justify-between items-end mb-6 px-1">
+                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Featured Specials</h3>
+                                    </div>
+                                    ${isDesktop ? `
+                                    <div class="grid grid-cols-4 gap-x-3 gap-y-5">
+                                        ${featuredItems.map((item) => {
+                                            const actualIndex = MENU_ITEMS.indexOf(item);
+                                            // Use tangerine badge for P1 (index 3), violet for others
+                                            const isP1 = actualIndex === 3;
+                                            const badgeStyle = isP1 ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"' : '';
+                                            const badgeClass = isP1 ? 'absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm' : 'absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm';
+                                            return `
+                                                <div class="bg-white rounded-2xl pt-2.5 px-2.5 pb-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                                    <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                        <div class="${badgeClass}" ${badgeStyle}>Featured</div>
+                                                    </div>
+                                                    <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <h4 class="font-black text-gray-900 text-lg leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                        <div class="font-black text-violet-600 text-base mb-2">$${ item.price.toFixed(2)}</div>
+                                                    </div>
+                                                    <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>
+                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-3 text-sm rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                        ${p1Card}
+                                    </div>
+                                    ` : `
+                                    <!-- Mobile/Tablet: horizontal scrollable row -->
+                                    <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-3 -mx-1 px-1">
+                                        ${featuredItems.map((item) => {
+                                            const actualIndex = MENU_ITEMS.indexOf(item);
+                                            const isP1 = actualIndex === 3;
+                                            const badgeStyle = isP1 ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"' : '';
+                                            const badgeClass = isP1 ? 'absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm' : 'absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm';
+                                            return `
+                                                <div class="bg-white rounded-2xl pt-1.5 px-1.5 pb-3 shadow-sm border border-gray-100 flex flex-col w-[72vw] max-w-[260px] shrink-0 snap-center hover:shadow-md transition-shadow">
+                                                    <div class="w-full h-40 rounded-xl overflow-hidden mb-3 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                        <div class="${badgeClass}" ${badgeStyle}>Featured</div>
+                                                    </div>
+                                                    <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <h4 class="font-black text-gray-900 text-[15px] leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                        <div class="font-black text-violet-600 text-sm mb-3">$${ item.price.toFixed(2)}</div>
+                                                    </div>
+                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-2 text-[11px] rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                        ${p1Card}
+                                    </div>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+
+                    } else if (mockupState.menuTab === 'favorites') {
+                        const hasFavorites = mockupState.favorites && mockupState.favorites.length > 0;
+                        return `
+                            <div class="space-y-6">
+                                <div class="flex justify-between items-end mb-4 px-1">
+                                    <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Your Saved Favorites</h3>
+                                </div>
+                                ${hasFavorites ? `
+                                    <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
+                                        ${mockupState.favorites.map((fav) => {
+                                            const originalIndex = MENU_ITEMS.findIndex(item => item.name === fav.name);
+                                            const actualIndex = originalIndex >= 0 ? originalIndex : 0;
+                                            return `
+                                                <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card">
+                                                    <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <img src="${fav.image}" class="w-full h-full object-cover object-top group-hover/card:scale-105 transition-transform duration-500">
+                                                        <button onclick="event.stopPropagation(); toggleFavorite(${fav.id})" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white text-red-500 shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-transform">
+                                                            <i class="fa-solid fa-heart"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${fav.name}</h4>
+                                                        <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${fav.price.toFixed(2)}</div>
+                                                    </div>
+                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors tracking-wide mt-auto">+ Reorder</button>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                ` : `
+                                    <div class="flex flex-col items-center justify-center py-16 text-center">
+                                        <div class="w-20 h-20 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mb-6 shadow-sm"><i class="fa-regular fa-heart text-3xl"></i></div>
+                                        <h4 class="font-black text-gray-900 uppercase tracking-tight text-lg mb-2">No Favorites Saved Yet</h4>
+                                        <p class="text-sm text-gray-500 max-w-xs leading-relaxed">Items you heart on the menu will appear here for fast reordering!</p>
+                                    </div>
+                                `}
+                            </div>
+                        `;
+                    } else if (mockupState.menuTab === 'history') {
+                        let historyItems = [];
+                        if (mockupState.apiOrders && mockupState.apiOrders.length > 0) {
+                            // Group by item name
+                            const itemCounts = {};
+                            const lastOrdered = {};
+                            mockupState.apiOrders.forEach(order => {
+                                const orderDate = new Date(order.orderDate);
+                                order.items.forEach(orderItem => {
+                                    const name = orderItem.name.trim();
+                                    if (!itemCounts[name]) itemCounts[name] = 0;
+                                    itemCounts[name] += orderItem.quantity;
+                                    if (!lastOrdered[name] || orderDate > lastOrdered[name]) {
+                                        lastOrdered[name] = orderDate;
+                                    }
+                                });
+                            });
+                            
+                            // Match with MENU_ITEMS
+                            historyItems = Object.keys(itemCounts).map(name => {
+                                const menuItemIndex = MENU_ITEMS.findIndex(mi => mi.name.toLowerCase() === name.toLowerCase());
+                                return {
+                                    name,
+                                    index: menuItemIndex,
+                                    count: itemCounts[name],
+                                    lastDate: lastOrdered[name]
+                                };
+                            }).filter(item => item.index !== -1)
+                              .sort((a, b) => b.count - a.count)
+                              .slice(0, 10); // top 10
+                        }
+                        
+                        if (historyItems.length === 0) {
+                            return `
+                                <div class="space-y-6">
+                                    <div class="flex justify-between items-end mb-4 px-1">
+                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
+                                    </div>
+                                    <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center flex flex-col items-center justify-center">
+                                        <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                            <i class="fa-solid fa-receipt text-2xl text-gray-300"></i>
+                                        </div>
+                                        <p class="text-gray-500 font-black uppercase tracking-wider text-sm">No past orders found.</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        const formatDate = (date) => {
+                            const diff = Date.now() - date.getTime();
+                            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                            if (days === 0) return 'Today';
+                            if (days === 1) return 'Yesterday';
+                            if (days < 7) return `${days} days ago`;
+                            return date.toLocaleDateString();
+                        };
+
+                        if (isDesktop) {
+                            const gridItemsHTML = historyItems.map(hist => {
+                                const item = MENU_ITEMS[hist.index];
+                                return `
+                                    <div class="bg-white rounded-2xl p-2.5 shadow-sm border border-gray-100 flex items-center justify-between group">
+                                        <div class="flex items-center gap-4 min-w-0">
+                                            <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 cursor-pointer" onclick="selectItemAndNavigate(${hist.index})">
+                                                <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-300">
+                                            </div>
+                                            <div class="min-w-0">
+                                                <div class="font-black text-sm text-gray-900 leading-tight uppercase truncate cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})" title="${item.name}">${item.name}</div>
+                                                <div class="flex flex-col gap-1.5 mt-1.5">
+                                                    <span class="px-2.5 py-0.5 bg-violet-600 text-white rounded-full text-[9px] font-black uppercase tracking-wider inline-block w-fit">Ordered ${hist.count} times</span>
+                                                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Last ordered ${formatDate(hist.lastDate)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button onclick="selectItemAndNavigate(${hist.index})" class="px-4 py-2 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 hover:bg-violet-50 hover:border-violet-300 shadow-sm font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 shrink-0 ml-3">+ Reorder</button>
+                                    </div>
+                                `;
+                            }).join('');
+
+                            return `
+                                <div class="space-y-6">
+                                    <div class="flex justify-between items-end mb-4 px-1">
+                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        ${gridItemsHTML}
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            const listItemsHTML = historyItems.map(hist => {
+                                const item = MENU_ITEMS[hist.index];
+                                return `
+                                    <div class="flex items-center justify-between group border-b border-gray-50 pb-4 last:border-b-0 last:pb-0">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 cursor-pointer" onclick="selectItemAndNavigate(${hist.index})">
+                                                <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-300">
+                                            </div>
+                                            <div>
+                                                <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2 cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})">${item.name}</div>
+                                                <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide flex items-center gap-2">
+                                                    <span>Ordered ${hist.count} times</span>
+                                                    <span>•</span>
+                                                    <span>Last ${formatDate(hist.lastDate)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button onclick="selectItemAndNavigate(${hist.index})" class="px-5 py-2 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 hover:bg-violet-50 hover:border-violet-300 shadow-sm font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 shrink-0 ml-4">+ Reorder</button>
+                                    </div>
+                                `;
+                            }).join('');
+
+                            return `
+                                <div class="space-y-6">
+                                    <div class="flex justify-between items-end mb-4 px-1">
+                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
+                                    </div>
+                                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                                        <div class="space-y-5">
+                                            ${listItemsHTML}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                })()}
+            </div>
+        </div>
+
+        <!-- Favorites See All Modal -->
+        ${mockupState.modalOpen === 'favorites-see-all' ? `
+        <div class="absolute inset-0 bg-black/60 z-[110] flex flex-col justify-end backdrop-blur-sm transition-all duration-300">
+            <div class="absolute inset-0" onclick="updateMockupState('modalOpen', null); navigateTo(currentPage)"></div>
+            <div class="bg-white w-full rounded-t-[40px] shadow-2xl animate-[slideUp_0.4s_ease-out] flex flex-col max-h-[85vh] z-10 relative">
+                <!-- Handle -->
+                <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-4 mb-6" onclick="updateMockupState('modalOpen', null); navigateTo(currentPage)"></div>
+                
+                <div class="px-6 pb-6 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="text-xl font-black text-gray-900 uppercase tracking-tight">Reorder Favorites</h3>
+                    <button onclick="updateMockupState('modalOpen', null); navigateTo(currentPage)" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:text-gray-900 transition-colors">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto px-6 py-6 space-y-5 scrollbar-hide">
+                    ${(mockupState.favorites || []).slice(0, 6).map((fav, index) => `
+                        <div class="flex items-center justify-between group">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-50">
+                                    <img src="${fav.image}" class="w-full h-full object-cover object-top">
+                                </div>
+                                <div>
+                                    <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2">${fav.name}</div>
+                                    <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">
+                                        ${index === 0 ? 'Ordered 5+ times' : index === 1 ? 'Ordered 10+ times' : index === 2 ? 'Ordered 3 times' : index === 3 ? 'Ordered 8+ times' : index === 4 ? 'Ordered 12+ times' : 'Ordered 2 times'}
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="navigateTo('customize')" class="w-10 h-10 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 flex items-center justify-center hover:bg-violet-50 hover:border-violet-300 shadow-sm transition-all active:scale-95 shrink-0 ml-4">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="p-6 border-t border-gray-100">
+                    <button onclick="updateMockupState('modalOpen', null); navigateTo('menu-favorites')" class="w-full py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">Manage All Favorites</button>
+                </div>
+            </div>
+        </div>
+        ` : ''}
+
+        <!-- Category Bottom Sheet Modal -->
+        <div id="category-modal" class="absolute inset-0 bg-black/60 z-[100] ${categoryModalClass} flex-col justify-end backdrop-blur-sm transition-all duration-300">
+            <div class="absolute inset-0" onclick="updateMockupState('modalOpen', null); navigateTo(currentPage)"></div>
+            <div class="bg-white w-full rounded-t-[40px] shadow-2xl animate-[slideUp_0.4s_ease-out] flex flex-col max-h-[85vh] z-10 relative">
+                <!-- Handle -->
+                <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-4 mb-6" onclick="updateMockupState('modalOpen', null); navigateTo(currentPage)"></div>
+                
+                <!-- Modal Heading & Search -->
+                <div class="px-6 pb-6 border-b border-gray-100">
+                    <div class="relative group">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-violet-600 transition-colors"></i>
+                        <input type="text" placeholder="Search menu categories..." class="w-full pl-11 pr-12 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 focus:bg-white rounded-2xl outline-none font-black text-sm uppercase tracking-wide transition-all">
+                        <button onclick="updateMockupState('modalOpen', null); navigateTo(currentPage)" class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-400 hover:text-gray-900 transition-colors">
+                            <i class="fa-solid fa-xmark text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Category List -->
+                <div class="flex-1 overflow-y-auto px-6 py-4 space-y-3 scrollbar-hide">
+                    ${categories.map(cat => `
+                        <div onclick="updateMockupState('modalOpen', null); navigateTo(currentPage); setTimeout(() => document.getElementById('${cat.id}').scrollIntoView({behavior: 'smooth'}), 100)" class="flex items-start gap-4 p-3 rounded-2xl border-2 border-gray-50 bg-white hover:border-violet-200 hover:bg-violet-50/30 transition-all cursor-pointer group active:scale-[0.98]">
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                                    <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                                </div>
+                                <span class="font-black text-sm text-gray-900 uppercase tracking-tight">${cat.name}</span>
+                            </div>
+                            <div class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 group-hover:bg-violet-600 group-hover:text-white transition-all">
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="p-6 bg-gray-50/50 border-t border-gray-100 font-black text-center text-[10px] text-gray-400 uppercase tracking-widest leading-loose">
+                    Quickly jump to your favorite section
+                </div>
+            </div>
+        </div>
+
+    </div>`;
+}
+
 const routes = {
     'landing': () => `
             <div class="flex flex-col h-full relative overflow-hidden bg-black">
@@ -797,7 +1553,7 @@ const routes = {
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
             <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
             <div class="modal-overlay" onclick="navigateTo('restaurant-home')">
-                <div class="modal-content max-w-[380px] ${isDesktop ? 'lg:p-6' : ''}" onclick="event.stopPropagation()">
+                <div class="modal-content" onclick="event.stopPropagation()">
                     <button class="absolute ${isDesktop ? 'top-4 left-4' : 'top-6 left-6'} text-gray-500" onclick="navigateTo('restaurant-home')"><i class="fa-solid fa-xmark text-2xl"></i></button>
                     <div class="w-full ${isDesktop ? 'max-h-[36px] mb-2 mt-2' : 'max-h-[52px] mb-1 mt-4'} flex items-center justify-center">
                          <img src="images/i-tea-logo-new.png" class="h-full ${isDesktop ? 'max-h-[36px]' : 'max-h-[52px]'} w-auto object-contain">
@@ -814,6 +1570,9 @@ const routes = {
                             <button type="button" onclick="const p = document.getElementById('auth-password-input'); const i = this.querySelector('i'); if(p.type==='password'){p.type='text'; i.className='fa-solid fa-eye-slash text-gray-400';}else{p.type='password'; i.className='fa-solid fa-eye text-gray-400';}" class="absolute right-6 top-1/2 -translate-y-1/2 focus:outline-none">
                                 <i class="fa-solid fa-eye text-gray-400"></i>
                             </button>
+                        </div>
+                        <div class="flex justify-end px-4">
+                            <button type="button" onclick="navigateTo('forgot-password')" class="text-xs font-bold text-violet-600 hover:underline hover:text-violet-700 transition-colors">Forgot Password?</button>
                         </div>
                         <div id="auth-error" class="text-xs font-bold text-red-500 px-6 h-4 mb-2 transition-all opacity-0"></div>
                         <div class="space-y-2">
@@ -868,6 +1627,40 @@ const routes = {
             </div>
         `;
     },
+    'forgot-password': () => {
+        const isDesktop = currentViewport === 'desktop';
+        return `
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
+            <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
+            <div class="modal-overlay" onclick="navigateTo('sign-in')">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <button class="absolute ${isDesktop ? 'top-4 left-4' : 'top-6 left-6'} text-gray-500 hover:text-violet-600 transition-colors" onclick="navigateTo('sign-in')">
+                        <i class="fa-solid fa-chevron-left text-2xl"></i>
+                    </button>
+                    <div class="w-full ${isDesktop ? 'max-h-[36px] mb-2 mt-2' : 'max-h-[52px] mb-1 mt-4'} flex items-center justify-center">
+                         <img src="images/i-tea-logo-new.png" class="h-full ${isDesktop ? 'max-h-[36px]' : 'max-h-[52px]'} w-auto object-contain">
+                    </div>
+                    <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? 'mb-2' : 'mb-4'} uppercase tracking-tight text-gray-900 leading-tight">Reset Password</h2>
+                    <p class="text-xs text-gray-500 font-bold text-center mb-6 uppercase tracking-wider px-2 leading-relaxed">Enter your email address below, and we'll send you a link to reset your password.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="relative group">
+                            <input type="email" id="forgot-email-input" placeholder="Email Address" class="w-full bg-white px-8 ${isDesktop ? 'py-3' : 'py-4'} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
+                            <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
+                        </div>
+                        
+                        <div id="forgot-error" class="text-xs font-bold text-red-500 px-6 h-4 transition-all opacity-0"></div>
+                        <div id="forgot-success" class="text-sm font-bold text-green-600 px-6 text-center leading-relaxed transition-all hidden"></div>
+                        
+                        <div class="space-y-2">
+                            <button id="forgot-submit-btn" onclick="handleForgotPassword()" class="w-full bg-violet-600 text-white ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase">Send Reset Link</button>
+                            <button id="forgot-back-btn" onclick="navigateTo('sign-in')" class="w-full bg-white border-2 border-violet-600 text-violet-600 ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 hover:bg-violet-50/50 active:scale-95 transition-all uppercase">Back to Sign In</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
     'restaurant-home': () => {
         const isDesktop = currentViewport === 'desktop';
         
@@ -883,6 +1676,12 @@ const routes = {
             cardWidthClass = 'w-full shrink-0 snap-center';
             carouselAlign = 'justify-start';
         }
+
+        const items = getActiveMenuItems();
+        const bobaItem = items.find(item => item.name.includes("Brown Sugar Boba")) || items[6];
+        const grapefruitItem = items.find(item => item.name.includes("Super Grapefruit")) || items[5];
+        const bobaIndex = items.indexOf(bobaItem);
+        const grapefruitIndex = items.indexOf(grapefruitItem);
 
         return `
             <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
@@ -943,40 +1742,26 @@ const routes = {
                     ${!isDesktop ? `
                     <div class="relative z-20 w-full mt-auto shrink-0 pb-2">
                         <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-6 ${carouselAlign}">
-                            <!-- Card 1 -->
-                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
-                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
-                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+                            <!-- Card 1: P4 Brown Sugar Boba Latte -->
+                            <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden shadow-lg h-[250px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${bobaIndex})">
+                                <img src="${bobaItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent"></div>
+                                <span class="absolute top-4 left-5 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                <div class="relative z-10 text-left w-full pr-12">
+                                    <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding mb-1">Brown Sugar<br>Boba Latte</h2>
+                                    <p class="text-gray-300 font-medium text-xs leading-tight mb-3">Creamy, caramelized milk tea perfection.</p>
+                                    <button onclick="event.stopPropagation(); selectItemAndNavigate(${bobaIndex})" class="bg-white text-violet-600 px-5 py-2 rounded-full font-black uppercase text-[10px] shadow-md hover:scale-105 active:scale-95 tracking-wider z-20 transition-transform">Add to Order</button>
                                 </div>
                             </div>
-                            <!-- Card 2 -->
-                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
-                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
-                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
-                                </div>
-                            </div>
-                            <!-- Card 3 -->
-                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
-                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
-                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
-                                </div>
-                            </div>
-                            <!-- Card 4 -->
-                            <div class="${cardWidthClass} bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform active:scale-95" onclick="navigateTo('customize')">
-                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
-                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
-                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.95</div>
+                            <!-- Card 2: P3 Super Grapefruit -->
+                            <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden shadow-lg h-[250px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${grapefruitIndex})">
+                                <img src="${grapefruitItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-r from-orange-950/90 via-orange-900/55 to-transparent"></div>
+                                <span class="absolute top-4 left-5 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                <div class="relative z-10 text-left w-full pr-12">
+                                    <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding mb-1">P3 Super<br>Grapefruit</h2>
+                                    <p class="text-gray-300 font-medium text-xs leading-tight mb-3">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
+                                    <button onclick="event.stopPropagation(); selectItemAndNavigate(${grapefruitIndex})" class="bg-white text-orange-600 px-5 py-2 rounded-full font-black uppercase text-[10px] shadow-md hover:scale-105 active:scale-95 tracking-wider z-20 transition-transform">Add to Order</button>
                                 </div>
                             </div>
                         </div>
@@ -985,8 +1770,6 @@ const routes = {
                         <div class="flex justify-center items-center gap-2 mt-2 mb-4 lg:hidden" style="padding-right: 0;">
                             <div id="carousel-dot-0" class="w-2 h-2 rounded-full bg-violet-600 transition-colors duration-300"></div>
                             <div id="carousel-dot-1" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
-                            <div id="carousel-dot-2" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
-                            <div id="carousel-dot-3" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
                         </div>
                     </div>
                     ` : ''}
@@ -1010,50 +1793,36 @@ const routes = {
                                     </div>
                                 `).join('')}
                             </div>
-
+ 
                             <!-- Divider -->
                             <div class="h-px bg-gray-100 w-full mb-8"></div>
-
+ 
                             <!-- Featured Items Section -->
                             <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Featured Items</h2>
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Our handcrafted favorites</p>
-
-                            <div class="grid grid-cols-4 gap-6 justify-items-center w-full">
-                                <!-- Card 1 -->
-                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
-                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
-                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
-                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+ 
+                            <div class="grid grid-cols-2 gap-8 justify-items-center max-w-[1080px] mx-auto w-full">
+                                <!-- Card 1: P4 Brown Sugar Boba Latte -->
+                                <div class="relative shrink-0 w-full rounded-3xl overflow-hidden shadow-lg h-[300px] flex flex-col justify-end p-8 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group cursor-pointer text-left" onclick="selectItemAndNavigate(${bobaIndex})">
+                                    <img src="${bobaItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
+                                    <span class="absolute top-4 left-6 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    <div class="relative z-10 w-full pr-36">
+                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">Brown Sugar<br>Boba Latte</h2>
+                                        <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Creamy, caramelized milk tea perfection.</p>
                                     </div>
+                                    <button class="absolute right-6 bottom-6 bg-white text-violet-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg hover:scale-105 active:scale-95 tracking-wide z-20 transition-transform">Add to Order</button>
                                 </div>
-                                <!-- Card 2 -->
-                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
-                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
-                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
-                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+                                <!-- Card 2: P3 Super Grapefruit -->
+                                <div class="relative shrink-0 w-full rounded-3xl overflow-hidden shadow-lg h-[300px] flex flex-col justify-end p-8 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group cursor-pointer text-left" onclick="selectItemAndNavigate(${grapefruitIndex})">
+                                    <img src="${grapefruitItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
+                                    <span class="absolute top-4 left-6 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    <div class="relative z-10 w-full pr-36">
+                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P3 Super<br>Grapefruit</h2>
+                                        <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
                                     </div>
-                                </div>
-                                <!-- Card 3 -->
-                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
-                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
-                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
-                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
-                                    </div>
-                                </div>
-                                <!-- Card 4 -->
-                                <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
-                                    <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
-                                    <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
-                                        <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
-                                        <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
-                                        <div class="text-sm font-bold text-gray-500 mt-auto">$5.95</div>
-                                    </div>
+                                    <button class="absolute right-6 bottom-6 bg-white text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg hover:scale-105 active:scale-95 tracking-wide z-20 transition-transform">Add to Order</button>
                                 </div>
                             </div>
 
@@ -1139,7 +1908,7 @@ const routes = {
                                     <p class="text-base font-black text-white truncate">i-Tea - Tempe <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; 0.3 mi</span></p>
                                 </div>
                             </div>
-                            <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
+                            <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, TEMPE, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
@@ -1186,7 +1955,7 @@ const routes = {
                                 <p class="text-base font-black text-white truncate">i-Tea - Tempe <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; 0.3 mi</span></p>
                             </div>
                         </div>
-                        <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, Tempe, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm transition-colors active:scale-95">Order Here</button>
+                        <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, TEMPE, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm transition-colors active:scale-95">Order Here</button>
                     </div>
 
                     <div class="w-full h-[35%] min-h-[220px] shrink-0 relative z-0">
@@ -1227,6 +1996,190 @@ const routes = {
                                         <span class="text-[10px] text-gray-400 underline uppercase font-bold" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
                                     </div>
                                 </div>`).join('')}
+                        </div>
+                    </div>
+                </div>`;
+        }
+    },
+    'locations-alt': () => {
+        const getSet = () => {
+            const list = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
+                ? mockupState.apiLocations
+                : LOCATIONS;
+            if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return list;
+            if (mockupState.locationFilter === 'Favorites') return list.filter(loc => loc.fav);
+            if (mockupState.locationFilter === 'Previous') {
+                return list.length >= 3 ? [list[2 % list.length], list[0], list[1 % list.length]] : list;
+            }
+            
+            return list;
+        };
+
+        if (currentViewport === 'desktop') {
+            return `
+                <div class="flex flex-row bg-white" style="height: calc(100vh - 70px);">
+                    <div class="w-[450px] flex flex-col shrink-0 border-r border-gray-200 z-10 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.05)]">
+                        <header class="p-4 border-b border-gray-100 flex items-center bg-white">
+                            <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
+                            <h1 class="text-xl font-black tracking-tight uppercase text-gray-900" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
+                        </header>
+                        <div class="p-5 border-b border-gray-100 bg-white">
+                            <div class="bg-gray-100 flex items-center gap-3 px-4 py-3.5 rounded-full shadow-inner mb-5 border border-gray-200/50">
+                                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                                <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
+                            </div>
+                            <div class="flex gap-2 overflow-x-auto scrollbar-hide">
+                                <button onclick="updateMockupState('locationFilter', 'Near Me')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}" style="font-family: 'Roboto', sans-serif;">Near Me</button>
+                                <button onclick="updateMockupState('locationFilter', 'Previous')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Previous' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}" style="font-family: 'Roboto', sans-serif;">Previous</button>
+                                <button onclick="updateMockupState('locationFilter', 'Favorites')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Favorites' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}" style="font-family: 'Roboto', sans-serif;">Favorites</button>
+                            </div>
+                        </div>
+                        <div class="p-5 border-b border-violet-700 bg-violet-600 flex items-center justify-between gap-3 text-white">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
+                                    <p class="text-base font-black text-white truncate">i-Tea - Tempe <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; 0.3 mi</span></p>
+                                </div>
+                            </div>
+                            <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, TEMPE, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
+                            ${getSet().map((s, idx) => `
+                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 shadow-md' : ((idx === 0 || idx === 1) ? 'border-violet-200' : (s.fav ? 'border-violet-200' : 'border-gray-200'))} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" style="${(idx === 0 || idx === 1) ? 'background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);' : (s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'background: rgba(124,58,237,0.05);' : '')}" onclick="focusLocation('${s.name}')">
+                                    <div>
+                                        ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
+                                        ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
+                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">${s.name} ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-xs"></i>' : ''}</h3>
+                                        <p class="text-xs font-bold text-gray-400 mt-1.5 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
+                                        <div class="flex gap-4 mt-4">
+                                            <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop"></i> In store</span>
+                                            <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-car"></i> Drive-thru</span>
+                                            <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-square-parking"></i> Curbside</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col items-end justify-between h-full gap-2">
+                                        <div class="text-xs font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
+                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[10px] px-4 py-2 rounded-full uppercase font-black tracking-widest shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
+                                        <span class="text-[10px] text-gray-400 underline uppercase font-bold" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
+                                    </div>
+                                </div>`).join('')}
+                        </div>
+                    </div>
+                    <div class="flex-1 relative bg-[#e5e3df]">
+                        <div id="locations-map" class="absolute inset-0 w-full h-full"></div>
+                    </div>
+                </div>`;
+        } else {
+            const list = getSet();
+            let featuredStore = list.find(s => s.name === 'i-Tea - Tempe');
+            if (!featuredStore && list.length > 0) {
+                featuredStore = list[0];
+            }
+
+            return `
+                <div class="flex flex-col min-h-screen bg-[#f8f9fa] relative animate-[fadeIn_0.2s_ease-out] pb-12 w-full">
+                    <header class="bg-white px-3 py-2 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center shrink-0 border-b border-gray-100">
+                        <div class="w-full max-w-[1080px] flex items-center px-1">
+                            <!-- Left: Hamburger -->
+                            <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors shrink-0">
+                                <i class="fa-solid fa-bars text-xl"></i>
+                            </button>
+                            <!-- Center: i-Tea logo -->
+                            <div class="flex-1 flex items-center justify-center">
+                                <img src="images/i-tea-logo-new.png" class="h-9 w-auto object-contain" alt="i-Tea">
+                            </div>
+                            <!-- Right: Cart icon -->
+                            <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
+                                ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="w-full max-w-[640px] mx-auto px-4 py-4 space-y-4">
+                        <!-- Details subheader block -->
+                        <div class="bg-transparent flex flex-col w-full py-1">
+                            <button onclick="navigateTo('restaurant-home')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors self-start mb-2">
+                                <i class="fa-solid fa-chevron-left text-[10px] text-violet-600"></i>
+                                <span>Back</span>
+                            </button>
+                            <h1 class="font-branding font-black text-[#1f0b35] text-[32px] tracking-tight leading-none uppercase text-center w-full">Choose Location</h1>
+                        </div>
+
+                        ${featuredStore ? `
+                        <!-- Featured Location Card -->
+                        <div class="bg-white rounded-3xl border border-gray-100 shadow-md overflow-hidden p-5 flex flex-col gap-4">
+                            <div class="flex justify-between items-start">
+                                <div class="min-w-0 flex-1">
+                                    <span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">
+                                        ${featuredStore.name === 'i-Tea - Tempe' ? 'Previous Order' : (featuredStore.fav ? 'Favorite Location' : 'Closest Location')}
+                                    </span>
+                                    <h3 class="font-bold text-xl tracking-tight uppercase flex items-center gap-2 text-gray-900">
+                                        ${featuredStore.name} ${featuredStore.fav ? '<i class="fa-solid fa-heart text-violet-600 text-sm"></i>' : ''}
+                                    </h3>
+                                    <p class="text-xs text-gray-500 font-semibold mt-1">${featuredStore.address}</p>
+                                    <p class="text-xs font-bold text-gray-400 mt-1.5 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${featuredStore.hours}</p>
+                                </div>
+                                <div class="flex flex-col items-end gap-2 shrink-0 ml-3">
+                                    <div class="text-xs font-black text-gray-400 uppercase mb-1" style="font-family: Roboto, sans-serif;">${featuredStore.dist}</div>
+                                    <button onclick="selectLocation(${featuredStore.locationId || 'null'}, '${featuredStore.name}', '${featuredStore.address}', '${featuredStore.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest whitespace-nowrap shadow-sm active:scale-95 transition-transform hover:bg-violet-700">Order Here</button>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-center border-t border-gray-50 pt-3">
+                                <div class="flex gap-3">
+                                    <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop text-[11px]"></i> In store</span>
+                                    <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-car text-[11px]"></i> Drive-thru</span>
+                                    <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-square-parking text-[11px]"></i> Curbside</span>
+                                </div>
+                            </div>
+
+                            <!-- Embedded Map preview with the pin at the bottom -->
+                            <div class="w-full h-[180px] rounded-2xl overflow-hidden relative border border-gray-100 z-0">
+                                <div id="locations-map" class="absolute inset-0 w-full h-full"></div>
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <!-- Search City & Filters -->
+                        <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-4">
+                            <div class="bg-gray-100 flex items-center gap-3 px-4 py-3.5 rounded-full shadow-inner border border-gray-200/50">
+                                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                                <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
+                            </div>
+                            <div class="flex gap-2 overflow-x-auto scrollbar-hide">
+                                <button onclick="updateMockupState('locationFilter', 'Near Me')" class="px-5 py-2.5 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby' ? 'bg-violet-600 text-white shadow-md' : 'border border-gray-100 text-gray-500'}">Near Me</button>
+                                <button onclick="updateMockupState('locationFilter', 'Previous')" class="px-5 py-2.5 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Previous' ? 'bg-violet-600 text-white shadow-md' : 'border border-gray-100 text-gray-500'}">Previous</button>
+                                <button onclick="updateMockupState('locationFilter', 'Favorites')" class="px-5 py-2.5 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Favorites' ? 'bg-violet-600 text-white shadow-md' : 'border border-gray-100 text-gray-500'}">Favorites</button>
+                            </div>
+                        </div>
+
+                        <!-- Other Locations List -->
+                        <div class="space-y-3">
+                            <h4 class="text-xs font-black uppercase tracking-wider text-gray-400 px-2" style="font-family: Roboto, sans-serif;">Other Locations</h4>
+                            ${list.filter(s => !featuredStore || s.name !== featuredStore.name).map((s, idx) => `
+                                <div data-location-card="${s.name}" class="bg-white p-5 border border-gray-100 rounded-3xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="focusLocation('${s.name}')">
+                                    <div class="min-w-0 flex-1">
+                                        ${(idx === 0 && s.name !== 'i-Tea - Tempe') ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
+                                        ${(idx === 1 && s.name !== 'i-Tea - Tempe') ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
+                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">${s.name} ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-xs"></i>' : ''}</h3>
+                                        <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
+                                        <div class="flex gap-3 mt-3">
+                                            <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop text-[11px]"></i> In store</span>
+                                            <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-car text-[11px]"></i> Drive-thru</span>
+                                            <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-square-parking text-[11px]"></i> Curbside</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col items-end justify-between h-full gap-2 shrink-0 ml-3">
+                                        <div class="text-[11px] font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
+                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest whitespace-nowrap shadow-sm active:scale-95 hover:bg-violet-700">Order Here</button>
+                                        <span class="text-[10px] text-gray-400 underline uppercase font-bold cursor-pointer" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
+                                    </div>
+                                </div>
+                            `).join('')}
                         </div>
                     </div>
                 </div>`;
@@ -1394,33 +2347,29 @@ const routes = {
                                 <button onclick="updateMockupState('orderTime', 'Later'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === 'Later' ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i>Later</button>
                             </div>
                             
-                            ${mockupState.orderTime === 'Later' ? `
-                            <div class="mt-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm transition-all animate-[fadeIn_0.3s_ease-out]">
+                            <div class="mt-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm transition-all">
                                 <div class="flex justify-between items-center mb-3">
-                                    <p class="text-[10px] font-black text-violet-600 uppercase tracking-widest">Scheduled Pickup</p>
+                                    <p class="text-[10px] font-black text-violet-600 uppercase tracking-widest">
+                                        ${mockupState.orderTime === 'ASAP' ? 'Estimated Pickup Time' : 'Scheduled Pickup'}
+                                    </p>
                                 </div>
                                 <div class="flex gap-3">
-                                    <button onclick="mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay}</span></span>
+                                    <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
+                                        <span class="flex items-center gap-2 overflow-hidden w-full">
+                                            <i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> 
+                                            <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay === 'Today' ? 'Today' : mockupState.selectedDay}</span>
+                                        </span>
                                         <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
                                     </button>
-                                    <button onclick="mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedTimeSlot}</span></span>
+                                    <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
+                                        <span class="flex items-center gap-2 overflow-hidden w-full">
+                                            <i class="fa-regular fa-clock text-violet-600 shrink-0"></i> 
+                                            <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === 'ASAP' ? times15[0] : mockupState.selectedTimeSlot}</span>
+                                        </span>
                                         <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
                                     </button>
                                 </div>
                             </div>
-                            ` : `
-                            <div class="mt-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm transition-all animate-[fadeIn_0.3s_ease-out]">
-                                <div class="flex justify-between items-center mb-1">
-                                    <p class="text-[10px] font-black text-violet-600 uppercase tracking-widest">Estimated Pickup Time</p>
-                                </div>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <i class="fa-regular fa-clock text-violet-600 border border-violet-100 rounded p-1"></i>
-                                    <p class="font-black text-gray-800 text-sm tracking-tight">Today at ${times15[0]}</p>
-                                </div>
-                            </div>
-                            `}
 
                             ${currentViewport === 'desktop' ? `
                             <div class="mt-8">
@@ -1612,18 +2561,6 @@ const routes = {
                             <p class="text-xs text-gray-500 font-medium mt-1 leading-normal">${opt.desc}</p>
                         </div>
                     </div>
-                    ${isActive ? `
-                    <div onclick="event.stopPropagation(); updateMockupState('modalOpen', 'schedule-pickup'); navigateTo(currentPage);" class="mt-4 pt-4 border-t border-violet-200/60 flex flex-col gap-1 w-full text-left">
-                        <div class="flex items-center justify-between text-[10px] text-gray-400 font-black uppercase tracking-widest">
-                            <span>Pickup Time</span>
-                            <span class="text-violet-600 font-black underline cursor-pointer hover:text-violet-700">Change</span>
-                        </div>
-                        <div class="flex items-center gap-1.5 text-xs text-gray-800 font-black mt-1">
-                            <i class="fa-regular fa-clock text-violet-600 border border-violet-100 rounded p-1 bg-white"></i>
-                            <span>${mockupState.orderTime === 'ASAP' ? `Today ASAP (approx. at ${times15[0]})` : `${mockupState.selectedDay} at ${mockupState.selectedTimeSlot}`}</span>
-                        </div>
-                    </div>
-                    ` : ''}
                 </div>
             `;
         };
@@ -1638,6 +2575,18 @@ const routes = {
                 <div class="${isDesktop ? 'grid grid-cols-2 gap-4' : 'flex flex-col gap-4'} mb-6">
                     ${options.map(renderOptionCard).join('')}
                 </div>
+
+                ${mockupState.fulfillmentMode && mockupState.fulfillmentMode !== 'Dine In' ? `
+                <div onclick="updateMockupState('modalOpen', 'schedule-pickup'); navigateTo(currentPage);" class="mb-8 p-6 bg-white rounded-3xl border border-gray-100 shadow-md text-center cursor-pointer hover:border-violet-300 transition-all active:scale-[0.99] flex flex-col items-center justify-center gap-1">
+                    <span class="text-[11px] font-black text-violet-600 uppercase tracking-widest">
+                        ${mockupState.fulfillmentMode.toUpperCase()} PICKUP TIME
+                    </span>
+                    <div class="font-branding font-black text-gray-900 text-[40px] md:text-[44px] tracking-tight uppercase leading-none mt-1.5 mb-1">
+                        ${mockupState.orderTime === 'ASAP' ? `ASAP ~ ${times15[0]}` : `${mockupState.selectedDay === 'Today' ? 'Today' : mockupState.selectedDay.split(',')[0]} at ${mockupState.selectedTimeSlot}`}
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider underline">Tap to Change Time</span>
+                </div>
+                ` : ''}
 
                 <div>
                     <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black">Start Order</button>
@@ -1695,18 +2644,16 @@ const routes = {
                                     <button onclick="updateMockupState('orderTime', 'Later'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === 'Later' ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i>Later</button>
                                 </div>
 
-                                ${mockupState.orderTime === 'Later' ? `
                                 <div class="space-y-3">
-                                    <button onclick="mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay}</span></span>
+                                    <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
+                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay === 'Today' ? 'Today' : mockupState.selectedDay}</span></span>
                                         <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
                                     </button>
-                                    <button onclick="mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedTimeSlot}</span></span>
+                                    <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
+                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === 'ASAP' ? times15[0] : mockupState.selectedTimeSlot}</span></span>
                                         <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
                                     </button>
                                 </div>
-                                ` : ''}
                             </div>
                         </div>
 
@@ -1858,645 +2805,8 @@ const routes = {
                 </div>
             </div>`;
     },
-    'menu': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const categoryModalClass = mockupState.modalOpen === 'categories' ? 'flex' : 'hidden';
-
-        const categories = getActiveCategories();
-
-        return `
-            <div class="flex flex-col h-full bg-[#f9fafb] relative ${(!isDesktop && mockupState.modalOpen) ? 'overflow-hidden' : 'overflow-y-auto'} scrollbar-hide">
-                <!-- Compact Sticky Header: ≡ | 🔍 | i-Tea logo | ⭐ | 🛍 -->
-                <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shrink-0">
-                    <div class="px-3 py-2 flex items-center gap-2 w-full max-w-[1080px] mx-auto">
-                        <!-- Left: Hamburger -->
-                        <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors shrink-0">
-                            <i class="fa-solid fa-bars text-xl"></i>
-                        </button>
-                        <!-- Search icon -->
-                        <button onclick="updateMockupState('menuSearchOpen', ${!mockupState.menuSearchOpen}); updateMockupState('menuSearchQuery', '');" class="w-10 h-10 flex items-center justify-center shrink-0 transition-colors ${mockupState.menuSearchOpen ? 'text-violet-600' : 'text-gray-700 hover:text-violet-600'}">
-                            <i class="fa-solid ${mockupState.menuSearchOpen ? 'fa-xmark' : 'fa-magnifying-glass'} text-xl"></i>
-                        </button>
-                        <!-- Center: i-Tea logo -->
-                        <div class="flex-1 flex items-center justify-center">
-                            <img src="images/i-tea-logo-new.png" class="h-9 w-auto object-contain" alt="i-Tea">
-                        </div>
-                        <!-- Right: Rewards + Cart -->
-                        <button onclick="updateMockupState('modalOpen', 'rewards'); navigateTo('menu')" class="w-10 h-10 flex items-center justify-center text-violet-600 hover:text-violet-700 transition-all active:scale-90 shrink-0">
-                            <i class="fa-solid fa-award text-2xl"></i>
-                        </button>
-                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                            ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
-                        </button>
-                    </div>
-
-                    <!-- Inline Search Bar (expands below header when open) -->
-                    ${mockupState.menuSearchOpen ? `
-                    <div class="px-3 pb-2 w-full max-w-[1080px] mx-auto">
-                        <div class="flex items-center bg-gray-100 rounded-full px-4 py-2 gap-3">
-                            <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
-                            <input
-                                type="text"
-                                id="menu-search-input"
-                                placeholder="Search menu..."
-                                value="${mockupState.menuSearchQuery || ''}"
-                                oninput="mockupState.menuSearchQuery = this.value; persistAllState(); renderPage();"
-                                class="flex-1 bg-transparent text-gray-900 text-sm font-bold outline-none placeholder:text-gray-400 placeholder:font-normal"
-                                autofocus
-                            >
-                            ${mockupState.menuSearchQuery ? `<button onclick="updateMockupState('menuSearchQuery', '');" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-circle-xmark"></i></button>` : ''}
-                        </div>
-                    </div>
-                    ` : ''}
-
-                    <!-- Tab Row -->
-                    <div class="border-t border-gray-100 px-4 w-full max-w-[1080px] mx-auto">
-                        <div class="flex justify-around">
-                            ${[
-                                { id: 'menu', name: 'Menu' },
-                                { id: 'featured', name: 'Featured' },
-                                { id: 'favorites', name: 'Favorites' },
-                                { id: 'history', name: 'History' }
-                            ].map(tab => {
-                                const isActive = mockupState.menuTab === tab.id;
-                                const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold';
-                                return `<button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo('menu');" class="py-2 text-sm uppercase tracking-wide transition-all ${activeClass}">${tab.name}</button>`;
-                            }).join('')}
-                        </div>
-                    </div>
-                </header>
-
-                <!-- Rewards Modal -->
-                ${mockupState.modalOpen === 'rewards' ? `
-                <div class="modal-overlay z-[200]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
-                    <div class="bg-white w-[92%] max-w-[380px] rounded-[32px] p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out]">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Your Rewards</h2>
-                            <button onclick="mockupState.modalOpen=null;navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="bg-violet-50 rounded-2xl p-6 border border-violet-100 relative overflow-hidden mb-6">
-                            <div class="flex items-center gap-4 mb-5 relative z-10">
-                                <div class="w-12 h-12 rounded-full bg-violet-600 text-white flex items-center justify-center shrink-0 shadow-md">
-                                    <i class="fa-solid fa-award text-xl"></i>
-                                </div>
-                                <div>
-                                    <div class="text-violet-600 font-black text-sm tracking-tight uppercase">Gold Member</div>
-                                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">1,240 pts until next reward</div>
-                                </div>
-                            </div>
-                            <div class="w-full bg-violet-200/60 h-2 rounded-full overflow-hidden relative z-10">
-                                <div class="bg-violet-600 h-full w-[65%] rounded-full relative overflow-hidden">
-                                    <div class="absolute inset-0 bg-white/20 w-full h-full skew-x-12 -translate-x-1/2"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
-                                <div class="flex items-center gap-3">
-                                    <i class="fa-solid fa-ticket text-violet-600"></i>
-                                    <span class="text-sm font-bold text-gray-700 uppercase tracking-tight">Free Topping Coupon</span>
-                                </div>
-                                <span class="text-xs font-black text-violet-600">REDEEM</span>
-                            </div>
-                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
-                                <div class="flex items-center gap-3">
-                                    <i class="fa-solid fa-percent text-violet-600"></i>
-                                    <span class="text-sm font-bold text-gray-700 uppercase tracking-tight">10% Off Next Order</span>
-                                </div>
-                                <span class="text-xs font-black text-gray-400 font-bold">LOCKED</span>
-                            </div>
-                        </div>
-
-                        <button onclick="mockupState.modalOpen=null;navigateTo('account');" class="w-full mt-8 py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">
-                            View Points History
-                        </button>
-                    </div>
-                </div>
-                ` : ''}
-
-                <div class="${isDesktop ? 'p-8' : 'p-3'} max-w-[1080px] mx-auto w-full">
-                    ${isDesktop ? `
-                    <!-- Desktop Tab Selector -->
-                    <div class="flex border-b border-gray-100 w-full justify-start gap-8 mb-6 mt-2 pb-2">
-                        ${[
-                            { id: 'menu', name: 'Menu' },
-                            { id: 'featured', name: 'Featured' },
-                            { id: 'favorites', name: 'Favorites' },
-                            { id: 'history', name: 'History' }
-                        ].map(tab => {
-                            const isActive = mockupState.menuTab === tab.id;
-                            const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
-                            return `
-                                <button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo('menu');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}">
-                                    ${tab.name}
-                                </button>
-                            `;
-                        }).join('')}
-                    </div>
-                    ` : ''}
-
-                    <!-- Render Tab Content Subview -->
-                    ${(() => {
-                        if (mockupState.menuTab === 'menu') {
-                            // Search filter: when a query is active, show flat filtered results
-                            if (mockupState.menuSearchQuery && mockupState.menuSearchQuery.trim().length > 0) {
-                                const query = mockupState.menuSearchQuery.toLowerCase();
-                                const filtered = getActiveMenuItems().filter(item =>
-                                    item.name.toLowerCase().includes(query) ||
-                                    (item.description && item.description.toLowerCase().includes(query)) ||
-                                    item.category.toLowerCase().includes(query)
-                                );
-                                if (filtered.length === 0) {
-                                    return `<div class="flex flex-col items-center justify-center py-24 text-center px-8">
-                                        <i class="fa-solid fa-magnifying-glass text-gray-200 text-5xl mb-6"></i>
-                                        <p class="font-black text-gray-400 text-lg uppercase tracking-tight">No results for</p>
-                                        <p class="font-black text-gray-600 text-xl mt-1">"${mockupState.menuSearchQuery}"</p>
-                                        <button onclick="updateMockupState('menuSearchQuery', '');" class="mt-8 px-6 py-3 rounded-full border border-violet-200 text-violet-600 text-sm font-black uppercase tracking-wide hover:bg-violet-50 transition-colors">Clear Search</button>
-                                    </div>`;
-                                }
-                                return `
-                                    <div class="space-y-0">
-                                        <p class="text-[11px] font-black text-gray-400 uppercase tracking-widest px-1 mb-4">${filtered.length} result${filtered.length !== 1 ? 's' : ''}</p>
-                                        <div class="${isDesktop ? 'grid grid-cols-4 gap-x-3 gap-y-5' : 'grid grid-cols-1 gap-[10px]'}">
-                                            ${filtered.map(item => {
-                                                const actualIndex = getActiveMenuItems().indexOf(item);
-                                                return `
-                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                                        <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
-                                                        </div>
-                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">${item.category}</p>
-                                                            <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
-                                                        </div>
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
-                                                    </div>
-                                                `;
-                                            }).join('')}
-                                        </div>
-                                    </div>
-                                `;
-                            }
-
-                            const grapefruitImg = MENU_ITEMS[5] ? MENU_ITEMS[5].image : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
-                            const superFruitImg = MENU_ITEMS[3] ? MENU_ITEMS[3].image : "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg";
-                            const featuredPromoHtml = isDesktop ? `
-                                <div class="flex gap-[14px] overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-6 mb-2 pt-2 -mt-2 -mx-2 px-2">
-                                    <!-- Boba Slide -->
-                                    <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                        <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
-                                        <!-- Absolute top-left badge -->
-                                        <span class="absolute top-4 left-6 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                        <div class="relative z-10 w-full pr-36">
-                                            <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">Brown Sugar<br>Boba Latte</h2>
-                                            <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Creamy, caramelized milk tea perfection.</p>
-                                        </div>
-                                        <!-- Hover reveal button -->
-                                        <button onclick="selectItemAndNavigate(6)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 text-violet-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
-                                    </div>
-                                    <!-- Grapefruit Slide -->
-                                    <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                        <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
-                                        <!-- Absolute top-left badge -->
-                                        <span class="absolute top-4 left-6 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                        <div class="relative z-10 w-full pr-36">
-                                            <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P3 Super<br>Grapefruit</h2>
-                                            <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
-                                        </div>
-                                        <!-- Hover reveal button -->
-                                        <button onclick="selectItemAndNavigate(5)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
-                                    </div>
-                                    <!-- P1 Super Fruit Tea Slide -->
-                                    <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                        <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-gradient-to-r from-amber-950/90 via-amber-800/55 to-transparent"></div>
-                                        <!-- Absolute top-left badge - tangerine/orange-amber -->
-                                        <span class="absolute top-4 left-6 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
-                                        <div class="relative z-10 w-full pr-36">
-                                            <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P1 Super<br>Fruit Tea</h2>
-                                            <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Pineapple, passion fruit, apple, lime &amp; orange in every sip.</p>
-                                        </div>
-                                        <!-- Hover reveal button -->
-                                        <button onclick="selectItemAndNavigate(3)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-amber-50 text-amber-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
-                                    </div>
-                                </div>
-                            ` : `
-                                <!-- Mobile/Tablet hero promo row: horizontal scroll -->
-                                <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 mb-4 -mx-1 px-1">
-                                    <!-- Boba Card -->
-                                    <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
-                                        <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent"></div>
-                                        <span class="absolute top-4 left-5 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                        <div class="relative z-10">
-                                            <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">Brown Sugar<br>Boba Latte</h2>
-                                        </div>
-                                    </div>
-                                    <!-- Grapefruit Card -->
-                                    <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
-                                        <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-gradient-to-r from-orange-950/90 via-orange-900/55 to-transparent"></div>
-                                        <span class="absolute top-4 left-5 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                        <div class="relative z-10">
-                                            <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P3 Super<br>Grapefruit</h2>
-                                        </div>
-                                    </div>
-                                    <!-- P1 Fruit Tea Card -->
-                                    <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
-                                        <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-gradient-to-r from-amber-950/90 via-amber-800/50 to-transparent"></div>
-                                        <span class="absolute top-4 left-5 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
-                                        <div class="relative z-10">
-                                            <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P1 Super<br>Fruit Tea</h2>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-
-                            return `
-                                <!-- Menu Feed (Categories) -->
-                                <div class="space-y-12">
-                                    ${featuredPromoHtml}
-                                    ${getActiveCategories().map(section => {
-                                        const items = getActiveMenuItems();
-                                        const sectionItems = section.isFeatured 
-                                            ? items.slice(0, 6)
-                                            : items.filter(item => item.categoryId === section.categoryId || item.category === section.categoryKey);
-                                        if (sectionItems.length === 0) return '';
-                                        return `
-                                            <div id="${section.id}" class="pt-4 scroll-mt-24 lg:scroll-mt-36">
-                                                <div class="flex justify-between items-end mb-4 px-1">
-                                                    <h3 class="${isDesktop ? 'text-3xl' : 'text-2xl'} font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
-                                                    <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
-                                                </div>
-                                                <div class="${isDesktop ? 'grid grid-cols-4 gap-x-3 gap-y-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
-                                                    ${sectionItems.map(item => {
-                                                        const actualIndex = items.indexOf(item);
-                                                        return `
-                                                            <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                                                <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                    <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
-                                                                </div>
-                                                                <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                    <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                                    <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
-                                                                </div>
-                                                                ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ''}
-                                                                <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
-                                                            </div>
-                                                        `;
-                                                    }).join('')}
-                                                </div>
-                                            </div>
-                                        `;
-                                    }).join('')}
-                                </div>
-                            `;
-                        } else if (mockupState.menuTab === 'featured') {
-                            const superFruitItem = MENU_ITEMS[3];
-                            const featuredItems = [...MENU_ITEMS.slice(0, 6)];
-                            // Ensure P1 Super Fruit Tea (index 3) is included but mark it specially
-                            // Build the card for P1 with tangerine badge
-                            const p1Card = `
-                                <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col ${isDesktop ? 'h-full' : 'w-[72vw] max-w-[260px] shrink-0 snap-center'} hover:shadow-md transition-shadow">
-                                    <div class="w-full ${isDesktop ? 'h-44' : 'h-40'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(3)'>
-                                        <img src="${superFruitItem ? superFruitItem.image : 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg'}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
-                                        <div class="absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</div>
-                                    </div>
-                                    <div class="cursor-pointer" onclick='selectItemAndNavigate(3)'>
-                                        <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${superFruitItem ? superFruitItem.name : 'P1 Super Fruit Tea'}</h4>
-                                        <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${ superFruitItem ? superFruitItem.price.toFixed(2) : '5.95'}</div>
-                                    </div>
-                                    ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${superFruitItem ? superFruitItem.description : ''}</p>` : ''}
-                                    <button onclick='selectItemAndNavigate(3)' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
-                                </div>
-                            `;
-                            return `
-                                <!-- Featured View -->
-                                <div class="space-y-12">
-                                    <!-- Featured Items Grid (Large Premium Cards) -->
-                                    <div>
-                                        <div class="flex justify-between items-end mb-6 px-1">
-                                            <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Featured Specials</h3>
-                                        </div>
-                                        ${isDesktop ? `
-                                        <div class="grid grid-cols-4 gap-x-3 gap-y-5">
-                                            ${featuredItems.map((item) => {
-                                                const actualIndex = MENU_ITEMS.indexOf(item);
-                                                // Use tangerine badge for P1 (index 3), violet for others
-                                                const isP1 = actualIndex === 3;
-                                                const badgeStyle = isP1 ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"' : '';
-                                                const badgeClass = isP1 ? 'absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm' : 'absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm';
-                                                return `
-                                                    <div class="bg-white rounded-2xl pt-2.5 px-2.5 pb-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                                        <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
-                                                            <div class="${badgeClass}" ${badgeStyle}>Featured</div>
-                                                        </div>
-                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <h4 class="font-black text-gray-900 text-lg leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                            <div class="font-black text-violet-600 text-base mb-2">$${ item.price.toFixed(2)}</div>
-                                                        </div>
-                                                        <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-3 text-sm rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
-                                                    </div>
-                                                `;
-                                            }).join('')}
-                                            ${p1Card}
-                                        </div>
-                                        ` : `
-                                        <!-- Mobile/Tablet: horizontal scrollable row -->
-                                        <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-3 -mx-1 px-1">
-                                            ${featuredItems.map((item) => {
-                                                const actualIndex = MENU_ITEMS.indexOf(item);
-                                                const isP1 = actualIndex === 3;
-                                                const badgeStyle = isP1 ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"' : '';
-                                                const badgeClass = isP1 ? 'absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm' : 'absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm';
-                                                return `
-                                                    <div class="bg-white rounded-2xl pt-1.5 px-1.5 pb-3 shadow-sm border border-gray-100 flex flex-col w-[72vw] max-w-[260px] shrink-0 snap-center hover:shadow-md transition-shadow">
-                                                        <div class="w-full h-40 rounded-xl overflow-hidden mb-3 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
-                                                            <div class="${badgeClass}" ${badgeStyle}>Featured</div>
-                                                        </div>
-                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <h4 class="font-black text-gray-900 text-[15px] leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                            <div class="font-black text-violet-600 text-sm mb-3">$${ item.price.toFixed(2)}</div>
-                                                        </div>
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-2 text-[11px] rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
-                                                    </div>
-                                                `;
-                                            }).join('')}
-                                            ${p1Card}
-                                        </div>
-                                        `}
-                                    </div>
-                                </div>
-                            `;
-
-                        } else if (mockupState.menuTab === 'favorites') {
-                            const hasFavorites = mockupState.favorites && mockupState.favorites.length > 0;
-                            return `
-                                <div class="space-y-6">
-                                    <div class="flex justify-between items-end mb-4 px-1">
-                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Your Saved Favorites</h3>
-                                    </div>
-                                    ${hasFavorites ? `
-                                        <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
-                                            ${mockupState.favorites.map((fav) => {
-                                                const originalIndex = MENU_ITEMS.findIndex(item => item.name === fav.name);
-                                                const actualIndex = originalIndex >= 0 ? originalIndex : 0;
-                                                return `
-                                                    <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card">
-                                                        <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <img src="${fav.image}" class="w-full h-full object-cover object-top group-hover/card:scale-105 transition-transform duration-500">
-                                                            <button onclick="event.stopPropagation(); toggleFavorite(${fav.id})" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white text-red-500 shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-transform">
-                                                                <i class="fa-solid fa-heart"></i>
-                                                            </button>
-                                                        </div>
-                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${fav.name}</h4>
-                                                            <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${fav.price.toFixed(2)}</div>
-                                                        </div>
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors tracking-wide mt-auto">+ Reorder</button>
-                                                    </div>
-                                                `;
-                                            }).join('')}
-                                        </div>
-                                    ` : `
-                                        <div class="flex flex-col items-center justify-center py-16 text-center">
-                                            <div class="w-20 h-20 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mb-6 shadow-sm"><i class="fa-regular fa-heart text-3xl"></i></div>
-                                            <h4 class="font-black text-gray-900 uppercase tracking-tight text-lg mb-2">No Favorites Saved Yet</h4>
-                                            <p class="text-sm text-gray-500 max-w-xs leading-relaxed">Items you heart on the menu will appear here for fast reordering!</p>
-                                        </div>
-                                    `}
-                                </div>
-                            `;
-                        } else if (mockupState.menuTab === 'history') {
-                            let historyItems = [];
-                            if (mockupState.apiOrders && mockupState.apiOrders.length > 0) {
-                                // Group by item name
-                                const itemCounts = {};
-                                const lastOrdered = {};
-                                mockupState.apiOrders.forEach(order => {
-                                    const orderDate = new Date(order.orderDate);
-                                    order.items.forEach(orderItem => {
-                                        const name = orderItem.name.trim();
-                                        if (!itemCounts[name]) itemCounts[name] = 0;
-                                        itemCounts[name] += orderItem.quantity;
-                                        if (!lastOrdered[name] || orderDate > lastOrdered[name]) {
-                                            lastOrdered[name] = orderDate;
-                                        }
-                                    });
-                                });
-                                
-                                // Match with MENU_ITEMS
-                                historyItems = Object.keys(itemCounts).map(name => {
-                                    const menuItemIndex = MENU_ITEMS.findIndex(mi => mi.name.toLowerCase() === name.toLowerCase());
-                                    return {
-                                        name,
-                                        index: menuItemIndex,
-                                        count: itemCounts[name],
-                                        lastDate: lastOrdered[name]
-                                    };
-                                }).filter(item => item.index !== -1)
-                                  .sort((a, b) => b.count - a.count)
-                                  .slice(0, 10); // top 10
-                            }
-                            
-                            if (historyItems.length === 0) {
-                                return `
-                                    <div class="space-y-6">
-                                        <div class="flex justify-between items-end mb-4 px-1">
-                                            <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
-                                        </div>
-                                        <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center flex flex-col items-center justify-center">
-                                            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                                <i class="fa-solid fa-receipt text-2xl text-gray-300"></i>
-                                            </div>
-                                            <p class="text-gray-500 font-black uppercase tracking-wider text-sm">No past orders found.</p>
-                                        </div>
-                                    </div>
-                                `;
-                            }
-
-                            const formatDate = (date) => {
-                                const diff = Date.now() - date.getTime();
-                                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                                if (days === 0) return 'Today';
-                                if (days === 1) return 'Yesterday';
-                                if (days < 7) return `${days} days ago`;
-                                return date.toLocaleDateString();
-                            };
-
-                            if (isDesktop) {
-                                const gridItemsHTML = historyItems.map(hist => {
-                                    const item = MENU_ITEMS[hist.index];
-                                    return `
-                                        <div class="bg-white rounded-2xl p-2.5 shadow-sm border border-gray-100 flex items-center justify-between group">
-                                            <div class="flex items-center gap-4 min-w-0">
-                                                <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 cursor-pointer" onclick="selectItemAndNavigate(${hist.index})">
-                                                    <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-300">
-                                                </div>
-                                                <div class="min-w-0">
-                                                    <div class="font-black text-sm text-gray-900 leading-tight uppercase truncate cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})" title="${item.name}">${item.name}</div>
-                                                    <div class="flex flex-col gap-1.5 mt-1.5">
-                                                        <span class="px-2.5 py-0.5 bg-violet-600 text-white rounded-full text-[9px] font-black uppercase tracking-wider inline-block w-fit">Ordered ${hist.count} times</span>
-                                                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Last ordered ${formatDate(hist.lastDate)}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button onclick="selectItemAndNavigate(${hist.index})" class="px-4 py-2 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 hover:bg-violet-50 hover:border-violet-300 shadow-sm font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 shrink-0 ml-3">+ Reorder</button>
-                                        </div>
-                                    `;
-                                }).join('');
-
-                                return `
-                                    <div class="space-y-6">
-                                        <div class="flex justify-between items-end mb-4 px-1">
-                                            <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-4">
-                                            ${gridItemsHTML}
-                                        </div>
-                                    </div>
-                                `;
-                            } else {
-                                const listItemsHTML = historyItems.map(hist => {
-                                    const item = MENU_ITEMS[hist.index];
-                                    return `
-                                        <div class="flex items-center justify-between group border-b border-gray-50 pb-4 last:border-b-0 last:pb-0">
-                                            <div class="flex items-center gap-4">
-                                                <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 cursor-pointer" onclick="selectItemAndNavigate(${hist.index})">
-                                                    <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-300">
-                                                </div>
-                                                <div>
-                                                    <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2 cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})">${item.name}</div>
-                                                    <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide flex items-center gap-2">
-                                                        <span>Ordered ${hist.count} times</span>
-                                                        <span>•</span>
-                                                        <span>Last ${formatDate(hist.lastDate)}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button onclick="selectItemAndNavigate(${hist.index})" class="px-5 py-2 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 hover:bg-violet-50 hover:border-violet-300 shadow-sm font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 shrink-0 ml-4">+ Reorder</button>
-                                        </div>
-                                    `;
-                                }).join('');
-
-                                return `
-                                    <div class="space-y-6">
-                                        <div class="flex justify-between items-end mb-4 px-1">
-                                            <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
-                                        </div>
-                                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                                            <div class="space-y-5">
-                                                ${listItemsHTML}
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                            }
-                        }
-                    })()}
-                </div>
-                    </div>
-                    
-                </div>
-
-                <!-- Favorites See All Modal -->
-                ${mockupState.modalOpen === 'favorites-see-all' ? `
-                <div class="absolute inset-0 bg-black/60 z-[110] flex flex-col justify-end backdrop-blur-sm transition-all duration-300">
-                    <div class="absolute inset-0" onclick="updateMockupState('modalOpen', null); navigateTo('menu')"></div>
-                    <div class="bg-white w-full rounded-t-[40px] shadow-2xl animate-[slideUp_0.4s_ease-out] flex flex-col max-h-[85vh] z-10 relative">
-                        <!-- Handle -->
-                        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-4 mb-6" onclick="updateMockupState('modalOpen', null); navigateTo('menu')"></div>
-                        
-                        <div class="px-6 pb-6 border-b border-gray-100 flex justify-between items-center">
-                            <h3 class="text-xl font-black text-gray-900 uppercase tracking-tight">Reorder Favorites</h3>
-                            <button onclick="updateMockupState('modalOpen', null); navigateTo('menu')" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:text-gray-900 transition-colors">
-                                <i class="fa-solid fa-xmark text-sm"></i>
-                            </button>
-                        </div>
-
-                        <div class="flex-1 overflow-y-auto px-6 py-6 space-y-5 scrollbar-hide">
-                            ${(mockupState.favorites || []).slice(0, 6).map((fav, index) => `
-                                <div class="flex items-center justify-between group">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-50">
-                                            <img src="${fav.image}" class="w-full h-full object-cover object-top">
-                                        </div>
-                                        <div>
-                                            <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2">${fav.name}</div>
-                                            <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">
-                                                ${index === 0 ? 'Ordered 5+ times' : index === 1 ? 'Ordered 10+ times' : index === 2 ? 'Ordered 3 times' : index === 3 ? 'Ordered 8+ times' : index === 4 ? 'Ordered 12+ times' : 'Ordered 2 times'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button onclick="navigateTo('customize')" class="w-10 h-10 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 flex items-center justify-center hover:bg-violet-50 hover:border-violet-300 shadow-sm transition-all active:scale-95 shrink-0 ml-4">
-                                        <i class="fa-solid fa-plus text-xs"></i>
-                                    </button>
-                                </div>
-                            `).join('')}
-                        </div>
-
-                        <div class="p-6 border-t border-gray-100">
-                            <button onclick="updateMockupState('modalOpen', null); navigateTo('menu-favorites')" class="w-full py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-gray-800 transition-colors active:scale-95">Manage All Favorites</button>
-                        </div>
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- Category Bottom Sheet Modal -->
-                <div id="category-modal" class="absolute inset-0 bg-black/60 z-[100] ${categoryModalClass} flex-col justify-end backdrop-blur-sm transition-all duration-300">
-                    <div class="absolute inset-0" onclick="updateMockupState('modalOpen', null); navigateTo('menu')"></div>
-                    <div class="bg-white w-full rounded-t-[40px] shadow-2xl animate-[slideUp_0.4s_ease-out] flex flex-col max-h-[85vh] z-10 relative">
-                        <!-- Handle -->
-                        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-4 mb-6" onclick="updateMockupState('modalOpen', null); navigateTo('menu')"></div>
-                        
-                        <!-- Modal Heading & Search -->
-                        <div class="px-6 pb-6 border-b border-gray-100">
-                            <div class="relative group">
-                                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-violet-600 transition-colors"></i>
-                                <input type="text" placeholder="Search menu categories..." class="w-full pl-11 pr-12 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 focus:bg-white rounded-2xl outline-none font-black text-sm uppercase tracking-wide transition-all">
-                                <button onclick="updateMockupState('modalOpen', null); navigateTo('menu')" class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-400 hover:text-gray-900 transition-colors">
-                                    <i class="fa-solid fa-xmark text-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Category List -->
-                        <div class="flex-1 overflow-y-auto px-6 py-4 space-y-3 scrollbar-hide">
-                            ${categories.map(cat => `
-                                <div onclick="updateMockupState('modalOpen', null); navigateTo('menu'); setTimeout(() => document.getElementById('${cat.id}').scrollIntoView({behavior: 'smooth'}), 100)" class="flex items-start gap-4 p-3 rounded-2xl border-2 border-gray-50 bg-white hover:border-violet-200 hover:bg-violet-50/30 transition-all cursor-pointer group active:scale-[0.98]">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                                            <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                                        </div>
-                                        <span class="font-black text-sm text-gray-900 uppercase tracking-tight">${cat.name}</span>
-                                    </div>
-                                    <div class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 group-hover:bg-violet-600 group-hover:text-white transition-all">
-                                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="p-6 bg-gray-50/50 border-t border-gray-100 font-black text-center text-[10px] text-gray-400 uppercase tracking-widest leading-loose">
-                            Quickly jump to your favorite section
-                        </div>
-                    </div>
-                </div>
-
-            </div>`;
-    },
+    'menu': () => renderMenuPage(false),
+    'menu-alt': () => renderMenuPage(true),
     'customize': () => {
         const isDesktop = currentViewport === 'desktop';
         const item = mockupState.selectedItem || MENU_ITEMS[1]; // Fallback to Taro Latte
@@ -2674,7 +2984,7 @@ const routes = {
                                 <span class="text-lg font-black text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                             </div>
                             <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">Add to Cart — $${totalPrice}</button>
-                            <button onclick="navigateTo('menu')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
+                            <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
                         </div>
 
                     </div>
@@ -2687,7 +2997,7 @@ const routes = {
                 <div class="flex flex-col h-full bg-white">
                     <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
                     <div class="w-full max-w-[1080px] flex items-center px-2">
-                        <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
+                        <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
                             <i class="fa-solid fa-chevron-left text-gray-600"></i>
                         </button>
                         <span class="text-lg font-black text-violet-600 flex-1 text-center">Customize</span>
@@ -2746,8 +3056,305 @@ const routes = {
                 </div>
             `;
     },
+    'customize-alt': () => {
+        const isDesktop = currentViewport === 'desktop';
+        const mode = mockupState.fulfillmentMode || 'In-store';
+        let modeText = 'IN-STORE PICKUP';
+        if (mode === 'In-store' || mode === 'In-Store') modeText = 'IN-STORE PICKUP';
+        else if (mode === 'Drive Through' || mode === 'Drive-thru') modeText = 'DRIVE-THRU';
+        else if (mode === 'Curbside') modeText = 'CURBSIDE PICKUP';
+        else if (mode === 'Dine In' || mode === 'Dine-In') modeText = 'DINE-IN';
+        else if (mode === 'Delivery') modeText = 'DELIVERY';
+        else modeText = mode.toUpperCase() + ' PICKUP';
+
+        const timeText = mockupState.orderTime === 'Later' 
+            ? `at ${mockupState.selectedTimeSlot}` 
+            : 'ASAP';
+
+        const selectedLoc = mockupState.apiLocations.find(loc => loc.locationId === mockupState.selectedLocationId) 
+            || LOCATIONS.find(loc => loc.locationId === mockupState.selectedLocationId) 
+            || LOCATIONS[0];
+        const addressText = mockupState.selectedAddress || (selectedLoc ? selectedLoc.address : '825 W UNIVERSITY, TEMPE, AZ');
+
+        const item = mockupState.selectedItem || MENU_ITEMS[1]; // Fallback to Taro Latte
+        const basePrice = item.price;
+        const detail = mockupState.selectedItemDetail;
+        const groups = (detail && detail.menuSubItemGroups) || [];
+        const sels = mockupState._customizeSubItems || {};
+
+        // --- Dynamic total calculation from selected sub-items ---
+        let extrasTotal = 0;
+        for (const gid in sels) {
+            const groupItems = sels[gid]?.items || {};
+            for (const sid in groupItems) {
+                extrasTotal += (groupItems[sid].price || 0) * (groupItems[sid].quantity || 1);
+            }
+        }
+        const totalPrice = ((basePrice + extrasTotal) * mockupState.itemQuantity).toFixed(2);
+
+        // --- Section header helper ---
+        const sectionHeader = (label, required) => `
+            <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
+                <span class="text-xs font-black text-violet-600 uppercase tracking-widest">${label}</span>
+                ${required ? '<span class="text-[9px] font-bold text-red-400 uppercase tracking-widest">Required</span>' : ''}
+            </div>`;
+
+        // --- Render a single-select group (radio pills) ---
+        const renderRadioGroup = (group) => {
+            const gid = group.menuSubItemGroupId;
+            const prices = (group.groupPrices || []);
+            const selectedId = Object.keys(sels[gid]?.items || {})[0];
+            return prices.map(p => {
+                const sub = p.menuSubItem || {};
+                const name = (sub.name || '').toUpperCase();
+                const isSelected = String(p.menuSubItemId) === String(selectedId);
+                return `
+                <button onclick="window._selectSubItem(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${name.replace(/'/g, "\\'")}', ${p.price || 0}, true)" class="w-full flex justify-between items-center py-2 group">
+                    <span class="text-sm font-black text-gray-700 uppercase tracking-tight">${name}</span>
+                    <div class="w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${isSelected ? 'border-violet-600 bg-violet-600' : 'border-gray-200 group-hover:border-violet-300'}">
+                        ${isSelected ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ''}
+                    </div>
+                </button>`;
+            }).join('');
+        };
+
+        // --- Render a multi-select group (stepper rows) ---
+        const renderStepperGroup = (group) => {
+            const gid = group.menuSubItemGroupId;
+            const prices = (group.groupPrices || []);
+            return prices.map(p => {
+                const sub = p.menuSubItem || {};
+                const name = (sub.name || '').toUpperCase();
+                const price = p.price || 0;
+                const fmtPrice = price === 0 ? 'FREE' : `+$${price.toFixed(2)}`;
+                const qty = (sels[gid]?.items?.[p.menuSubItemId]?.quantity) || 0;
+                const safeName = name.replace(/'/g, "\\'");
+                return `
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-50">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-black text-gray-800 uppercase tracking-tight">${name}</span>
+                        <span class="text-[11px] font-bold text-gray-400">${fmtPrice}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${safeName}', ${price}, -1)" class="w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 transition-all active:scale-90 text-xs">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <span class="font-black text-gray-900 w-4 text-center text-sm">${qty}</span>
+                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${safeName}', ${price}, 1)" class="w-7 h-7 rounded-full border border-violet-200 bg-violet-50 flex items-center justify-center text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all active:scale-90 text-xs">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        };
+
+        // --- Render modifier groups dynamically ---
+        const renderGroups = (colLayout) => {
+            if (!groups.length) {
+                return `<div class="text-center py-8 text-gray-400 text-sm font-bold uppercase tracking-widest">
+                    ${mockupState.isLoading ? '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading customizations...' : 'No customization options available'}
+                </div>`;
+            }
+            const radioGroups = groups.filter(g => (g.maxSelect || 1) === 1);
+            const stepperGroups = groups.filter(g => (g.maxSelect || 1) > 1);
+
+            let html = '';
+            for (const g of radioGroups) {
+                const isRequired = (g.minSelect || 0) >= 1;
+                html += `<div>
+                    ${sectionHeader(g.displayName || g.groupName || 'Options', isRequired)}
+                    <div class="${colLayout === 'grid' ? 'grid grid-cols-3 gap-x-8 gap-y-1' : 'space-y-1'}">
+                        ${renderRadioGroup(g)}
+                    </div>
+                </div>`;
+            }
+            if (stepperGroups.length > 0) {
+                if (colLayout === 'grid') {
+                    html += `<div class="grid grid-cols-2 gap-8">`;
+                    for (const g of stepperGroups) {
+                        html += `<div>
+                            ${sectionHeader(g.displayName || g.groupName || 'Options', false)}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">${renderStepperGroup(g)}</div>
+                        </div>`;
+                    }
+                    html += `</div>`;
+                } else {
+                    for (const g of stepperGroups) {
+                        html += `<div>
+                            ${sectionHeader(g.displayName || g.groupName || 'Options', false)}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">${renderStepperGroup(g)}</div>
+                        </div>`;
+                    }
+                }
+            }
+            return html;
+        };
+
+        // ---- DESKTOP LAYOUT ----
+        if (isDesktop) {
+            return `
+                <div class="flex flex-col h-full bg-[#f6f6f6] relative overflow-y-auto">
+                    <div class="w-full max-w-3xl mx-auto p-6 md:p-8 flex flex-col gap-6">
+
+                        <!-- Page Title -->
+                        <div>
+                            <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Customize Order</h1>
+                            <p class="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">${item.name}</p>
+                        </div>
+
+                        <!-- Item Image + Info Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex gap-0">
+                            <div class="w-64 shrink-0 p-3">
+                                <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+                                    <img src="${item.image}" class="w-full h-full object-cover object-top">
+                                </div>
+                            </div>
+                            <div class="flex-1 px-8 py-6 flex flex-col justify-center gap-4">
+                                <div>
+                                    <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
+                                    <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-2">${item.name}</h3>
+                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || (detail?.description || '')}</p>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Quantity</span>
+                                    <div class="flex items-center bg-gray-50 rounded-full border border-gray-100 px-4 py-2 gap-6 shadow-sm">
+                                        <button onclick="updateMockupState('itemQuantity', Math.max(1, mockupState.itemQuantity - 1))" class="text-gray-400 hover:text-gray-900 transition-colors"><i class="fa-solid fa-minus"></i></button>
+                                        <span class="font-black text-gray-900 min-w-[20px] text-center">${mockupState.itemQuantity}</span>
+                                        <button onclick="updateMockupState('itemQuantity', mockupState.itemQuantity + 1)" class="text-gray-400 hover:text-violet-600 transition-colors"><i class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col gap-7">
+                            ${renderGroups('grid')}
+
+                            <!-- Special Instructions -->
+                            ${detail && !detail.disableSpecialInstruction ? `
+                            <div>
+                                <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions <span class="text-gray-300">(Max 250 Characters)</span></div>
+                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ''}</textarea>
+                            </div>` : ''}
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-6">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Options Total</span>
+                                <span class="text-lg font-black text-gray-700">+$${extrasTotal.toFixed(2)}</span>
+                            </div>
+                            <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">Add to Cart — $${totalPrice}</button>
+                            <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
+                        </div>
+
+                    </div>
+                </div>
+            `;
+        }
+
+        // ---- MOBILE LAYOUT ----
+        return `
+                <div class="flex flex-col h-full bg-white animate-[fadeIn_0.2s_ease-out]">
+                    <header class="bg-white px-3 py-2 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center shrink-0 border-b border-gray-100">
+                        <div class="w-full max-w-[1080px] flex items-center px-1">
+                            <!-- Left: Hamburger -->
+                            <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors shrink-0">
+                                <i class="fa-solid fa-bars text-xl"></i>
+                            </button>
+                            <!-- Center: i-Tea logo -->
+                            <div class="flex-1 flex items-center justify-center">
+                                <img src="images/i-tea-logo-new.png" class="h-9 w-auto object-contain" alt="i-Tea">
+                            </div>
+                            <!-- Right: Cart icon -->
+                            <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
+                                ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                            </button>
+                        </div>
+                    </header>
+
+                    <!-- Details subheader block mimicking menu-alt.html -->
+                    <div class="bg-white border-b border-gray-100 flex flex-col items-center justify-center text-center w-full shrink-0 animate-[fadeIn_0.3s_ease-out]">
+                        <div class="py-3.5 px-4 w-full relative">
+                            <!-- Back Button at the left -->
+                            <button onclick="navigateTo(mockupState.lastMenuPage || 'menu-alt')" class="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                                <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                                <span>Back</span>
+                            </button>
+                            
+                            <h1 class="font-branding font-black text-[#1f0b35] text-[32px] tracking-tight leading-none uppercase mb-2">Customize</h1>
+                            
+                            <div onclick="navigateTo('order-details-alt')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
+                                <span class="text-[11px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">
+                                    ${modeText}
+                                </span>
+                                <span class="text-[10px] font-bold text-violet-600 uppercase tracking-wide leading-none mb-2">
+                                    ${timeText}
+                                </span>
+                                <div class="flex items-center justify-center gap-1.5 text-sm text-[#1f0b35] font-black tracking-tight uppercase">
+                                    <span>${addressText}</span>
+                                    <i class="fa-solid fa-chevron-right text-[10px] text-violet-600 transition-transform group-hover:translate-x-0.5"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="order-details-scroller" class="flex-1 overflow-y-auto scrollbar-hide">
+                        <!-- Item Banner Image -->
+                        <div class="px-3 pt-3">
+                            <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative">
+                                <img src="${item.image}" class="w-full h-full object-cover object-top">
+                            </div>
+                        </div>
+
+                        <!-- Info & Price -->
+                        <div class="px-6 pt-5 pb-4 text-center border-b border-gray-100">
+                            <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
+                            <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-1">${item.name}</h3>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || (detail?.description || '')}</p>
+                        </div>
+
+                        <!-- Customizations -->
+                        <div class="p-6 space-y-7">
+
+                            <!-- Quantity -->
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Quantity</span>
+                                <div class="flex items-center bg-gray-50 rounded-full border border-gray-100 px-4 py-2 gap-6 shadow-sm">
+                                    <button onclick="updateMockupState('itemQuantity', Math.max(1, mockupState.itemQuantity - 1))" class="text-gray-400 hover:text-gray-900 transition-colors"><i class="fa-solid fa-minus"></i></button>
+                                    <span class="font-black text-gray-900 min-w-[20px] text-center">${mockupState.itemQuantity}</span>
+                                    <button onclick="updateMockupState('itemQuantity', mockupState.itemQuantity + 1)" class="text-gray-400 hover:text-violet-600 transition-colors"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                            </div>
+
+                            ${renderGroups('stacked')}
+
+                            <!-- Special Instructions -->
+                            ${detail && !detail.disableSpecialInstruction ? `
+                            <div>
+                                <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions <span class="text-gray-300">(Max 250 Characters)</span></div>
+                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ''}</textarea>
+                            </div>` : ''}
+
+                        </div>
+                    </div>
+
+                    <!-- Sticky Bottom Actions -->
+                    <div class="p-6 pb-bottom-safe bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+                        <div class="flex justify-between items-center text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1">
+                            <span>Options Total</span>
+                            <span class="text-gray-700">+$${extrasTotal.toFixed(2)}</span>
+                        </div>
+                        <button onclick="window._addToCart()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Add to Cart - $${totalPrice}</button>
+                    </div>
+                </div>
+            `;
+    },
     'cart': () => {
         const isDesktop = currentViewport === 'desktop';
+        const selectedLoc = mockupState.apiLocations.find(loc => loc.locationId === mockupState.selectedLocationId) 
+            || LOCATIONS.find(loc => loc.locationId === mockupState.selectedLocationId) 
+            || LOCATIONS[0];
+        const addressText = mockupState.selectedAddress || (selectedLoc ? selectedLoc.address : '825 W UNIVERSITY, TEMPE, AZ');
         const bagFee = (mockupState.bagQuantity * 0.10);
         // Dynamic pricing from cart
         const cart = mockupState.cart || [];
@@ -2823,7 +3430,12 @@ const routes = {
                             <i class="fa-solid fa-bars text-xl"></i>
                         </button>
                         <span class="text-lg font-black text-violet-600 flex-1 text-center">Review order</span>
-                        <div class="w-10"></div>
+                        ${!isDesktop ? `
+                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
+                            ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                        </button>
+                        ` : '<div class="w-10"></div>'}
                     </div>
                 </header>
                 <div id="cart-scroller" class="flex-1 overflow-y-auto p-6 flex ${isDesktop ? 'flex-row items-start pb-6 gap-8' : 'flex-col gap-6 pb-32'} scrollbar-hide w-full max-w-[1080px] mx-auto">
@@ -2840,7 +3452,7 @@ const routes = {
                                 </div>
                                 <div>
                                     <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${(mockupState.selectedLocation || "i-Tea - Tempe").replace(/\b\d{5}\b/g, '').trim()}</h3>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 tracking-wide uppercase">${mockupState.selectedDistance || "0.8 mi"}</p>
+                                    <p class="text-[10px] font-bold text-gray-400 mt-1 tracking-wide uppercase">${addressText}</p>
                                 </div>
                             </div>
                             <button onclick="navigateTo('locations')" class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-violet-600 hover:border-violet-100 transition-all">
@@ -4882,6 +5494,55 @@ routes['sections'] = () => {
                         </div>
                     </div>
                 </div>
+                
+                <!-- Added retired Featured Items section -->
+                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm animate-[fadeIn_0.5s_ease-out]">
+                    <h3 class="text-sm font-black text-gray-400 uppercase tracking-widest mb-6 text-center">Original Featured Items Section</h3>
+                    
+                    <div class="max-w-[1080px] mx-auto text-center pt-4">
+                        <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Featured Items</h2>
+                        <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Our handcrafted favorites</p>
+
+                        <div class="grid grid-cols-4 gap-6 justify-items-center w-full">
+                            <!-- Card 1 -->
+                            <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba1}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">New Item</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M7 Crème Brûlée Boba Milk Tea</div>
+                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+                                </div>
+                            </div>
+                            <!-- Card 2 -->
+                            <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba2}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Popular</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P4 Brown Sugar Boba Latte</div>
+                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+                                </div>
+                            </div>
+                            <!-- Card 3 -->
+                            <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba3}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Specialty</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">M8 Taro Boba Purée Latte</div>
+                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.75</div>
+                                </div>
+                            </div>
+                            <!-- Card 4 -->
+                            <div class="w-full bg-white rounded-3xl shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.03] hover:shadow-lg active:scale-95" onclick="navigateTo('customize')">
+                                <div class="p-3 pb-0 rounded-t-3xl overflow-hidden w-full"><img src="${assets.boba4}" class="w-full aspect-video object-cover object-top rounded-2xl shadow-sm"></div>
+                                <div class="p-5 text-center bg-white flex flex-col justify-between flex-1">
+                                    <div class="text-violet-600 text-[11px] font-black tracking-widest uppercase mb-1">Fruit Tea</div>
+                                    <div class="text-base font-black text-[#1A1A1A] uppercase tracking-tight scale-y-110 px-1 leading-tight mb-2">P1 Super Fruit Tea</div>
+                                    <div class="text-sm font-bold text-gray-500 mt-auto">$5.95</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -4944,7 +5605,7 @@ function renderPage() {
         ? routes[currentPage]()
         : `<div class="p-10 text-center uppercase font-black">404 - Page Not Found</div>`;
 
-    const isRestaurantPage = !['landing', 'home', 'sign-in', 'dashboard', 'privacy'].includes(currentPage);
+    const isRestaurantPage = !['landing', 'home', 'sign-in', 'dashboard', 'privacy', 'forgot-password'].includes(currentPage);
     const showDesktopNav = isRestaurantPage || currentPage === 'privacy';
     if (currentViewport === 'desktop' && showDesktopNav) {
         // Strip the mobile header before injecting the desktop nav
@@ -5004,6 +5665,7 @@ function renderPage() {
                         <div class="dropdown-column-title">Core Pages</div>
                         <a href="index.html" class="dropdown-item lowercase">index.html</a>
                         <a href="menu.html" class="dropdown-item lowercase">menu.html</a>
+                        <a href="menu-alt.html" class="dropdown-item lowercase">menu-alt.html</a>
                         <a href="locations.html" class="dropdown-item lowercase">locations.html</a>
                         <a href="location-favorites.html" class="dropdown-item lowercase">location-favorites.html</a>
                         <a href="cart.html" class="dropdown-item lowercase">cart.html</a>
@@ -5100,7 +5762,7 @@ function renderPage() {
     }
 
     // Inject hamburger drawer for all restaurant pages
-    const nonRestaurantPages = ['landing', 'home', 'sign-in', 'dashboard', 'privacy'];
+    const nonRestaurantPages = ['landing', 'home', 'sign-in', 'dashboard', 'privacy', 'forgot-password'];
     if (!nonRestaurantPages.includes(currentPage) && mockupState.hamburgerOpen) {
         contentHtml += hamburgerDrawerHTML();
     }
@@ -5123,12 +5785,12 @@ function renderPage() {
     persistAllState();
     document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
 
-    if (currentPage === 'locations') {
+    if (currentPage === 'locations' || currentPage === 'locations-alt') {
         initLocationsMap();
     }
 
     // Re-focus menu search input after render (keeps cursor active while typing)
-    if (currentPage === 'menu' && mockupState.menuSearchOpen) {
+    if ((currentPage === 'menu' || currentPage === 'menu-alt') && mockupState.menuSearchOpen) {
         const searchInput = document.getElementById('menu-search-input');
         if (searchInput) {
             searchInput.focus();
@@ -5143,7 +5805,7 @@ function renderPage() {
         if (carousel) {
             carousel.addEventListener('scroll', () => {
                 const index = Math.round(carousel.scrollLeft / (carousel.offsetWidth + 16));
-                for (let i = 0; i < 4; i++) {
+                for (let i = 0; i < 2; i++) {
                     const dot = document.getElementById(`carousel-dot-${i}`);
                     if (dot) {
                         if (i === index) {
@@ -5184,6 +5846,51 @@ function adjustBagQuantity(delta) {
     }
 }
 
+function getDefaultCustomizeGroups() {
+    return [
+        {
+            menuSubItemGroupId: 9001,
+            groupName: "Sweetness Level",
+            displayName: "Sweetness Level",
+            minSelect: 1,
+            maxSelect: 1,
+            groupPrices: [
+                { menuSubItemId: 8001, price: 0, isDefault: true, menuSubItem: { name: "Regular Sweet (100%)", itemTypeId: 2 } },
+                { menuSubItemId: 8002, price: 0, isDefault: false, menuSubItem: { name: "Less Sweet (70%)", itemTypeId: 2 } },
+                { menuSubItemId: 8003, price: 0, isDefault: false, menuSubItem: { name: "Half Sweet (50%)", itemTypeId: 2 } },
+                { menuSubItemId: 8004, price: 0, isDefault: false, menuSubItem: { name: "Light Sweet (30%)", itemTypeId: 2 } },
+                { menuSubItemId: 8005, price: 0, isDefault: false, menuSubItem: { name: "Unsweetened (0%)", itemTypeId: 2 } }
+            ]
+        },
+        {
+            menuSubItemGroupId: 9002,
+            groupName: "Ice Level",
+            displayName: "Ice Level",
+            minSelect: 1,
+            maxSelect: 1,
+            groupPrices: [
+                { menuSubItemId: 8101, price: 0, isDefault: true, menuSubItem: { name: "Regular Ice", itemTypeId: 2 } },
+                { menuSubItemId: 8102, price: 0, isDefault: false, menuSubItem: { name: "Less Ice", itemTypeId: 2 } },
+                { menuSubItemId: 8103, price: 0, isDefault: false, menuSubItem: { name: "No Ice", itemTypeId: 2 } }
+            ]
+        },
+        {
+            menuSubItemGroupId: 9003,
+            groupName: "Add Toppings",
+            displayName: "Add Toppings",
+            minSelect: 0,
+            maxSelect: 5,
+            groupPrices: [
+                { menuSubItemId: 8201, price: 0.75, isDefault: false, menuSubItem: { name: "Boba", itemTypeId: 2 } },
+                { menuSubItemId: 8202, price: 0.75, isDefault: false, menuSubItem: { name: "Pudding", itemTypeId: 2 } },
+                { menuSubItemId: 8203, price: 0.75, isDefault: false, menuSubItem: { name: "Grass Jelly", itemTypeId: 2 } },
+                { menuSubItemId: 8204, price: 0.75, isDefault: false, menuSubItem: { name: "Red Bean", itemTypeId: 2 } },
+                { menuSubItemId: 8205, price: 0.75, isDefault: false, menuSubItem: { name: "Aloe Vera", itemTypeId: 2 } }
+            ]
+        }
+    ];
+}
+
 function selectItemAndNavigate(index) {
     const item = getActiveMenuItems()[index];
     mockupState.selectedItem = item;
@@ -5197,7 +5904,32 @@ function selectItemAndNavigate(index) {
     // Reset selected sub-items for new customization
     mockupState._customizeSubItems = {};
     mockupState.selectedItemDetail = null;
+    mockupState.lastMenuPage = currentPage;
     persistAllState();
+
+    const applyDefaultSelections = (detail) => {
+        if (detail.menuSubItemGroups) {
+            const selections = {};
+            for (const g of detail.menuSubItemGroups) {
+                const groupId = g.menuSubItemGroupId;
+                const maxSel = g.maxSelect || 1;
+                selections[groupId] = { groupName: g.displayName || g.groupName || '', maxSelect: maxSel, minSelect: g.minSelect || 0, items: {} };
+                for (const p of (g.groupPrices || [])) {
+                    if (p.isDefault) {
+                        selections[groupId].items[p.menuSubItemId] = {
+                            menuSubItemId: p.menuSubItemId,
+                            itemTypeId: (p.menuSubItem || {}).itemTypeId || 2,
+                            itemGroupPriceId: parseInt(groupId),
+                            quantity: 1,
+                            name: (p.menuSubItem || {}).name || '',
+                            price: p.price || 0
+                        };
+                    }
+                }
+            }
+            mockupState._customizeSubItems = selections;
+        }
+    };
 
     // Fetch full item detail (with sub-item groups) from API
     if (item.id && mockupState.selectedLocationId && window.ApiService) {
@@ -5205,17 +5937,24 @@ function selectItemAndNavigate(index) {
         renderPage();
         window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
             .then(detail => {
-                // Remove inactive modifiers so they aren't displayed or ordered
-                if (detail && detail.menuSubItemGroups) {
+                // If the detail is empty or has no customization groups, use default mock groups
+                if (!detail || !detail.menuSubItemGroups || detail.menuSubItemGroups.length === 0) {
+                    detail = {
+                        menuItemId: item.id,
+                        name: item.name,
+                        price: item.price,
+                        menuSubItemGroups: getDefaultCustomizeGroups()
+                    };
+                } else {
+                    // Remove inactive modifiers so they aren't displayed or ordered
                     detail.menuSubItemGroups.forEach(g => {
                         if (g.groupPrices) {
-                            // Backend groupPrice.isActive is unreliable (often false for everything).
-                            // Only filter based on the actual sub-item's isActive flag.
                             g.groupPrices = g.groupPrices.filter(p => !p.menuSubItem || p.menuSubItem.isActive !== false);
                         }
                     });
                 }
                 mockupState.selectedItemDetail = detail;
+                
                 // Extract restaurantId from sub-item data
                 if (!mockupState.selectedRestaurantId && detail.menuSubItemGroups) {
                     for (const g of detail.menuSubItemGroups) {
@@ -5229,38 +5968,35 @@ function selectItemAndNavigate(index) {
                         if (mockupState.selectedRestaurantId) break;
                     }
                 }
-                // Pre-select default sub-items
-                if (detail.menuSubItemGroups) {
-                    const selections = {};
-                    for (const g of detail.menuSubItemGroups) {
-                        const groupId = g.menuSubItemGroupId;
-                        const maxSel = g.maxSelect || 1;
-                        selections[groupId] = { groupName: g.displayName || g.groupName || '', maxSelect: maxSel, minSelect: g.minSelect || 0, items: {} };
-                        for (const p of (g.groupPrices || [])) {
-                            if (p.isDefault) {
-                                selections[groupId].items[p.menuSubItemId] = {
-                                    menuSubItemId: p.menuSubItemId,
-                                    itemTypeId: (p.menuSubItem || {}).itemTypeId || 2,
-                                    itemGroupPriceId: parseInt(groupId),
-                                    quantity: 1,
-                                    name: (p.menuSubItem || {}).name || '',
-                                    price: p.price || 0
-                                };
-                            }
-                        }
-                    }
-                    mockupState._customizeSubItems = selections;
-                }
+                
+                applyDefaultSelections(detail);
                 persistAllState();
             })
             .catch(err => {
-                console.error('Failed to fetch item detail:', err);
+                console.error('Failed to fetch item detail, using fallback:', err);
+                const fallbackDetail = {
+                    menuItemId: item.id,
+                    name: item.name,
+                    price: item.price,
+                    menuSubItemGroups: getDefaultCustomizeGroups()
+                };
+                mockupState.selectedItemDetail = fallbackDetail;
+                applyDefaultSelections(fallbackDetail);
+                persistAllState();
             })
             .finally(() => {
                 mockupState.isLoading = false;
                 navigateTo('customize');
             });
     } else {
+        const fallbackDetail = {
+            menuItemId: item.id || 0,
+            name: item.name,
+            price: item.price,
+            menuSubItemGroups: getDefaultCustomizeGroups()
+        };
+        mockupState.selectedItemDetail = fallbackDetail;
+        applyDefaultSelections(fallbackDetail);
         mockupState.isLoading = false;
         navigateTo('customize');
     }
@@ -5658,6 +6394,56 @@ async function handleLogin() {
     }
 }
 
+async function handleForgotPassword() {
+    const emailEl = document.getElementById('forgot-email-input');
+    const errorEl = document.getElementById('forgot-error');
+    const successEl = document.getElementById('forgot-success');
+    const submitBtn = document.getElementById('forgot-submit-btn');
+
+    if (!emailEl || !errorEl || !successEl || !submitBtn) return;
+
+    const email = emailEl.value.trim();
+
+    // Reset messages
+    errorEl.style.opacity = '0';
+    errorEl.textContent = '';
+    successEl.classList.add('hidden');
+    successEl.textContent = '';
+
+    if (!email) {
+        errorEl.textContent = 'Please enter your email address.';
+        errorEl.style.opacity = '1';
+        return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        errorEl.textContent = 'Please enter a valid email address.';
+        errorEl.style.opacity = '1';
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+
+    try {
+        if (!window.ApiService) {
+            throw new Error('API Service not loaded');
+        }
+        const result = await window.ApiService.forgotPassword(email);
+        successEl.textContent = result.message || 'Reset link sent successfully!';
+        successEl.classList.remove('hidden');
+        emailEl.value = '';
+    } catch (err) {
+        console.error('Forgot password error:', err);
+        errorEl.textContent = (err.data && err.data.message) ? err.data.message : (err.message || 'Failed to send reset link.');
+        errorEl.style.opacity = '1';
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Reset Link';
+    }
+}
+
 async function handleUpdateProfile() {
     const firstName = document.getElementById('prof-first-name')?.value;
     const lastName = document.getElementById('prof-last-name')?.value;
@@ -5860,6 +6646,7 @@ function initLocationsMap() {
             
             const popupContent = `
                 <div class="p-3 font-sans min-w-[200px]">
+                    ${s.name === 'i-Tea - Tempe' ? '<div class="text-[9px] font-black text-gray-900 uppercase tracking-widest mb-1.5">Previous Order</div>' : ''}
                     <h4 class="font-black text-sm uppercase tracking-tight text-violet-700 mb-1">${s.name}</h4>
                     <p class="text-xs text-gray-500 font-semibold mb-2">${s.address}</p>
                     <p class="text-[10px] font-black text-gray-400 uppercase mb-3"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
@@ -5877,7 +6664,18 @@ function initLocationsMap() {
 
         if (currentLoc && mapMarkers[currentLoc.name.toLowerCase()]) {
             setTimeout(() => {
-                mapMarkers[currentLoc.name.toLowerCase()].openPopup();
+                if (leafletMap) {
+                    leafletMap.invalidateSize();
+                }
+                if (mapMarkers[currentLoc.name.toLowerCase()]) {
+                    mapMarkers[currentLoc.name.toLowerCase()].openPopup();
+                }
+            }, 300);
+        } else {
+            setTimeout(() => {
+                if (leafletMap) {
+                    leafletMap.invalidateSize();
+                }
             }, 300);
         }
 
@@ -5938,8 +6736,8 @@ function navigateTo(pageId) {
     let [basePageId, hash] = pageId.split('#');
     
     // Redirect to location selector if accessing menu or customization without a selected store
-    if ((basePageId === 'menu' || basePageId === 'customize') && !mockupState.selectedLocationId) {
-        basePageId = 'locations';
+    if ((basePageId === 'menu' || basePageId === 'menu-alt' || basePageId === 'customize' || basePageId === 'customize-alt') && !mockupState.selectedLocationId) {
+        basePageId = (basePageId === 'menu-alt' || basePageId === 'customize-alt') ? 'locations-alt' : 'locations';
         hash = '';
     }
 
@@ -5961,8 +6759,9 @@ function navigateTo(pageId) {
 
 window.addEventListener('DOMContentLoaded', () => {
     // Redirect to location selector if landing directly on menu or customization without a selected store
-    if ((currentPage === 'menu' || currentPage === 'customize') && !mockupState.selectedLocationId) {
-        window.location.href = 'locations.html';
+    if ((currentPage === 'menu' || currentPage === 'menu-alt' || currentPage === 'customize' || currentPage === 'customize-alt') && !mockupState.selectedLocationId) {
+        const targetLocationsPage = (currentPage === 'menu-alt' || currentPage === 'customize-alt') ? 'locations-alt.html' : 'locations.html';
+        window.location.href = targetLocationsPage;
         return;
     }
 
@@ -5993,7 +6792,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     fetchLocations().then(() => {
-        if (currentPage === 'locations') {
+        if (currentPage === 'locations' || currentPage === 'locations-alt') {
             renderPage();
         }
     });
