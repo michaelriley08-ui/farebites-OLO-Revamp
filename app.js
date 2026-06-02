@@ -553,7 +553,7 @@ const MENU_ITEMS = [
 
 function toggleMenu(e, menuId) {
     e.stopPropagation();
-    const allMenus = ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown', 'mobile-user-profile-dropdown'];
+    const allMenus = ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown'];
     allMenus.forEach(id => {
         const menu = document.getElementById(id);
         if (!menu) return;
@@ -574,7 +574,7 @@ function toggleMenu(e, menuId) {
 }
 
 document.addEventListener('click', () => {
-    ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown', 'mobile-user-profile-dropdown'].forEach(id => {
+    ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown'].forEach(id => {
         const menu = document.getElementById(id);
         if (menu) {
             menu.classList.remove('show');
@@ -1866,18 +1866,7 @@ const routes = {
 
                 <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
                     <div class="flex items-center gap-3">
-                        <div class="relative">
-                            <button onclick="${mockupState.isLoggedIn ? "toggleMenu(event, 'mobile-user-profile-dropdown')" : "navigateTo('sign-in')"}" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
-                            ${mockupState.isLoggedIn ? `
-                            <div id="mobile-user-profile-dropdown" class="dropdown-menu" style="left: 0; right: auto; top: 120%;">
-                                <div class="dropdown-column-title">My Profile</div>
-                                <div class="dropdown-item" onclick="navigateTo('account')"><i class="fa-solid fa-circle-user"></i> Account Details</div>
-                                <div class="dropdown-item" onclick="navigateTo('rewards')"><i class="fa-solid fa-award"></i> Rewards</div>
-                                <div class="h-px bg-violet-100/50 my-2"></div>
-                                <div class="dropdown-item text-red-500 hover:text-red-600" onclick="signOutUser()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</div>
-                            </div>
-                            ` : ''}
-                        </div>
+                        <button onclick="navigateTo(mockupState.isLoggedIn ? 'account' : 'sign-in')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
                         <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
                     <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('locations')">
@@ -5948,7 +5937,7 @@ function renderPage() {
                     </div>
                     ${mockupState.isLoggedIn ? `
                         <div class="relative">
-                            <button class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1f0b35]" onclick="navigateTo('account')">
+                            <button class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1f0b35]" onclick="toggleMenu(event, 'user-profile-dropdown')">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                                 <span class="nav-link-animated">${mockupState.userName}</span>
                                 <i class="fa-solid fa-chevron-down text-[10px] ml-1 text-gray-400"></i>
