@@ -2280,16 +2280,64 @@ const routes = {
                                 </div>
                             `;
                         } else if (mockupState.menuTab === 'history') {
-                            const historyItems = [
-                                { index: 0, times: 'Ordered 15 times' },
-                                { index: 6, times: 'Ordered 12 times' },
-                                { index: 1, times: 'Ordered 8 times' },
-                                { index: 11, times: 'Ordered 5 times' },
-                                { index: 15, times: 'Ordered 3 times' }
-                            ];
+                            let historyItems = [];
+                            if (mockupState.apiOrders && mockupState.apiOrders.length > 0) {
+                                // Group by item name
+                                const itemCounts = {};
+                                const lastOrdered = {};
+                                mockupState.apiOrders.forEach(order => {
+                                    const orderDate = new Date(order.orderDate);
+                                    order.items.forEach(orderItem => {
+                                        const name = orderItem.name.trim();
+                                        if (!itemCounts[name]) itemCounts[name] = 0;
+                                        itemCounts[name] += orderItem.quantity;
+                                        if (!lastOrdered[name] || orderDate > lastOrdered[name]) {
+                                            lastOrdered[name] = orderDate;
+                                        }
+                                    });
+                                });
+                                
+                                // Match with MENU_ITEMS
+                                historyItems = Object.keys(itemCounts).map(name => {
+                                    const menuItemIndex = MENU_ITEMS.findIndex(mi => mi.name.toLowerCase() === name.toLowerCase());
+                                    return {
+                                        name,
+                                        index: menuItemIndex,
+                                        count: itemCounts[name],
+                                        lastDate: lastOrdered[name]
+                                    };
+                                }).filter(item => item.index !== -1)
+                                  .sort((a, b) => b.count - a.count)
+                                  .slice(0, 10); // top 10
+                            }
+                            
+                            if (historyItems.length === 0) {
+                                return `
+                                    <div class="space-y-6">
+                                        <div class="flex justify-between items-end mb-4 px-1">
+                                            <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
+                                        </div>
+                                        <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center flex flex-col items-center justify-center">
+                                            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                                <i class="fa-solid fa-receipt text-2xl text-gray-300"></i>
+                                            </div>
+                                            <p class="text-gray-500 font-black uppercase tracking-wider text-sm">No past orders found.</p>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+
+                            const formatDate = (date) => {
+                                const diff = Date.now() - date.getTime();
+                                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                                if (days === 0) return 'Today';
+                                if (days === 1) return 'Yesterday';
+                                if (days < 7) return `${days} days ago`;
+                                return date.toLocaleDateString();
+                            };
 
                             if (isDesktop) {
-                                const gridItemsHTML = historyItems.map((hist, i) => {
+                                const gridItemsHTML = historyItems.map(hist => {
                                     const item = MENU_ITEMS[hist.index];
                                     return `
                                         <div class="bg-white rounded-2xl p-2.5 shadow-sm border border-gray-100 flex items-center justify-between group">
@@ -2300,8 +2348,8 @@ const routes = {
                                                 <div class="min-w-0">
                                                     <div class="font-black text-sm text-gray-900 leading-tight uppercase truncate cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})" title="${item.name}">${item.name}</div>
                                                     <div class="flex flex-col gap-1.5 mt-1.5">
-                                                        <span class="px-2.5 py-0.5 bg-violet-600 text-white rounded-full text-[9px] font-black uppercase tracking-wider inline-block w-fit">${hist.times}</span>
-                                                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Last ordered ${i === 0 ? 'Yesterday' : i === 1 ? '3 days ago' : 'last week'}</span>
+                                                        <span class="px-2.5 py-0.5 bg-violet-600 text-white rounded-full text-[9px] font-black uppercase tracking-wider inline-block w-fit">Ordered ${hist.count} times</span>
+                                                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Last ordered ${formatDate(hist.lastDate)}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2321,7 +2369,7 @@ const routes = {
                                     </div>
                                 `;
                             } else {
-                                const listItemsHTML = historyItems.map((hist, i) => {
+                                const listItemsHTML = historyItems.map(hist => {
                                     const item = MENU_ITEMS[hist.index];
                                     return `
                                         <div class="flex items-center justify-between group border-b border-gray-50 pb-4 last:border-b-0 last:pb-0">
@@ -2332,9 +2380,9 @@ const routes = {
                                                 <div>
                                                     <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2 cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})">${item.name}</div>
                                                     <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide flex items-center gap-2">
-                                                        <span>${hist.times}</span>
+                                                        <span>Ordered ${hist.count} times</span>
                                                         <span>•</span>
-                                                        <span>Last ordered ${i === 0 ? 'Yesterday' : i === 1 ? '3 days ago' : 'last week'}</span>
+                                                        <span>Last ${formatDate(hist.lastDate)}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -5891,6 +5939,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
     if (window.ApiService && window.ApiService.getToken()) {
         mockupState.isLoggedIn = true;
+        
+        // Fetch profile
         window.ApiService.getProfile().then(profile => {
             console.log('Successfully fetched profile on page load:', profile);
             mockupState.userName = profile.firstName || profile.email?.split('@')[0] || 'User';
@@ -5903,6 +5953,14 @@ window.addEventListener('DOMContentLoaded', () => {
                 signOutUser();
             }
         });
+        
+        // Fetch orders
+        window.ApiService.getOrders(1, 20).then(orders => {
+            console.log('Successfully fetched orders on page load:', orders);
+            mockupState.apiOrders = orders;
+            persistAllState();
+            renderPage();
+        }).catch(err => console.error('Failed to auto-fetch orders:', err));
     }
 
     fetchLocations().then(() => {
