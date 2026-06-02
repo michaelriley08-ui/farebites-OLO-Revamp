@@ -162,8 +162,42 @@ function loadMockupState() {
     }
 }
 
+function syncCartToStorage() {
+    const email = mockupState.userEmail || mockupState.userProfile?.email;
+    if (mockupState.isLoggedIn && email) {
+        const cartKey = `farebites_cart_${email.toLowerCase()}`;
+        const cartData = {
+            cart: mockupState.cart || [],
+            cartItemCount: mockupState.cartItemCount || 0,
+            bagQuantity: mockupState.bagQuantity || 0,
+            noBagsSelected: mockupState.noBagsSelected || false
+        };
+        localStorage.setItem(cartKey, JSON.stringify(cartData));
+    }
+}
+
+function loadCartFromStorage() {
+    const email = mockupState.userEmail || mockupState.userProfile?.email;
+    if (mockupState.isLoggedIn && email) {
+        const cartKey = `farebites_cart_${email.toLowerCase()}`;
+        const saved = localStorage.getItem(cartKey);
+        if (saved) {
+            try {
+                const cartData = JSON.parse(saved);
+                mockupState.cart = cartData.cart || [];
+                mockupState.cartItemCount = cartData.cartItemCount || 0;
+                mockupState.bagQuantity = cartData.bagQuantity || 0;
+                mockupState.noBagsSelected = cartData.noBagsSelected || false;
+            } catch(e) {
+                console.error("Failed to parse saved cart", e);
+            }
+        }
+    }
+}
+
 function persistAllState() {
     sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
+    syncCartToStorage();
 }
 
 function resolveImageUrl(url, defaultUrl) {
@@ -1551,6 +1585,8 @@ const routes = {
             </div>`,
     'sign-in': () => {
         const isDesktop = currentViewport === 'desktop';
+        const savedEmail = localStorage.getItem('farebites_remembered_email') || '';
+        const rememberMeChecked = !!localStorage.getItem('farebites_remembered_email');
         return `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
             <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
@@ -1563,7 +1599,7 @@ const routes = {
                     <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? 'mb-2' : 'mb-4'} uppercase tracking-tight text-gray-900 leading-tight">Sign In</h2>
                     <div class="space-y-3">
                         <div class="relative group">
-                            <input type="email" id="auth-email-input" placeholder="Email Address" class="w-full bg-white px-8 ${isDesktop ? 'py-3' : 'py-4'} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
+                            <input type="email" id="auth-email-input" placeholder="Email Address" value="${savedEmail}" class="w-full bg-white px-8 ${isDesktop ? 'py-3' : 'py-4'} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
                             <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
                         </div>
                         <div class="relative group">
@@ -1573,7 +1609,11 @@ const routes = {
                                 <i class="fa-solid fa-eye text-gray-400"></i>
                             </button>
                         </div>
-                        <div class="flex justify-end px-4">
+                        <div class="flex justify-between items-center px-4">
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <input type="checkbox" id="auth-remember-me" ${rememberMeChecked ? 'checked' : ''} class="w-4 h-4 text-violet-600 border-2 border-violet-100 rounded focus:ring-violet-500 focus:ring-2 transition-colors cursor-pointer accent-violet-600">
+                                <span class="text-xs font-bold text-gray-500 group-hover:text-gray-700 transition-colors">Remember me</span>
+                            </label>
                             <button type="button" onclick="navigateTo('forgot-password')" class="text-xs font-bold text-violet-600 hover:underline hover:text-violet-700 transition-colors">Forgot Password?</button>
                         </div>
                         <div id="auth-error" class="text-xs font-bold text-red-500 px-6 h-4 mb-2 transition-all opacity-0"></div>
@@ -3627,17 +3667,16 @@ const routes = {
                                 }
 
                                 return finalCrossSells.map((item) => {
-                                    const actualIndex = MENU_ITEMS.indexOf(item);
                                     return `
-                                        <div class="snap-center shrink-0 ${isDesktop ? 'w-auto flex-1' : 'w-[140px]'} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md">
-                                            <div class="${isDesktop ? 'h-36' : 'h-24'} relative cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">
-                                                <img src="${item.image}" class="w-full h-full object-cover object-top">
+                                        <div class="snap-center shrink-0 ${isDesktop ? 'w-auto flex-1' : 'w-[140px]'} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md group cursor-pointer" onclick="mockupState.menuTab = 'menu'; selectItemAndNavigate(MENU_ITEMS.findIndex(m => m.id === ${item.id}))">
+                                            <div class="${isDesktop ? 'h-36' : 'h-24'} relative overflow-hidden">
+                                                <img src="${item.image}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                             </div>
                                             <div class="p-3 md:p-4 text-left flex flex-col flex-1">
-                                                <h4 class="text-xs md:text-sm font-black text-gray-900 uppercase tracking-tight h-8 md:h-10 overflow-hidden line-clamp-2 cursor-pointer" onclick="selectItemAndNavigate(${actualIndex})">${item.name}</h4>
+                                                <h4 class="text-xs md:text-sm font-black text-gray-900 uppercase tracking-tight h-8 md:h-10 overflow-hidden line-clamp-2">${item.name}</h4>
                                                 <div class="flex justify-between items-center mt-auto pt-2">
                                                     <span class="text-sm md:text-base font-black text-violet-600">$${item.price.toFixed(2)}</span>
-                                                    <button onclick="selectItemAndNavigate(${actualIndex})" class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center hover:bg-violet-200 active:scale-95 transition-transform"><i class="fa-solid fa-plus text-[10px] md:text-xs"></i></button>
+                                                    <button class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center group-hover:bg-violet-600 group-hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-plus text-[10px] md:text-xs"></i></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -3710,7 +3749,7 @@ const routes = {
 
                 <!-- Bag Alert Modal -->
                 ${mockupState.modalOpen === 'bag-alert' ? `
-                <div class="modal-overlay z-[200]">
+                <div class="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center p-4">
                     <div class="bg-white w-[90%] max-w-[400px] rounded-3xl text-center p-8 relative shadow-2xl">
                         <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
@@ -6482,9 +6521,16 @@ async function handleLogin() {
         if (!window.ApiService) {
             throw new Error('API Service not loaded');
         }
-        const data = await window.ApiService.login(email, password);
+        const rememberMe = document.getElementById('auth-remember-me')?.checked || false;
+        if (rememberMe) {
+            localStorage.setItem('farebites_remembered_email', email);
+        } else {
+            localStorage.removeItem('farebites_remembered_email');
+        }
+        const data = await window.ApiService.login(email, password, rememberMe);
         
         mockupState.isLoggedIn = true;
+        mockupState.userEmail = email;
         // Try to get user name from profile
         try {
             const profile = await window.ApiService.getProfile();
@@ -6497,7 +6543,9 @@ async function handleLogin() {
             mockupState.userProfile = {};
         }
 
+        loadCartFromStorage();
         persistAllState();
+        if (typeof resetInactivityTimer === 'function') resetInactivityTimer();
         navigateTo('restaurant-home');
     } catch (err) {
         if (errorEl) {
@@ -6642,12 +6690,29 @@ async function handleChangePassword() {
 }
 
 async function signOutUser() {
+    // Save current cart before logging out
+    if (mockupState.isLoggedIn) {
+        syncCartToStorage();
+    }
+    
     if (window.ApiService) {
         await window.ApiService.logout();
     }
+    
+    // Clear user state and screen cart
     mockupState.isLoggedIn = false;
     mockupState.userName = 'Guest';
-    persistAllState();
+    mockupState.userEmail = '';
+    mockupState.userProfile = {};
+    
+    mockupState.cart = [];
+    mockupState.cartItemCount = 0;
+    mockupState.bagQuantity = 0;
+    mockupState.noBagsSelected = false;
+
+    // Persist to session storage manually to avoid syncCartToStorage overwriting with empty
+    sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
+    
     navigateTo('sign-in');
 }
 
@@ -6886,7 +6951,9 @@ window.addEventListener('DOMContentLoaded', () => {
             console.log('Successfully fetched profile on page load:', profile);
             mockupState.userName = profile.firstName || profile.email?.split('@')[0] || 'User';
             mockupState.userProfile = profile;
+            loadCartFromStorage();
             persistAllState();
+            if (typeof resetInactivityTimer === 'function') resetInactivityTimer();
             renderPage();
         }).catch(err => {
             console.error('Failed to auto-fetch profile on start:', err);
@@ -6915,4 +6982,103 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     renderPage();
+});
+
+// --- Session Timeout Manager ---
+const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+const WARNING_TIME_MS = 13 * 60 * 1000;    // 13 minutes (2 minute warning)
+
+let inactivityTimer = null;
+let warningTimer = null;
+
+function resetInactivityTimer() {
+    // If warning modal is open, don't reset automatically on user action 
+    // unless they explicitly click "Stay Logged In"
+    if (mockupState.modalOpen === 'timeout-warning') return;
+
+    clearTimeout(inactivityTimer);
+    clearTimeout(warningTimer);
+
+    // Only track if logged in
+    if (!mockupState.isLoggedIn) return;
+
+    warningTimer = setTimeout(showTimeoutWarning, WARNING_TIME_MS);
+    inactivityTimer = setTimeout(executeAutoLogout, SESSION_TIMEOUT_MS);
+}
+
+function showTimeoutWarning() {
+    if (!mockupState.isLoggedIn) return;
+    mockupState.modalOpen = 'timeout-warning';
+    persistAllState();
+    renderTimeoutWarningModal();
+}
+
+function executeAutoLogout() {
+    mockupState.modalOpen = null;
+    persistAllState();
+    removeTimeoutWarningModal();
+    if (mockupState.isLoggedIn) {
+        signOutUser(); // This handles logout and redirect
+        
+        // Optional: show a quick alert or toast that they were logged out
+        setTimeout(() => {
+            alert("You have been automatically logged out due to inactivity.");
+        }, 500);
+    }
+}
+
+function handleStayLoggedIn() {
+    mockupState.modalOpen = null;
+    persistAllState();
+    removeTimeoutWarningModal();
+    resetInactivityTimer();
+}
+
+function renderTimeoutWarningModal() {
+    if (!document.getElementById('timeout-warning-modal')) {
+        const modalHtml = `
+            <div id="timeout-warning-modal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-[fadeIn_0.3s_ease-out]">
+                <div class="bg-white w-[92%] max-w-[380px] rounded-[32px] p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out]">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Are you still there?</h2>
+                        <button onclick="executeAutoLogout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="mb-6">
+                        <p class="text-gray-600 text-sm font-medium">
+                            For your security, you will be automatically logged out soon due to inactivity. Do you need more time?
+                        </p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="executeAutoLogout()" class="flex-1 py-3 px-4 rounded-full border-2 border-gray-200 text-gray-700 font-black uppercase tracking-widest text-xs hover:bg-gray-50 transition-colors">
+                            Log Out
+                        </button>
+                        <button onclick="handleStayLoggedIn()" class="flex-1 py-3 px-4 rounded-full bg-violet-600 text-white font-black uppercase tracking-widest text-xs hover:bg-violet-700 transition-colors shadow-lg shadow-violet-200">
+                            Stay Logged In
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+}
+
+function removeTimeoutWarningModal() {
+    const modal = document.getElementById('timeout-warning-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Global Event Listeners for Activity
+const activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+activityEvents.forEach(event => {
+    window.addEventListener(event, resetInactivityTimer, { passive: true });
+});
+
+// Initialize on load
+window.addEventListener('DOMContentLoaded', () => {
+    resetInactivityTimer();
 });

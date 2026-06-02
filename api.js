@@ -3,14 +3,21 @@ const APP_API_BASE_URL = isLocal ? 'https://olowebapidev2.azurewebsites.net' : '
 
 const ApiService = {
     getToken() {
-        return localStorage.getItem('farebites_access_token');
+        return sessionStorage.getItem('farebites_access_token') || localStorage.getItem('farebites_access_token');
     },
 
-    setToken(token) {
+    setToken(token, rememberMe = false) {
         if (token) {
-            localStorage.setItem('farebites_access_token', token);
+            if (rememberMe) {
+                localStorage.setItem('farebites_access_token', token);
+                sessionStorage.removeItem('farebites_access_token');
+            } else {
+                sessionStorage.setItem('farebites_access_token', token);
+                localStorage.removeItem('farebites_access_token');
+            }
         } else {
             localStorage.removeItem('farebites_access_token');
+            sessionStorage.removeItem('farebites_access_token');
         }
     },
 
@@ -71,13 +78,13 @@ const ApiService = {
 
     // --- Account Endpoints ---
 
-    async login(email, password) {
+    async login(email, password, rememberMe = false) {
         // Swagger typically uses email/password for CustomerAuthenticationRequest
         const response = await this.request('/api/Account/login', 'POST', { email, password });
         console.log('Raw Login API Response:', response);
         const token = response.jwtToken || response.token || response.accessToken || response.jwt;
         if (token) {
-            this.setToken(token);
+            this.setToken(token, rememberMe);
         } else {
             console.warn('No token found in login response keys! Available keys:', Object.keys(response || {}));
         }
