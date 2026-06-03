@@ -90,10 +90,33 @@ const assets = {
 const isLocalApp = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const API_BASE_URL = isLocalApp ? 'https://olowebapidev2.azurewebsites.net' : '';
 
+const LOCATIONS = [
+    { name: "i-Tea - Tempe", address: "825 W UNIVERSITY, TEMPE, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM", locationId: 7, lat: 33.4223, lng: -111.9514 },
+    { name: "i-Tea - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "1.2 mi", fav: false, hours: "12:00 PM to 9:30 PM", locationId: 9, lat: 37.7624, lng: -122.2435 },
+    { name: "i-Tea - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM", locationId: 7, lat: 37.6974, lng: -122.0722 },
+    { name: "i-Tea - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM", locationId: 10, lat: 38.5414, lng: -121.7482 },
+    { name: "i-Tea - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM", locationId: 7, lat: 37.5186, lng: -121.9702 },
+    { name: "i-Tea - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM", locationId: 9, lat: 36.8087, lng: -119.7801 },
+    { name: "i-Tea - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 10, lat: 37.4332, lng: -121.8795 },
+    { name: "i-Tea - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM", locationId: 7, lat: 37.8351, lng: -122.1297 },
+    { name: "i-Tea - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 9, lat: 37.5255, lng: -122.0463 },
+    { name: "i-Tea - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM", locationId: 9, lat: 37.8009, lng: -122.2709 },
+    { name: "i-Tea - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM", locationId: 10, lat: 38.0135, lng: -121.8767 },
+    { name: "i-Tea - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM", locationId: 7, lat: 37.6627, lng: -121.8744 },
+    { name: "i-Tea - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM", locationId: 9, lat: 38.4870, lng: -121.4320 },
+    { name: "i-Tea - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM", locationId: 10, lat: 37.7905, lng: -122.4042 },
+    { name: "i-Tea - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM", locationId: 7, lat: 37.3195, lng: -121.8157 },
+    { name: "i-Tea - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours", locationId: 10, lat: 37.7247, lng: -122.1558 }
+];
+
 const DEFAULT_STATE = {
     fulfillmentMode: 'In-store',
     orderTime: 'ASAP',
-    locationFilter: 'Nearby',
+    locationFilter: 'Near Me',
+    locationLabels: {
+        'i-Tea - Tempe': 'Home',
+        'i-Tea - ALAMEDA': 'Office'
+    },
     selectedDay: 'Today',
     selectedTimeSlot: '12:30 PM',
     sugarLevel: '50%',
@@ -157,7 +180,39 @@ let isUpdatingMockupState = false;
 function loadMockupState() {
     try {
         const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEYS.state) || 'null');
-        return saved ? { ...DEFAULT_STATE, ...saved } : { ...DEFAULT_STATE };
+        const state = saved ? { ...DEFAULT_STATE, ...saved } : { ...DEFAULT_STATE };
+        
+        // Load favorites map and labels from localStorage
+        const favsMap = JSON.parse(localStorage.getItem('farebites_location_favorites') || '{}');
+        const isFirstLoad = localStorage.getItem('farebites_location_favorites') === null;
+        
+        if (isFirstLoad) {
+            // Populate localStorage with initial favorites from LOCATIONS
+            const initialFavs = {};
+            LOCATIONS.forEach(l => {
+                if (l.fav) initialFavs[l.name] = true;
+            });
+            localStorage.setItem('farebites_location_favorites', JSON.stringify(initialFavs));
+        } else {
+            // Apply favorites from localStorage to LOCATIONS
+            LOCATIONS.forEach(l => {
+                l.fav = !!favsMap[l.name];
+            });
+        }
+        
+        // Apply to state.apiLocations if it was loaded from sessionStorage
+        if (state.apiLocations && state.apiLocations.length > 0) {
+            const currentFavs = JSON.parse(localStorage.getItem('farebites_location_favorites') || '{}');
+            state.apiLocations.forEach(l => {
+                l.fav = !!currentFavs[l.name];
+            });
+        }
+        
+        // Load labels
+        const savedLabels = JSON.parse(localStorage.getItem('farebites_location_labels') || '{}');
+        state.locationLabels = { ...state.locationLabels, ...savedLabels };
+        
+        return state;
     } catch (error) {
         return { ...DEFAULT_STATE };
     }
@@ -199,6 +254,19 @@ function loadCartFromStorage() {
 function persistAllState() {
     sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
     syncCartToStorage();
+    
+    // Also persist location favorites and labels to localStorage
+    const favsMap = {};
+    LOCATIONS.forEach(l => {
+        if (l.fav) favsMap[l.name] = true;
+    });
+    if (mockupState.apiLocations && mockupState.apiLocations.length > 0) {
+        mockupState.apiLocations.forEach(l => {
+            if (l.fav) favsMap[l.name] = true;
+        });
+    }
+    localStorage.setItem('farebites_location_favorites', JSON.stringify(favsMap));
+    localStorage.setItem('farebites_location_labels', JSON.stringify(mockupState.locationLabels || {}));
 }
 
 function resolveImageUrl(url, defaultUrl) {
@@ -371,24 +439,6 @@ function getActiveMenuItems() {
     return MENU_ITEMS;
 }
 
-const LOCATIONS = [
-    { name: "i-Tea - Tempe", address: "825 W UNIVERSITY, TEMPE, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM", locationId: 7, lat: 33.4223, lng: -111.9514 },
-    { name: "i-Tea - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "1.2 mi", fav: false, hours: "12:00 PM to 9:30 PM", locationId: 9, lat: 37.7624, lng: -122.2435 },
-    { name: "i-Tea - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM", locationId: 7, lat: 37.6974, lng: -122.0722 },
-    { name: "i-Tea - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM", locationId: 10, lat: 38.5414, lng: -121.7482 },
-    { name: "i-Tea - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM", locationId: 7, lat: 37.5186, lng: -121.9702 },
-    { name: "i-Tea - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM", locationId: 9, lat: 36.8087, lng: -119.7801 },
-    { name: "i-Tea - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 10, lat: 37.4332, lng: -121.8795 },
-    { name: "i-Tea - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM", locationId: 7, lat: 37.8351, lng: -122.1297 },
-    { name: "i-Tea - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 9, lat: 37.5255, lng: -122.0463 },
-    { name: "i-Tea - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM", locationId: 9, lat: 37.8009, lng: -122.2709 },
-    { name: "i-Tea - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM", locationId: 10, lat: 38.0135, lng: -121.8767 },
-    { name: "i-Tea - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM", locationId: 7, lat: 37.6627, lng: -121.8744 },
-    { name: "i-Tea - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM", locationId: 9, lat: 38.4870, lng: -121.4320 },
-    { name: "i-Tea - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM", locationId: 10, lat: 37.7905, lng: -122.4042 },
-    { name: "i-Tea - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM", locationId: 7, lat: 37.3195, lng: -121.8157 },
-    { name: "i-Tea - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours", locationId: 10, lat: 37.7247, lng: -122.1558 }
-];
 
 const MENU_ITEMS = [
     // Tea Spresso Series (11 items)
@@ -600,14 +650,16 @@ function hamburgerDrawerHTML() {
     const userName = mockupState.userName || 'Guest';
 
     const navItems = [
-        { label: 'Home',          icon: 'fa-house',              page: 'restaurant-home' },
-        { label: 'Menu',          icon: 'fa-utensils',           page: 'menu' },
-        { label: 'Locations',     icon: 'fa-location-dot',       page: 'locations' },
-        { label: 'Rewards',       icon: 'fa-award',              page: 'account' },
-        { label: 'Scan QR Code',  icon: 'fa-qrcode',             page: 'menu-scan' },
-        { label: 'Cart',          icon: 'fa-bag-shopping',       page: 'cart' },
-        { label: 'Order Status',  icon: 'fa-clock-rotate-left',  page: 'order-status' },
-        { label: 'My Account',    icon: 'fa-user',               page: 'account' },
+        { label: 'Home',            icon: 'fa-house',              page: 'restaurant-home' },
+        { label: 'Menu',            icon: 'fa-utensils',           page: 'menu' },
+        { label: 'Menu Favorites',  icon: 'fa-heart',              page: 'menu-favorites' },
+        { label: 'Locations',       icon: 'fa-location-dot',       page: 'locations' },
+        { label: 'Saved Locations', icon: 'fa-bookmark',           page: 'location-favorites' },
+        { label: 'Rewards',         icon: 'fa-award',              page: 'account' },
+        { label: 'Scan QR Code',    icon: 'fa-qrcode',             page: 'menu-scan' },
+        { label: 'Cart',            icon: 'fa-bag-shopping',       page: 'cart' },
+        { label: 'Order Status',    icon: 'fa-clock-rotate-left',  page: 'order-status' },
+        { label: 'My Account',      icon: 'fa-user',               page: 'account' },
     ];
 
     if (isLoggedIn) {
@@ -1931,7 +1983,61 @@ const routes = {
  
                             <!-- Divider -->
                             <div class="h-px bg-gray-100 w-full mb-8"></div>
- 
+
+                            <!-- Favorites Section (Desktop Only) -->
+                            ${(() => {
+                                const favs = mockupState.favorites || [];
+                                if (favs.length === 0) {
+                                    return `
+                                        <div class="mb-12">
+                                            <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Your Favorites</h2>
+                                            <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Order your usuals in one click</p>
+                                            <div class="bg-[#E61874]/5 border border-dashed border-[#E61874]/20 rounded-3xl p-8 max-w-[700px] mx-auto flex flex-col items-center">
+                                                <div class="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center text-[#E61874] mb-4">
+                                                    <i class="fa-solid fa-heart text-xl animate-pulse"></i>
+                                                </div>
+                                                <h3 class="font-black text-gray-900 text-lg uppercase tracking-tight mb-1">Your Favorites is Empty</h3>
+                                                <p class="text-gray-500 text-sm font-medium mb-4 max-w-[400px]">Tap the heart icon next to any drink on the menu to save it here for fast reordering!</p>
+                                                <button onclick="navigateTo('menu')" class="px-6 py-2.5 bg-[#E61874] text-white rounded-full font-black uppercase text-xs tracking-widest shadow-md hover:bg-[#E61874]/90 transition-colors active:scale-95">Explore Menu</button>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                                return `
+                                    <div class="mb-12 text-center">
+                                        <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Your Favorites</h2>
+                                        <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Reorder your usual items in one click</p>
+
+                                        <!-- 4-column grid matching the categories layout boundaries -->
+                                        <div class="grid grid-cols-4 gap-6 justify-items-center max-w-[1080px] mx-auto w-full">
+                                            ${favs.slice(0, 4).map(item => `
+                                                <div class="relative w-full h-[240px] rounded-2xl overflow-hidden shadow-md flex flex-col justify-end p-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.01] group cursor-pointer text-left" onclick="selectFavoriteAndNavigate('${item.name}')">
+                                                    <img src="${item.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                                    <div class="absolute inset-0 bg-gradient-to-t from-violet-950/95 to-transparent to-65%"></div>
+                                                    <span class="absolute top-3 left-4 bg-[#E61874] text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20 flex items-center gap-1"><i class="fa-solid fa-heart text-[7px]"></i> Favorites</span>
+                                                    <div class="relative z-10 w-full">
+                                                        <div class="text-white/80 text-[8px] font-black tracking-widest uppercase mb-0.5 truncate">${item.category || 'Drink'}</div>
+                                                        <h2 class="text-sm font-black text-white uppercase tracking-tight leading-tight font-branding mb-0.5 truncate" title="${item.name}">${item.name}</h2>
+                                                        <div class="font-black text-white text-xs mb-2">$${item.price.toFixed(2)}</div>
+                                                        <button class="bg-white text-[#E61874] px-4 py-1.5 rounded-full font-black uppercase text-[8px] shadow-md hover:scale-105 active:scale-95 tracking-wider transition-transform">Add to Order</button>
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+
+                                        <!-- Manage Favorites Link below cards -->
+                                        <div class="mt-8 flex justify-center">
+                                            <button onclick="navigateTo('menu-favorites')" class="text-[#E61874] font-black text-xs uppercase tracking-widest hover:underline flex items-center gap-2">
+                                                Manage Favorites <i class="fa-solid fa-arrow-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            })()}
+
+                            <!-- Divider -->
+                            <div class="h-px bg-gray-100 w-full mb-8"></div>
+
                             <!-- Featured Items Section -->
                             <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Featured Items</h2>
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Our handcrafted favorites</p>
@@ -1963,10 +2069,10 @@ const routes = {
 
                             <!-- Rewards Banner Section -->
                             <div class="mt-12 w-full">
-                                <div class="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-violet-50 shadow-sm flex items-center justify-between px-10 py-8 gap-8">
+                                <div class="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-[#E61874]/10 shadow-sm flex items-center justify-between px-10 py-8 gap-8">
                                     <!-- Decorative background blobs -->
                                     <div class="absolute -top-10 -left-10 w-48 h-48 bg-violet-200/30 rounded-full blur-3xl pointer-events-none"></div>
-                                    <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-violet-200/30 rounded-full blur-3xl pointer-events-none"></div>
+                                    <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-[#E61874]/20 rounded-full blur-3xl pointer-events-none"></div>
 
                                     <!-- Left: Text Content -->
                                     <div class="relative z-10 text-left flex-1 min-w-0">
@@ -2005,9 +2111,16 @@ const routes = {
                 ? mockupState.apiLocations
                 : LOCATIONS;
             if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return list;
-            if (mockupState.locationFilter === 'Favorites') return list.filter(loc => loc.fav);
-            if (mockupState.locationFilter === 'Previous') {
-                return list.length >= 3 ? [list[2 % list.length], list[0], list[1 % list.length]] : list;
+            if (mockupState.locationFilter === 'My Locations') {
+                const favorites = list.filter(loc => loc.fav);
+                const previous = list.length >= 3 ? [list[2 % list.length], list[0], list[1 % list.length]] : list;
+                const combined = [...favorites];
+                previous.forEach(loc => {
+                    if (!combined.some(c => c.name === loc.name)) {
+                        combined.push(loc);
+                    }
+                });
+                return combined;
             }
             
             return list;
@@ -2021,19 +2134,8 @@ const routes = {
                             <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
                             <h1 class="text-xl font-black tracking-tight uppercase text-gray-900" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
                         </header>
-                        <div class="p-5 border-b border-gray-100 bg-white">
-                            <div class="bg-gray-100 flex items-center gap-3 px-4 py-3.5 rounded-full shadow-inner mb-5 border border-gray-200/50">
-                                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
-                                <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
-                            </div>
-                            <div class="flex gap-2 overflow-x-auto scrollbar-hide">
-                                <button onclick="updateMockupState('locationFilter', 'Near Me')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}" style="font-family: 'Roboto', sans-serif;">Near Me</button>
-                                <button onclick="updateMockupState('locationFilter', 'Previous')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Previous' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}" style="font-family: 'Roboto', sans-serif;">Previous</button>
-                                <button onclick="updateMockupState('locationFilter', 'Favorites')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Favorites' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}" style="font-family: 'Roboto', sans-serif;">Favorites</button>
-                            </div>
-                        </div>
                         <!-- Default Location Quick-Select -->
-                        <div class="p-5 border-b border-violet-700 bg-violet-600 flex items-center justify-between gap-3 text-white">
+                        <div class="px-[36px] py-5 border-b border-violet-700 bg-violet-600 flex items-center justify-between gap-3 text-white">
                             <div class="flex items-center gap-2.5 min-w-0">
                                 <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
                                     <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
@@ -2041,17 +2143,55 @@ const routes = {
                                 <div class="min-w-0">
                                     <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
                                     <p class="text-base font-black text-white truncate">i-Tea - Tempe <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; 0.3 mi</span></p>
+                                    <p class="text-xs text-violet-200 mt-0.5 truncate">825 W UNIVERSITY, TEMPE, AZ</p>
                                 </div>
                             </div>
                             <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, TEMPE, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
+                        </div>
+                        <div class="p-5 border-b border-gray-100 bg-white">
+                            <div class="bg-gray-100 flex items-center gap-3 px-4 py-3.5 rounded-full shadow-inner mb-5 border border-gray-200/50">
+                                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                                <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
+                            </div>
+                            <div class="flex border-b border-gray-100 w-full justify-start gap-8 mb-5 pb-2">
+                                ${[
+                                    { id: 'Near Me', name: 'Near Me' },
+                                    { id: 'My Locations', name: 'My Locations' }
+                                ].map(tab => {
+                                    const isActive = mockupState.locationFilter === tab.id || (tab.id === 'Near Me' && mockupState.locationFilter === 'Nearby');
+                                    const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
+                                    return `
+                                        <button onclick="updateMockupState('locationFilter', '${tab.id}');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
+                                            ${tab.name}
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
                                 <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 shadow-md' : ((idx === 0 || idx === 1) ? 'border-violet-200' : (s.fav ? 'border-violet-200' : 'border-gray-200'))} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" style="${(idx === 0 || idx === 1) ? 'background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);' : (s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'background: rgba(124,58,237,0.05);' : '')}" onclick="focusLocation('${s.name}')">
                                     <div>
-                                        ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
-                                        ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
-                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">${s.name} ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-xs"></i>' : ''}</h3>
+                                        ${(() => {
+                                            const label = (mockupState.locationLabels && mockupState.locationLabels[s.name]);
+                                            return label ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>` : '';
+                                        })()}
+                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">
+                                            <span>${s.name}</span>
+                                            <button onclick="toggleLocationFavorite('${s.name}', event)" class="heart-btn relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100/80 transition-colors duration-200 active:scale-90" title="Toggle Favorite">
+                                                ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-[19px]"></i>' : '<i class="fa-regular fa-heart text-gray-300 hover:text-violet-600 text-[19px]"></i>'}
+                                                <div class="burst-lines absolute inset-0 pointer-events-none opacity-0">
+                                                    <span class="line line-1"></span>
+                                                    <span class="line line-2"></span>
+                                                    <span class="line line-3"></span>
+                                                    <span class="line line-4"></span>
+                                                    <span class="line line-5"></span>
+                                                    <span class="line line-6"></span>
+                                                    <span class="line line-7"></span>
+                                                    <span class="line line-8"></span>
+                                                </div>
+                                            </button>
+                                        </h3>
                                         <p class="text-xs font-bold text-gray-400 mt-1.5 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
                                         <div class="flex gap-4 mt-4">
                                             <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop"></i> In store</span>
@@ -2104,10 +2244,19 @@ const routes = {
                                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                                 <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
                             </div>
-                            <div class="flex gap-2 overflow-x-auto scrollbar-hide">
-                                <button onclick="updateMockupState('locationFilter', 'Near Me')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500'}">Near Me</button>
-                                <button onclick="updateMockupState('locationFilter', 'Previous')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Previous' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500'}">Previous</button>
-                                <button onclick="updateMockupState('locationFilter', 'Favorites')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Favorites' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500'}">Favorites</button>
+                            <div class="flex border-b border-gray-100 w-full justify-around pb-1">
+                                ${[
+                                    { id: 'Near Me', name: 'Near Me' },
+                                    { id: 'My Locations', name: 'My Locations' }
+                                ].map(tab => {
+                                    const isActive = mockupState.locationFilter === tab.id || (tab.id === 'Near Me' && mockupState.locationFilter === 'Nearby');
+                                    const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
+                                    return `
+                                        <button onclick="updateMockupState('locationFilter', '${tab.id}');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
+                                            ${tab.name}
+                                        </button>
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
 
@@ -2115,9 +2264,26 @@ const routes = {
                             ${getSet().map((s, idx) => `
                                 <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 shadow-md' : ((idx === 0 || idx === 1) ? 'border-violet-200' : (s.fav ? 'border-violet-200' : 'border-gray-200'))} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" style="${(idx === 0 || idx === 1) ? 'background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);' : (s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'background: rgba(124,58,237,0.05);' : '')}" onclick="focusLocation('${s.name}')">
                                     <div class="min-w-0 flex-1">
-                                        ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
-                                        ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
-                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">${s.name} ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-xs"></i>' : ''}</h3>
+                                        ${(() => {
+                                            const label = (mockupState.locationLabels && mockupState.locationLabels[s.name]);
+                                            return label ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>` : '';
+                                        })()}
+                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">
+                                            <span>${s.name}</span>
+                                            <button onclick="toggleLocationFavorite('${s.name}', event)" class="heart-btn relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100/80 transition-colors duration-200 active:scale-90" title="Toggle Favorite">
+                                                ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-[19px]"></i>' : '<i class="fa-regular fa-heart text-gray-300 hover:text-violet-600 text-[19px]"></i>'}
+                                                <div class="burst-lines absolute inset-0 pointer-events-none opacity-0">
+                                                    <span class="line line-1"></span>
+                                                    <span class="line line-2"></span>
+                                                    <span class="line line-3"></span>
+                                                    <span class="line line-4"></span>
+                                                    <span class="line line-5"></span>
+                                                    <span class="line line-6"></span>
+                                                    <span class="line line-7"></span>
+                                                    <span class="line line-8"></span>
+                                                </div>
+                                            </button>
+                                        </h3>
                                         <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
                                         <div class="flex gap-4 mt-3">
                                             <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop text-[13px]"></i> In store</span>
@@ -2142,9 +2308,16 @@ const routes = {
                 ? mockupState.apiLocations
                 : LOCATIONS;
             if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return list;
-            if (mockupState.locationFilter === 'Favorites') return list.filter(loc => loc.fav);
-            if (mockupState.locationFilter === 'Previous') {
-                return list.length >= 3 ? [list[2 % list.length], list[0], list[1 % list.length]] : list;
+            if (mockupState.locationFilter === 'My Locations') {
+                const favorites = list.filter(loc => loc.fav);
+                const previous = list.length >= 3 ? [list[2 % list.length], list[0], list[1 % list.length]] : list;
+                const combined = [...favorites];
+                previous.forEach(loc => {
+                    if (!combined.some(c => c.name === loc.name)) {
+                        combined.push(loc);
+                    }
+                });
+                return combined;
             }
             
             return list;
@@ -2158,18 +2331,8 @@ const routes = {
                             <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
                             <h1 class="text-xl font-black tracking-tight uppercase text-gray-900" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
                         </header>
-                        <div class="p-5 border-b border-gray-100 bg-white">
-                            <div class="bg-gray-100 flex items-center gap-3 px-4 py-3.5 rounded-full shadow-inner mb-5 border border-gray-200/50">
-                                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
-                                <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
-                            </div>
-                            <div class="flex gap-2 overflow-x-auto scrollbar-hide">
-                                <button onclick="updateMockupState('locationFilter', 'Near Me')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}" style="font-family: 'Roboto', sans-serif;">Near Me</button>
-                                <button onclick="updateMockupState('locationFilter', 'Previous')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Previous' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}" style="font-family: 'Roboto', sans-serif;">Previous</button>
-                                <button onclick="updateMockupState('locationFilter', 'Favorites')" class="px-6 py-2 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Favorites' ? 'bg-violet-600 text-white shadow-md' : 'border-2 border-gray-100 text-gray-500 hover:bg-gray-50'}" style="font-family: 'Roboto', sans-serif;">Favorites</button>
-                            </div>
-                        </div>
-                        <div class="p-5 border-b border-violet-700 bg-violet-600 flex items-center justify-between gap-3 text-white">
+                        <!-- Default Location Quick-Select -->
+                        <div class="px-[36px] py-5 border-b border-violet-700 bg-violet-600 flex items-center justify-between gap-3 text-white">
                             <div class="flex items-center gap-2.5 min-w-0">
                                 <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
                                     <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
@@ -2177,17 +2340,55 @@ const routes = {
                                 <div class="min-w-0">
                                     <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
                                     <p class="text-base font-black text-white truncate">i-Tea - Tempe <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; 0.3 mi</span></p>
+                                    <p class="text-xs text-violet-200 mt-0.5 truncate">825 W UNIVERSITY, TEMPE, AZ</p>
                                 </div>
                             </div>
                             <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, TEMPE, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
+                        </div>
+                        <div class="p-5 border-b border-gray-100 bg-white">
+                            <div class="bg-gray-100 flex items-center gap-3 px-4 py-3.5 rounded-full shadow-inner mb-5 border border-gray-200/50">
+                                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                                <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
+                            </div>
+                            <div class="flex border-b border-gray-100 w-full justify-start gap-8 mb-5 pb-2">
+                                ${[
+                                    { id: 'Near Me', name: 'Near Me' },
+                                    { id: 'My Locations', name: 'My Locations' }
+                                ].map(tab => {
+                                    const isActive = mockupState.locationFilter === tab.id || (tab.id === 'Near Me' && mockupState.locationFilter === 'Nearby');
+                                    const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
+                                    return `
+                                        <button onclick="updateMockupState('locationFilter', '${tab.id}');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
+                                            ${tab.name}
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                             ${getSet().map((s, idx) => `
                                 <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 shadow-md' : ((idx === 0 || idx === 1) ? 'border-violet-200' : (s.fav ? 'border-violet-200' : 'border-gray-200'))} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" style="${(idx === 0 || idx === 1) ? 'background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);' : (s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'background: rgba(124,58,237,0.05);' : '')}" onclick="focusLocation('${s.name}')">
                                     <div>
-                                        ${idx === 0 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
-                                        ${idx === 1 ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
-                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">${s.name} ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-xs"></i>' : ''}</h3>
+                                        ${(() => {
+                                            const label = (mockupState.locationLabels && mockupState.locationLabels[s.name]);
+                                            return label ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>` : '';
+                                        })()}
+                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">
+                                            <span>${s.name}</span>
+                                            <button onclick="toggleLocationFavorite('${s.name}', event)" class="heart-btn relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100/80 transition-colors duration-200 active:scale-90" title="Toggle Favorite">
+                                                ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-[19px]"></i>' : '<i class="fa-regular fa-heart text-gray-300 hover:text-violet-600 text-[19px]"></i>'}
+                                                <div class="burst-lines absolute inset-0 pointer-events-none opacity-0">
+                                                    <span class="line line-1"></span>
+                                                    <span class="line line-2"></span>
+                                                    <span class="line line-3"></span>
+                                                    <span class="line line-4"></span>
+                                                    <span class="line line-5"></span>
+                                                    <span class="line line-6"></span>
+                                                    <span class="line line-7"></span>
+                                                    <span class="line line-8"></span>
+                                                </div>
+                                            </button>
+                                        </h3>
                                         <p class="text-xs font-bold text-gray-400 mt-1.5 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
                                         <div class="flex gap-4 mt-4">
                                             <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop"></i> In store</span>
@@ -2250,10 +2451,23 @@ const routes = {
                             <div class="flex justify-between items-start">
                                 <div class="min-w-0 flex-1">
                                     <span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">
-                                        ${featuredStore.name === 'i-Tea - Tempe' ? 'Previous Order' : (featuredStore.fav ? 'Favorite Location' : 'Closest Location')}
+                                        ${(mockupState.locationLabels && mockupState.locationLabels[featuredStore.name]) || (featuredStore.name === 'i-Tea - Tempe' ? 'Previous Order' : (featuredStore.fav ? 'Favorite Location' : 'Closest Location'))}
                                     </span>
                                     <h3 class="font-bold text-xl tracking-tight uppercase flex items-center gap-2 text-gray-900">
-                                        ${featuredStore.name} ${featuredStore.fav ? '<i class="fa-solid fa-heart text-violet-600 text-sm"></i>' : ''}
+                                        <span>${featuredStore.name}</span>
+                                        <button onclick="toggleLocationFavorite('${featuredStore.name}', event)" class="heart-btn relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100/80 transition-colors duration-200 active:scale-90" title="Toggle Favorite">
+                                            ${featuredStore.fav ? '<i class="fa-solid fa-heart text-violet-600 text-[22px]"></i>' : '<i class="fa-regular fa-heart text-gray-300 hover:text-violet-600 text-[22px]"></i>'}
+                                            <div class="burst-lines absolute inset-0 pointer-events-none opacity-0">
+                                                <span class="line line-1"></span>
+                                                <span class="line line-2"></span>
+                                                <span class="line line-3"></span>
+                                                <span class="line line-4"></span>
+                                                <span class="line line-5"></span>
+                                                <span class="line line-6"></span>
+                                                <span class="line line-7"></span>
+                                                <span class="line line-8"></span>
+                                            </div>
+                                        </button>
                                     </h3>
                                     <p class="text-xs text-gray-500 font-semibold mt-1">${featuredStore.address}</p>
                                     <p class="text-xs font-bold text-gray-400 mt-1.5 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${featuredStore.hours}</p>
@@ -2285,10 +2499,19 @@ const routes = {
                                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                                 <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
                             </div>
-                            <div class="flex gap-2 overflow-x-auto scrollbar-hide">
-                                <button onclick="updateMockupState('locationFilter', 'Near Me')" class="px-5 py-2.5 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby' ? 'bg-violet-600 text-white shadow-md' : 'border border-gray-100 text-gray-500'}">Near Me</button>
-                                <button onclick="updateMockupState('locationFilter', 'Previous')" class="px-5 py-2.5 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Previous' ? 'bg-violet-600 text-white shadow-md' : 'border border-gray-100 text-gray-500'}">Previous</button>
-                                <button onclick="updateMockupState('locationFilter', 'Favorites')" class="px-5 py-2.5 rounded-full text-[10px] font-black uppercase transition ${mockupState.locationFilter === 'Favorites' ? 'bg-violet-600 text-white shadow-md' : 'border border-gray-100 text-gray-500'}">Favorites</button>
+                            <div class="flex border-b border-gray-100 w-full justify-around pb-1">
+                                ${[
+                                    { id: 'Near Me', name: 'Near Me' },
+                                    { id: 'My Locations', name: 'My Locations' }
+                                ].map(tab => {
+                                    const isActive = mockupState.locationFilter === tab.id || (tab.id === 'Near Me' && mockupState.locationFilter === 'Nearby');
+                                    const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
+                                    return `
+                                        <button onclick="updateMockupState('locationFilter', '${tab.id}');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
+                                            ${tab.name}
+                                        </button>
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
 
@@ -2298,9 +2521,26 @@ const routes = {
                             ${list.filter(s => !featuredStore || s.name !== featuredStore.name).map((s, idx) => `
                                 <div data-location-card="${s.name}" class="bg-white p-5 border border-gray-100 rounded-3xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="focusLocation('${s.name}')">
                                     <div class="min-w-0 flex-1">
-                                        ${(idx === 0 && s.name !== 'i-Tea - Tempe') ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Home</span>' : ''}
-                                        ${(idx === 1 && s.name !== 'i-Tea - Tempe') ? '<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">Office</span>' : ''}
-                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">${s.name} ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-xs"></i>' : ''}</h3>
+                                        ${(() => {
+                                            const label = (mockupState.locationLabels && mockupState.locationLabels[s.name]);
+                                            return label ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>` : '';
+                                        })()}
+                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">
+                                            <span>${s.name}</span>
+                                            <button onclick="toggleLocationFavorite('${s.name}', event)" class="heart-btn relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100/80 transition-colors duration-200 active:scale-90" title="Toggle Favorite">
+                                                ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-[19px]"></i>' : '<i class="fa-regular fa-heart text-gray-300 hover:text-violet-600 text-[19px]"></i>'}
+                                                <div class="burst-lines absolute inset-0 pointer-events-none opacity-0">
+                                                    <span class="line line-1"></span>
+                                                    <span class="line line-2"></span>
+                                                    <span class="line line-3"></span>
+                                                    <span class="line line-4"></span>
+                                                    <span class="line line-5"></span>
+                                                    <span class="line line-6"></span>
+                                                    <span class="line line-7"></span>
+                                                    <span class="line line-8"></span>
+                                                </div>
+                                            </button>
+                                        </h3>
                                         <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
                                         <div class="flex gap-3 mt-3">
                                             <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop text-[11px]"></i> In store</span>
@@ -2320,90 +2560,7 @@ const routes = {
                 </div>`;
         }
     },
-    'location-favorites': () => {
-        const isDesktop = currentViewport === 'desktop';
-        return `
-            <div class="flex flex-col h-full bg-[#f6f6f6] relative">
-                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('locations')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
-                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Favorite Locations</span>
-                    <div class="w-10"></div>
-                </header>
-                <div class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-hide w-full max-w-3xl mx-auto">
-                    ${isDesktop ? `
-                    <div class="mb-2">
-                        <h1 class="text-3xl font-black text-gray-900 tracking-tighter mb-1 uppercase font-black">Favorite Locations</h1>
-                        <p class="text-gray-600 font-medium mb-4">Manage your saved home, work, and custom addresses.</p>
-                    </div>
-                    ` : ''}
-                    <!-- Location 1 -->
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tight">McDowell Rd</h3>
-                                <p class="text-xs text-gray-500 font-medium">8738 S. Emerald Dr</p>
-                            </div>
-                            <button class="text-red-500 hover:text-red-700 transition-colors active:scale-90"><i class="fa-regular fa-trash-can text-lg"></i></button>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Assign Label</p>
-                            <div class="flex gap-2">
-                                <button class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 border-violet-600 bg-violet-600 text-white shadow-sm">Home</button>
-                                <button class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 border-gray-100 text-gray-400 bg-white">Work</button>
-                            </div>
-                            <div class="relative">
-                                <input type="text" placeholder="Custom Label (e.g. Gym)" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-violet-300 transition-colors">
-                            </div>
-                        </div>
-
-                        <div class="space-y-2">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Delivery Instructions</p>
-                            <textarea placeholder="Gate codes, floor number, drop-off spot..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-xs font-medium outline-none focus:border-violet-300 h-24 resize-none leading-relaxed"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Location 2 -->
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tight">Camelback & Litchfield</h3>
-                                <p class="text-xs text-gray-500 font-medium">13802 W Camelback Rd</p>
-                            </div>
-                            <button class="text-red-500 hover:text-red-700 transition-colors active:scale-90"><i class="fa-regular fa-trash-can text-lg"></i></button>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Assign Label</p>
-                            <div class="flex gap-2">
-                                <button class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 border-gray-100 text-gray-400 bg-white">Home</button>
-                                <button class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 border-violet-600 bg-violet-600 text-white shadow-sm">Work</button>
-                            </div>
-                            <div class="relative">
-                                <input type="text" placeholder="Custom Label" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-violet-300 transition-colors">
-                            </div>
-                        </div>
-
-                        <div class="space-y-2">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Delivery Instructions</p>
-                            <textarea placeholder="Delivery instructions for this location..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-xs font-medium outline-none focus:border-violet-300 h-24 resize-none leading-relaxed"></textarea>
-                        </div>
-                    </div>
-
-                    ${isDesktop ? `
-                    <div class="flex justify-start pt-2">
-                        <button onclick="navigateTo('locations')" class="w-1/3 bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] hover:bg-violet-700 transition-all">Save Changes</button>
-                    </div>
-                    ` : ''}
-                </div>
-                ${!isDesktop ? `
-                <div class="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
-                    <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] transition-all">Save Changes</button>
-                </div>
-                ` : ''}
-            </div>
-        `;
-    },
+    // Duplicate location-favorites route handler removed (actual implementation below)
     'order-details': () => {
         const btn = (icon, label) => {
             const isActive = mockupState.fulfillmentMode === label;
@@ -3801,6 +3958,10 @@ const routes = {
 
     'account': () => {
         const isDesktop = currentViewport === 'desktop';
+        const menuFavsCount = (mockupState.favorites || []).length;
+        const locList = (mockupState.apiLocations && mockupState.apiLocations.length > 0) ? mockupState.apiLocations : LOCATIONS;
+        const savedLocsCount = locList.filter(l => l.fav).length;
+
         return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
                 <!-- Subtle top-aligned brand gradient overlay fading down -->
@@ -3997,6 +4158,36 @@ const routes = {
                                 <span class="font-bold text-gray-800 text-sm">Notification Preferences</span>
                             </div>
                             <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- My Favorites Card -->
+                    <div class="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
+                            <div class="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
+                                <i class="fa-solid fa-heart text-lg"></i>
+                            </div>
+                            <span class="font-black uppercase tracking-tight text-gray-900 text-sm">My Favorites</span>
+                        </div>
+                        <button onclick="navigateTo('menu-favorites')" class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors active:scale-[0.99] border-b border-gray-50">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-utensils text-gray-400 w-5 text-center"></i>
+                                <span class="font-bold text-gray-800 text-sm">Menu Favorites</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="bg-violet-100 text-violet-600 text-xs font-black px-2.5 py-0.5 rounded-full">${menuFavsCount} ${menuFavsCount === 1 ? 'item' : 'items'}</span>
+                                <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+                            </div>
+                        </button>
+                        <button onclick="navigateTo('location-favorites')" class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors active:scale-[0.99]">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-location-dot text-gray-400 w-5 text-center"></i>
+                                <span class="font-bold text-gray-800 text-sm">Saved Locations</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="bg-violet-100 text-violet-600 text-xs font-black px-2.5 py-0.5 rounded-full">${savedLocsCount} ${savedLocsCount === 1 ? 'store' : 'stores'}</span>
+                                <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+                            </div>
                         </button>
                     </div>
 
@@ -5302,6 +5493,11 @@ const routes = {
 
     'location-favorites': () => {
         const isDesktop = currentViewport === 'desktop';
+        const list = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
+            ? mockupState.apiLocations
+            : LOCATIONS;
+        const favorites = list.filter(loc => loc.fav);
+
         return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
@@ -5313,72 +5509,59 @@ const routes = {
                     ${isDesktop ? `
                     <div class="mb-2">
                         <h1 class="text-3xl font-black text-gray-900 tracking-tighter mb-1 uppercase font-black">Favorite Locations</h1>
-                        <p class="text-gray-600 font-medium mb-4">Manage your saved home, work, and custom addresses.</p>
+                        <p class="text-gray-600 font-medium mb-4">Manage your saved home, work, and custom store labels.</p>
                     </div>
                     ` : ''}
-                    <!-- Location 1 -->
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tight">McDowell Rd</h3>
-                                <p class="text-xs text-gray-500 font-medium">8738 S. Emerald Dr</p>
-                            </div>
-                            <button class="text-red-500 hover:text-red-700 transition-colors active:scale-90"><i class="fa-regular fa-trash-can text-lg"></i></button>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Assign Label</p>
-                            <div class="flex gap-2">
-                                <button class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 border-violet-600 bg-violet-600 text-white shadow-sm">Home</button>
-                                <button class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 border-gray-100 text-gray-400 bg-white">Work</button>
-                            </div>
-                            <div class="relative">
-                                <input type="text" placeholder="Custom Label (e.g. Gym)" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-violet-300 transition-colors">
-                            </div>
-                        </div>
 
-                        <div class="space-y-2">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Delivery Instructions</p>
-                            <textarea placeholder="Gate codes, floor number, drop-off spot..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-xs font-medium outline-none focus:border-violet-300 h-24 resize-none leading-relaxed"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Location 2 -->
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tight">Camelback & Litchfield</h3>
-                                <p class="text-xs text-gray-500 font-medium">13802 W Camelback Rd</p>
+                    ${favorites.length === 0 ? `
+                        <div class="py-20 text-center flex flex-col items-center bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 text-gray-300">
+                                <i class="fa-solid fa-heart-crack text-4xl"></i>
                             </div>
-                            <button class="text-red-500 hover:text-red-700 transition-colors active:scale-90"><i class="fa-regular fa-trash-can text-lg"></i></button>
+                            <h3 class="text-xl font-black text-gray-900 uppercase tracking-tight mb-2">No Favorite Stores</h3>
+                            <p class="text-gray-500 font-medium mb-8">You haven't saved any locations as favorites yet.</p>
+                            <button onclick="navigateTo('locations')" class="bg-violet-600 text-white px-8 py-3.5 rounded-full font-black uppercase text-xs tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] hover:bg-violet-700 transition active:scale-95">Find a Store</button>
                         </div>
-                        
-                        <div class="space-y-3">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Assign Label</p>
-                            <div class="flex gap-2">
-                                <button class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 border-violet-600 bg-violet-600 text-white shadow-sm">Home</button>
-                                <button class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 border-violet-600 bg-violet-600 text-white shadow-sm">Work</button>
+                    ` : favorites.map(s => {
+                        const activeLabel = mockupState.locationLabels?.[s.name] || '';
+                        const isCustom = activeLabel && activeLabel !== 'Home' && activeLabel !== 'Office' && activeLabel !== 'Work';
+                        return `
+                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        ${activeLabel ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1 block" style="font-family: Roboto, sans-serif;">${activeLabel}</span>` : ''}
+                                        <h3 class="font-black text-gray-900 uppercase tracking-tight">${s.name}</h3>
+                                        <p class="text-xs text-gray-500 font-medium">${s.address}</p>
+                                    </div>
+                                    <button onclick="toggleLocationFavorite('${s.name}')" class="text-red-500 hover:text-red-700 transition-colors active:scale-90" title="Remove Favorite">
+                                        <i class="fa-regular fa-trash-can text-lg"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Assign Label</p>
+                                    <div class="flex gap-2">
+                                        <button onclick="setLocationLabel('${s.name}', '${activeLabel === 'Home' ? '' : 'Home'}')" class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 transition active:scale-95 ${activeLabel === 'Home' ? 'border-violet-600 bg-violet-600 text-white shadow-sm' : 'border-gray-200 text-gray-500 hover:border-violet-400 bg-white'}">Home</button>
+                                        <button onclick="setLocationLabel('${s.name}', '${activeLabel === 'Office' ? '' : 'Office'}')" class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 transition active:scale-95 ${activeLabel === 'Office' ? 'border-violet-600 bg-violet-600 text-white shadow-sm' : 'border-gray-200 text-gray-500 hover:border-violet-400 bg-white'}">Office</button>
+                                        <button onclick="setLocationLabel('${s.name}', '${activeLabel === 'Work' ? '' : 'Work'}')" class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 transition active:scale-95 ${activeLabel === 'Work' ? 'border-violet-600 bg-violet-600 text-white shadow-sm' : 'border-gray-200 text-gray-500 hover:border-violet-400 bg-white'}">Work</button>
+                                    </div>
+                                    <div class="relative">
+                                        <input type="text" placeholder="Custom Label (e.g. Gym)" value="${isCustom ? activeLabel : ''}" onchange="setLocationLabel('${s.name}', this.value)" onkeydown="if(event.key === 'Enter') setLocationLabel('${s.name}', this.value)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-violet-300 transition-colors">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="relative">
-                                <input type="text" placeholder="Custom Label" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-violet-300 transition-colors">
-                            </div>
-                        </div>
+                        `;
+                    }).join('')}
 
-                        <div class="space-y-2">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Delivery Instructions</p>
-                            <textarea placeholder="Delivery instructions for this location..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-xs font-medium outline-none focus:border-violet-300 h-24 resize-none leading-relaxed"></textarea>
-                        </div>
-                    </div>
-
-                    ${isDesktop ? `
+                    ${favorites.length > 0 && isDesktop ? `
                     <div class="flex justify-start pt-2">
-                        <button onclick="navigateTo('locations')" class="w-1/3 bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] hover:bg-violet-700 transition-all">Save Changes</button>
+                        <button onclick="navigateTo('locations')" class="w-1/3 bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] hover:bg-violet-700 transition-all">Done</button>
                     </div>
                     ` : ''}
                 </div>
-                ${!isDesktop ? `
+                ${favorites.length > 0 && !isDesktop ? `
                 <div class="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
-                    <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] transition-all">Save Changes</button>
+                    <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] transition-all">Done</button>
                 </div>
                 ` : ''}
             </div>
@@ -6281,7 +6464,16 @@ function selectItemAndNavigate(index) {
         mockupState.selectedItemDetail = fallbackDetail;
         applyDefaultSelections(fallbackDetail);
         mockupState.isLoading = false;
-        navigateTo('customize');
+    }
+}
+
+function selectFavoriteAndNavigate(name) {
+    const list = getActiveMenuItems();
+    const idx = list.findIndex(item => item.name === name);
+    if (idx !== -1) {
+        selectItemAndNavigate(idx);
+    } else {
+        navigateTo('menu');
     }
 }
 
@@ -6880,6 +7072,58 @@ async function signOutUser() {
     navigateTo('sign-in');
 }
 
+window.toggleLocationFavorite = function(name, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    
+    // Find in LOCATIONS and toggle
+    const loc = LOCATIONS.find(l => l.name === name);
+    let isFavNow = false;
+    if (loc) {
+        loc.fav = !loc.fav;
+        isFavNow = loc.fav;
+    }
+    
+    // Find in apiLocations and toggle
+    if (mockupState.apiLocations && mockupState.apiLocations.length > 0) {
+        const apiLoc = mockupState.apiLocations.find(l => l.name === name);
+        if (apiLoc) {
+            apiLoc.fav = !apiLoc.fav;
+            isFavNow = apiLoc.fav;
+        }
+    }
+    
+    // Animate the heart
+    const heartBtn = event ? event.currentTarget : null;
+    if (heartBtn) {
+        const iconEl = heartBtn.querySelector('i');
+        if (iconEl) {
+            const sizeClass = iconEl.className.includes('text-[22px]') ? 'text-[22px]' : 'text-[19px]';
+            if (isFavNow) {
+                iconEl.className = `fa-solid fa-heart text-violet-600 ${sizeClass}`;
+            } else {
+                iconEl.className = `fa-regular fa-heart text-gray-300 hover:text-violet-600 ${sizeClass}`;
+            }
+        }
+        heartBtn.classList.add('animate-heart-burst');
+        setTimeout(() => {
+            heartBtn.classList.remove('animate-heart-burst');
+            updateMockupState('lastAction', 'favorite_' + name);
+        }, 600);
+    } else {
+        updateMockupState('lastAction', 'favorite_' + name);
+    }
+};
+
+window.setLocationLabel = function(name, label) {
+    if (!mockupState.locationLabels) {
+        mockupState.locationLabels = {};
+    }
+    mockupState.locationLabels[name] = label;
+    updateMockupState('lastAction', 'label_' + name);
+};
+
 window.togglePasswordVisibility = function(inputId, buttonEl) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -7058,8 +7302,9 @@ function initLocationsMap() {
             scrollWheelZoom: true
         }).setView([startLat, startLng], startZoom);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors © CARTO'
+        L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '© Google Maps'
         }).addTo(leafletMap);
 
         mapMarkers = {};
