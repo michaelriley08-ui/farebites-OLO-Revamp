@@ -1632,46 +1632,23 @@ const routes = {
                             <button onclick="navigateTo('registration')" class="w-full bg-white border-2 border-violet-600 text-violet-600 ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 hover:bg-violet-50/50 active:scale-95 transition-all uppercase">Create an Account</button>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 ${isDesktop ? 'py-1' : 'py-2'}">
+                    <div class="flex items-center gap-4 py-1">
                         <div class="flex-1 h-px bg-gray-100"></div>
                         <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">or</span>
                         <div class="flex-1 h-px bg-gray-100"></div>
                     </div>
 
-                    ${isDesktop ? `
-                        <div class="flex justify-center gap-4 pt-1">
-                            <button class="w-12 h-12 rounded-full bg-white border-2 border-violet-50 flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm" title="Continue with Google">
-                                <i class="fa-brands fa-google text-lg text-red-500"></i>
-                            </button>
-                            <button class="w-12 h-12 rounded-full bg-white border-2 border-violet-50 flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm" title="Continue with Apple">
-                                <i class="fa-brands fa-apple text-lg text-black"></i>
-                            </button>
-                            <button class="w-12 h-12 rounded-full bg-white border-2 border-violet-50 flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm" title="Continue with Facebook">
-                                <i class="fa-brands fa-facebook text-lg text-[#1877F2]"></i>
-                            </button>
-                        </div>
-                    ` : `
-                        <div class="space-y-3">
-                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm">
-                                <div class="flex items-center gap-4 w-52">
-                                    <i class="fa-brands fa-google text-lg text-red-500 w-6 text-center"></i>
-                                    <span>Continue with Google</span>
-                                </div>
-                            </button>
-                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm">
-                                <div class="flex items-center gap-4 w-52">
-                                    <i class="fa-brands fa-apple text-lg text-black w-6 text-center"></i>
-                                    <span>Continue with Apple</span>
-                                </div>
-                            </button>
-                            <button class="w-full bg-white border-2 border-violet-50 text-gray-700 py-3.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm">
-                                <div class="flex items-center gap-4 w-52">
-                                    <i class="fa-brands fa-facebook text-lg text-[#1877F2] w-6 text-center"></i>
-                                    <span>Continue with Facebook</span>
-                                </div>
-                            </button>
-                        </div>
-                    `}
+                    <div class="flex justify-center gap-4 pt-1">
+                        <button class="w-12 h-12 rounded-full bg-white border-2 border-violet-50 flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm" title="Continue with Google">
+                            <i class="fa-brands fa-google text-lg text-red-500"></i>
+                        </button>
+                        <button class="w-12 h-12 rounded-full bg-white border-2 border-violet-50 flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm" title="Continue with Apple">
+                            <i class="fa-brands fa-apple text-lg text-black"></i>
+                        </button>
+                        <button class="w-12 h-12 rounded-full bg-white border-2 border-violet-50 flex items-center justify-center hover:bg-violet-50/30 active:scale-95 transition-all shadow-sm" title="Continue with Facebook">
+                            <i class="fa-brands fa-facebook text-lg text-[#1877F2]"></i>
+                        </button>
+                    </div>
                     <div class="mt-2 text-center px-4">
                         <p class="text-[10px] text-gray-400 font-bold tracking-widest">By continuing, you agree to i-Tea Terms & Privacy Policy</p>
                     </div>
@@ -5123,29 +5100,32 @@ const routes = {
                                 <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
                             </div>
 
-                            <!-- Gift Card -->
-                            <div onclick="updateMockupState('modalOpen', 'payment-gift')" class="bg-white rounded-2xl ${isDesktop ? 'p-4' : 'p-3'} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-400">
-                                        <i class="fa-solid fa-gift text-lg"></i>
+                            <!-- Gift Card & Loyalty (Two Column) -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <!-- Gift Card -->
+                                <div onclick="updateMockupState('modalOpen', 'payment-gift')" class="bg-white rounded-2xl ${isDesktop ? 'p-4' : 'p-3'} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-400 shrink-0">
+                                            <i class="fa-solid fa-gift text-lg"></i>
+                                        </div>
+                                        <span class="font-black text-gray-900 uppercase text-xs tracking-tight truncate">Redeem Gift Card</span>
                                     </div>
-                                    <span class="font-black text-gray-900 uppercase text-xs tracking-tight">Redeem Gift Card</span>
+                                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-300 shrink-0"></i>
                                 </div>
-                                <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
-                            </div>
 
-                            <!-- Loyalty -->
-                            <div onclick="updateMockupState('modalOpen', 'payment-rewards')" class="bg-white rounded-2xl ${isDesktop ? 'p-4' : 'p-3'} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-400">
-                                        <i class="fa-solid fa-award text-lg"></i>
+                                <!-- Loyalty -->
+                                <div onclick="updateMockupState('modalOpen', 'payment-rewards')" class="bg-white rounded-2xl ${isDesktop ? 'p-4' : 'p-3'} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-400 shrink-0">
+                                            <i class="fa-solid fa-award text-lg"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <span class="font-black text-gray-900 uppercase text-xs block tracking-tight truncate">Loyalty Rewards</span>
+                                            <span class="text-[10px] font-bold text-violet-600 uppercase block truncate">Available: $12.50</span>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <span class="font-black text-gray-900 uppercase text-xs block tracking-tight">Loyalty Rewards</span>
-                                        <span class="text-[10px] font-bold text-violet-600 uppercase">Available: $12.50</span>
-                                    </div>
+                                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-300 shrink-0"></i>
                                 </div>
-                                <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
                             </div>
                         </div>
                     </div>
