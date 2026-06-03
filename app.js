@@ -6452,6 +6452,7 @@ function selectItemAndNavigate(index) {
             })
             .finally(() => {
                 mockupState.isLoading = false;
+                renderPage();
                 navigateTo('customize');
             });
     } else {
@@ -6464,6 +6465,7 @@ function selectItemAndNavigate(index) {
         mockupState.selectedItemDetail = fallbackDetail;
         applyDefaultSelections(fallbackDetail);
         mockupState.isLoading = false;
+        navigateTo('customize');
     }
 }
 
@@ -7623,3 +7625,12 @@ window.handleQRCameraCapture = function(event) {
         }, 1500);
     }
 };
+
+// Handle back/forward cache (bfcache) restoration to clear loading state
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        mockupState.isLoading = false;
+        persistAllState();
+        renderPage();
+    }
+});
