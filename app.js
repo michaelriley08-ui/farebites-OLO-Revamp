@@ -22,7 +22,7 @@ const PAGE_FILE_MAP = {
     "location-favorites": "location-favorites.html",
     "login": "login.html",
     "sign-up": "sign-up.html",
-    "account": "user-profile.html",
+    "account": "profile.html",
     "privacy": "privacy.html",
     "dashboard": "dashboard.html",
     "index": "index.html",
@@ -1270,7 +1270,7 @@ function renderMenuPage(isAlternative) {
                                 ${hasFavorites ? `
                                     <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
                                         ${mockupState.favorites.map((fav) => {
-                                            const originalIndex = MENU_ITEMS.findIndex(item => item.name === fav.name);
+                                            const originalIndex = getActiveMenuItems().findIndex(item => item.name === fav.name);
                                             const actualIndex = originalIndex >= 0 ? originalIndex : 0;
                                             return `
                                                 <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card">
@@ -1299,41 +1299,24 @@ function renderMenuPage(isAlternative) {
                             </div>
                         `;
                     } else if (mockupState.menuTab === 'history') {
-                        let historyItems = [];
                         const ordersList = mockupState.apiOrders ? (Array.isArray(mockupState.apiOrders) ? mockupState.apiOrders : (mockupState.apiOrders.items || mockupState.apiOrders.data || [])) : [];
-                        if (ordersList.length > 0) {
-                            // Group by item name
-                            const itemCounts = {};
-                            const lastOrdered = {};
-                            ordersList.forEach(order => {
-                                const orderDate = new Date(order.orderDate || order.placedAt || Date.now());
-                                const itemsList = order.orderMenuItems || order.items || order.orderItems || [];
-                                itemsList.forEach(orderItem => {
-                                    const name = (orderItem.name || '').trim();
-                                    if (!name) return;
-                                    if (!itemCounts[name]) itemCounts[name] = 0;
-                                    itemCounts[name] += orderItem.quantity || 1;
-                                    if (!lastOrdered[name] || orderDate > lastOrdered[name]) {
-                                        lastOrdered[name] = orderDate;
-                                    }
-                                });
-                            });
-                            
-                            // Match with MENU_ITEMS
-                            historyItems = Object.keys(itemCounts).map(name => {
-                                const menuItemIndex = MENU_ITEMS.findIndex(mi => mi.name.toLowerCase() === name.toLowerCase());
-                                return {
-                                    name,
-                                    index: menuItemIndex,
-                                    count: itemCounts[name],
-                                    lastDate: lastOrdered[name]
-                                };
-                            }).filter(item => item.index !== -1)
-                              .sort((a, b) => b.count - a.count)
-                              .slice(0, 10); // top 10
+                        
+                        let allOrders = [...ordersList];
+                        if (mockupState.lastOrder) {
+                            const lastOrderId = mockupState.lastOrder.orderId;
+                            const exists = allOrders.some(o => o.orderId === lastOrderId);
+                            if (!exists) {
+                                allOrders.unshift(mockupState.lastOrder);
+                            }
                         }
                         
-                        if (historyItems.length === 0) {
+                        const getOrderTime = (order) => {
+                            const dateStr = order.orderDate || order.placedAt || order.placedDateTime;
+                            return dateStr ? new Date(dateStr).getTime() : 0;
+                        };
+                        allOrders.sort((a, b) => getOrderTime(b) - getOrderTime(a));
+
+                        if (allOrders.length === 0) {
                             return `
                                 <div class="space-y-6">
                                     <div class="flex justify-between items-end mb-4 px-1">
@@ -1349,83 +1332,47 @@ function renderMenuPage(isAlternative) {
                             `;
                         }
 
-                        const formatDate = (date) => {
-                            const diff = Date.now() - date.getTime();
-                            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                            if (days === 0) return 'Today';
-                            if (days === 1) return 'Yesterday';
-                            if (days < 7) return `${days} days ago`;
-                            return date.toLocaleDateString();
-                        };
-
-                        if (isDesktop) {
-                            const gridItemsHTML = historyItems.map(hist => {
-                                const item = MENU_ITEMS[hist.index];
-                                return `
-                                    <div class="bg-white rounded-2xl p-2.5 shadow-sm border border-gray-100 flex items-center justify-between group">
-                                        <div class="flex items-center gap-4 min-w-0">
-                                            <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 cursor-pointer" onclick="selectItemAndNavigate(${hist.index})">
-                                                <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-300">
-                                            </div>
-                                            <div class="min-w-0">
-                                                <div class="font-black text-sm text-gray-900 leading-tight uppercase truncate cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})" title="${item.name}">${item.name}</div>
-                                                <div class="flex flex-col gap-1.5 mt-1.5">
-                                                    <span class="px-2.5 py-0.5 bg-violet-600 text-white rounded-full text-[9px] font-black uppercase tracking-wider inline-block w-fit">Ordered ${hist.count} times</span>
-                                                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Last ordered ${formatDate(hist.lastDate)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button onclick="selectItemAndNavigate(${hist.index})" class="px-4 py-2 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 hover:bg-violet-50 hover:border-violet-300 shadow-sm font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 shrink-0 ml-3">+ Reorder</button>
-                                    </div>
-                                `;
-                            }).join('');
+                        const orderCardsHTML = allOrders.map(order => {
+                            const orderDate = new Date(order.orderDate || order.placedAt || Date.now()).toLocaleDateString();
+                            const orderTotal = (order.total || order.subTotal || 0).toFixed(2);
+                            const orderItems = order.orderMenuItems || order.items || order.orderItems || [];
+                            const orderNum = order.orderId || order.orderNumber || 'FB-' + Math.floor(1000 + Math.random() * 9000);
+                            
+                            const foundLoc = LOCATIONS.find(l => l.locationId === order.locationId);
+                            const locationName = foundLoc ? foundLoc.name : (mockupState.selectedLocation || 'i-Tea');
 
                             return `
-                                <div class="space-y-6">
-                                    <div class="flex justify-between items-end mb-4 px-1">
-                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
+                                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-4">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">${orderDate} • #${orderNum}</p>
+                                            <p class="font-black text-violet-600 text-sm mt-0.5">${locationName}</p>
+                                        </div>
+                                        <span class="font-black text-gray-900 text-base">$${orderTotal}</span>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        ${gridItemsHTML}
+                                    <div class="flex flex-col gap-1 flex-1">
+                                        ${orderItems.map(item =>
+                                            `<p class="text-xs text-gray-500 font-medium">${item.quantity} × ${item.name}</p>`
+                                        ).join('')}
+                                    </div>
+                                    <div class="flex gap-2 mt-2 pt-4 border-t border-gray-50">
+                                        <button onclick="viewPastOrder(${order.orderId || `'${orderNum}'`})" class="flex-1 py-2.5 rounded-full border-2 border-violet-600 text-violet-600 font-black text-[10px] uppercase tracking-widest hover:bg-violet-50 transition-colors">View</button>
+                                        <button onclick="reorderPastOrder(${order.orderId || `'${orderNum}'`})" class="flex-1 py-2.5 rounded-full bg-violet-600 text-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors">Reorder</button>
                                     </div>
                                 </div>
                             `;
-                        } else {
-                            const listItemsHTML = historyItems.map(hist => {
-                                const item = MENU_ITEMS[hist.index];
-                                return `
-                                    <div class="flex items-center justify-between group border-b border-gray-50 pb-4 last:border-b-0 last:pb-0">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 cursor-pointer" onclick="selectItemAndNavigate(${hist.index})">
-                                                <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-300">
-                                            </div>
-                                            <div>
-                                                <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2 cursor-pointer hover:text-violet-600 transition-colors" onclick="selectItemAndNavigate(${hist.index})">${item.name}</div>
-                                                <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide flex items-center gap-2">
-                                                    <span>Ordered ${hist.count} times</span>
-                                                    <span>•</span>
-                                                    <span>Last ${formatDate(hist.lastDate)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button onclick="selectItemAndNavigate(${hist.index})" class="px-5 py-2 rounded-full border-[1.5px] border-violet-200 bg-white text-violet-600 hover:bg-violet-50 hover:border-violet-300 shadow-sm font-black text-[11px] uppercase tracking-wider transition-all active:scale-95 shrink-0 ml-4">+ Reorder</button>
-                                    </div>
-                                `;
-                            }).join('');
+                        }).join('');
 
-                            return `
-                                <div class="space-y-6">
-                                    <div class="flex justify-between items-end mb-4 px-1">
-                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
-                                    </div>
-                                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                                        <div class="space-y-5">
-                                            ${listItemsHTML}
-                                        </div>
-                                    </div>
+                        return `
+                            <div class="space-y-6">
+                                <div class="flex justify-between items-end mb-4 px-1">
+                                    <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
                                 </div>
-                            `;
-                        }
+                                <div class="\${isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-5' : 'flex flex-col gap-4'}">
+                                    \${orderCardsHTML}
+                                </div>
+                            </div>
+                        `;
                     }
                 })()}
             </div>
@@ -3804,7 +3751,7 @@ const routes = {
 
                                 return finalCrossSells.map((item) => {
                                     return `
-                                        <div class="snap-center shrink-0 ${isDesktop ? 'w-auto flex-1' : 'w-[140px]'} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md group cursor-pointer" onclick="mockupState.menuTab = 'menu'; selectItemAndNavigate(MENU_ITEMS.findIndex(m => m.id === ${item.id}))">
+                                        <div class="snap-center shrink-0 ${isDesktop ? 'w-auto flex-1' : 'w-[140px]'} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md group cursor-pointer" onclick="mockupState.menuTab = 'menu'; selectItemAndNavigate(${getActiveMenuItems().findIndex(m => m.name === item.name)})">
                                             <div class="${isDesktop ? 'h-36' : 'h-24'} relative overflow-hidden">
                                                 <img src="${item.image}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                             </div>
@@ -6103,7 +6050,7 @@ function renderPage() {
                         <a href="order-details.html" class="dropdown-item lowercase">order-details.html</a>
                         <a href="order-details-alt.html" class="dropdown-item lowercase">order-details-alt.html</a>
                         <a href="track-order.html" class="dropdown-item lowercase">track-order.html</a>
-                        <a href="user-profile.html" class="dropdown-item lowercase">user-profile.html</a>
+                        <a href="profile.html" class="dropdown-item lowercase">profile.html</a>
                     </div>
                     <div class="flex flex-col gap-2">
                         <div class="dropdown-column-title">Other Pages</div>
