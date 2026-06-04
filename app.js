@@ -326,16 +326,44 @@ async function fetchLocations() {
                     let hoursStr = 'Hours unavailable';
 
                     try {
-                        const hRes = await fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${loc.locationId}/hours`);
-                        if (hRes.ok) {
-                            const hData = await hRes.json();
-                            if (hData && hData.businessHours && hData.businessHours[todayDay]) {
-                                const todayH = hData.businessHours[todayDay];
-                                if (todayH.isClosed) {
+                        const [hRes, holRes] = await Promise.all([
+                            fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${loc.locationId}/hours`),
+                            fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${loc.locationId}/hours-with-holidays`)
+                        ]);
+
+                        let hData = null;
+                        let holData = null;
+                        
+                        if (hRes.ok) hData = await hRes.json();
+                        if (holRes.ok) holData = await holRes.json();
+
+                        const todayObj = new Date();
+                        const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
+                        
+                        let isHoliday = false;
+                        if (holData && holData.holidayHours && Array.isArray(holData.holidayHours)) {
+                            const holiday = holData.holidayHours.find(h => h.date && h.date.startsWith(todayStr));
+                            if (holiday) {
+                                isHoliday = true;
+                                if (holiday.isClosed) {
                                     hoursStr = 'Closed today';
-                                } else if (todayH.startTime && todayH.endTime) {
-                                    hoursStr = `${todayH.startTime} to ${todayH.endTime}`;
+                                } else if (holiday.schedules && holiday.schedules.length > 0) {
+                                    const s = holiday.schedules[0];
+                                    if (s.startTime && s.endTime) {
+                                        hoursStr = `${s.startTime} to ${s.endTime}`;
+                                    }
+                                } else {
+                                    hoursStr = 'Closed today';
                                 }
+                            }
+                        }
+
+                        if (!isHoliday && hData && hData.businessHours && hData.businessHours[todayDay]) {
+                            const todayH = hData.businessHours[todayDay];
+                            if (todayH.isClosed) {
+                                hoursStr = 'Closed today';
+                            } else if (todayH.startTime && todayH.endTime) {
+                                hoursStr = `${todayH.startTime} to ${todayH.endTime}`;
                             }
                         }
                     } catch (e) {
