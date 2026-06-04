@@ -1,0 +1,175 @@
+Here is a detailed, technical breakdown of everything we accomplished in this session. You can copy and paste this directly into your GitHub pull request or commit message so your backend and API engineers know exactly how the frontend is handling the data!
+
+### Session Security & Auto-Logout
+* **Implemented Inactivity Tracking**: Added event listeners (`mousemove`, `keydown`, `scroll`, `click`) to track user activity.
+* **Warning Modal (13 mins)**: Added a timeout warning modal that triggers after 13 minutes of inactivity, prompting the user to confirm they are still there.
+* **Auto-Logout (15 mins)**: If no action is taken by the 15-minute mark, the app executes `executeAutoLogout()`, which securely terminates the session via `signOutUser()` and redirects the user to the sign-in page.
+
+### "Remember Me" & Authentication Storage
+* **Dynamic Token Storage**: Updated `ApiService.setToken()` to conditionally store the JWT. 
+  * If "Remember Me" is checked, the token is saved to `localStorage` (persistent session).
+  * If unchecked, the token is saved to `sessionStorage` (clears immediately when the browser tab/window is closed).
+* **Email Auto-Fill**: When "Remember Me" is checked, the user's email is saved to `localStorage` under the key `farebites_remembered_email`.
+* **Login Form Hydration**: Updated the sign-in page renderer to check for `farebites_remembered_email` and automatically pre-fill the email input field and check the "Remember Me" box for returning users.
+
+### Persistent Cart Memory
+* **Email-Keyed Cart Storage**: Created `syncCartToStorage()`. Whenever the cart is modified, the current `mockupState.cart` array is stringified and saved to `localStorage` under the key `farebites_cart_[USER_EMAIL]`.
+* **Cart Hydration on Login**: Created `loadCartFromStorage()`. Upon a successful login (or during `DOMContentLoaded` if a persistent token exists), the app fetches the user's profile, retrieves their email, and pulls their specific cart array back into `mockupState.cart`.
+* **Secure Cart Clearing**: Updated `signOutUser()`. When a user manually signs out, `mockupState.cart` is emptied to clear the UI, but the background `localStorage` cart is preserved so it can be restored upon their next login.
+
+### Cart "You May Also Like" Enhancements
+* **Fixed Navigation Context Bug**: Fixed a silent failure where clicking a cross-sell item failed to open the customization page. Updated the `onclick` handler to temporarily set `mockupState.menuTab = 'menu'` before executing `selectItemAndNavigate()`, ensuring the global index correctly matches the active menu state.
+* **UI/UX Polish**: Added `group-hover:scale-110` to the item images and made the entire card (rather than just the text/buttons) clickable to match the behavior of the standard menu items. 
+
+### Global Modal Positioning Fix
+* **Bypassed CSS Context Bugs**: Fixed a bug where modals (like the California Bag Compliance modal) were rendering below the viewport on long, scrolling pages. Replaced the generic `.modal-overlay` class with explicit, inline Tailwind classes (`fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center`). This bypasses CSS caching issues and prevents parent containers with `transform` properties from altering the `position: fixed` containing block.
+
+
+Listed directory farebites-OLO-Revamp
+Viewed api.js:1-166
+Searched for "getOrders"
+Viewed app.js:6286-7085
+Searched for "apiOrders"
+Viewed app.js:1180-1250
+Viewed app.js:3630-3690
+Viewed user-profile.html:1-23
+Searched for "case 'account'"
+Searched for "account"
+Viewed app.js:3780-3950
+Viewed app.js:3951-4030
+Viewed swagger.json:1-800
+Searched for "OrderApiEntity"
+Viewed swagger.json:4390-4550
+Searched for ""OrderMenuItemApiEntity":"
+Viewed swagger.json:4570-4610
+Searched for "currentPage ="
+Searched for "function renderPage"
+Viewed app.js:5730-5780
+Searched for "const routes ="
+Viewed app.js:1395-1430
+Viewed app.js:3770-3785
+Viewed test-signin.js:1-27
+Searched for "const LOCATIONS ="
+Viewed app.js:370-410
+Used tool: list_permissions
+Viewed app.js:3935-3980
+Searched for "'order-confirm'"
+Viewed app.js:4770-4820
+Searched for "cart.push"
+Viewed app.js:6220-6260
+Viewed app.js:1185-1225
+Viewed app.js:3635-3690
+Viewed app.js:6685-6700
+Viewed app.js:6690-6720
+Edited app.js
+Viewed app.js:1188-1210
+Edited app.js
+Viewed app.js:3640-3670
+Edited app.js
+Viewed app.js:3935-3975
+Edited app.js
+Viewed app.js:6718-6750
+Viewed app.js:6745-6770
+Edited app.js
+
+
+
+I have successfully configured the web application to fetch, parse, and render past orders using the `/api/Account/orders` endpoint. 
+
+Here is a summary of the enhancements and fixes made in [app.js](file:///Users/michael-riley/GitHub%20Repositories/FB-OLO-Revamp/farebites-OLO-Revamp/app.js):
+
+### 1. Robust Past Order Data Mapping
+* Refactored the **Menu page's History tab** and the **You May Also Like cross-sell carousel** to support both the local mockup state format (`order.items`) and the Swagger API's schema (`order.orderMenuItems`), ensuring the application doesn't crash when real API responses are returned.
+* Handled potential paginated/wrapped list structures (e.g., raw array, `.items`, or `.data` fields) from the endpoint to prevent undefined errors.
+
+### 2. Full Order History Rendering on the "My Account" Page
+* Replaced the single-order fallback with a dynamic container displaying the user's full past order list.
+* Merged the active session's newly placed order (`mockupState.lastOrder`) with fetched API orders, removed duplicate order IDs, sorted them newest first, and mapped each order's total, date, location name (looked up by ID), and item quantities correctly.
+
+### 3. "View" & "Reorder" Controls
+* Added a global `window.viewPastOrder(orderId)` function that maps the selected past order properties into the confirmation screen format and navigates to the details page.
+* Added a global `window.reorderPastOrder(orderId)` function that retrieves past items, matches them with active menu items (mapping image assets and base prices), adds them back into the cart, and redirects to the checkout cart view.
+
+
+
+# Pull Request Description: User Profile, Address Persistence, and Past Order History Integration
+
+This PR implements core user account features, fixes client-side data persistence limitations between API endpoints, integrates past order histories with reordering workflows, and resolves critical desktop UI layout and visibility issues on the My Account page.
+
+---
+
+## 🚀 Key Features & UI Improvements
+
+### 1. User Profile Address Fields & Local Persistence
+* **UI Integration:** Added new address fields (**Street Address, City, State, and Zip Code**) to the Personal Info card display and the Edit Profile modal.
+* **Modal Spacing Polish:** Optimized the spacing, padding, and layout inside the Edit Profile modal to keep all inputs visible on compact screen sizes without forcing vertical scrolls.
+* **Local State Mirroring:** Solved a limitation where the GET `/api/Account/profile` endpoint returns a profile object that excludes address details. Address data is now persisted locally under user-specific keys (`farebites_profile_address_[lowercase_email]`) and merged back during page initialization or login.
+
+### 2. Password Visibility & Security
+* **Toggles:** Added dynamic password visibility toggles (eye / eye-slash icons) to the current, new, and confirm password fields in the Change Password modal.
+* **Method:** Controlled via a global `window.togglePasswordVisibility(inputId, buttonEl)` helper that handles UI state changes and input type switching.
+
+### 3. Past Order History, View Details, and Reordering
+* **Order List:** Displays user order lists directly from the API.
+* **Detail Reconstruction:** Clicking "View Details" on a past order maps database keys to `mockupState.lastOrder` and routes the user to the Order Confirmation view.
+* **One-Click Reordering:** Added a "Reorder" action that maps past order items to active database objects, populates the cart in state, and directs the user straight to checkout.
+
+### 4. Desktop Modal Overlay Centering
+* **Viewport Fix:** Resolved a bug where modals (Edit Profile, Change Password, and Delete Account) rendered off-screen on desktop viewports.
+* **Implementation:** Wrapped modal overlays in absolute classes (`fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center p-4`) to bypass parent CSS transform nesting issues.
+
+---
+
+## 🛠 Technical & API Integration Details
+
+### 📡 GET `/api/Account/profile` (Limitations & Workaround)
+* **API Issue:** Returns user profile data but excludes address fields. When the page reloads or a user logs in, fetching profile details from the server clears out the address fields.
+* **Workaround:** 
+  1. On successful `PUT /api/Account/profile` (update), write the updated address fields to `localStorage`:
+     ```javascript
+     const localAddressKey = `farebites_profile_address_${email.toLowerCase()}`;
+     localStorage.setItem(localAddressKey, JSON.stringify({ address, city, state, zipCode }));
+     ```
+  2. On page load (`DOMContentLoaded`) and inside the `handleLogin()` callback, fetch the user profile from the server, read the key from `localStorage`, and merge the address details before writing to `mockupState.userProfile`.
+
+### 📡 PUT `/api/Account/profile` (Payload Sanitization)
+* **API Issue:** The profile update endpoint expects `UpdateProfileRequest` with `additionalProperties: false`. Sending the `email` field in the request body results in a `400 Bad Request` server validation error.
+* **Sanitization:** Sanitized the PUT payload structure to exclude `email`:
+  ```javascript
+  const payload = { firstName, lastName, phoneNumber, address, city, state, zipCode };
+  await window.ApiService.updateProfile(payload);
+  ```
+
+### 📡 GET `/api/Account/orders` (Data Normalization)
+* **Payload Differences:** Normalizes data parsing to account for structure differences:
+  * Handled variations where the orders payload can be a direct array, or an object containing an `items` or `data` array.
+  * Mapped order items under both `order.orderMenuItems` and standard `order.items` properties.
+
+---
+
+## 📂 Modified Files
+
+* 📄 **[app.js](file:///Users/michael-riley/GitHub%20Repositories/FB-OLO-Revamp/farebites-OLO-Revamp/app.js)**
+  * Added address fields into `routes.account` markup (personal card and edit modal).
+  * Repositioned and centered profile modal overlays.
+  * Added `togglePasswordVisibility`, `viewPastOrder`, and `reorderPastOrder` helpers.
+  * Integrated `localStorage` write on `handleUpdateProfile()`.
+  * Integrated `localStorage` read and merge on `handleLogin()`.
+* 📄 **[user-profile.html](file:///Users/michael-riley/GitHub%20Repositories/FB-OLO-Revamp/farebites-OLO-Revamp/user-profile.html)**
+  * Standardized imports (clean load of `app.js`).
+
+
+
+
+Changes Made:
+New Mobile Profile Dropdown:
+
+Instead of navigating directly to the profile page on mobile/tablet viewports, clicking the header's profile icon now toggles a new mobile-user-profile-dropdown menu when the user is logged in.
+This dropdown contains navigation links for Account Details and Rewards, along with a prominent Sign Out button.
+Positioned specifically with custom alignment styling (left: 0; right: auto;) so that it opens correctly inside mobile/tablet headers without going off-screen on the left.
+Added the new dropdown to the global auto-closing list so it automatically closes when clicking outside of it.
+Mobile Drawer Navigation Addition:
+
+Added a dedicated Log Out button directly into the main drawer navigation links list inside hamburgerDrawerHTML for logged-in users, displaying as a full-size row element with a trailing logout icon.
+
+
