@@ -387,3 +387,34 @@
             30% { transform: rotate(315deg) translateY(-18px) scaleY(1.2); }
             100% { transform: rotate(315deg) translateY(-26px) scaleY(0.1); }
         }
+
+        /* ================================================
+           Customize page: required-group validation shake
+           ================================================ */
+        @keyframes shake {
+            0%   { transform: translateX(0); }
+            15%  { transform: translateX(-6px); }
+            30%  { transform: translateX(5px); }
+            45%  { transform: translateX(-4px); }
+            60%  { transform: translateX(3px); }
+            75%  { transform: translateX(-2px); }
+            100% { transform: translateX(0); }
+        }
+
+        .shake {
+            animation: shake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        /* Red left-border flash for groups that fail required validation */
+        .validation-error {
+            border-left: 3px solid #f87171;
+            padding-left: 12px;
+            border-radius: 4px;
+            background: rgba(248, 113, 113, 0.04);
+            transition: all 0.3s ease;
+        }
+
+        /* iOS safe-area bottom padding for sticky footers */
+        .pb-bottom-safe {
+            padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+        }

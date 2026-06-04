@@ -153,7 +153,8 @@ const DEFAULT_STATE = {
     selectedItemDetail: null,    // Full MenuItemDetailDto from API for customize page
     lastOrder: null,             // Stores last successful order API response
     locationTaxRate: 0.0925,     // Tax rate from location menu response
-    locationConvenienceFee: 0    // Convenience fee from location menu response
+    locationConvenienceFee: 0,   // Convenience fee from location menu response
+    _customizeModifyTypes: {}    // { [menuSubItemId]: { modifyType: 'add'|'extra'|'less'|'no', addPrice, extraPrice, lessPrice, noPrice } }
 };
 
 function getCurrentViewport() {
@@ -317,20 +318,45 @@ async function fetchLocations() {
                 loc.locationName && (loc.locationName.toLowerCase().includes('i-tea') || loc.locationName.toLowerCase().includes('itea'))
             );
             if (iteaLocations.length > 0) {
-                mockupState.apiLocations = iteaLocations.map(loc => {
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const todayDay = days[new Date().getDay()];
+
+                const mappedLocs = await Promise.all(iteaLocations.map(async loc => {
                     const fallback = LOCATIONS.find(l => l.name.toLowerCase() === (loc.locationName || '').toLowerCase());
+                    let hoursStr = 'Hours unavailable';
+
+                    try {
+                        const hRes = await fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${loc.locationId}/hours`);
+                        if (hRes.ok) {
+                            const hData = await hRes.json();
+                            if (hData && hData.businessHours && hData.businessHours[todayDay]) {
+                                const todayH = hData.businessHours[todayDay];
+                                if (todayH.isClosed) {
+                                    hoursStr = 'Closed today';
+                                } else if (todayH.startTime && todayH.endTime) {
+                                    hoursStr = `${todayH.startTime} to ${todayH.endTime}`;
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn(`Could not fetch hours for loc ${loc.locationId}`);
+                    }
+
                     return {
                         locationId: loc.locationId,
                         name: loc.locationName || 'Unnamed Location',
                         address: `${loc.address || ''}, ${loc.city || ''}, ${loc.state || ''} ${loc.zipCode || ''}`.trim().replace(/^,|,$/g, '').trim(),
                         dist: 'Nearby',
                         fav: false,
-                        hours: '11:30 AM to 9:30 PM',
+                        hours: hoursStr,
                         lat: loc.latitude || (fallback ? fallback.lat : 37.7749),
                         lng: loc.longitude || (fallback ? fallback.lng : -122.4194)
                     };
-                });
+                }));
+
+                mockupState.apiLocations = mappedLocs;
                 persistAllState();
+                if (currentPage === 'locations') renderPage();
             }
         }
     } catch (error) {
@@ -3130,8 +3156,8 @@ const routes = {
         const item = mockupState.selectedItem || MENU_ITEMS[1]; // Fallback to Taro Latte
         const basePrice = item.price;
         const detail = mockupState.selectedItemDetail;
-        const groups = (detail && detail.menuSubItemGroups) || [];
         const sels = mockupState._customizeSubItems || {};
+        const modSels = mockupState._customizeModifyTypes || {};
 
         // --- Dynamic total calculation from selected sub-items ---
         let extrasTotal = 0;
@@ -3255,7 +3281,7 @@ const routes = {
                         <!-- Page Title -->
                         <div>
                             <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Customize Order</h1>
-                            <p class="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">${item.name}</p>
+                            <p class="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">${item.category || ''}</p>
                         </div>
 
                         <!-- Item Image + Info Card -->
@@ -3285,7 +3311,7 @@ const routes = {
 
                         <!-- Customization Options Card -->
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col gap-7">
-                            ${renderGroups('grid')}
+                            ${renderAllModifierSections(detail, sels, modSels, 'grid')}
 
                             <!-- Special Instructions -->
                             ${detail && !detail.disableSpecialInstruction ? `
@@ -3351,7 +3377,7 @@ const routes = {
                                 </div>
                             </div>
 
-                            ${renderGroups('stacked')}
+                            ${renderAllModifierSections(detail, sels, modSels, 'stacked')}
 
                             <!-- Special Instructions -->
                             ${detail && !detail.disableSpecialInstruction ? `
@@ -3394,13 +3420,12 @@ const routes = {
             || LOCATIONS[0];
         const addressText = mockupState.selectedAddress || (selectedLoc ? selectedLoc.address : '825 W UNIVERSITY, TEMPE, AZ');
 
-        const item = mockupState.selectedItem || MENU_ITEMS[1]; // Fallback to Taro Latte
+        const item = mockupState.selectedItem || MENU_ITEMS[1];
         const basePrice = item.price;
         const detail = mockupState.selectedItemDetail;
-        const groups = (detail && detail.menuSubItemGroups) || [];
         const sels = mockupState._customizeSubItems || {};
+        const modSels = mockupState._customizeModifyTypes || {};
 
-        // --- Dynamic total calculation from selected sub-items ---
         let extrasTotal = 0;
         for (const gid in sels) {
             const groupItems = sels[gid]?.items || {};
@@ -3408,105 +3433,10 @@ const routes = {
                 extrasTotal += (groupItems[sid].price || 0) * (groupItems[sid].quantity || 1);
             }
         }
+        for (const sid in modSels) {
+            extrasTotal += modSels[sid]?.price || 0;
+        }
         const totalPrice = ((basePrice + extrasTotal) * mockupState.itemQuantity).toFixed(2);
-
-        // --- Section header helper ---
-        const sectionHeader = (label, required) => `
-            <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
-                <span class="text-xs font-black text-violet-600 uppercase tracking-widest">${label}</span>
-                ${required ? '<span class="text-[9px] font-bold text-red-400 uppercase tracking-widest">Required</span>' : ''}
-            </div>`;
-
-        // --- Render a single-select group (radio pills) ---
-        const renderRadioGroup = (group) => {
-            const gid = group.menuSubItemGroupId;
-            const prices = (group.groupPrices || []);
-            const selectedId = Object.keys(sels[gid]?.items || {})[0];
-            return prices.map(p => {
-                const sub = p.menuSubItem || {};
-                const name = (sub.name || '').toUpperCase();
-                const isSelected = String(p.menuSubItemId) === String(selectedId);
-                return `
-                <button onclick="window._selectSubItem(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${name.replace(/'/g, "\\'")}', ${p.price || 0}, true)" class="w-full flex justify-between items-center py-2 group">
-                    <span class="text-sm font-black text-gray-700 uppercase tracking-tight">${name}</span>
-                    <div class="w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${isSelected ? 'border-violet-600 bg-violet-600' : 'border-gray-200 group-hover:border-violet-300'}">
-                        ${isSelected ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ''}
-                    </div>
-                </button>`;
-            }).join('');
-        };
-
-        // --- Render a multi-select group (stepper rows) ---
-        const renderStepperGroup = (group) => {
-            const gid = group.menuSubItemGroupId;
-            const prices = (group.groupPrices || []);
-            return prices.map(p => {
-                const sub = p.menuSubItem || {};
-                const name = (sub.name || '').toUpperCase();
-                const price = p.price || 0;
-                const fmtPrice = price === 0 ? 'FREE' : `+$${price.toFixed(2)}`;
-                const qty = (sels[gid]?.items?.[p.menuSubItemId]?.quantity) || 0;
-                const safeName = name.replace(/'/g, "\\'");
-                return `
-                <div class="flex justify-between items-center py-2.5 border-b border-gray-50">
-                    <div class="flex flex-col">
-                        <span class="text-sm font-black text-gray-800 uppercase tracking-tight">${name}</span>
-                        <span class="text-[11px] font-bold text-gray-400">${fmtPrice}</span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${safeName}', ${price}, -1)" class="w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 transition-all active:scale-90 text-xs">
-                            <i class="fa-solid fa-minus"></i>
-                        </button>
-                        <span class="font-black text-gray-900 w-4 text-center text-sm">${qty}</span>
-                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${safeName}', ${price}, 1)" class="w-7 h-7 rounded-full border border-violet-200 bg-violet-50 flex items-center justify-center text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all active:scale-90 text-xs">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
-                    </div>
-                </div>`;
-            }).join('');
-        };
-
-        // --- Render modifier groups dynamically ---
-        const renderGroups = (colLayout) => {
-            if (!groups.length) {
-                return `<div class="text-center py-8 text-gray-400 text-sm font-bold uppercase tracking-widest">
-                    ${mockupState.isLoading ? '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading customizations...' : 'No customization options available'}
-                </div>`;
-            }
-            const radioGroups = groups.filter(g => (g.maxSelect || 1) === 1);
-            const stepperGroups = groups.filter(g => (g.maxSelect || 1) > 1);
-
-            let html = '';
-            for (const g of radioGroups) {
-                const isRequired = (g.minSelect || 0) >= 1;
-                html += `<div>
-                    ${sectionHeader(g.displayName || g.groupName || 'Options', isRequired)}
-                    <div class="${colLayout === 'grid' ? 'grid grid-cols-3 gap-x-8 gap-y-1' : 'space-y-1'}">
-                        ${renderRadioGroup(g)}
-                    </div>
-                </div>`;
-            }
-            if (stepperGroups.length > 0) {
-                if (colLayout === 'grid') {
-                    html += `<div class="grid grid-cols-2 gap-8">`;
-                    for (const g of stepperGroups) {
-                        html += `<div>
-                            ${sectionHeader(g.displayName || g.groupName || 'Options', false)}
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">${renderStepperGroup(g)}</div>
-                        </div>`;
-                    }
-                    html += `</div>`;
-                } else {
-                    for (const g of stepperGroups) {
-                        html += `<div>
-                            ${sectionHeader(g.displayName || g.groupName || 'Options', false)}
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">${renderStepperGroup(g)}</div>
-                        </div>`;
-                    }
-                }
-            }
-            return html;
-        };
 
         // ---- DESKTOP LAYOUT ----
         if (isDesktop) {
@@ -3517,7 +3447,7 @@ const routes = {
                         <!-- Page Title -->
                         <div>
                             <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Customize Order</h1>
-                            <p class="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">${item.name}</p>
+                            <p class="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">${item.category || ''}</p>
                         </div>
 
                         <!-- Item Image + Info Card -->
@@ -3545,7 +3475,7 @@ const routes = {
                         </div>
 
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col gap-7">
-                            ${renderGroups('grid')}
+                            ${renderAllModifierSections(detail, sels, modSels, 'grid')}
 
                             <!-- Special Instructions -->
                             ${detail && !detail.disableSpecialInstruction ? `
@@ -3561,7 +3491,7 @@ const routes = {
                                 <span class="text-lg font-black text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                             </div>
                             <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">Add to Cart — $${totalPrice}</button>
-                            <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
+                            <button onclick="navigateTo(mockupState.lastMenuPage || 'menu-alt')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
                         </div>
 
                     </div>
@@ -3644,7 +3574,7 @@ const routes = {
                                 </div>
                             </div>
 
-                            ${renderGroups('stacked')}
+                            ${renderAllModifierSections(detail, sels, modSels, 'stacked')}
 
                             <!-- Special Instructions -->
                             ${detail && !detail.disableSpecialInstruction ? `
@@ -6312,6 +6242,328 @@ function adjustBagQuantity(delta) {
     }
 }
 
+// =============================================================================
+// SHARED MODIFIER RENDERING FUNCTIONS (used by both 'customize' and 'customize-alt')
+// =============================================================================
+
+/**
+ * Section header with optional required badge and icon.
+ */
+function _modSectionHeader(label, required, icon, isFallback = false) {
+    const textColor = isFallback ? 'text-pink-500' : 'text-violet-600';
+    return `
+        <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
+            <span class="text-base font-black ${textColor} uppercase tracking-widest flex items-center gap-1.5">
+                ${label}
+            </span>
+            ${required ? '<span class="text-[9px] font-bold text-red-400 uppercase tracking-widest">Required</span>' : ''}
+        </div>`;
+}
+
+/**
+ * Horizontal scrollable pill row for single-select groups (sugar, ice, size, temp).
+ * Selected pill = solid violet; unselected = outlined.
+ */
+function _renderPillGroup(group, sels) {
+    const gid = group.menuSubItemGroupId;
+    const prices = (group.groupPrices || []).slice().sort((a, b) => (a.position || 0) - (b.position || 0));
+    const selectedId = Object.keys(sels[gid]?.items || {})[0];
+    const pills = prices.map(p => {
+        const sub = p.menuSubItem || {};
+        const name = sub.name || '';
+        const isSelected = String(p.menuSubItemId) === String(selectedId);
+        const safeName = name.replace(/'/g, "\\'");
+        const priceTag = p.price > 0 ? ` +$${p.price.toFixed(2)}` : '';
+        return `<button
+            onclick="window._selectSubItem(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${p.price || 0}, true)"
+            class="shrink-0 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wide transition-all active:scale-95 whitespace-nowrap
+                   ${isSelected
+                     ? 'bg-violet-600 text-white shadow-[0_4px_12px_rgba(124,58,237,0.35)]'
+                     : 'bg-white border border-gray-200 text-gray-600 hover:border-violet-400 hover:text-violet-600'}">
+            ${name}${priceTag}
+        </button>`;
+    }).join('');
+    return `<div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">${pills}</div>`;
+}
+
+/**
+ * Checkbox + optional stepper rows for multi-select groups (toppings, extras).
+ */
+function _renderStepperGroup(group, sels) {
+    const gid = group.menuSubItemGroupId;
+    const prices = (group.groupPrices || []).slice().sort((a, b) => (a.position || 0) - (b.position || 0));
+    const maxSel = group.maxSelect || 99;
+    return prices.map(p => {
+        const sub = p.menuSubItem || {};
+        const name = sub.name || '';
+        const price = p.price || 0;
+        const fmtPrice = price === 0 ? 'Free' : `+$${price.toFixed(2)}`;
+        const qty = sels[gid]?.items?.[p.menuSubItemId]?.quantity || 0;
+        const safeName = name.replace(/'/g, "\\'");
+        const canAdd = qty < maxSel;
+        return `
+        <div class="flex justify-between items-center py-2.5 border-b border-gray-50 last:border-0">
+            <div class="flex flex-col min-w-0 pr-3">
+                <span class="text-sm font-black text-gray-800 uppercase tracking-tight leading-tight">${name}</span>
+                <span class="text-[11px] font-bold ${price === 0 ? 'text-emerald-500' : 'text-gray-400'}">${fmtPrice}</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, -1)"
+                    class="w-7 h-7 rounded-full border transition-all active:scale-90 flex items-center justify-center text-xs
+                           ${qty > 0 ? 'border-violet-200 bg-violet-50 text-violet-600 hover:bg-red-50 hover:border-red-300 hover:text-red-500' : 'border-gray-100 bg-gray-50 text-gray-300 cursor-default'}">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+                <span class="font-black text-gray-900 w-5 text-center text-sm">${qty}</span>
+                <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, 1)"
+                    class="w-7 h-7 rounded-full border transition-all active:scale-90 flex items-center justify-center text-xs
+                           ${canAdd ? 'border-violet-200 bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600' : 'border-gray-100 bg-gray-50 text-gray-300 cursor-default'}">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+/**
+ * Four-button modify-type row: None | Less | Regular | Extra.
+ * Used for included ingredients that can be adjusted (milk, syrup, etc.).
+ * NOTE: modifyType string values ('add','extra','less','no') — confirm with API developer if order fails.
+ */
+function _renderModifyTypeSection(modifyPrices, modSels) {
+    if (!modifyPrices || modifyPrices.length === 0) return '';
+    const rows = modifyPrices.map(mp => {
+        const sub = mp.menuSubItem || {};
+        const name = sub.name || `Item ${mp.menuSubItemId}`;
+        const currentType = modSels[mp.menuSubItemId]?.modifyType || 'add'; // Default = Regular (add)
+        const options = [
+            { key: 'no',    label: 'None',    price: mp.noPrice || 0 },
+            { key: 'less',  label: 'Less',    price: mp.lessPrice || 0 },
+            { key: 'add',   label: 'Regular', price: mp.addPrice || 0 },
+            { key: 'extra', label: 'Extra',   price: mp.extraPrice || 0 }
+        ];
+        const btns = options.map(opt => {
+            const isActive = currentType === opt.key;
+            const priceTag = opt.price > 0 ? ` +$${opt.price.toFixed(2)}` : (opt.price < 0 ? ` -$${Math.abs(opt.price).toFixed(2)}` : '');
+            return `<button
+                onclick="window._selectModifyType(${mp.menuSubItemId}, '${opt.key}', ${opt.price})"
+                class="flex-1 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wide transition-all active:scale-95
+                       ${isActive
+                         ? 'bg-white text-violet-600 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                         : 'text-gray-500 hover:text-gray-900'}">
+                ${opt.label}${priceTag}
+            </button>`;
+        }).join('');
+        return `
+        <div class="flex flex-col gap-2">
+            <div class="flex justify-between items-baseline">
+                <span class="text-sm font-black text-gray-800 uppercase tracking-tight">${name}</span>
+                <span class="text-[10px] font-bold text-gray-400 uppercase">Included</span>
+            </div>
+            <div class="flex bg-gray-100 p-1 rounded-full w-full">${btns}</div>
+        </div>`;
+    }).join('<div class="border-b border-gray-50 my-3"></div>');
+    return rows;
+}
+
+/**
+ * Stepper rows for flat ungrouped sub-items (menuSubItems).
+ */
+function _renderFlatSubItemSection(subItems, sels) {
+    if (!subItems || subItems.length === 0) return '';
+    // Use a synthetic group id based on a fixed key so steppers work
+    const gid = 'flat';
+    if (!sels[gid]) sels[gid] = { items: {} };
+    return subItems.map(sub => {
+        const name = sub.name || '';
+        const price = sub.price || 0;
+        const fmtPrice = price === 0 ? 'Free' : `+$${price.toFixed(2)}`;
+        const qty = sels[gid]?.items?.[sub.menuSubItemId]?.quantity || 0;
+        const safeName = name.replace(/'/g, "\\'");
+        return `
+        <div class="flex justify-between items-center py-2.5 border-b border-gray-50 last:border-0">
+            <div class="flex flex-col min-w-0 pr-3">
+                <span class="text-sm font-black text-gray-800 uppercase tracking-tight leading-tight">${name}</span>
+                <span class="text-[11px] font-bold ${price === 0 ? 'text-emerald-500' : 'text-gray-400'}">${fmtPrice}</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="window._adjustSubItemQty('${gid}', ${sub.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, -1)"
+                    class="w-7 h-7 rounded-full border transition-all active:scale-90 flex items-center justify-center text-xs
+                           ${qty > 0 ? 'border-violet-200 bg-violet-50 text-violet-600 hover:bg-red-50 hover:border-red-300 hover:text-red-500' : 'border-gray-100 bg-gray-50 text-gray-300 cursor-default'}">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+                <span class="font-black text-gray-900 w-5 text-center text-sm">${qty}</span>
+                <button onclick="window._adjustSubItemQty('${gid}', ${sub.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, 1)"
+                    class="w-7 h-7 rounded-full border transition-all active:scale-90 flex items-center justify-center text-xs
+                           border-violet-200 bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+/**
+ * SubMenuChoices: size/base pickers — renders as pill groups.
+ * Each choice has its own sub-item list, displayed as a pill selector.
+ */
+function _renderSubMenuChoiceSection(choices, sels) {
+    if (!choices || choices.length === 0) return '';
+    return choices.map(choice => {
+        // Treat subMenuChoiceId as a group id so pills work with existing _selectSubItem
+        const gid = `choice_${choice.subMenuChoiceId}`;
+        if (!sels[gid]) sels[gid] = { items: {} };
+        const selectedId = Object.keys(sels[gid]?.items || {})[0];
+        const pills = (choice.subItems || []).map(sub => {
+            const isSelected = String(sub.menuSubItemId) === String(selectedId);
+            const name = sub.name || '';
+            const price = sub.price || 0;
+            const safeName = name.replace(/'/g, "\\'");
+            const priceTag = price > 0 ? ` +$${price.toFixed(2)}` : '';
+            return `<button
+                onclick="window._selectSubItem('${gid}', ${sub.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, true)"
+                class="shrink-0 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wide transition-all active:scale-95 whitespace-nowrap
+                       ${isSelected
+                         ? 'bg-violet-600 text-white shadow-[0_4px_12px_rgba(124,58,237,0.35)]'
+                         : 'bg-white border border-gray-200 text-gray-600 hover:border-violet-400 hover:text-violet-600'}">
+                ${name}${priceTag}
+            </button>`;
+        }).join('');
+        const isRequired = (choice.minSelect || 0) >= 1;
+        return `
+        <div>
+            ${_modSectionHeader(choice.displayName || choice.name || 'Choose', isRequired, '📋')}
+            <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">${pills}</div>
+        </div>`;
+    }).join('');
+}
+
+/**
+ * Master orchestrator: renders all modifier sections in the correct order.
+ * Order: SubMenuChoices (size/base) → Radio groups (sugar/ice) → Stepper groups (toppings) → ModifyPrice → FlatSubItems
+ */
+function renderAllModifierSections(detail, sels, modSels, colLayout) {
+    const hasAny = detail && (
+        (detail.subMenuChoices && detail.subMenuChoices.length > 0) ||
+        (detail.menuSubItemGroups && detail.menuSubItemGroups.length > 0) ||
+        (detail.menuSubItemModifyPrices && detail.menuSubItemModifyPrices.length > 0) ||
+        (detail.menuSubItems && detail.menuSubItems.length > 0)
+    );
+
+    if (!hasAny) {
+        return `<div class="text-center py-8 text-gray-400 text-sm font-bold uppercase tracking-widest flex flex-col items-center gap-3">
+            ${mockupState.isLoading
+                ? '<i class="fa-solid fa-spinner fa-spin text-violet-400 text-2xl mb-2"></i><span>Loading customizations…</span>'
+                : '<i class="fa-solid fa-sliders text-gray-300 text-2xl mb-2"></i><span>No customization options available</span>'}
+        </div>`;
+    }
+
+    let html = '';
+    
+    if (detail._isFallback) {
+        html += `<div class="bg-pink-50 border border-pink-200 text-pink-500 text-[11px] font-black uppercase tracking-widest p-3 rounded-xl mb-4 text-center shadow-sm">
+            ⚠️ Generic Options Displayed
+        </div>`;
+    }
+
+    // 1. SubMenuChoices (size / base drink) — always first
+    const choiceHtml = _renderSubMenuChoiceSection(detail?.subMenuChoices || [], sels);
+    if (choiceHtml) html += choiceHtml;
+
+    // 2. MenuSubItemGroups — split into radio (single-select) and stepper (multi-select)
+    const groups = (detail?.menuSubItemGroups || []).filter(g => g.isActive !== false);
+    const radioGroups = groups.filter(g => (g.maxSelect || 1) === 1);
+    const stepperGroups = groups.filter(g => (g.maxSelect || 1) > 1);
+
+    // Radio groups (sugar level, ice level, temperature, etc.)
+    for (const g of radioGroups) {
+        const isRequired = (g.minSelect || 0) >= 1;
+        const icon = _groupIcon(g.displayName || g.groupName || '');
+        const hasValidation = isRequired && Object.keys(sels[g.menuSubItemGroupId]?.items || {}).length === 0;
+        html += `<div id="mod-group-${g.menuSubItemGroupId}" class="${hasValidation ? 'validation-error' : ''}">
+            ${_modSectionHeader(g.displayName || g.groupName || 'Options', isRequired, icon, detail._isFallback)}
+            ${hasValidation ? '<p class="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-2">Please select one</p>' : ''}
+            ${_renderPillGroup(g, sels)}
+        </div>`;
+    }
+
+    // Stepper groups (toppings, extras) — desktop shows 2 columns if there are multiple groups
+    if (stepperGroups.length > 0) {
+        const isMultiCol = colLayout === 'grid' && stepperGroups.length > 1;
+        html += isMultiCol ? '<div class="grid grid-cols-2 gap-8">' : '';
+        for (const g of stepperGroups) {
+            const icon = _groupIcon(g.displayName || g.groupName || '');
+            html += `<div id="mod-group-${g.menuSubItemGroupId}">
+                ${_modSectionHeader(g.displayName || g.groupName || 'Options', false, icon, detail._isFallback)}
+                <div>${_renderStepperGroup(g, sels)}</div>
+            </div>`;
+        }
+        html += isMultiCol ? '</div>' : '';
+    }
+
+    // 3. ModifyPrice items (None/Less/Regular/Extra for included ingredients)
+    const modifyPrices = (detail?.menuSubItemModifyPrices || []).filter(m => m.isActive !== false);
+    if (modifyPrices.length > 0) {
+        html += `<div>
+            ${_modSectionHeader('Included Options', false, '⚙️')}
+            <div class="space-y-4">${_renderModifyTypeSection(modifyPrices, modSels)}</div>
+        </div>`;
+    }
+
+    // 4. Flat sub-items (ungrouped add-ons) — last
+    const activeSubItems = (detail?.menuSubItems || []).filter(s => s.isActive !== false);
+    if (activeSubItems.length > 0) {
+        html += `<div>
+            ${_modSectionHeader('Add-Ons', false, '✨')}
+            <div>${_renderFlatSubItemSection(activeSubItems, sels)}</div>
+        </div>`;
+    }
+
+    return html;
+}
+
+/**
+ * Returns a decorative icon for common modifier group names.
+ */
+function _groupIcon(name) {
+    const n = name.toLowerCase();
+    const svgBase = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">`;
+    
+    // Included / Options
+    if (n.includes('include') || n.includes('option')) 
+        return svgBase + `<path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M3 6l1 1 2-2"/><path d="M3 12l1 1 2-2"/><path d="M3 18l1 1 2-2"/></svg>`;
+        
+    // Sugar / Sweet (Spoon)
+    if (n.includes('sugar') || n.includes('sweet')) 
+        return svgBase + `<path d="m16 13 5.223 5.222a2.25 2.25 0 0 1-3.182 3.182l-6.89-6.892"/><path d="M11 12A6 6 0 1 0 2.5 3.5 6 6 0 0 0 11 12Z"/></svg>`;
+        
+    // Ice (3D Cube)
+    if (n.includes('ice')) 
+        return svgBase + `<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7l8.7 5 8.7-5"/><path d="M12 22V12"/></svg>`;
+        
+    // Cup / Size (To-go Cup)
+    if (n.includes('size') || n.includes('cup')) 
+        return svgBase + `<path d="m6 7 1.5 14h9L18 7"/><path d="M4 7h16"/><path d="M14 3 13 7"/></svg>`;
+        
+    // Temp (Thermometer)
+    if (n.includes('temp') || n.includes('hot') || n.includes('cold')) 
+        return svgBase + `<path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/><path d="M11.5 7v6"/></svg>`;
+        
+    // Topping / Boba / Extra (Plus Circle)
+    if (n.includes('topping') || n.includes('boba') || n.includes('extra') || n.includes('add')) 
+        return svgBase + `<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>`;
+        
+    // Milk / Cream (Milk Bottle)
+    if (n.includes('milk') || n.includes('cream')) 
+        return svgBase + `<path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.52 16h12.96"/><path d="M6 10l-2 10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2l-2-10"/></svg>`;
+        
+    // Flavor (Leaf)
+    if (n.includes('flavor')) 
+        return svgBase + `<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`;
+        
+    // Default fallback icon: Sliders
+    return svgBase + `<path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg>`;
+}
+
 function getDefaultCustomizeGroups() {
     return [
         {
@@ -6357,6 +6609,15 @@ function getDefaultCustomizeGroups() {
     ];
 }
 
+function isDrinkCategory(categoryName) {
+    if (!categoryName) return true; // Assume drink if category is unknown
+    const cat = categoryName.toLowerCase();
+    if (cat.includes('food') || cat.includes('snack') || cat.includes('bento') || cat.includes('onigiri') || cat.includes('ramen')) {
+        return false;
+    }
+    return true;
+}
+
 function selectItemAndNavigate(index) {
     const item = getActiveMenuItems()[index];
     mockupState.selectedItem = item;
@@ -6367,8 +6628,9 @@ function selectItemAndNavigate(index) {
     mockupState.cupQty = {};
     mockupState.freeToppings = [];
     mockupState.iceLevel = 'ICE';
-    // Reset selected sub-items for new customization
+    // Reset selected sub-items and modify-types for new customization
     mockupState._customizeSubItems = {};
+    mockupState._customizeModifyTypes = {};
     mockupState.selectedItemDetail = null;
     mockupState.lastMenuPage = currentPage;
     persistAllState();
@@ -6405,11 +6667,13 @@ function selectItemAndNavigate(index) {
             .then(detail => {
                 // If the detail is empty or has no customization groups, use default mock groups
                 if (!detail || !detail.menuSubItemGroups || detail.menuSubItemGroups.length === 0) {
+                    const isDrink = isDrinkCategory(item.category);
                     detail = {
                         menuItemId: item.id,
                         name: item.name,
                         price: item.price,
-                        menuSubItemGroups: getDefaultCustomizeGroups()
+                        menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
+                        _isFallback: isDrink
                     };
                 } else {
                     // Remove inactive modifiers so they aren't displayed or ordered
@@ -6440,11 +6704,13 @@ function selectItemAndNavigate(index) {
             })
             .catch(err => {
                 console.error('Failed to fetch item detail, using fallback:', err);
+                const isDrink = isDrinkCategory(item.category);
                 const fallbackDetail = {
                     menuItemId: item.id,
                     name: item.name,
                     price: item.price,
-                    menuSubItemGroups: getDefaultCustomizeGroups()
+                    menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
+                    _isFallback: isDrink
                 };
                 mockupState.selectedItemDetail = fallbackDetail;
                 applyDefaultSelections(fallbackDetail);
@@ -6456,11 +6722,13 @@ function selectItemAndNavigate(index) {
                 navigateTo('customize');
             });
     } else {
+        const isDrink = isDrinkCategory(item.category);
         const fallbackDetail = {
             menuItemId: item.id || 0,
             name: item.name,
             price: item.price,
-            menuSubItemGroups: getDefaultCustomizeGroups()
+            menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
+            _isFallback: isDrink
         };
         mockupState.selectedItemDetail = fallbackDetail;
         applyDefaultSelections(fallbackDetail);
@@ -6525,14 +6793,49 @@ window._adjustSubItemQty = function(groupId, subItemId, itemTypeId, name, price,
     updateMockupState('_lastUpdated', Date.now());
 };
 
-// Add to Cart: builds cart item from current selections and navigates
+// Modify-type selector: sets None/Less/Regular/Extra for an included ingredient.
+// NOTE: modifyType values ('add','extra','less','no') — verify with API developer if order results are unexpected.
+window._selectModifyType = function(menuSubItemId, modifyType, price) {
+    if (!mockupState._customizeModifyTypes) mockupState._customizeModifyTypes = {};
+    mockupState._customizeModifyTypes[menuSubItemId] = { modifyType, price };
+    updateMockupState('_lastUpdated', Date.now());
+};
+
+// Add to Cart: builds cart item from current selections, validates required groups, then navigates.
 window._addToCart = function() {
     const item = mockupState.selectedItem;
     if (!item) return;
 
-    // Collect all selected sub-items across all groups
-    const selectedSubItems = [];
+    // --- Required-group validation ---
+    const detail = mockupState.selectedItemDetail;
     const sels = mockupState._customizeSubItems || {};
+    const modSels = mockupState._customizeModifyTypes || {};
+    const groups = (detail?.menuSubItemGroups || []).filter(g => g.isActive !== false);
+    let firstFailId = null;
+    for (const g of groups) {
+        const isRequired = (g.minSelect || 0) >= 1;
+        if (isRequired && Object.keys(sels[g.menuSubItemGroupId]?.items || {}).length === 0) {
+            firstFailId = g.menuSubItemGroupId;
+            break;
+        }
+    }
+    if (firstFailId !== null) {
+        // Scroll the failing group into view and flash it
+        const el = document.getElementById(`mod-group-${firstFailId}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('validation-error');
+            el.style.animation = 'none';
+            requestAnimationFrame(() => { el.style.animation = ''; el.classList.add('shake'); });
+            setTimeout(() => el.classList.remove('shake'), 600);
+        }
+        // Re-render so the validation badge shows
+        updateMockupState('_lastUpdated', Date.now());
+        return;
+    }
+
+    // --- Collect all selected sub-items across groups ---
+    const selectedSubItems = [];
     for (const gid in sels) {
         const groupItems = sels[gid]?.items || {};
         for (const sid in groupItems) {
@@ -6544,7 +6847,27 @@ window._addToCart = function() {
                 quantity: s.quantity,
                 name: s.name,
                 price: s.price,
-                groupName: sels[gid]?.groupName || ''
+                groupName: sels[gid]?.groupName || '',
+                modifyType: null // standard group items have no modify type
+            });
+        }
+    }
+
+    // --- Collect modify-type items (None/Less/Regular/Extra) ---
+    for (const sid in modSels) {
+        const m = modSels[sid];
+        if (m.modifyType && m.modifyType !== 'add') {
+            // Only send non-default modify types to keep payload clean
+            // 'add' (Regular) is the default — omitting it reduces noise
+            selectedSubItems.push({
+                menuSubItemId: parseInt(sid),
+                itemTypeId: 2,
+                itemGroupPriceId: 0,
+                quantity: 1,
+                name: '',
+                price: m.price || 0,
+                groupName: 'Included Options',
+                modifyType: m.modifyType
             });
         }
     }
@@ -6556,10 +6879,13 @@ window._addToCart = function() {
     // Calculate unit price (base + extras)
     let extrasTotal = 0;
     selectedSubItems.forEach(s => { extrasTotal += (s.price || 0) * (s.quantity || 1); });
+    for (const sid in modSels) {
+        if (modSels[sid]?.modifyType !== 'add') extrasTotal += modSels[sid]?.price || 0;
+    }
 
     // Build cart item
     const cartItem = {
-        cartId: Date.now(), // Unique ID for this cart entry
+        cartId: Date.now(),
         menuItemId: item.id,
         name: item.name,
         basePrice: item.price,
@@ -6576,6 +6902,7 @@ window._addToCart = function() {
 
     // Reset customize state
     mockupState._customizeSubItems = {};
+    mockupState._customizeModifyTypes = {};
     mockupState._specialInstruction = '';
     mockupState.itemQuantity = 1;
 
