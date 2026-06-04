@@ -154,7 +154,8 @@ const ApiService = {
     // --- Order Endpoints ---
 
     async placeOrder(orderData) {
-        return await this.request('/api/CustomerOrder/guest', 'POST', orderData);
+        const endpoint = orderData.isGuestUser ? '/api/CustomerOrder/guest' : '/api/CustomerOrder';
+        return await this.request(endpoint, 'POST', orderData);
     },
 
     async getOrderDetails(orderId) {
