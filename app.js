@@ -750,6 +750,30 @@ function hamburgerDrawerHTML() {
                             ${item.label}
                         </button>`;
                     }).join('')}
+                    
+                    <div class="px-6 py-4 mt-2 border-t border-gray-100">
+                        <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Pages</div>
+                        <div class="flex flex-col gap-3">
+                            <a href="index.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">index.html</a>
+                            <a href="menu.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu.html</a>
+                            <a href="menu-alt.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu-alt.html</a>
+                            <a href="locations.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">locations.html</a>
+                            <a href="location-favorites.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">location-favorites.html</a>
+                            <a href="cart.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">cart.html</a>
+                            <a href="checkout.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">checkout.html</a>
+                            <a href="order-customize.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-customize.html</a>
+                            <a href="order-confirm.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-confirm.html</a>
+                            <a href="order-status.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-status.html</a>
+                            <a href="order-details.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-details.html</a>
+                            <a href="order-details-alt.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-details-alt.html</a>
+                            <a href="track-order.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">track-order.html</a>
+                            <a href="profile.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">profile.html</a>
+                            <a href="registration.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">registration.html</a>
+                            <a href="sign-in.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">sign-in.html</a>
+                            <a href="menu-favorites.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu-favorites.html</a>
+                            <a href="menu-scan.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu-scan.html</a>
+                        </div>
+                    </div>
                 </nav>
                 <!-- Footer -->
                 <div class="px-6 py-6 border-t border-gray-100">
@@ -1368,8 +1392,8 @@ function renderMenuPage(isAlternative) {
                                 <div class="flex justify-between items-end mb-4 px-1">
                                     <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
                                 </div>
-                                <div class="\${isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-5' : 'flex flex-col gap-4'}">
-                                    \${orderCardsHTML}
+                                <div class="${isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-5' : 'flex flex-col gap-4'}">
+                                    ${orderCardsHTML}
                                 </div>
                             </div>
                         `;
@@ -2133,7 +2157,8 @@ const routes = {
                     <div class="w-[450px] flex flex-col shrink-0 border-r border-gray-200 z-10 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.05)]">
                         <header class="p-4 border-b border-gray-100 flex items-center bg-white">
                             <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
-                            <h1 class="text-xl font-black tracking-tight uppercase text-gray-900" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
+                            <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
+                            <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                         </header>
                         <!-- Default Location Quick-Select -->
                         <div class="px-[36px] py-5 border-b border-violet-700 bg-violet-600 flex items-center justify-between gap-3 text-white">
@@ -2217,7 +2242,8 @@ const routes = {
                 <div class="flex flex-col h-full bg-[#f4f4f2] relative">
                     <header class="p-4 flex items-center bg-white z-20 shrink-0 shadow-sm relative">
                         <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
-                        <h1 class="text-xl font-black tracking-tight uppercase text-gray-900" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
+                        <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
+                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                     </header>
                     
                     <!-- Previous Order Location Quick-Select -->
@@ -2330,7 +2356,8 @@ const routes = {
                     <div class="w-[450px] flex flex-col shrink-0 border-r border-gray-200 z-10 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.05)]">
                         <header class="p-4 border-b border-gray-100 flex items-center bg-white">
                             <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
-                            <h1 class="text-xl font-black tracking-tight uppercase text-gray-900" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
+                            <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
+                            <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                         </header>
                         <!-- Default Location Quick-Select -->
                         <div class="px-[36px] py-5 border-b border-violet-700 bg-violet-600 flex items-center justify-between gap-3 text-white">
@@ -3112,7 +3139,7 @@ const routes = {
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Scan to Dine In</span>
-                    <div class="w-10"></div>
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
 
                 <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden h-full">
@@ -4275,7 +4302,8 @@ const routes = {
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0">
                     <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
-                    <h1 class="text-xl font-black tracking-tight uppercase text-gray-900">Order Status</h1>
+                    <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center">Order Status</h1>
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
                 
                 <div class="${isDesktop ? 'flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full space-y-6 scrollbar-hide' : 'flex-1 overflow-y-auto space-y-6 scrollbar-hide'}">
@@ -4468,7 +4496,8 @@ const routes = {
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 justify-center">
                     <div class="w-full max-w-[1080px] flex items-center">
                         <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
-                        <h1 class="text-xl font-black tracking-tight uppercase text-gray-900">Track Order</h1>
+                        <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center">Track Order</h1>
+                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                     </div>
                 </header>
                 
@@ -4662,7 +4691,7 @@ const routes = {
                         <i class="fa-solid fa-chevron-left text-gray-600"></i>
                     </button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Create Account</span>
-                    <div class="w-10"></div>
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
                 
                 <div class="w-full max-w-3xl mx-auto p-6 md:p-8 flex flex-col gap-8 font-sans">
