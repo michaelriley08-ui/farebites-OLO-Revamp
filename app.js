@@ -304,7 +304,7 @@ function getFallbackCategoryImg() {
 }
 
 function getFallbackItemImg() {
-    return 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=400&q=80';
+    return 'images/no-product-pic.png';
 }
 
 async function fetchLocations() {
@@ -1055,7 +1055,7 @@ function renderMenuPage(isAlternative) {
                                             return `
                                                 <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                                     <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                     </div>
                                                     <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
@@ -1186,7 +1186,7 @@ function renderMenuPage(isAlternative) {
                                                     return `
                                                         <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                                             <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                                <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                             </div>
                                                             <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                                 <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
@@ -1241,7 +1241,7 @@ function renderMenuPage(isAlternative) {
                                             return `
                                                 <div class="bg-white rounded-2xl pt-2.5 px-2.5 pb-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                                     <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                         <div class="${badgeClass}" ${badgeStyle}>Featured</div>
                                                     </div>
                                                     <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -1266,7 +1266,7 @@ function renderMenuPage(isAlternative) {
                                             return `
                                                 <div class="bg-white rounded-2xl pt-1.5 px-1.5 pb-3 shadow-sm border border-gray-100 flex flex-col w-[72vw] max-w-[260px] shrink-0 snap-center hover:shadow-md transition-shadow">
                                                     <div class="w-full h-40 rounded-xl overflow-hidden mb-3 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <img src="${item.image}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                         <div class="${badgeClass}" ${badgeStyle}>Featured</div>
                                                     </div>
                                                     <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -2037,7 +2037,7 @@ const routes = {
                                         <div class="grid grid-cols-4 gap-6 justify-items-center max-w-[1080px] mx-auto w-full">
                                             ${favs.slice(0, 4).map(item => `
                                                 <div class="relative w-full h-[240px] rounded-2xl overflow-hidden shadow-md flex flex-col justify-end p-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.01] group cursor-pointer text-left" onclick="selectFavoriteAndNavigate('${item.name}')">
-                                                    <img src="${item.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                                    <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
                                                     <div class="absolute inset-0 bg-gradient-to-t from-violet-950/95 to-transparent to-65%"></div>
                                                     <span class="absolute top-3 left-4 bg-[#E61874] text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20 flex items-center gap-1"><i class="fa-solid fa-heart text-[7px]"></i> Favorites</span>
                                                     <div class="relative z-10 w-full">
@@ -2590,6 +2590,7 @@ const routes = {
     },
     // Duplicate location-favorites route handler removed (actual implementation below)
     'order-details': () => {
+        const isDesktop = currentViewport === 'desktop';
         const btn = (icon, label) => {
             const isActive = mockupState.fulfillmentMode === label;
             const clickHandler = label === 'Dine In' ? `navigateTo('menu-scan')` : `updateMockupState('fulfillmentMode', '${label}')`;
@@ -2639,7 +2640,15 @@ const routes = {
 
         return `
                 <div class="flex flex-col h-full bg-[#FAF9F6] relative overflow-hidden">
-                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black"><button onclick="navigateTo('locations')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span><button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button></header>
+                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black"><button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span><button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button></header>
+                    ${!isDesktop ? `
+                    <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                        <button onclick="navigateTo('locations')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                            <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                            <span>Back</span>
+                        </button>
+                    </div>
+                    ` : ''}
                     <div class="flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full ${currentViewport === 'desktop' ? 'pb-12' : 'pb-32'}">
                         <!-- Location Info Card -->
                         <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('locations')">
@@ -2917,13 +2926,21 @@ const routes = {
         return `
             <div class="flex flex-col bg-[#FAF9F6] relative overflow-hidden" style="${isDesktop ? 'height: calc(100vh - 70px);' : 'height: 100vh;'}">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('locations')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
+                    <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                         ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
                     </button>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo('locations-alt')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+                ` : ''}
 
                 <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden h-full">
                     ${isDesktop ? `
@@ -3141,6 +3158,14 @@ const routes = {
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Scan to Dine In</span>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo('restaurant-home')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+                ` : ''}
 
                 <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden h-full">
                     ${isDesktop ? imageHtml : ''}
@@ -3290,7 +3315,7 @@ const routes = {
                         <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex gap-0">
                             <div class="w-64 shrink-0 p-3">
                                 <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
-                                    <img src="${item.image}" class="w-full h-full object-cover object-top">
+                                    <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
                                 </div>
                             </div>
                             <div class="flex-1 px-8 py-6 flex flex-col justify-center gap-4">
@@ -3343,19 +3368,27 @@ const routes = {
                 <div class="flex flex-col h-full bg-white">
                     <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
                     <div class="w-full max-w-[1080px] flex items-center px-2">
-                        <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                        <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
+                            <i class="fa-solid fa-bars text-xl"></i>
                         </button>
                         <span class="text-lg font-black text-violet-600 flex-1 text-center">Customize</span>
                         <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                     </div>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+                ` : ''}
 
                     <div id="order-details-scroller" class="flex-1 overflow-y-auto scrollbar-hide">
                         <!-- Item Banner Image -->
                         <div class="px-3 pt-3">
                             <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative">
-                                <img src="${item.image}" class="w-full h-full object-cover object-top">
+                                <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
                             </div>
                         </div>
 
@@ -3456,7 +3489,7 @@ const routes = {
                         <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex gap-0">
                             <div class="w-64 shrink-0 p-3">
                                 <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
-                                    <img src="${item.image}" class="w-full h-full object-cover object-top">
+                                    <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
                                 </div>
                             </div>
                             <div class="flex-1 px-8 py-6 flex flex-col justify-center gap-4">
@@ -3552,7 +3585,7 @@ const routes = {
                         <!-- Item Banner Image -->
                         <div class="px-3 pt-3">
                             <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative">
-                                <img src="${item.image}" class="w-full h-full object-cover object-top">
+                                <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
                             </div>
                         </div>
 
@@ -3645,7 +3678,7 @@ const routes = {
                     <div class="flex justify-between items-start ${idx > 0 ? 'pt-5' : ''} ${idx < cart.length - 1 ? 'pb-5' : ''}">
                         <div class="flex gap-4 items-start">
                             <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0">
-                                <img src="${item.image}" class="w-full h-full object-cover object-top">
+                                <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
                             </div>
                             <div>
                                 <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight">${item.name}</h3>
@@ -3688,6 +3721,14 @@ const routes = {
                         ` : '<div class="w-10"></div>'}
                     </div>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo('menu')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+                ` : ''}
                 <div id="cart-scroller" class="flex-1 overflow-y-auto p-6 flex ${isDesktop ? 'flex-row items-start pb-6 gap-8' : 'flex-col gap-6 pb-32'} scrollbar-hide w-full max-w-[1080px] mx-auto">
                     
                     <!-- Left Column (2/3 width on desktop) -->
@@ -3780,7 +3821,7 @@ const routes = {
                                     return `
                                         <div class="snap-center shrink-0 ${isDesktop ? 'w-auto flex-1' : 'w-[140px]'} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md group cursor-pointer" onclick="mockupState.menuTab = 'menu'; selectItemAndNavigate(${getActiveMenuItems().findIndex(m => m.name === item.name)})">
                                             <div class="${isDesktop ? 'h-36' : 'h-24'} relative overflow-hidden">
-                                                <img src="${item.image}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                                                <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                             </div>
                                             <div class="p-3 md:p-4 text-left flex flex-col flex-1">
                                                 <h4 class="text-xs md:text-sm font-black text-gray-900 uppercase tracking-tight h-8 md:h-10 overflow-hidden line-clamp-2">${item.name}</h4>
@@ -3910,6 +3951,14 @@ const routes = {
                         ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
                     </button>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo('restaurant-home')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+                ` : ''}
 
                 <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 pb-16 relative z-10">
 
@@ -4301,10 +4350,18 @@ const routes = {
         return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0">
-                    <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
+                    <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button>
                     <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center">Order Status</h1>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo('account')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+                ` : ''}
                 
                 <div class="${isDesktop ? 'flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full space-y-6 scrollbar-hide' : 'flex-1 overflow-y-auto space-y-6 scrollbar-hide'}">
                     <div class="flex gap-2 overflow-x-auto scrollbar-hide shrink-0 pb-2">
@@ -4495,13 +4552,22 @@ const routes = {
             <div class="flex flex-col h-full ${isDesktop ? 'bg-[#f6f6f6]' : 'bg-white'} relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 justify-center">
                     <div class="w-full max-w-[1080px] flex items-center">
-                        <button onclick="navigateTo('home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
+                        <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button>
                         <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center">Track Order</h1>
                         <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                     </div>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo('order-status')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+                ` : ''}
                 
                 <div class="${isDesktop ? 'flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full space-y-6 scrollbar-hide' : 'px-6 py-4 space-y-4 w-full max-w-[1080px] mx-auto'}">
+
                     <div class="flex justify-end shrink-0 pb-2">
                         <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
                             <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
@@ -4687,12 +4753,20 @@ const routes = {
         return `
             <div class="flex flex-col h-full ${isDesktop ? 'bg-[#f6f6f6]' : 'bg-white'} relative overflow-y-auto">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                    <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
+                        <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Create Account</span>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo('sign-in')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+                ` : ''}
                 
                 <div class="w-full max-w-3xl mx-auto p-6 md:p-8 flex flex-col gap-8 font-sans">
                     <div class="text-center mb-2">
@@ -5049,13 +5123,21 @@ const routes = {
             <div class="flex flex-col h-full bg-white relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
                     <div class="w-full max-w-[1080px] flex items-center px-2">
-                        <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                        <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
+                            <i class="fa-solid fa-bars text-xl"></i>
                         </button>
                         <span class="text-lg font-black text-violet-600 flex-1 text-center">SUCCESS</span>
                         <div class="w-10"></div>
                     </div>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo('menu')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back to Menu</span>
+                    </button>
+                </div>
+                ` : ''}
                 <div class="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6 w-full ${isDesktop ? 'max-w-2xl' : 'max-w-[1080px]'} mx-auto">
                     
                     <div class="contents">
@@ -5109,7 +5191,7 @@ const routes = {
                                     return `
                                     <div class="flex gap-4">
                                         <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                            <img src="${item.image}" class="w-full h-full object-cover object-top">
+                                            <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
                                         </div>
                                         <div class="flex-1">
                                             <div class="flex justify-between items-start">
@@ -5197,15 +5279,24 @@ const routes = {
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
                     <div class="w-full max-w-[1080px] flex items-center px-2">
-                        <button onclick="navigateTo('cart')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                        <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
+                            <i class="fa-solid fa-bars text-xl"></i>
                         </button>
                         <span class="text-lg font-black text-violet-600 flex-1 text-center">Payment</span>
                         <div class="w-10"></div>
                     </div>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo('cart')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+                ` : ''}
                 
                 <div id="payment-scroller" class="flex-1 overflow-y-auto ${isDesktop ? 'p-6 md:p-8 space-y-8 w-full max-w-3xl mx-auto pb-12' : 'p-4 space-y-6 w-full max-w-[1080px] mx-auto pb-32'} scrollbar-hide">
+
                     
                     <!-- Payment Methods -->
                     <div>
@@ -5435,10 +5526,18 @@ const routes = {
         return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('locations')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
+                    <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Favorite Locations</span>
                     <div class="w-10"></div>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo('locations')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+                ` : ''}
                 <div class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-hide w-full max-w-3xl mx-auto">
                     ${isDesktop ? `
                     <div class="mb-2">
@@ -5509,12 +5608,20 @@ const routes = {
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
                 <!-- Header Component -->
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                    <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                    <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
+                        <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Menu Favorites</span>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
                 </header>
+                ${!isDesktop ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <button onclick="navigateTo('menu')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                        <span>Back</span>
+                    </button>
+                </div>
+                ` : ''}
 
                 <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 pb-16">
                     <div class="mb-8">
@@ -5537,7 +5644,7 @@ const routes = {
                         ${favorites.map(item => `
                             <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-4'} shadow-sm border border-gray-100 flex ${isDesktop ? 'gap-5' : 'flex-col gap-4'} hover:shadow-md transition-shadow relative group">
                                 <div class="${isDesktop ? 'w-24 h-24' : 'w-full h-56'} rounded-xl overflow-hidden shrink-0 border border-gray-50">
-                                    <img src="${item.image}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                                    <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                 </div>
                                 <div class="flex-1 flex flex-col justify-between py-1 min-w-0">
                                     <div class="cursor-pointer">
@@ -5581,12 +5688,20 @@ routes['privacy'] = () => {
 
             <!-- Header Component -->
             <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
-                <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors">
-                    <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
+                    <i class="fa-solid fa-bars text-xl"></i>
                 </button>
                 <span class="text-lg font-black text-violet-600 flex-1 text-center">Privacy Policy & Terms</span>
                 <div class="w-10"></div>
             </header>
+            ${!isDesktop ? `
+            <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                <button onclick="navigateTo('restaurant-home')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                    <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                    <span>Back</span>
+                </button>
+            </div>
+            ` : ''}
 
             <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 ${isDesktop ? 'pb-12' : 'pb-24'} relative z-10">
                 <div class="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100 p-6 md:p-8 space-y-6 text-left">
@@ -6001,9 +6116,15 @@ function renderPage() {
         `;
     }
 
-    let contentHtml = routes[currentPage]
-        ? routes[currentPage]()
-        : `<div class="p-10 text-center uppercase font-black">404 - Page Not Found</div>`;
+    let contentHtml = '';
+    try {
+        contentHtml = routes[currentPage]
+            ? routes[currentPage]()
+            : `<div class="p-10 text-center uppercase font-black">404 - Page Not Found</div>`;
+    } catch (err) {
+        console.error('Page Render Error:', err);
+        contentHtml = `<div class="p-10 text-left w-full h-full bg-white text-red-600 font-mono text-xs break-words whitespace-pre-wrap overflow-auto z-[99999] relative"><b>Render Error:</b> ${err.message}\n\n${err.stack}</div>`;
+    }
 
     const isRestaurantPage = !['landing', 'home', 'sign-in', 'dashboard', 'privacy', 'forgot-password', 'rewards'].includes(currentPage);
     const showDesktopNav = isRestaurantPage || currentPage === 'privacy' || currentPage === 'rewards';
@@ -6967,7 +7088,7 @@ window._handlePlaceOrder = async function() {
         pickUpTime: mockupState.orderTime === 'Later' ? new Date().toISOString() : null,
         isCustomTime: mockupState.orderTime === 'Later',
         tableNum: null,
-        isGuestUser: true,
+        isGuestUser: false,
         guestFirstName: mockupState.userProfile?.firstName || 'Guest',
         guestLastName: mockupState.userProfile?.lastName || 'User',
         guestPhoneNumber: mockupState.userProfile?.phoneNumber || '0000000000',
