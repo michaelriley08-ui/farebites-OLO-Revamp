@@ -94,3 +94,22 @@ The entire application relies on a global, mutable object called `mockupState`.
 ### Global Modal Positioning Fix
 * **The Problem:** Modals rendering deep inside the DOM would sometimes appear below the viewport on long, scrolling pages due to parent `transform` CSS properties breaking the `position: fixed` context.
 * **The Solution:** We bypass CSS caching and nesting issues by explicitly styling modal overlays with inline Tailwind classes: `fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center`. This forces the modal to relative strictly to the browser window.
+
+---
+
+## 7. Location Hours & Holiday Override Logic
+
+The application uses a dual-endpoint strategy to determine a location's current operating hours, ensuring that standard business hours are preserved while seamlessly supporting special holiday schedules.
+
+### Data Retrieval
+When fetching location data, the system makes parallel requests to two endpoints:
+* `GET /api/RestaurantMenu/location/{locationId}/hours` – Returns the standard weekly business hours (`businessHours`).
+* `GET /api/RestaurantMenu/location/{locationId}/hours-with-holidays` – Returns specific date-based overrides (`holidayHours`).
+
+### Holiday Override Processing
+The system formats the user's current local date (YYYY-MM-DD) and checks the `holidayHours` array from the secondary endpoint. 
+* If a matching holiday date is found, the holiday schedule takes strict precedence. 
+* The system evaluates the holiday override to determine if the location is completely closed (`isClosed: true`) or if it has modified operating hours for that specific date (e.g., 10:00 AM to 4:00 PM).
+
+### Standard Hours Fallback
+If the current date does not match any entries in the `holidayHours` array, the system ignores the holiday endpoint and falls back to the location's standard `businessHours`. It determines the current day of the week (e.g., "Monday") and parses the normal operating hours provided by the primary `/hours` endpoint.
