@@ -1,738 +1,1121 @@
 const PAGE_FILE_MAP = {
-    "landing": "landing.html",
-    "home": "index.html",
-    "sign-in": "sign-in.html",
-    "forgot-password": "forgot-password.html",
-    "rewards": "rewards.html",
-    "cart": "cart.html",
-    "customize": "order-customize.html",
-    "customize-alt": "order-customize-alt.html",
-    "checkout": "checkout.html",
-    "order-confirm": "order-confirm.html",
-    "order-status": "order-status.html",
-    "restaurant-home": "index.html",
-    "restaurant-sign-in": "sign-in.html",
-    "order-details": "order-details.html",
-    "order-details-alt": "order-details-alt.html",
-    "menu-scan": "menu-scan.html",
-    "menu": "menu.html",
-    "menu-alt": "menu-alt.html",
-    "locations": "locations.html",
-    "locations-alt": "locations-alt.html",
-    "location-favorites": "location-favorites.html",
-    "login": "login.html",
-    "sign-up": "sign-up.html",
-    "account": "profile.html",
-    "privacy": "privacy.html",
-    "dashboard": "dashboard.html",
-    "index": "index.html",
-    "menu-favorites": "menu-favorites.html",
-    "directions": "directions.html",
-    "registration": "registration.html",
-    "sections": "sections.html",
-    "accessibility": "accessibility.html"
+  landing: "landing.html",
+  home: "index.html",
+  "sign-in": "sign-in.html",
+  "forgot-password": "forgot-password.html",
+  rewards: "rewards.html",
+  cart: "cart.html",
+  customize: "order-customize.html",
+  "customize-alt": "order-customize-alt.html",
+  checkout: "checkout.html",
+  "order-confirm": "order-confirm.html",
+  "order-status": "order-status.html",
+  "restaurant-home": "index.html",
+  "restaurant-sign-in": "sign-in.html",
+  "order-details": "order-details.html",
+  "order-details-alt": "order-details-alt.html",
+  "menu-scan": "menu-scan.html",
+  menu: "menu.html",
+  "menu-alt": "menu-alt.html",
+  locations: "locations.html",
+  "locations-alt": "locations-alt.html",
+  "location-favorites": "location-favorites.html",
+  login: "login.html",
+  "sign-up": "sign-up.html",
+  account: "profile.html",
+  privacy: "privacy.html",
+  dashboard: "dashboard.html",
+  index: "index.html",
+  "menu-favorites": "menu-favorites.html",
+  directions: "directions.html",
+  registration: "registration.html",
+  sections: "sections.html",
+  accessibility: "accessibility.html",
 };
 const PAGE_LABELS = {
-    "landing": "FareBites Landing Page",
-    "home": "FareBites Homepage (Logged In)",
-    "sign-in": "Sign In / Sign Up",
-    "forgot-password": "Forgot Password",
-    "rewards": "Rewards Program",
-    "cart": "Cart / Review",
-    "customize": "Customize Item",
-    "customize-alt": "Customize Item (Alternative)",
-    "checkout": "Checkout",
-    "order-confirm": "Order Confirmation",
-    "order-status": "Order Status",
-    "restaurant-home": "i-Tea Homepage",
-    "restaurant-sign-in": "i-Tea Sign In",
-    "order-details": "Order Details",
-    "order-details-alt": "Order Details (Alternative)",
-    "menu-scan": "Scan",
-    "menu": "Menu",
-    "menu-alt": "Menu (Alternative)",
-    "locations": "Pick a Location",
-    "locations-alt": "Pick a Location (Alternative)",
-    "location-favorites": "Saved Locations",
-    "login": "Login (Phone)",
-    "sign-up": "Sign Up",
-    "account": "My Account",
-    "privacy": "Privacy Policy",
-    "dashboard": "Merchant Dashboard",
-    "menu-favorites": "Menu Favorites",
-    "directions": "Directions",
-    "registration": "Registration Form",
-    "sections": "Retired Sections",
-    "accessibility": "Web Accessibility"
+  landing: "FareBites Landing Page",
+  home: "FareBites Homepage (Logged In)",
+  "sign-in": "Sign In / Sign Up",
+  "forgot-password": "Forgot Password",
+  rewards: "Rewards Program",
+  cart: "Cart / Review",
+  customize: "Customize Item",
+  "customize-alt": "Customize Item (Alternative)",
+  checkout: "Checkout",
+  "order-confirm": "Order Confirmation",
+  "order-status": "Order Status",
+  "restaurant-home": "i-Tea Homepage",
+  "restaurant-sign-in": "i-Tea Sign In",
+  "order-details": "Order Details",
+  "order-details-alt": "Order Details (Alternative)",
+  "menu-scan": "Scan",
+  menu: "Menu",
+  "menu-alt": "Menu (Alternative)",
+  locations: "Pick a Location",
+  "locations-alt": "Pick a Location (Alternative)",
+  "location-favorites": "Saved Locations",
+  login: "Login (Phone)",
+  "sign-up": "Sign Up",
+  account: "My Account",
+  privacy: "Privacy Policy",
+  dashboard: "Merchant Dashboard",
+  "menu-favorites": "Menu Favorites",
+  directions: "Directions",
+  registration: "Registration Form",
+  sections: "Retired Sections",
+  accessibility: "Web Accessibility",
 };
 const STORAGE_KEYS = {
-    state: 'farebitesMockupState',
-    viewport: 'farebitesViewport'
+  state: "farebitesMockupState",
+  viewport: "farebitesViewport",
 };
 const assets = {
-    featured: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80",
-    steak: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80",
-    bobaHero: "https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg",
-    boba1: "https://olodev.azurewebsites.net/imagesmenu/M7-Cr%C3%A8me-Br%C3%BBl%C3%A9e-Boba-Milk-Tea.jpg",
-    boba2: "https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg",
-    boba3: "https://olodev.azurewebsites.net/imagesmenu/M8_Fresh-Taro-Puree-Boba-Latte.jpg",
-    boba4: "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg",
-    menuHero: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1200&q=80",
-    cobbSalad: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
-    shrimpTacos: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=800&q=80",
-    burger: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80",
-    burritoBowl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&getSet=80",
-    icedMatcha: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=400&q=80",
-    restaurantHero: "https://order-iteausa.com/imagesmenu/N9-Fresh-Strawberry-Mango-Fruit-Tea.jpg",
-    googleMapsEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.8329606830704!2d-111.9525413!3d33.4211153!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08de64c1bf87%3A0x7d022b7a9de3e878!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1716768000000!5m2!1sen!2sus"
+  featured:
+    "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80",
+  steak:
+    "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80",
+  bobaHero:
+    "https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg",
+  boba1:
+    "https://olodev.azurewebsites.net/imagesmenu/M7-Cr%C3%A8me-Br%C3%BBl%C3%A9e-Boba-Milk-Tea.jpg",
+  boba2:
+    "https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg",
+  boba3:
+    "https://olodev.azurewebsites.net/imagesmenu/M8_Fresh-Taro-Puree-Boba-Latte.jpg",
+  boba4: "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg",
+  menuHero:
+    "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1200&q=80",
+  cobbSalad:
+    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
+  shrimpTacos:
+    "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=800&q=80",
+  burger:
+    "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80",
+  burritoBowl:
+    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&getSet=80",
+  icedMatcha:
+    "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=400&q=80",
+  restaurantHero:
+    "https://order-iteausa.com/imagesmenu/N9-Fresh-Strawberry-Mango-Fruit-Tea.jpg",
+  googleMapsEmbed:
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.8329606830704!2d-111.9525413!3d33.4211153!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08de64c1bf87%3A0x7d022b7a9de3e878!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1716768000000!5m2!1sen!2sus",
 };
 
-const isLocalApp = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE_URL = isLocalApp ? 'https://olowebapidev2.azurewebsites.net' : '';
+const isLocalApp =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+const API_BASE_URL = isLocalApp
+  ? "https://olowebapidev2.azurewebsites.net"
+  : "";
 
 const LOCATIONS = [
-    { name: "i-Tea - Tempe", address: "825 W UNIVERSITY, TEMPE, AZ", dist: "0.8 mi", fav: true, hours: "11:30 AM to 9:30 PM", locationId: 7, lat: 33.4223, lng: -111.9514 },
-    { name: "i-Tea - ALAMEDA", address: "1860 PARK ST, Alameda, CA", dist: "1.2 mi", fav: false, hours: "12:00 PM to 9:30 PM", locationId: 9, lat: 37.7624, lng: -122.2435 },
-    { name: "i-Tea - CASTRO VALLEY", address: "20666 REDWOOD RD, Castro Valley, CA", dist: "15.1 mi", fav: false, hours: "10:30 AM to 10:00 PM", locationId: 7, lat: 37.6974, lng: -122.0722 },
-    { name: "i-Tea - UC DAVIS", address: "236 A ST, Davis, CA", dist: "45.0 mi", fav: false, hours: "11:00 AM to 8:00 PM", locationId: 10, lat: 38.5414, lng: -121.7482 },
-    { name: "i-Tea - FREMONT #1", address: "43421 CHRISTY ST, Fremont, CA", dist: "18.2 mi", fav: false, hours: "11:30 AM to 9:00 PM", locationId: 7, lat: 37.5186, lng: -121.9702 },
-    { name: "i-Tea - FRESNO", address: "345 E SHAW AVE, Fresno, CA", dist: "120.5 mi", fav: false, hours: "1:00 PM to 6:45 PM", locationId: 9, lat: 36.8087, lng: -119.7801 },
-    { name: "i-Tea - MILPITAS", address: "766 E CALAVERAS BLVD, Milpitas, CA", dist: "25.3 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 10, lat: 37.4332, lng: -121.8795 },
-    { name: "i-Tea - MORAGA", address: "1460 MORAGA RD, Moraga, CA", dist: "15.8 mi", fav: false, hours: "12:30 PM to 8:00 PM", locationId: 7, lat: 37.8351, lng: -122.1297 },
-    { name: "i-Tea - NEWARK", address: "34925 NEWARK BLVD, Newark, CA", dist: "20.1 mi", fav: false, hours: "11:30 AM to 9:20 PM", locationId: 9, lat: 37.5255, lng: -122.0463 },
-    { name: "i-Tea - OAKLAND", address: "388 9TH ST, 126A, Oakland, CA", dist: "8.5 mi", fav: true, hours: "11:00 AM to 6:00 PM", locationId: 9, lat: 37.8009, lng: -122.2709 },
-    { name: "i-Tea - PITTSBURG", address: "212A LOVERIDGE RD, Pittsburg, CA", dist: "32.4 mi", fav: false, hours: "11:00 AM to 7:00 PM", locationId: 10, lat: 38.0135, lng: -121.8767 },
-    { name: "i-Tea - PLEASANTON", address: "915 MAIN ST, STE C, Pleasanton, CA", dist: "28.0 mi", fav: false, hours: "11:30 AM to 7:30 PM", locationId: 7, lat: 37.6627, lng: -121.8744 },
-    { name: "i-Tea - STOCKTON", address: "6846 STOCKTON BLVD, Sacramento, CA", dist: "85.2 mi", fav: false, hours: "10:20 AM to 8:00 PM", locationId: 9, lat: 38.4870, lng: -121.4320 },
-    { name: "i-Tea - TEARAY", address: "253 KEARNY ST, San Francisco, CA", dist: "2.1 mi", fav: true, hours: "12:00 PM to 6:00 PM", locationId: 10, lat: 37.7905, lng: -122.4042 },
-    { name: "i-Tea - SAN JOSE", address: "2936 ABORN SQUARE RD, San Jose, CA", dist: "35.6 mi", fav: false, hours: "11:30 AM to 9:30 PM", locationId: 7, lat: 37.3195, lng: -121.8157 },
-    { name: "i-Tea - SAN LEANDRO", address: "177 PELTON CENTER WAY, San Leandro, CA", dist: "10.2 mi", fav: false, hours: "Open 24 Hours", locationId: 10, lat: 37.7247, lng: -122.1558 }
+  {
+    name: "i-Tea - Tempe",
+    address: "825 W UNIVERSITY, TEMPE, AZ",
+    dist: "0.8 mi",
+    fav: true,
+    hours: "11:30 AM to 9:30 PM",
+    locationId: 7,
+    lat: 33.4223,
+    lng: -111.9514,
+  },
+  {
+    name: "i-Tea - ALAMEDA",
+    address: "1860 PARK ST, Alameda, CA",
+    dist: "1.2 mi",
+    fav: false,
+    hours: "12:00 PM to 9:30 PM",
+    locationId: 9,
+    lat: 37.7624,
+    lng: -122.2435,
+  },
+  {
+    name: "i-Tea - CASTRO VALLEY",
+    address: "20666 REDWOOD RD, Castro Valley, CA",
+    dist: "15.1 mi",
+    fav: false,
+    hours: "10:30 AM to 10:00 PM",
+    locationId: 7,
+    lat: 37.6974,
+    lng: -122.0722,
+  },
+  {
+    name: "i-Tea - UC DAVIS",
+    address: "236 A ST, Davis, CA",
+    dist: "45.0 mi",
+    fav: false,
+    hours: "11:00 AM to 8:00 PM",
+    locationId: 10,
+    lat: 38.5414,
+    lng: -121.7482,
+  },
+  {
+    name: "i-Tea - FREMONT #1",
+    address: "43421 CHRISTY ST, Fremont, CA",
+    dist: "18.2 mi",
+    fav: false,
+    hours: "11:30 AM to 9:00 PM",
+    locationId: 7,
+    lat: 37.5186,
+    lng: -121.9702,
+  },
+  {
+    name: "i-Tea - FRESNO",
+    address: "345 E SHAW AVE, Fresno, CA",
+    dist: "120.5 mi",
+    fav: false,
+    hours: "1:00 PM to 6:45 PM",
+    locationId: 9,
+    lat: 36.8087,
+    lng: -119.7801,
+  },
+  {
+    name: "i-Tea - MILPITAS",
+    address: "766 E CALAVERAS BLVD, Milpitas, CA",
+    dist: "25.3 mi",
+    fav: false,
+    hours: "11:30 AM to 9:20 PM",
+    locationId: 10,
+    lat: 37.4332,
+    lng: -121.8795,
+  },
+  {
+    name: "i-Tea - MORAGA",
+    address: "1460 MORAGA RD, Moraga, CA",
+    dist: "15.8 mi",
+    fav: false,
+    hours: "12:30 PM to 8:00 PM",
+    locationId: 7,
+    lat: 37.8351,
+    lng: -122.1297,
+  },
+  {
+    name: "i-Tea - NEWARK",
+    address: "34925 NEWARK BLVD, Newark, CA",
+    dist: "20.1 mi",
+    fav: false,
+    hours: "11:30 AM to 9:20 PM",
+    locationId: 9,
+    lat: 37.5255,
+    lng: -122.0463,
+  },
+  {
+    name: "i-Tea - OAKLAND",
+    address: "388 9TH ST, 126A, Oakland, CA",
+    dist: "8.5 mi",
+    fav: true,
+    hours: "11:00 AM to 6:00 PM",
+    locationId: 9,
+    lat: 37.8009,
+    lng: -122.2709,
+  },
+  {
+    name: "i-Tea - PITTSBURG",
+    address: "212A LOVERIDGE RD, Pittsburg, CA",
+    dist: "32.4 mi",
+    fav: false,
+    hours: "11:00 AM to 7:00 PM",
+    locationId: 10,
+    lat: 38.0135,
+    lng: -121.8767,
+  },
+  {
+    name: "i-Tea - PLEASANTON",
+    address: "915 MAIN ST, STE C, Pleasanton, CA",
+    dist: "28.0 mi",
+    fav: false,
+    hours: "11:30 AM to 7:30 PM",
+    locationId: 7,
+    lat: 37.6627,
+    lng: -121.8744,
+  },
+  {
+    name: "i-Tea - STOCKTON",
+    address: "6846 STOCKTON BLVD, Sacramento, CA",
+    dist: "85.2 mi",
+    fav: false,
+    hours: "10:20 AM to 8:00 PM",
+    locationId: 9,
+    lat: 38.487,
+    lng: -121.432,
+  },
+  {
+    name: "i-Tea - TEARAY",
+    address: "253 KEARNY ST, San Francisco, CA",
+    dist: "2.1 mi",
+    fav: true,
+    hours: "12:00 PM to 6:00 PM",
+    locationId: 10,
+    lat: 37.7905,
+    lng: -122.4042,
+  },
+  {
+    name: "i-Tea - SAN JOSE",
+    address: "2936 ABORN SQUARE RD, San Jose, CA",
+    dist: "35.6 mi",
+    fav: false,
+    hours: "11:30 AM to 9:30 PM",
+    locationId: 7,
+    lat: 37.3195,
+    lng: -121.8157,
+  },
+  {
+    name: "i-Tea - SAN LEANDRO",
+    address: "177 PELTON CENTER WAY, San Leandro, CA",
+    dist: "10.2 mi",
+    fav: false,
+    hours: "Open 24 Hours",
+    locationId: 10,
+    lat: 37.7247,
+    lng: -122.1558,
+  },
 ];
 
 const DEFAULT_STATE = {
-    fulfillmentMode: 'In-store',
-    orderTime: 'ASAP',
-    locationFilter: 'Near Me',
-    locationLabels: {
-        'i-Tea - Tempe': 'Home',
-        'i-Tea - ALAMEDA': 'Office'
+  fulfillmentMode: "In-store",
+  orderTime: "ASAP",
+  locationFilter: "Near Me",
+  locationLabels: {
+    "i-Tea - Tempe": "Home",
+    "i-Tea - ALAMEDA": "Office",
+  },
+  selectedDay: "Today",
+  selectedTimeSlot: "12:30 PM",
+  sugarLevel: "50%",
+  itemQuantity: 1,
+  cartItemCount: 0,
+  bagQuantity: 0,
+  noBagsSelected: false,
+  toppings: ["BOBA"],
+  modalOpen: null,
+  menuTab: "menu",
+  paymentMethod: "card",
+  selectedItem: null,
+  tipPercentage: 15,
+  customTipAmount: 0,
+  orderDetailsExpanded: true,
+  hamburgerOpen: false,
+  menuSearchOpen: false,
+  menuSearchQuery: "",
+  favorites: [
+    {
+      id: 1,
+      name: "M7 Crème Brûlée Boba Milk Tea",
+      price: 5.75,
+      image: assets.boba1,
+      category: "Tea Spresso Series",
     },
-    selectedDay: 'Today',
-    selectedTimeSlot: '12:30 PM',
-    sugarLevel: '50%',
-    itemQuantity: 1,
-    cartItemCount: 0,
-    bagQuantity: 0,
-    noBagsSelected: false,
-    toppings: ['BOBA'],
-    modalOpen: null,
-    menuTab: 'menu',
-    paymentMethod: 'card',
-    selectedItem: null,
-    tipPercentage: 15,
-    customTipAmount: 0,
-    orderDetailsExpanded: true,
-    hamburgerOpen: false,
-    menuSearchOpen: false,
-    menuSearchQuery: '',
-    favorites: [
-        { id: 1, name: "M7 Crème Brûlée Boba Milk Tea", price: 5.75, image: assets.boba1, category: "Tea Spresso Series" },
-        { id: 2, name: "P4 Brown Sugar Boba Latte", price: 5.75, image: assets.boba2, category: "Tea Spresso Series" },
-        { id: 3, name: "M8 Taro Boba Purée Latte", price: 5.75, image: assets.boba3, category: "Tea Spresso Series" },
-        { id: 4, name: "P1 Super Fruit Tea", price: 5.95, image: assets.boba4, category: "Tea Spresso Series" }
-    ],
-    featuredSlideIndex: 0,
-    apiLocations: [],
-    apiCategories: [],
-    apiMenuItems: [],
-    selectedLocationId: null,
-    isScanning: false,
-    // Phase 4: Cart & Order state
-    cart: [],                    // Array of cart items with real menuItemId & selectedSubItems
-    selectedRestaurantId: null,  // Extracted from API sub-item data (e.g., 7 for i-Tea)
-    selectedItemDetail: null,    // Full MenuItemDetailDto from API for customize page
-    lastOrder: null,             // Stores last successful order API response
-    locationTaxRate: 0.0925,     // Tax rate from location menu response
-    locationConvenienceFee: 0,   // Convenience fee from location menu response
-    _customizeModifyTypes: {}    // { [menuSubItemId]: { modifyType: 'add'|'extra'|'less'|'no', addPrice, extraPrice, lessPrice, noPrice } }
+    {
+      id: 2,
+      name: "P4 Brown Sugar Boba Latte",
+      price: 5.75,
+      image: assets.boba2,
+      category: "Tea Spresso Series",
+    },
+    {
+      id: 3,
+      name: "M8 Taro Boba Purée Latte",
+      price: 5.75,
+      image: assets.boba3,
+      category: "Tea Spresso Series",
+    },
+    {
+      id: 4,
+      name: "P1 Super Fruit Tea",
+      price: 5.95,
+      image: assets.boba4,
+      category: "Tea Spresso Series",
+    },
+  ],
+  featuredSlideIndex: 0,
+  apiLocations: [],
+  apiCategories: [],
+  apiMenuItems: [],
+  selectedLocationId: null,
+  isScanning: false,
+  // Phase 4: Cart & Order state
+  cart: [], // Array of cart items with real menuItemId & selectedSubItems
+  selectedRestaurantId: null, // Extracted from API sub-item data (e.g., 7 for i-Tea)
+  selectedItemDetail: null, // Full MenuItemDetailDto from API for customize page
+  lastOrder: null, // Stores last successful order API response
+  locationTaxRate: 0.0925, // Tax rate from location menu response
+  locationConvenienceFee: 0, // Convenience fee from location menu response
+  _customizeModifyTypes: {}, // { [menuSubItemId]: { modifyType: 'add'|'extra'|'less'|'no', addPrice, extraPrice, lessPrice, noPrice } }
 };
 
 function getCurrentViewport() {
-    if (window.innerWidth >= 1024) return 'desktop';
-    if (window.innerWidth >= 640) return 'tablet';
-    return 'mobile';
+  if (window.innerWidth >= 1024) return "desktop";
+  if (window.innerWidth >= 640) return "tablet";
+  return "mobile";
 }
 let currentViewport = getCurrentViewport();
 
-window.addEventListener('resize', () => {
-    const newViewport = getCurrentViewport();
-    if (newViewport !== currentViewport) {
-        currentViewport = newViewport;
-        renderPage();
-    }
+window.addEventListener("resize", () => {
+  const newViewport = getCurrentViewport();
+  if (newViewport !== currentViewport) {
+    currentViewport = newViewport;
+    renderPage();
+  }
 });
 const _v = new Date();
-const VERSION_STR = `V${_v.getMonth() + 1}.${_v.getDate()}.${String(_v.getHours()).padStart(2,'0')}.${String(_v.getMinutes()).padStart(2,'0')}`;
-let currentPage = document.body.dataset.page || 'restaurant-home';
+const VERSION_STR = `V${_v.getMonth() + 1}.${_v.getDate()}.${String(_v.getHours()).padStart(2, "0")}.${String(_v.getMinutes()).padStart(2, "0")}`;
+let currentPage = document.body.dataset.page || "restaurant-home";
 let mockupState = loadMockupState();
 mockupState.isLoading = false;
 let isUpdatingMockupState = false;
 
 function loadMockupState() {
-    try {
-        const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEYS.state) || 'null');
-        const state = saved ? { ...DEFAULT_STATE, ...saved } : { ...DEFAULT_STATE };
-        
-        // Load favorites map and labels from localStorage
-        const favsMap = JSON.parse(localStorage.getItem('farebites_location_favorites') || '{}');
-        const isFirstLoad = localStorage.getItem('farebites_location_favorites') === null;
-        
-        if (isFirstLoad) {
-            // Populate localStorage with initial favorites from LOCATIONS
-            const initialFavs = {};
-            LOCATIONS.forEach(l => {
-                if (l.fav) initialFavs[l.name] = true;
-            });
-            localStorage.setItem('farebites_location_favorites', JSON.stringify(initialFavs));
-        } else {
-            // Apply favorites from localStorage to LOCATIONS
-            LOCATIONS.forEach(l => {
-                l.fav = !!favsMap[l.name];
-            });
-        }
-        
-        // Apply to state.apiLocations if it was loaded from sessionStorage
-        if (state.apiLocations && state.apiLocations.length > 0) {
-            const currentFavs = JSON.parse(localStorage.getItem('farebites_location_favorites') || '{}');
-            state.apiLocations.forEach(l => {
-                l.fav = !!currentFavs[l.name];
-            });
-        }
-        
-        // Load labels
-        const savedLabels = JSON.parse(localStorage.getItem('farebites_location_labels') || '{}');
-        state.locationLabels = { ...state.locationLabels, ...savedLabels };
-        
-        return state;
-    } catch (error) {
-        return { ...DEFAULT_STATE };
+  try {
+    const saved = JSON.parse(
+      sessionStorage.getItem(STORAGE_KEYS.state) || "null",
+    );
+    const state = saved ? { ...DEFAULT_STATE, ...saved } : { ...DEFAULT_STATE };
+
+    // Load favorites map and labels from localStorage
+    const favsMap = JSON.parse(
+      localStorage.getItem("farebites_location_favorites") || "{}",
+    );
+    const isFirstLoad =
+      localStorage.getItem("farebites_location_favorites") === null;
+
+    if (isFirstLoad) {
+      // Populate localStorage with initial favorites from LOCATIONS
+      const initialFavs = {};
+      LOCATIONS.forEach((l) => {
+        if (l.fav) initialFavs[l.name] = true;
+      });
+      localStorage.setItem(
+        "farebites_location_favorites",
+        JSON.stringify(initialFavs),
+      );
+    } else {
+      // Apply favorites from localStorage to LOCATIONS
+      LOCATIONS.forEach((l) => {
+        l.fav = !!favsMap[l.name];
+      });
     }
+
+    // Apply to state.apiLocations if it was loaded from sessionStorage
+    if (state.apiLocations && state.apiLocations.length > 0) {
+      const currentFavs = JSON.parse(
+        localStorage.getItem("farebites_location_favorites") || "{}",
+      );
+      state.apiLocations.forEach((l) => {
+        l.fav = !!currentFavs[l.name];
+      });
+    }
+
+    // Load labels
+    const savedLabels = JSON.parse(
+      localStorage.getItem("farebites_location_labels") || "{}",
+    );
+    state.locationLabels = { ...state.locationLabels, ...savedLabels };
+
+    return state;
+  } catch (error) {
+    return { ...DEFAULT_STATE };
+  }
 }
 
 function syncCartToStorage() {
-    const email = mockupState.userEmail || mockupState.userProfile?.email;
-    if (mockupState.isLoggedIn && email) {
-        const cartKey = `farebites_cart_${email.toLowerCase()}`;
-        const cartData = {
-            cart: mockupState.cart || [],
-            cartItemCount: mockupState.cartItemCount || 0,
-            bagQuantity: mockupState.bagQuantity || 0,
-            noBagsSelected: mockupState.noBagsSelected || false
-        };
-        localStorage.setItem(cartKey, JSON.stringify(cartData));
-    }
+  const email = mockupState.userEmail || mockupState.userProfile?.email;
+  if (mockupState.isLoggedIn && email) {
+    const cartKey = `farebites_cart_${email.toLowerCase()}`;
+    const cartData = {
+      cart: mockupState.cart || [],
+      cartItemCount: mockupState.cartItemCount || 0,
+      bagQuantity: mockupState.bagQuantity || 0,
+      noBagsSelected: mockupState.noBagsSelected || false,
+    };
+    localStorage.setItem(cartKey, JSON.stringify(cartData));
+  }
 }
 
 function loadCartFromStorage() {
-    const email = mockupState.userEmail || mockupState.userProfile?.email;
-    if (mockupState.isLoggedIn && email) {
-        const cartKey = `farebites_cart_${email.toLowerCase()}`;
-        const saved = localStorage.getItem(cartKey);
-        if (saved) {
-            try {
-                const cartData = JSON.parse(saved);
-                mockupState.cart = cartData.cart || [];
-                mockupState.cartItemCount = cartData.cartItemCount || 0;
-                mockupState.bagQuantity = cartData.bagQuantity || 0;
-                mockupState.noBagsSelected = cartData.noBagsSelected || false;
-            } catch(e) {
-                console.error("Failed to parse saved cart", e);
-            }
-        }
+  const email = mockupState.userEmail || mockupState.userProfile?.email;
+  if (mockupState.isLoggedIn && email) {
+    const cartKey = `farebites_cart_${email.toLowerCase()}`;
+    const saved = localStorage.getItem(cartKey);
+    if (saved) {
+      try {
+        const cartData = JSON.parse(saved);
+        mockupState.cart = cartData.cart || [];
+        mockupState.cartItemCount = cartData.cartItemCount || 0;
+        mockupState.bagQuantity = cartData.bagQuantity || 0;
+        mockupState.noBagsSelected = cartData.noBagsSelected || false;
+      } catch (e) {
+        console.error("Failed to parse saved cart", e);
+      }
     }
+  }
 }
 
 function persistAllState() {
-    sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
-    syncCartToStorage();
-    
-    // Also persist location favorites and labels to localStorage
-    const favsMap = {};
-    LOCATIONS.forEach(l => {
-        if (l.fav) favsMap[l.name] = true;
+  sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
+  syncCartToStorage();
+
+  // Also persist location favorites and labels to localStorage
+  const favsMap = {};
+  LOCATIONS.forEach((l) => {
+    if (l.fav) favsMap[l.name] = true;
+  });
+  if (mockupState.apiLocations && mockupState.apiLocations.length > 0) {
+    mockupState.apiLocations.forEach((l) => {
+      if (l.fav) favsMap[l.name] = true;
     });
-    if (mockupState.apiLocations && mockupState.apiLocations.length > 0) {
-        mockupState.apiLocations.forEach(l => {
-            if (l.fav) favsMap[l.name] = true;
-        });
-    }
-    localStorage.setItem('farebites_location_favorites', JSON.stringify(favsMap));
-    localStorage.setItem('farebites_location_labels', JSON.stringify(mockupState.locationLabels || {}));
+  }
+  localStorage.setItem("farebites_location_favorites", JSON.stringify(favsMap));
+  localStorage.setItem(
+    "farebites_location_labels",
+    JSON.stringify(mockupState.locationLabels || {}),
+  );
 }
 
 function resolveImageUrl(url, defaultUrl) {
-    if (!url) return defaultUrl || '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    if (url.startsWith('images/')) return url; // local images
-    
-    // Check if it's a bare filename (no slashes)
-    if (!url.includes('/')) {
-        return `https://olodev.azurewebsites.net/imagesmenu/${url}`;
-    }
-    
-    // Check if it's an old site asset path
-    const isOldSiteAsset = url.startsWith('/imagescategories/') || 
-                           url.startsWith('/imagesmenu/') || 
-                           url.startsWith('/ImagesLogos/') || 
-                           url.startsWith('/ImagesMenu/') ||
-                           url.startsWith('imagescategories/') || 
-                           url.startsWith('imagesmenu/') || 
-                           url.startsWith('ImagesLogos/') || 
-                           url.startsWith('ImagesMenu/');
-                           
-    if (isOldSiteAsset) {
-        const cleanPath = url.startsWith('/') ? url.slice(1) : url;
-        return `https://olodev.azurewebsites.net/${cleanPath}`;
-    }
-    
-    // Otherwise return as is
-    return url;
+  if (!url) return defaultUrl || "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("images/")) return url; // local images
+
+  // Check if it's a bare filename (no slashes)
+  if (!url.includes("/")) {
+    return `https://olodev.azurewebsites.net/imagesmenu/${url}`;
+  }
+
+  // Check if it's an old site asset path
+  const isOldSiteAsset =
+    url.startsWith("/imagescategories/") ||
+    url.startsWith("/imagesmenu/") ||
+    url.startsWith("/ImagesLogos/") ||
+    url.startsWith("/ImagesMenu/") ||
+    url.startsWith("imagescategories/") ||
+    url.startsWith("imagesmenu/") ||
+    url.startsWith("ImagesLogos/") ||
+    url.startsWith("ImagesMenu/");
+
+  if (isOldSiteAsset) {
+    const cleanPath = url.startsWith("/") ? url.slice(1) : url;
+    return `https://olodev.azurewebsites.net/${cleanPath}`;
+  }
+
+  // Otherwise return as is
+  return url;
 }
 
 function getFallbackCategoryImg() {
-    return 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg';
+  return "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg";
 }
 
 function getFallbackItemImg() {
-    return 'images/no-product-pic.png';
+  return "images/no-product-pic.png";
 }
 
 async function fetchLocations() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/Locations`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        if (data && data.length > 0) {
-            // Filter to include only i-Tea locations
-            const iteaLocations = data.filter(loc => 
-                loc.locationName && (loc.locationName.toLowerCase().includes('i-tea') || loc.locationName.toLowerCase().includes('itea'))
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/Locations`);
+    if (!response.ok) throw new Error("Network response was not ok");
+    const data = await response.json();
+    if (data && data.length > 0) {
+      // Filter to include only i-Tea locations
+      const iteaLocations = data.filter(
+        (loc) =>
+          loc.locationName &&
+          (loc.locationName.toLowerCase().includes("i-tea") ||
+            loc.locationName.toLowerCase().includes("itea")),
+      );
+      if (iteaLocations.length > 0) {
+        const days = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ];
+        const todayDay = days[new Date().getDay()];
+
+        const mappedLocs = await Promise.all(
+          iteaLocations.map(async (loc) => {
+            const fallback = LOCATIONS.find(
+              (l) =>
+                l.name.toLowerCase() === (loc.locationName || "").toLowerCase(),
             );
-            if (iteaLocations.length > 0) {
-                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                const todayDay = days[new Date().getDay()];
+            let hoursStr = "Hours unavailable";
 
-                const mappedLocs = await Promise.all(iteaLocations.map(async loc => {
-                    const fallback = LOCATIONS.find(l => l.name.toLowerCase() === (loc.locationName || '').toLowerCase());
-                    let hoursStr = 'Hours unavailable';
+            try {
+              const [hRes, holRes] = await Promise.all([
+                fetch(
+                  `${API_BASE_URL}/api/RestaurantMenu/location/${loc.locationId}/hours`,
+                ),
+                fetch(
+                  `${API_BASE_URL}/api/RestaurantMenu/location/${loc.locationId}/hours-with-holidays`,
+                ),
+              ]);
 
-                    try {
-                        const [hRes, holRes] = await Promise.all([
-                            fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${loc.locationId}/hours`),
-                            fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${loc.locationId}/hours-with-holidays`)
-                        ]);
+              let hData = null;
+              let holData = null;
 
-                        let hData = null;
-                        let holData = null;
-                        
-                        if (hRes.ok) hData = await hRes.json();
-                        if (holRes.ok) holData = await holRes.json();
+              if (hRes.ok) hData = await hRes.json();
+              if (holRes.ok) holData = await holRes.json();
 
-                        const todayObj = new Date();
-                        const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
-                        
-                        let isHoliday = false;
-                        if (holData && holData.holidayHours && Array.isArray(holData.holidayHours)) {
-                            const holiday = holData.holidayHours.find(h => h.date && h.date.startsWith(todayStr));
-                            if (holiday) {
-                                isHoliday = true;
-                                if (holiday.isClosed) {
-                                    hoursStr = 'Closed today';
-                                } else if (holiday.schedules && holiday.schedules.length > 0) {
-                                    const s = holiday.schedules[0];
-                                    if (s.startTime && s.endTime) {
-                                        hoursStr = `${s.startTime} to ${s.endTime}`;
-                                    }
-                                } else {
-                                    hoursStr = 'Closed today';
-                                }
-                            }
-                        }
+              const todayObj = new Date();
+              const todayStr =
+                todayObj.getFullYear() +
+                "-" +
+                String(todayObj.getMonth() + 1).padStart(2, "0") +
+                "-" +
+                String(todayObj.getDate()).padStart(2, "0");
 
-                        if (!isHoliday && hData && hData.businessHours && hData.businessHours[todayDay]) {
-                            const todayH = hData.businessHours[todayDay];
-                            if (todayH.isClosed) {
-                                hoursStr = 'Closed today';
-                            } else if (todayH.startTime && todayH.endTime) {
-                                hoursStr = `${todayH.startTime} to ${todayH.endTime}`;
-                            }
-                        }
-                    } catch (e) {
-                        console.warn(`Could not fetch hours for loc ${loc.locationId}`);
+              let isHoliday = false;
+              if (
+                holData &&
+                holData.holidayHours &&
+                Array.isArray(holData.holidayHours)
+              ) {
+                const holiday = holData.holidayHours.find(
+                  (h) => h.date && h.date.startsWith(todayStr),
+                );
+                if (holiday) {
+                  isHoliday = true;
+                  if (holiday.isClosed) {
+                    hoursStr = "Closed today";
+                  } else if (
+                    holiday.schedules &&
+                    holiday.schedules.length > 0
+                  ) {
+                    const s = holiday.schedules[0];
+                    if (s.startTime && s.endTime) {
+                      hoursStr = `${s.startTime} to ${s.endTime}`;
                     }
+                  } else {
+                    hoursStr = "Closed today";
+                  }
+                }
+              }
 
-                    return {
-                        locationId: loc.locationId,
-                        name: loc.locationName || 'Unnamed Location',
-                        address: `${loc.address || ''}, ${loc.city || ''}, ${loc.state || ''} ${loc.zipCode || ''}`.trim().replace(/^,|,$/g, '').trim(),
-                        dist: 'Nearby',
-                        fav: false,
-                        hours: hoursStr,
-                        lat: loc.latitude || (fallback ? fallback.lat : 37.7749),
-                        lng: loc.longitude || (fallback ? fallback.lng : -122.4194)
-                    };
-                }));
-
-                mockupState.apiLocations = mappedLocs;
-                persistAllState();
-                if (currentPage === 'locations') renderPage();
+              if (
+                !isHoliday &&
+                hData &&
+                hData.businessHours &&
+                hData.businessHours[todayDay]
+              ) {
+                const todayH = hData.businessHours[todayDay];
+                if (todayH.isClosed) {
+                  hoursStr = "Closed today";
+                } else if (todayH.startTime && todayH.endTime) {
+                  hoursStr = `${todayH.startTime} to ${todayH.endTime}`;
+                }
+              }
+            } catch (e) {
+              console.warn(`Could not fetch hours for loc ${loc.locationId}`);
             }
-        }
-    } catch (error) {
-        console.error('Failed to fetch locations from API, using fallback:', error);
+
+            return {
+              locationId: loc.locationId,
+              name: loc.locationName || "Unnamed Location",
+              address:
+                `${loc.address || ""}, ${loc.city || ""}, ${loc.state || ""} ${loc.zipCode || ""}`
+                  .trim()
+                  .replace(/^,|,$/g, "")
+                  .trim(),
+              dist: "Nearby",
+              fav: false,
+              hours: hoursStr,
+              lat: loc.latitude || (fallback ? fallback.lat : 37.7749),
+              lng: loc.longitude || (fallback ? fallback.lng : -122.4194),
+            };
+          }),
+        );
+
+        mockupState.apiLocations = mappedLocs;
+        persistAllState();
+        if (currentPage === "locations") renderPage();
+      }
     }
+  } catch (error) {
+    console.error("Failed to fetch locations from API, using fallback:", error);
+  }
 }
 
 async function fetchMenuAndItems(locationId) {
-    if (!locationId) return;
-    mockupState.isLoading = true;
-    renderPage();
-    try {
-        const menuResponse = await fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/menu`);
-        if (!menuResponse.ok) throw new Error('Menu response was not ok');
-        const menuData = await menuResponse.json();
-        
-        if (menuData && menuData.categories) {
-            // Store location-specific pricing info
-            if (menuData.taxRate != null) mockupState.locationTaxRate = menuData.taxRate;
-            if (menuData.convenienceFee != null) mockupState.locationConvenienceFee = menuData.convenienceFee;
+  if (!locationId) return;
+  mockupState.isLoading = true;
+  renderPage();
+  try {
+    const menuResponse = await fetch(
+      `${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/menu`,
+    );
+    if (!menuResponse.ok) throw new Error("Menu response was not ok");
+    const menuData = await menuResponse.json();
 
-            const filteredCategories = menuData.categories.filter(cat => {
-                const name = (cat.name || '').toLowerCase().trim();
-                return name !== 'bag' && name !== 'bags';
-            });
-            mockupState.apiCategories = filteredCategories.map(cat => ({
-                categoryId: cat.categoryId,
-                name: cat.name,
-                imgUrl: resolveImageUrl(cat.imgUrl, getFallbackCategoryImg())
-            }));
-            
-            let allItems = [];
-            for (const cat of filteredCategories) {
-                try {
-                    const itemsResponse = await fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/category/${cat.categoryId}/items`);
-                    if (itemsResponse.ok) {
-                        const itemsData = await itemsResponse.json();
-                        if (itemsData) {
-                            allItems = allItems.concat(itemsData.map(item => ({
-                                id: item.menuItemId,
-                                name: item.name,
-                                description: item.description || '',
-                                price: item.price,
-                                image: resolveImageUrl(item.productImage || item.image, getFallbackItemImg()),
-                                category: cat.name,
-                                categoryId: cat.categoryId
-                            })));
-                        }
-                    }
-                } catch (catError) {
-                    console.error(`Failed to fetch items for category ${cat.name}:`, catError);
-                }
+    if (menuData && menuData.categories) {
+      // Store location-specific pricing info
+      if (menuData.taxRate != null)
+        mockupState.locationTaxRate = menuData.taxRate;
+      if (menuData.convenienceFee != null)
+        mockupState.locationConvenienceFee = menuData.convenienceFee;
+
+      const filteredCategories = menuData.categories.filter((cat) => {
+        const name = (cat.name || "").toLowerCase().trim();
+        return name !== "bag" && name !== "bags";
+      });
+      mockupState.apiCategories = filteredCategories.map((cat) => ({
+        categoryId: cat.categoryId,
+        name: cat.name,
+        imgUrl: resolveImageUrl(cat.imgUrl, getFallbackCategoryImg()),
+      }));
+
+      let allItems = [];
+      for (const cat of filteredCategories) {
+        try {
+          const itemsResponse = await fetch(
+            `${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/category/${cat.categoryId}/items`,
+          );
+          if (itemsResponse.ok) {
+            const itemsData = await itemsResponse.json();
+            if (itemsData) {
+              allItems = allItems.concat(
+                itemsData.map((item) => ({
+                  id: item.menuItemId,
+                  name: item.name,
+                  description: item.description || "",
+                  price: item.price,
+                  image: resolveImageUrl(
+                    item.productImage || item.image,
+                    getFallbackItemImg(),
+                  ),
+                  category: cat.name,
+                  categoryId: cat.categoryId,
+                })),
+              );
             }
-            mockupState.apiMenuItems = allItems;
-            persistAllState();
+          }
+        } catch (catError) {
+          console.error(
+            `Failed to fetch items for category ${cat.name}:`,
+            catError,
+          );
         }
-    } catch (error) {
-        console.error('Failed to fetch menu and items from API:', error);
-    } finally {
-        mockupState.isLoading = false;
-        renderPage();
+      }
+      mockupState.apiMenuItems = allItems;
+      persistAllState();
     }
+  } catch (error) {
+    console.error("Failed to fetch menu and items from API:", error);
+  } finally {
+    mockupState.isLoading = false;
+    renderPage();
+  }
 }
 
 function getActiveCategories() {
-    if (mockupState.apiCategories && mockupState.apiCategories.length > 0) {
-        return mockupState.apiCategories
-            .filter(cat => {
-                const name = (cat.name || '').toLowerCase().trim();
-                return name !== 'bag' && name !== 'bags';
-            })
-            .map(cat => ({
-                name: cat.name,
-                id: `category-section-${cat.categoryId}`,
-                img: cat.imgUrl || 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg',
-                categoryId: cat.categoryId,
-                categoryKey: cat.name
-            }));
-    }
-    return [
-        { name: 'New Items', id: 'new-items-section', img: 'https://olodev.azurewebsites.net/imagescategories/New%20Items.jpg', categoryKey: 'New Items' },
-        { name: 'Teaspresso Series', id: 'teaspresso-section', img: 'https://olodev.azurewebsites.net/imagescategories/Teaspresso.jpg', categoryKey: 'Teaspresso Series' },
-        { name: 'Milk Tea Specialty', id: 'milk-tea-section', img: 'https://olodev.azurewebsites.net/imagescategories/Milk%20Tea.jpg', categoryKey: 'Milk Tea Specialty' },
-        { name: 'i-Tea Fruit Tea', id: 'fruit-tea-section', img: 'https://olodev.azurewebsites.net/imagescategories/Fruit%20Tea.jpg', categoryKey: 'i-Tea Fruit Tea' },
-        { name: 'Sea Salt Kreama', id: 'sea-salt-kreama-section', img: 'https://olodev.azurewebsites.net/imagescategories/Kreama.jpg', categoryKey: 'Sea Salt Kreama' },
-        { name: 'Summer Frosty', id: 'summer-frosty-section', img: 'https://olodev.azurewebsites.net/imagescategories/Frosty.jpg', categoryKey: 'Summer Frosty' },
-        { name: 'Signature Iced Milk', id: 'signature-iced-milk-section', img: 'https://olodev.azurewebsites.net/imagescategories/Signature%20Ice%20Milk.jpg', categoryKey: 'Signature Iced Milk' },
-        { name: 'Dessert Drinks', id: 'dessert-drinks-section', img: 'https://olodev.azurewebsites.net/imagescategories/Dessert%20Drink%20Series.jpg', categoryKey: 'Dessert Drinks' },
-        { name: 'Hot Drink', id: 'hot-drink-section', img: 'https://olodev.azurewebsites.net/imagescategories/Hot%20Drink.jpg', categoryKey: 'Hot Drink' },
-        { name: 'Premium Tea Taiwan', id: 'premium-tea-section', img: 'https://olodev.azurewebsites.net/imagescategories/Premium%20Tea.jpg', categoryKey: 'Premium Tea Taiwan' },
-        { name: 'Cold Brew', id: 'cold-brew-section', img: 'https://olodev.azurewebsites.net/imagescategories/Cold%20Brew%201.jpg', categoryKey: 'Cold Brew ' },
-        { name: 'Snack Menu', id: 'snack-menu-section', img: 'https://olodev.azurewebsites.net/imagescategories/Snack.jpg', categoryKey: 'Snack Menu' },
-        { name: 'Okinawa Onigiri Series', id: 'onigiri-section', img: 'https://olodev.azurewebsites.net/imagescategories/Okinawa%20Onigiri.jpg', categoryKey: 'Okinawa Onigiri Series' },
-        { name: 'Food Menu', id: 'food-menu-section', img: 'https://olodev.azurewebsites.net/imagescategories/Food.jpg', categoryKey: 'Food Menu' }
-    ];
+  if (mockupState.apiCategories && mockupState.apiCategories.length > 0) {
+    return mockupState.apiCategories
+      .filter((cat) => {
+        const name = (cat.name || "").toLowerCase().trim();
+        return name !== "bag" && name !== "bags";
+      })
+      .map((cat) => ({
+        name: cat.name,
+        id: `category-section-${cat.categoryId}`,
+        img:
+          cat.imgUrl ||
+          "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg",
+        categoryId: cat.categoryId,
+        categoryKey: cat.name,
+      }));
+  }
+  return [
+    {
+      name: "New Items",
+      id: "new-items-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/New%20Items.jpg",
+      categoryKey: "New Items",
+    },
+    {
+      name: "Teaspresso Series",
+      id: "teaspresso-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Teaspresso.jpg",
+      categoryKey: "Teaspresso Series",
+    },
+    {
+      name: "Milk Tea Specialty",
+      id: "milk-tea-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Milk%20Tea.jpg",
+      categoryKey: "Milk Tea Specialty",
+    },
+    {
+      name: "i-Tea Fruit Tea",
+      id: "fruit-tea-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Fruit%20Tea.jpg",
+      categoryKey: "i-Tea Fruit Tea",
+    },
+    {
+      name: "Sea Salt Kreama",
+      id: "sea-salt-kreama-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Kreama.jpg",
+      categoryKey: "Sea Salt Kreama",
+    },
+    {
+      name: "Summer Frosty",
+      id: "summer-frosty-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Frosty.jpg",
+      categoryKey: "Summer Frosty",
+    },
+    {
+      name: "Signature Iced Milk",
+      id: "signature-iced-milk-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Signature%20Ice%20Milk.jpg",
+      categoryKey: "Signature Iced Milk",
+    },
+    {
+      name: "Dessert Drinks",
+      id: "dessert-drinks-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Dessert%20Drink%20Series.jpg",
+      categoryKey: "Dessert Drinks",
+    },
+    {
+      name: "Hot Drink",
+      id: "hot-drink-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Hot%20Drink.jpg",
+      categoryKey: "Hot Drink",
+    },
+    {
+      name: "Premium Tea Taiwan",
+      id: "premium-tea-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Premium%20Tea.jpg",
+      categoryKey: "Premium Tea Taiwan",
+    },
+    {
+      name: "Cold Brew",
+      id: "cold-brew-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Cold%20Brew%201.jpg",
+      categoryKey: "Cold Brew ",
+    },
+    {
+      name: "Snack Menu",
+      id: "snack-menu-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Snack.jpg",
+      categoryKey: "Snack Menu",
+    },
+    {
+      name: "Okinawa Onigiri Series",
+      id: "onigiri-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Okinawa%20Onigiri.jpg",
+      categoryKey: "Okinawa Onigiri Series",
+    },
+    {
+      name: "Food Menu",
+      id: "food-menu-section",
+      img: "https://olodev.azurewebsites.net/imagescategories/Food.jpg",
+      categoryKey: "Food Menu",
+    },
+  ];
 }
 
 function getActiveMenuItems() {
-    if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
-        return mockupState.apiMenuItems.filter(item => {
-            const cat = (item.category || '').toLowerCase().trim();
-            const name = (item.name || '').toLowerCase().trim();
-            return cat !== 'bag' && cat !== 'bags' && name !== 'bag' && name !== 'bags';
-        });
-    }
-    return MENU_ITEMS;
+  if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
+    return mockupState.apiMenuItems.filter((item) => {
+      const cat = (item.category || "").toLowerCase().trim();
+      const name = (item.name || "").toLowerCase().trim();
+      return (
+        cat !== "bag" && cat !== "bags" && name !== "bag" && name !== "bags"
+      );
+    });
+  }
+  return MENU_ITEMS;
 }
 
-
 const MENU_ITEMS = [
-    // Tea Spresso Series (11 items)
-    {
-        name: "M7 Crème Brûlée Boba Milk Tea",
-        description: "377 calories to 594 calories",
-        price: 5.75,
-        image: "https://olodev.azurewebsites.net/imagesmenu/M7-Cr%C3%A8me-Br%C3%BBl%C3%A9e-Boba-Milk-Tea.jpg",
-        category: "Tea Spresso Series"
-    },
-    {
-        name: "M8 Taro Boba Purée Latte",
-        description: "Come With Fresh Taro Puree, Freshly Made Taro Boba",
-        price: 5.75,
-        image: "https://olodev.azurewebsites.net/imagesmenu/M8_Fresh-Taro-Puree-Boba-Latte.jpg",
-        category: "Tea Spresso Series"
-    },
-    {
-        name: "M9 3G Fresh Taro Boba Latte",
-        description: "Come With Mashed Taro, Grass Jelly, Red Bean, and Fresh Taro Boba",
-        price: 5.75,
-        image: "https://olodev.azurewebsites.net/imagesmenu/M9_3G-Fresh-Taro-Boba-Latte.jpg",
-        category: "Tea Spresso Series"
-    },
-    {
-        name: "P1 Super Fruit Tea",
-        description: "Comes with Pineapple, Passion Fruit, Apple, Lime, and Orange",
-        price: 5.95,
-        image: "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg",
-        category: "Tea Spresso Series"
-    },
-    {
-        name: "P2 Super Lime Slushium",
-        description: "276 calories",
-        price: 5.25,
-        image: "https://olodev.azurewebsites.net/imagesmenu/P2-Super-Lime-Sijichun.jpg",
-        category: "Tea Spresso Series"
-    },
-    {
-        name: "P3 Super Grapefruit",
-        description: "239 calories to 339 calories",
-        price: 5.25,
-        image: "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg",
-        category: "Tea Spresso Series"
-    },
-    {
-        name: "P4 Brown Sugar Boba Latte",
-        description: "356 calories to 478 calories",
-        price: 5.75,
-        image: "https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg",
-        category: "Tea Spresso Series"
-    },
-    {
-        name: "P5 Sun Moon Lake Black Tea Cheema",
-        description: "168 calories to 354 calories",
-        price: 6.50,
-        image: "https://olodev.azurewebsites.net/imagesmenu/P5-Sun-Moon-Lake-Cheesma.jpg",
-        category: "Tea Spresso Series"
-    },
-    {
-        name: "P7 Fresh Mango Cheema",
-        description: "301 calories to 348 calories",
-        price: 6.50,
-        image: "https://olodev.azurewebsites.net/imagesmenu/P7-Mango-Fruity-Tea-Cheezma.jpg",
-        category: "Tea Spresso Series"
-    },
-    {
-        name: "P8 Fresh Dragon Fruit Cheema",
-        description: "355 calories to 396 calories",
-        price: 6.50,
-        image: "https://olodev.azurewebsites.net/imagesmenu/P8-Dragon-Fruity-Cheezma.jpg",
-        category: "Tea Spresso Series"
-    },
-    {
-        name: "P9 Fresh Strawberry Cheema",
-        description: "301 calories to 345 calories",
-        price: 6.50,
-        image: "https://olodev.azurewebsites.net/imagesmenu/P9-Strawberry-Fruity-Cheezma.jpg",
-        category: "Tea Spresso Series"
-    },
-    // Fruit Tea (4 items)
-    {
-        name: "D1 Jade Lemon Tea",
-        description: "238 calories",
-        price: 4.95,
-        image: "https://olodev.azurewebsites.net/imagesmenu/D1-Jade-Lemon-Tea.jpg",
-        category: "Fruit Tea"
-    },
-    {
-        name: "D2 Peach Fruit Tea",
-        description: "Comes with Peach Popping Boba (190 calories to 250 calories)",
-        price: 4.75,
-        image: "https://olodev.azurewebsites.net/imagesmenu/D2-Peach-Fruit-Tea.jpg",
-        category: "Fruit Tea"
-    },
-    {
-        name: "D3 Pineapple Fruit Tea",
-        description: "Comes with Boba and Pineapple Jelly (170 calories to 229 calories)",
-        price: 4.75,
-        image: "https://olodev.azurewebsites.net/imagesmenu/M9_3G-Fresh-Taro-Boba-Latte.jpg",
-        category: "Fruit Tea"
-    },
-    {
-        name: "D4 Guava Fruit Tea",
-        description: "Comes with Boba and Litchi Jelly (167 calories to 226 calories)",
-        price: 4.75,
-        image: "https://olodev.azurewebsites.net/imagesmenu/D4-Guava-Fruit-Tea.jpg",
-        category: "Fruit Tea"
-    },
-    // Milk Tea (4 items)
-    {
-        name: "B1 Signature Boba Milk Tea",
-        description: "223 calories to 357 calories",
-        price: 4.75,
-        image: "https://olodev.azurewebsites.net/imagesmenu/B1-Signature-Boba-Milk-Tea.jpg",
-        category: "Milk Tea"
-    },
-    {
-        name: "B2 Milk Tea with Pudding",
-        description: "255 calories to 378 calories",
-        price: 4.75,
-        image: "https://olodev.azurewebsites.net/imagesmenu/B2-Signature-Milk-Tea-with-Pudding.jpg",
-        category: "Milk Tea"
-    },
-    {
-        name: "B3 Milk Tea with Grass Jelly",
-        description: "208 calories to 331 calories",
-        price: 4.75,
-        image: "https://olodev.azurewebsites.net/imagesmenu/B3-Signature-Milk-Tea-with-Grass-Jelly.jpg",
-        category: "Milk Tea"
-    },
-    {
-        name: "B4 Milk Tea Tofuhua & Red Bean",
-        description: "223 calories to 314 calories",
-        price: 4.95,
-        image: "https://olodev.azurewebsites.net/imagesmenu/B4-Tofuhua-Red-Bean-Milk-Tea.jpg",
-        category: "Milk Tea"
-    },
-    // Dessert Drink (3 items)
-    {
-        name: "K4 Fresh Mango Sago Dessert",
-        description: "513 calories",
-        price: 5.95,
-        image: "https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg",
-        category: "Dessert Drink"
-    },
-    {
-        name: "K8 Taro Sago Dessert",
-        description: "513 calories",
-        price: 5.95,
-        image: "https://olodev.azurewebsites.net/imagesmenu/K8-Taro-Sago-Dessert.jpg",
-        category: "Dessert Drink"
-    },
-    {
-        name: "M6 Durian Sago Dessert",
-        description: "632 calories",
-        price: 6.50,
-        image: "https://olodev.azurewebsites.net/imagesmenu/M6-Durian-Sago-Dessert.jpg",
-        category: "Dessert Drink"
-    }
+  // Tea Spresso Series (11 items)
+  {
+    name: "M7 Crème Brûlée Boba Milk Tea",
+    description: "377 calories to 594 calories",
+    price: 5.75,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/M7-Cr%C3%A8me-Br%C3%BBl%C3%A9e-Boba-Milk-Tea.jpg",
+    category: "Tea Spresso Series",
+  },
+  {
+    name: "M8 Taro Boba Purée Latte",
+    description: "Come With Fresh Taro Puree, Freshly Made Taro Boba",
+    price: 5.75,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/M8_Fresh-Taro-Puree-Boba-Latte.jpg",
+    category: "Tea Spresso Series",
+  },
+  {
+    name: "M9 3G Fresh Taro Boba Latte",
+    description:
+      "Come With Mashed Taro, Grass Jelly, Red Bean, and Fresh Taro Boba",
+    price: 5.75,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/M9_3G-Fresh-Taro-Boba-Latte.jpg",
+    category: "Tea Spresso Series",
+  },
+  {
+    name: "P1 Super Fruit Tea",
+    description: "Comes with Pineapple, Passion Fruit, Apple, Lime, and Orange",
+    price: 5.95,
+    image: "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg",
+    category: "Tea Spresso Series",
+  },
+  {
+    name: "P2 Super Lime Slushium",
+    description: "276 calories",
+    price: 5.25,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/P2-Super-Lime-Sijichun.jpg",
+    category: "Tea Spresso Series",
+  },
+  {
+    name: "P3 Super Grapefruit",
+    description: "239 calories to 339 calories",
+    price: 5.25,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg",
+    category: "Tea Spresso Series",
+  },
+  {
+    name: "P4 Brown Sugar Boba Latte",
+    description: "356 calories to 478 calories",
+    price: 5.75,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg",
+    category: "Tea Spresso Series",
+  },
+  {
+    name: "P5 Sun Moon Lake Black Tea Cheema",
+    description: "168 calories to 354 calories",
+    price: 6.5,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/P5-Sun-Moon-Lake-Cheesma.jpg",
+    category: "Tea Spresso Series",
+  },
+  {
+    name: "P7 Fresh Mango Cheema",
+    description: "301 calories to 348 calories",
+    price: 6.5,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/P7-Mango-Fruity-Tea-Cheezma.jpg",
+    category: "Tea Spresso Series",
+  },
+  {
+    name: "P8 Fresh Dragon Fruit Cheema",
+    description: "355 calories to 396 calories",
+    price: 6.5,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/P8-Dragon-Fruity-Cheezma.jpg",
+    category: "Tea Spresso Series",
+  },
+  {
+    name: "P9 Fresh Strawberry Cheema",
+    description: "301 calories to 345 calories",
+    price: 6.5,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/P9-Strawberry-Fruity-Cheezma.jpg",
+    category: "Tea Spresso Series",
+  },
+  // Fruit Tea (4 items)
+  {
+    name: "D1 Jade Lemon Tea",
+    description: "238 calories",
+    price: 4.95,
+    image: "https://olodev.azurewebsites.net/imagesmenu/D1-Jade-Lemon-Tea.jpg",
+    category: "Fruit Tea",
+  },
+  {
+    name: "D2 Peach Fruit Tea",
+    description: "Comes with Peach Popping Boba (190 calories to 250 calories)",
+    price: 4.75,
+    image: "https://olodev.azurewebsites.net/imagesmenu/D2-Peach-Fruit-Tea.jpg",
+    category: "Fruit Tea",
+  },
+  {
+    name: "D3 Pineapple Fruit Tea",
+    description:
+      "Comes with Boba and Pineapple Jelly (170 calories to 229 calories)",
+    price: 4.75,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/M9_3G-Fresh-Taro-Boba-Latte.jpg",
+    category: "Fruit Tea",
+  },
+  {
+    name: "D4 Guava Fruit Tea",
+    description:
+      "Comes with Boba and Litchi Jelly (167 calories to 226 calories)",
+    price: 4.75,
+    image: "https://olodev.azurewebsites.net/imagesmenu/D4-Guava-Fruit-Tea.jpg",
+    category: "Fruit Tea",
+  },
+  // Milk Tea (4 items)
+  {
+    name: "B1 Signature Boba Milk Tea",
+    description: "223 calories to 357 calories",
+    price: 4.75,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/B1-Signature-Boba-Milk-Tea.jpg",
+    category: "Milk Tea",
+  },
+  {
+    name: "B2 Milk Tea with Pudding",
+    description: "255 calories to 378 calories",
+    price: 4.75,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/B2-Signature-Milk-Tea-with-Pudding.jpg",
+    category: "Milk Tea",
+  },
+  {
+    name: "B3 Milk Tea with Grass Jelly",
+    description: "208 calories to 331 calories",
+    price: 4.75,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/B3-Signature-Milk-Tea-with-Grass-Jelly.jpg",
+    category: "Milk Tea",
+  },
+  {
+    name: "B4 Milk Tea Tofuhua & Red Bean",
+    description: "223 calories to 314 calories",
+    price: 4.95,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/B4-Tofuhua-Red-Bean-Milk-Tea.jpg",
+    category: "Milk Tea",
+  },
+  // Dessert Drink (3 items)
+  {
+    name: "K4 Fresh Mango Sago Dessert",
+    description: "513 calories",
+    price: 5.95,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg",
+    category: "Dessert Drink",
+  },
+  {
+    name: "K8 Taro Sago Dessert",
+    description: "513 calories",
+    price: 5.95,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/K8-Taro-Sago-Dessert.jpg",
+    category: "Dessert Drink",
+  },
+  {
+    name: "M6 Durian Sago Dessert",
+    description: "632 calories",
+    price: 6.5,
+    image:
+      "https://olodev.azurewebsites.net/imagesmenu/M6-Durian-Sago-Dessert.jpg",
+    category: "Dessert Drink",
+  },
 ];
 
 function toggleMenu(e, menuId) {
-    e.stopPropagation();
-    const allMenus = ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown'];
-    allMenus.forEach(id => {
-        const menu = document.getElementById(id);
-        if (!menu) return;
-        if (id === menuId) {
-            const isShowing = menu.classList.contains('show');
-            if (isShowing) {
-                menu.classList.remove('show');
-                menu.classList.add('hidden');
-            } else {
-                menu.classList.add('show');
-                menu.classList.remove('hidden');
-            }
-        } else {
-            menu.classList.remove('show');
-            menu.classList.add('hidden');
-        }
-    });
+  e.stopPropagation();
+  const allMenus = [
+    "dropdown-menu-fb",
+    "dropdown-menu-rb",
+    "all-pages-dropdown",
+    "user-profile-dropdown",
+    "location-dropdown-order-details",
+    "location-dropdown-order-details-alt",
+  ];
+  allMenus.forEach((id) => {
+    const menu = document.getElementById(id);
+    if (!menu) return;
+    if (id === menuId) {
+      const isShowing = menu.classList.contains("show");
+      if (isShowing) {
+        menu.classList.remove("show");
+        menu.classList.add("hidden");
+      } else {
+        menu.classList.add("show");
+        menu.classList.remove("hidden");
+      }
+    } else {
+      menu.classList.remove("show");
+      menu.classList.add("hidden");
+    }
+  });
 }
 
-document.addEventListener('click', () => {
-    ['dropdown-menu-fb', 'dropdown-menu-rb', 'all-pages-dropdown', 'user-profile-dropdown'].forEach(id => {
-        const menu = document.getElementById(id);
-        if (menu) {
-            menu.classList.remove('show');
-            menu.classList.add('hidden');
-        }
-    });
+document.addEventListener("click", () => {
+  [
+    "dropdown-menu-fb",
+    "dropdown-menu-rb",
+    "all-pages-dropdown",
+    "user-profile-dropdown",
+    "location-dropdown-order-details",
+    "location-dropdown-order-details-alt",
+  ].forEach((id) => {
+    const menu = document.getElementById(id);
+    if (menu) {
+      menu.classList.remove("show");
+      menu.classList.add("hidden");
+    }
+  });
 });
 
 function openHamburger() {
-    mockupState.hamburgerOpen = true;
-    persistAllState();
-    renderPage();
+  mockupState.hamburgerOpen = true;
+  persistAllState();
+  renderPage();
 }
 
 function closeHamburger() {
-    mockupState.hamburgerOpen = false;
-    persistAllState();
-    renderPage();
+  mockupState.hamburgerOpen = false;
+  persistAllState();
+  renderPage();
 }
 
 function hamburgerDrawerHTML() {
-    const isLoggedIn = mockupState.isLoggedIn;
-    const userName = mockupState.userName || 'Guest';
+  const isLoggedIn = mockupState.isLoggedIn;
+  const userName = mockupState.userName || "Guest";
 
-    const navItems = [
-        { label: 'Home',            icon: 'fa-house',              page: 'restaurant-home' },
-        { label: 'Menu',            icon: 'fa-utensils',           page: 'menu' },
-        { label: 'Menu Favorites',  icon: 'fa-heart',              page: 'menu-favorites' },
-        { label: 'Locations',       icon: 'fa-location-dot',       page: 'locations' },
-        { label: 'Saved Locations', icon: 'fa-bookmark',           page: 'location-favorites' },
-        { label: 'Rewards',         icon: 'fa-award',              page: 'account' },
-        { label: 'Scan QR Code',    icon: 'fa-qrcode',             page: 'menu-scan' },
-        { label: 'Cart',            icon: 'fa-bag-shopping',       page: 'cart' },
-        { label: 'Order Status',    icon: 'fa-clock-rotate-left',  page: 'order-status' },
-        { label: 'My Account',      icon: 'fa-user',               page: 'account' },
-    ];
+  const navItems = [
+    { label: "Home", icon: "fa-house", page: "restaurant-home" },
+    { label: "Menu", icon: "fa-utensils", page: "menu" },
+    { label: "Menu Favorites", icon: "fa-heart", page: "menu-favorites" },
+    { label: "Locations", icon: "fa-location-dot", page: "locations" },
+    {
+      label: "Saved Locations",
+      icon: "fa-bookmark",
+      page: "location-favorites",
+    },
+    { label: "Rewards", icon: "fa-award", page: "account" },
+    { label: "Scan QR Code", icon: "fa-qrcode", page: "menu-scan" },
+    { label: "Cart", icon: "fa-bag-shopping", page: "cart" },
+    {
+      label: "Order Status",
+      icon: "fa-clock-rotate-left",
+      page: "order-status",
+    },
+    { label: "My Account", icon: "fa-user", page: "account" },
+  ];
 
-    if (isLoggedIn) {
-        navItems.push({ label: 'Log Out', icon: 'fa-arrow-right-from-bracket', page: 'logout' });
-    }
+  if (isLoggedIn) {
+    navItems.push({
+      label: "Log Out",
+      icon: "fa-arrow-right-from-bracket",
+      page: "logout",
+    });
+  }
 
-    return `
+  return `
         <div class="absolute inset-0 z-[500] flex">
             <!-- Drawer Panel -->
             <div class="w-[78%] max-w-[310px] bg-white h-full flex flex-col shadow-2xl relative z-10">
                 <!-- Header -->
                 <div class="px-6 pt-10 pb-6 border-b border-gray-100 flex items-start justify-between">
                     <div>
-                        ${isLoggedIn ? `
+                        ${
+                          isLoggedIn
+                            ? `
                             <p class="font-black text-[22px] text-gray-900 leading-tight">Hi, ${userName}</p>
                             <button onclick="closeHamburger(); navigateTo('account');" class="text-sm font-bold text-violet-600 mt-1 hover:underline">View My Account</button>
-                        ` : `
+                        `
+                            : `
                             <button onclick="closeHamburger(); navigateTo('sign-in');" class="font-black text-[22px] text-gray-900">Sign In</button>
-                        `}
+                        `
+                        }
                     </div>
                     <button onclick="closeHamburger()" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500 shrink-0 mt-1">
                         <i class="fa-solid fa-xmark text-sm"></i>
@@ -740,16 +1123,23 @@ function hamburgerDrawerHTML() {
                 </div>
                 <!-- Nav Links -->
                 <nav class="flex-1 overflow-y-auto py-3">
-                    ${navItems.map(item => {
-                        const clickAction = item.page === 'logout' ? 'closeHamburger(); signOutUser();' : `closeHamburger(); navigateTo('${item.page}');`;
+                    ${navItems
+                      .map((item) => {
+                        const clickAction =
+                          item.page === "logout"
+                            ? "closeHamburger(); signOutUser();"
+                            : `closeHamburger(); navigateTo('${item.page}');`;
                         return `
                         <button onclick="${clickAction}" 
                             class="w-full text-left px-6 py-4 text-[17px] font-black tracking-tight transition-colors hover:bg-violet-50 ${
-                                currentPage === item.page ? 'text-violet-600' : 'text-gray-900'
+                              currentPage === item.page
+                                ? "text-violet-600"
+                                : "text-gray-900"
                             }">
                             ${item.label}
                         </button>`;
-                    }).join('')}
+                      })
+                      .join("")}
                     
                     <div class="px-6 py-4 mt-2 border-t border-gray-100">
                         <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Pages</div>
@@ -777,11 +1167,15 @@ function hamburgerDrawerHTML() {
                 </nav>
                 <!-- Footer -->
                 <div class="px-6 py-6 border-t border-gray-100">
-                    ${isLoggedIn ? `
+                    ${
+                      isLoggedIn
+                        ? `
                         <button onclick="closeHamburger(); signOutUser();" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Sign Out</button>
-                    ` : `
+                    `
+                        : `
                         <button onclick="closeHamburger(); navigateTo('sign-in');" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-violet-600 transition-colors">Sign In / Create Account</button>
-                    `}
+                    `
+                    }
                 </div>
             </div>
             <!-- Backdrop -->
@@ -790,33 +1184,65 @@ function hamburgerDrawerHTML() {
     `;
 }
 
-
 function renderMenuPage(isAlternative) {
-    const isDesktop = currentViewport === 'desktop';
-    const categoryModalClass = mockupState.modalOpen === 'categories' ? 'flex' : 'hidden';
+  const isDesktop = currentViewport === "desktop";
+  const categoryModalClass =
+    mockupState.modalOpen === "categories" ? "flex" : "hidden";
 
-    const categories = getActiveCategories();
+  const categories = getActiveCategories();
 
-    const mode = mockupState.fulfillmentMode || 'In-store';
-    let modeText = 'IN-STORE PICKUP';
-    if (mode === 'In-store' || mode === 'In-Store') modeText = 'IN-STORE PICKUP';
-    else if (mode === 'Drive Through' || mode === 'Drive-thru') modeText = 'DRIVE-THRU';
-    else if (mode === 'Curbside') modeText = 'CURBSIDE PICKUP';
-    else if (mode === 'Dine In' || mode === 'Dine-In') modeText = 'DINE-IN';
-    else if (mode === 'Delivery') modeText = 'DELIVERY';
-    else modeText = mode.toUpperCase() + ' PICKUP';
+  const mode = mockupState.fulfillmentMode || "In-store";
+  let modeText = "IN-STORE PICKUP";
+  if (mode === "In-store" || mode === "In-Store") modeText = "IN-STORE PICKUP";
+  else if (mode === "Drive Through" || mode === "Drive-thru")
+    modeText = "DRIVE-THRU";
+  else if (mode === "Curbside") modeText = "CURBSIDE PICKUP";
+  else if (mode === "Dine In" || mode === "Dine-In") modeText = "DINE-IN";
+  else if (mode === "Delivery") modeText = "DELIVERY";
+  else modeText = mode.toUpperCase() + " PICKUP";
 
-    const timeText = mockupState.orderTime === 'Later' 
-        ? `at ${mockupState.selectedTimeSlot}` 
-        : 'ASAP';
+  const timeText =
+    mockupState.orderTime === "Later"
+      ? `at ${mockupState.selectedTimeSlot}`
+      : "ASAP";
 
-    const selectedLoc = mockupState.apiLocations.find(loc => loc.locationId === mockupState.selectedLocationId) 
-        || LOCATIONS.find(loc => loc.locationId === mockupState.selectedLocationId) 
-        || LOCATIONS[0];
-    const addressText = mockupState.selectedAddress || (selectedLoc ? selectedLoc.address : '825 W UNIVERSITY, TEMPE, AZ');
+  const selectedLoc =
+    mockupState.apiLocations.find(
+      (loc) => loc.locationId === mockupState.selectedLocationId,
+    ) ||
+    LOCATIONS.find(
+      (loc) => loc.locationId === mockupState.selectedLocationId,
+    ) ||
+    LOCATIONS[0];
+  const addressText =
+    mockupState.selectedAddress ||
+    (selectedLoc ? selectedLoc.address : "825 W UNIVERSITY, TEMPE, AZ");
 
-    return `
-        <div class="flex flex-col h-full bg-[#f9fafb] relative ${(!isDesktop && mockupState.modalOpen) ? 'overflow-hidden' : 'overflow-y-auto'} scrollbar-hide">
+  const locationTitle = selectedLoc ? selectedLoc.name : "i-Tea - Tempe";
+  const locationAddress = addressText;
+  const locationObj = selectedLoc || {};
+  const hours = locationObj.hours || "11:30 AM to 9:30 PM";
+  const closeTimeStr = hours.split(" to ")[1] || "9:30 PM";
+  const closeTime = closeTimeStr;
+  const getOrderCutoffTime = (timeStr, offsetMinutes) => {
+    const t = timeStr.trim().toUpperCase();
+    let match = t.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/);
+    if (!match) return timeStr;
+    let h = parseInt(match[1]);
+    let m = parseInt(match[2] || "0");
+    let p = match[3] || "PM";
+    let totalMins = (h % 12) * 60 + m + (p === "PM" ? 12 * 60 : 0);
+    totalMins -= offsetMinutes;
+    if (totalMins < 0) totalMins += 24 * 60;
+    let nh = Math.floor(totalMins / 60);
+    let nm = totalMins % 60;
+    let np = nh >= 12 ? "PM" : "AM";
+    let dh = nh % 12 || 12;
+    return `${dh}:${nm.toString().padStart(2, "0")} ${np}`;
+  };
+  const orderCutoffTime = getOrderCutoffTime(closeTime, 20);
+  return `
+        <div class="flex flex-col h-full bg-[#f9fafb] relative ${!isDesktop && mockupState.modalOpen ? "overflow-hidden" : "overflow-y-auto"} scrollbar-hide">
             <!-- Compact Sticky Header: ≡ | 🔍 | i-Tea logo | ⭐ | 🛍 -->
             <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shrink-0">
                 <div class="px-3 py-2 flex items-center gap-2 w-full max-w-[1080px] mx-auto">
@@ -825,29 +1251,39 @@ function renderMenuPage(isAlternative) {
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <!-- Search icon -->
-                    ${!isAlternative ? `
-                    <button onclick="updateMockupState('menuSearchOpen', ${!mockupState.menuSearchOpen}); updateMockupState('menuSearchQuery', '');" class="w-10 h-10 flex items-center justify-center shrink-0 transition-colors ${mockupState.menuSearchOpen ? 'text-violet-600' : 'text-gray-700 hover:text-violet-600'}">
-                        <i class="fa-solid ${mockupState.menuSearchOpen ? 'fa-xmark' : 'fa-magnifying-glass'} text-xl"></i>
+                    ${
+                      !isAlternative
+                        ? `
+                    <button onclick="updateMockupState('menuSearchOpen', ${!mockupState.menuSearchOpen}); updateMockupState('menuSearchQuery', '');" class="w-10 h-10 flex items-center justify-center shrink-0 transition-colors ${mockupState.menuSearchOpen ? "text-violet-600" : "text-gray-700 hover:text-violet-600"}">
+                        <i class="fa-solid ${mockupState.menuSearchOpen ? "fa-xmark" : "fa-magnifying-glass"} text-xl"></i>
                     </button>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                     <!-- Center: i-Tea logo -->
                     <div class="flex-1 flex items-center justify-center">
                         <img src="images/i-tea-logo-new.png" class="h-9 w-auto object-contain" alt="i-Tea">
                     </div>
                     <!-- Right: Rewards + Cart -->
-                    ${!isAlternative ? `
+                    ${
+                      !isAlternative
+                        ? `
                     <button onclick="updateMockupState('modalOpen', 'rewards'); navigateTo(currentPage)" class="w-10 h-10 flex items-center justify-center text-violet-600 hover:text-violet-700 transition-all active:scale-90 shrink-0">
                         <i class="fa-solid fa-award text-2xl"></i>
                     </button>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
                     </button>
                 </div>
 
                 <!-- Inline Search Bar (expands below header when open) -->
-                ${(mockupState.menuSearchOpen && !isAlternative) ? `
+                ${
+                  mockupState.menuSearchOpen && !isAlternative
+                    ? `
                 <div class="px-3 pb-2 w-full max-w-[1080px] mx-auto">
                     <div class="flex items-center bg-gray-100 rounded-full px-4 py-2 gap-3">
                         <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
@@ -855,37 +1291,79 @@ function renderMenuPage(isAlternative) {
                             type="text"
                             id="menu-search-input"
                             placeholder="Search menu..."
-                            value="${mockupState.menuSearchQuery || ''}"
+                            value="${mockupState.menuSearchQuery || ""}"
                             oninput="mockupState.menuSearchQuery = this.value; persistAllState(); renderPage();"
                             class="flex-1 bg-transparent text-gray-900 text-sm font-bold outline-none placeholder:text-gray-400 placeholder:font-normal"
                             autofocus
                         >
-                        ${mockupState.menuSearchQuery ? `<button onclick="updateMockupState('menuSearchQuery', '');" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-circle-xmark"></i></button>` : ''}
+                        ${mockupState.menuSearchQuery ? `<button onclick="updateMockupState('menuSearchQuery', '');" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-circle-xmark"></i></button>` : ""}
                     </div>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
 
-                <!-- Tab Row -->
-                ${!isAlternative ? `
-                <div class="border-t border-gray-100 px-4 w-full max-w-[1080px] mx-auto">
-                    <div class="flex justify-around">
-                        ${[
-                            { id: 'menu', name: 'All' },
-                            { id: 'featured', name: 'Featured' },
-                            { id: 'favorites', name: 'Favorites' },
-                            { id: 'history', name: 'History' }
-                        ].map(tab => {
-                            const isActive = mockupState.menuTab === tab.id;
-                            const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold';
-                            return `<button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo(currentPage);" class="py-2 text-sm uppercase tracking-wide transition-all ${activeClass}">${tab.name}</button>`;
-                        }).join('')}
-                    </div>
-                </div>
-                ` : ''}
+
             </header>
 
+            ${
+              !isDesktop
+                ? `
+            <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2 flex items-center justify-between relative z-50">
+                <button onclick="navigateTo('restaurant-home')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                    <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                    <span>Back</span>
+                </button>
+                <div>
+                    <button onclick="toggleMenu(event, 'location-dropdown-menu')" class="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-600 font-bold hover:text-violet-600 hover:bg-violet-100 px-2 py-1.5 rounded-lg transition-colors text-right cursor-pointer">
+                        <i class="fa-solid fa-location-dot text-violet-600"></i>
+                        <span class="truncate max-w-[140px] sm:max-w-[200px] tracking-wider font-medium">${locationAddress.replace(/, [A-Z]{2}(\s\\d{5})?$/, "")}</span>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div id="location-dropdown-menu" class="hidden absolute left-4 right-4 sm:left-auto sm:right-4 sm:w-[320px] top-[calc(100%+0.5rem)] z-[100] animate-[slideUp_0.2s_ease-out]">
+                        <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
+                            <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
+                            <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
+                            <div class="space-y-4 text-sm">
+                                <div class="flex gap-3 items-start">
+                                    <i class="fa-regular fa-clock text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                    <div>
+                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Hours</span>
+                                        <span class="text-gray-600 font-medium block">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
+                                        <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
+                                        <span class="text-red-500 font-medium block text-xs leading-tight mt-0.5">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3 items-start">
+                                    <i class="fa-solid fa-phone text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                    <div>
+                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Phone</span>
+                                        <span class="text-gray-600 font-medium">${locationObj.phone || "(480) 968-3568"}</span>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3 items-start">
+                                    <i class="fa-solid fa-car text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                    <div>
+                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Drive-Thru / Curbside</span>
+                                        <span class="text-gray-600 font-medium leading-relaxed">Available during regular business hours. Pull up to the front for curbside.</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-5 pt-4 border-t border-gray-100">
+                                <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `
+                : ""
+            }
+
             <!-- Alternative Mode Header (states Menu, fulfillment method, time & address + search/tabs) -->
-            ${isAlternative ? `
+            ${
+              isAlternative
+                ? `
             <div class="bg-white border-b border-gray-100 flex flex-col items-center justify-center text-center w-full shrink-0 animate-[fadeIn_0.3s_ease-out]">
                 <!-- Location details block -->
                 <div class="py-3.5 px-4 w-full">
@@ -906,7 +1384,9 @@ function renderMenuPage(isAlternative) {
 
                 <!-- Tabs & Search Row -->
                 <div class="border-t border-gray-100 px-4 py-2 w-full max-w-[1080px] mx-auto min-h-[48px] flex items-center justify-center">
-                    ${mockupState.menuSearchOpen ? `
+                    ${
+                      mockupState.menuSearchOpen
+                        ? `
                         <!-- Expandable Search Input -->
                         <div class="flex items-center w-full gap-3 animate-[fadeIn_0.2s_ease-out]">
                             <div class="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2 gap-2">
@@ -915,47 +1395,45 @@ function renderMenuPage(isAlternative) {
                                     type="text"
                                     id="menu-search-input"
                                     placeholder="Search menu..."
-                                    value="${mockupState.menuSearchQuery || ''}"
+                                    value="${mockupState.menuSearchQuery || ""}"
                                     oninput="mockupState.menuSearchQuery = this.value; persistAllState(); renderPage();"
                                     class="flex-1 bg-transparent text-gray-900 text-sm font-bold outline-none placeholder:text-gray-400 placeholder:font-normal"
                                     autofocus
                                 >
-                                ${mockupState.menuSearchQuery ? `
+                                ${
+                                  mockupState.menuSearchQuery
+                                    ? `
                                     <button onclick="updateMockupState('menuSearchQuery', '');" class="text-gray-400 hover:text-gray-600">
                                         <i class="fa-solid fa-circle-xmark"></i>
                                     </button>
-                                ` : ''}
+                                `
+                                    : ""
+                                }
                             </div>
                             <button onclick="updateMockupState('menuSearchOpen', false); updateMockupState('menuSearchQuery', '');" class="text-sm font-black text-violet-600 uppercase tracking-wide hover:opacity-85 transition-opacity">
                                 Cancel
                             </button>
                         </div>
-                    ` : `
-                        <!-- Tab Selector + Search Icon -->
-                        <div class="flex items-center justify-between w-full">
-                            <div class="flex justify-around flex-1 lg:flex-initial lg:justify-start lg:gap-8 lg:mr-auto">
-                                ${[
-                                    { id: 'menu', name: 'All' },
-                                    { id: 'featured', name: 'Featured' },
-                                    { id: 'favorites', name: 'Favorites' },
-                                    { id: 'history', name: 'History' }
-                                ].map(tab => {
-                                    const isActive = mockupState.menuTab === tab.id;
-                                    const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
-                                    return `<button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo(currentPage);" class="py-2 lg:pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}">${tab.name}</button>`;
-                                }).join('')}
-                            </div>
+                    `
+                        : `
+                        <!-- Search Icon (Right Aligned) -->
+                        <div class="flex items-center justify-end w-full">
                             <button onclick="updateMockupState('menuSearchOpen', true); updateMockupState('menuSearchQuery', '');" class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-violet-600 transition-colors shrink-0">
                                 <i class="fa-solid fa-magnifying-glass text-lg"></i>
                             </button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
 
             <!-- Rewards Modal -->
-            ${mockupState.modalOpen === 'rewards' ? `
+            ${
+              mockupState.modalOpen === "rewards"
+                ? `
             <div class="modal-overlay z-[200]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
                 <div class="bg-white w-[92%] max-w-[380px] rounded-[32px] p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out]">
                     <div class="flex items-center justify-between mb-6">
@@ -1004,159 +1482,180 @@ function renderMenuPage(isAlternative) {
                     </button>
                 </div>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
 
-            <div class="${isDesktop ? 'p-8' : 'p-3'} max-w-[1080px] mx-auto w-full">
-                ${(isDesktop && !isAlternative) ? `
-                <!-- Desktop Tab Selector -->
-                <div class="flex border-b border-gray-100 w-full justify-start gap-8 mb-6 mt-2 pb-2">
+            <div class="${isDesktop ? "p-8" : "p-3"} max-w-[1080px] mx-auto w-full">
+            <div class="${isDesktop ? "p-8" : "p-3"} max-w-[1080px] mx-auto w-full overflow-hidden">
+                ${(() => {
+                  const grapefruitImg = MENU_ITEMS[5]
+                    ? MENU_ITEMS[5].image
+                    : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
+                  const superFruitImg = MENU_ITEMS[3]
+                    ? MENU_ITEMS[3].image
+                    : "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg";
+                  return isDesktop
+                    ? `
+                        <div class="flex gap-[14px] overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-6 mb-2 pt-2 -mt-2 -mx-2 px-2">
+                            <!-- Boba Slide -->
+                            <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
+                                <!-- Absolute top-left badge -->
+                                <span class="absolute top-4 left-6 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                <div class="relative z-10 w-full pr-36">
+                                    <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">Brown Sugar<br>Boba Latte</h2>
+                                    <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Creamy, caramelized milk tea perfection.</p>
+                                </div>
+                                <!-- Hover reveal button -->
+                                <button onclick="selectItemAndNavigate(6)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 text-violet-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                            </div>
+                            <!-- Grapefruit Slide -->
+                            <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
+                                <!-- Absolute top-left badge -->
+                                <span class="absolute top-4 left-6 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                <div class="relative z-10 w-full pr-36">
+                                    <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P3 Super<br>Grapefruit</h2>
+                                    <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
+                                </div>
+                                <!-- Hover reveal button -->
+                                <button onclick="selectItemAndNavigate(5)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                            </div>
+                            <!-- P1 Super Fruit Tea Slide -->
+                            <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-r from-[#f97316]/70 via-[#f97316]/35 to-transparent"></div>
+                                <!-- Absolute top-left badge - tangerine/orange-amber -->
+                                <span class="absolute top-4 left-6 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
+                                <div class="relative z-10 w-full pr-36">
+                                    <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P1 Super<br>Fruit Tea</h2>
+                                    <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Pineapple, passion fruit, apple, lime &amp; orange in every sip.</p>
+                                </div>
+                                <!-- Hover reveal button -->
+                                <button onclick="selectItemAndNavigate(3)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-amber-50 text-amber-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                            </div>
+                        </div>
+                    `
+                    : `
+                        <!-- Mobile/Tablet hero promo row: horizontal scroll -->
+                        <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 mb-4 -mx-1 px-1">
+                            <!-- Boba Card -->
+                            <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(6)">
+                                <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
+                                <span class="absolute top-4 left-5 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                <div class="relative z-10">
+                                    <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">Brown Sugar<br>Boba Latte</h2>
+                                </div>
+                            </div>
+                            <!-- Grapefruit Card -->
+                            <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(5)">
+                                <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
+                                <span class="absolute top-4 left-5 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                <div class="relative z-10">
+                                    <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P3 Super<br>Grapefruit</h2>
+                                </div>
+                            </div>
+                            <!-- P1 Fruit Tea Card -->
+                            <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(3)">
+                                <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-r from-[#f97316]/70 via-[#f97316]/35 to-transparent"></div>
+                                <span class="absolute top-4 left-5 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
+                                <div class="relative z-10">
+                                    <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P1 Super<br>Fruit Tea</h2>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                })()}
+
+                <!-- Unified Tab Selector -->
+                <div class="flex overflow-x-auto scrollbar-hide border-b border-gray-100 w-full gap-6 lg:gap-8 justify-start lg:mr-auto mb-6 mt-2 pb-2 pl-2 lg:pl-0">
                     ${[
-                        { id: 'menu', name: 'Menu' },
-                        { id: 'featured', name: 'Featured' },
-                        { id: 'favorites', name: 'Favorites' },
-                        { id: 'history', name: 'History' }
-                    ].map(tab => {
+                      { id: "menu", name: "All" },
+                      { id: "featured", name: "Featured" },
+                      { id: "favorites", name: "Favorites" },
+                      { id: "history", name: "History" },
+                    ]
+                      .map((tab) => {
                         const isActive = mockupState.menuTab === tab.id;
-                        const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
-                        return `
-                            <button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo(currentPage);" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}">
-                                ${tab.name}
-                            </button>
-                        `;
-                    }).join('')}
+                        const activeClass = isActive
+                          ? "border-violet-600 text-violet-600 border-b-2 font-black"
+                          : "text-gray-400 font-bold hover:text-gray-600";
+                        return `<button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo(currentPage);" class="whitespace-nowrap shrink-0 pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}">${tab.name}</button>`;
+                      })
+                      .join("")}
                 </div>
-                ` : ''}
 
                 <!-- Render Tab Content Subview -->
                 ${(() => {
-                    if (mockupState.menuTab === 'menu') {
-                        // Search filter: when a query is active, show flat filtered results
-                        if (mockupState.menuSearchQuery && mockupState.menuSearchQuery.trim().length > 0) {
-                            const query = mockupState.menuSearchQuery.toLowerCase();
-                            const filtered = getActiveMenuItems().filter(item =>
-                                item.name.toLowerCase().includes(query) ||
-                                (item.description && item.description.toLowerCase().includes(query)) ||
-                                item.category.toLowerCase().includes(query)
-                            );
-                            if (filtered.length === 0) {
-                                return `<div class="flex flex-col items-center justify-center py-24 text-center px-8">
+                  if (mockupState.menuTab === "menu") {
+                    // Search filter: when a query is active, show flat filtered results
+                    if (
+                      mockupState.menuSearchQuery &&
+                      mockupState.menuSearchQuery.trim().length > 0
+                    ) {
+                      const query = mockupState.menuSearchQuery.toLowerCase();
+                      const filtered = getActiveMenuItems().filter(
+                        (item) =>
+                          item.name.toLowerCase().includes(query) ||
+                          (item.description &&
+                            item.description.toLowerCase().includes(query)) ||
+                          item.category.toLowerCase().includes(query),
+                      );
+                      if (filtered.length === 0) {
+                        return `<div class="flex flex-col items-center justify-center py-24 text-center px-8">
                                     <i class="fa-solid fa-magnifying-glass text-gray-200 text-5xl mb-6"></i>
                                     <p class="font-black text-gray-400 text-lg uppercase tracking-tight">No results for</p>
                                     <p class="font-black text-gray-600 text-xl mt-1">"${mockupState.menuSearchQuery}"</p>
                                     <button onclick="updateMockupState('menuSearchQuery', '');" class="mt-8 px-6 py-3 rounded-full border border-violet-200 text-violet-600 text-sm font-black uppercase tracking-wide hover:bg-violet-50 transition-colors">Clear Search</button>
                                 </div>`;
-                            }
-                            return `
+                      }
+                      return `
                                 <div class="space-y-0">
-                                    <p class="text-[11px] font-black text-gray-400 uppercase tracking-widest px-1 mb-4">${filtered.length} result${filtered.length !== 1 ? 's' : ''}</p>
-                                    <div class="${isDesktop ? 'grid grid-cols-4 gap-x-3 gap-y-5' : 'grid grid-cols-1 gap-[10px]'}">
-                                        ${filtered.map(item => {
-                                            const actualIndex = getActiveMenuItems().indexOf(item);
+                                    <p class="text-[11px] font-black text-gray-400 uppercase tracking-widest px-1 mb-4">${filtered.length} result${filtered.length !== 1 ? "s" : ""}</p>
+                                    <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : "grid grid-cols-1 gap-[10px]"}">
+                                        ${filtered
+                                          .map((item) => {
+                                            const actualIndex =
+                                              getActiveMenuItems().indexOf(
+                                                item,
+                                              );
                                             return `
-                                                <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                                    <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                <div class="bg-white rounded-2xl ${isDesktop ? "pt-2.5 px-2.5 pb-5" : "pt-1.5 px-1.5 pb-3"} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                                    <div class="w-full ${isDesktop ? "h-44" : "h-48"} rounded-xl overflow-hidden ${isDesktop ? "mb-5" : "mb-3"} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                     </div>
                                                     <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                        <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
                                                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">${item.category}</p>
-                                                        <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
+                                                        <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
                                                     </div>
-                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                 </div>
                                             `;
-                                        }).join('')}
+                                          })
+                                          .join("")}
                                     </div>
                                 </div>
                             `;
-                        }
+                    }
 
-                        const grapefruitImg = MENU_ITEMS[5] ? MENU_ITEMS[5].image : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
-                        const superFruitImg = MENU_ITEMS[3] ? MENU_ITEMS[3].image : "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg";
-                        const featuredPromoHtml = isDesktop ? `
-                            <div class="flex gap-[14px] overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-6 mb-2 pt-2 -mt-2 -mx-2 px-2">
-                                <!-- Boba Slide -->
-                                <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                    <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
-                                    <!-- Absolute top-left badge -->
-                                    <span class="absolute top-4 left-6 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                    <div class="relative z-10 w-full pr-36">
-                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">Brown Sugar<br>Boba Latte</h2>
-                                        <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Creamy, caramelized milk tea perfection.</p>
-                                    </div>
-                                    <!-- Hover reveal button -->
-                                    <button onclick="selectItemAndNavigate(6)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 text-violet-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
-                                </div>
-                                <!-- Grapefruit Slide -->
-                                <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                    <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
-                                    <!-- Absolute top-left badge -->
-                                    <span class="absolute top-4 left-6 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                    <div class="relative z-10 w-full pr-36">
-                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P3 Super<br>Grapefruit</h2>
-                                        <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
-                                    </div>
-                                    <!-- Hover reveal button -->
-                                    <button onclick="selectItemAndNavigate(5)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
-                                </div>
-                                <!-- P1 Super Fruit Tea Slide -->
-                                <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                    <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-[#f97316]/70 via-[#f97316]/35 to-transparent"></div>
-                                    <!-- Absolute top-left badge - tangerine/orange-amber -->
-                                    <span class="absolute top-4 left-6 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
-                                    <div class="relative z-10 w-full pr-36">
-                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P1 Super<br>Fruit Tea</h2>
-                                        <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Pineapple, passion fruit, apple, lime &amp; orange in every sip.</p>
-                                    </div>
-                                    <!-- Hover reveal button -->
-                                    <button onclick="selectItemAndNavigate(3)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-amber-50 text-amber-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
-                                </div>
-                            </div>
-                        ` : `
-                            <!-- Mobile/Tablet hero promo row: horizontal scroll -->
-                            <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 mb-4 -mx-1 px-1">
-                                <!-- Boba Card -->
-                                <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
-                                    <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
-                                    <span class="absolute top-4 left-5 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                    <div class="relative z-10">
-                                        <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">Brown Sugar<br>Boba Latte</h2>
-                                    </div>
-                                </div>
-                                <!-- Grapefruit Card -->
-                                <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
-                                    <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
-                                    <span class="absolute top-4 left-5 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                    <div class="relative z-10">
-                                        <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P3 Super<br>Grapefruit</h2>
-                                    </div>
-                                </div>
-                                <!-- P1 Fruit Tea Card -->
-                                <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group">
-                                    <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-[#f97316]/70 via-[#f97316]/35 to-transparent"></div>
-                                    <span class="absolute top-4 left-5 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
-                                    <div class="relative z-10">
-                                        <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P1 Super<br>Fruit Tea</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-
-                        return `
+                    return `
                             <!-- Menu Feed (Categories) -->
                             <div class="space-y-12">
-                                ${featuredPromoHtml}
                                 
-                                ${isAlternative ? `
+                                ${
+                                  isAlternative
+                                    ? `
                                 <!-- Category Navigation Pills -->
                                 <div class="flex overflow-x-auto lg:flex-wrap gap-2.5 py-0.5 px-1 scrollbar-hide whitespace-nowrap lg:whitespace-normal select-none !mt-3 !-mb-8">
-                                    ${getActiveCategories().map(section => {
+                                    ${getActiveCategories()
+                                      .map((section) => {
                                         return `
                                             <a href="#${section.id}" 
                                                onclick="event.preventDefault(); document.getElementById('${section.id}')?.scrollIntoView({ behavior: 'smooth', block: 'start' });"
@@ -1164,65 +1663,79 @@ function renderMenuPage(isAlternative) {
                                                 ${section.name}
                                             </a>
                                         `;
-                                    }).join('')}
+                                      })
+                                      .join("")}
                                 </div>
-                                ` : ''}
+                                `
+                                    : ""
+                                }
 
-                                ${getActiveCategories().map(section => {
+                                ${getActiveCategories()
+                                  .map((section) => {
                                     const items = getActiveMenuItems();
-                                    const sectionItems = section.isFeatured 
-                                        ? items.slice(0, 6)
-                                        : items.filter(item => item.categoryId === section.categoryId || item.category === section.categoryKey);
-                                    if (sectionItems.length === 0) return '';
+                                    const sectionItems = section.isFeatured
+                                      ? items.slice(0, 6)
+                                      : items.filter(
+                                          (item) =>
+                                            item.categoryId ===
+                                              section.categoryId ||
+                                            item.category ===
+                                              section.categoryKey,
+                                        );
+                                    if (sectionItems.length === 0) return "";
                                     return `
-                                        <div id="${section.id}" class="pt-4 scroll-mt-24 lg:scroll-mt-36">
-                                            <div class="flex justify-between items-end mb-4 px-1">
-                                                <h3 class="${isDesktop ? 'text-3xl' : 'text-2xl'} font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
+                                        <div id="${section.id}" class="scroll-mt-24 lg:scroll-mt-36">
+                                            <div class="flex justify-between items-end mb-6 px-1">
+                                                <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
                                                 <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
                                             </div>
-                                            <div class="${isDesktop ? 'grid grid-cols-4 gap-x-3 gap-y-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
-                                                ${sectionItems.map(item => {
-                                                    const actualIndex = items.indexOf(item);
+                                            <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : "grid grid-cols-1 md:grid-cols-2 gap-[10px]"}">
+                                                ${sectionItems
+                                                  .map((item) => {
+                                                    const actualIndex =
+                                                      items.indexOf(item);
                                                     return `
-                                                        <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                                            <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <div class="bg-white rounded-2xl ${isDesktop ? "pt-2.5 px-2.5 pb-5" : "pt-1.5 px-1.5 pb-3"} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
+                                                            <div class="w-full ${isDesktop ? "h-44" : "h-48"} rounded-xl overflow-hidden ${isDesktop ? "mb-5" : "mb-3"} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                                 <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                             </div>
                                                             <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                                <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${item.price.toFixed(2)}</div>
+                                                                <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                                <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
                                                             </div>
-                                                            ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ''}
-                                                            <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                            ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ""}
+                                                            <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                         </div>
                                                     `;
-                                                }).join('')}
+                                                  })
+                                                  .join("")}
                                             </div>
                                         </div>
                                     `;
-                                }).join('')}
+                                  })
+                                  .join("")}
                             </div>
                         `;
-                    } else if (mockupState.menuTab === 'featured') {
-                        const superFruitItem = MENU_ITEMS[3];
-                        const featuredItems = [...MENU_ITEMS.slice(0, 6)];
-                        // Ensure P1 Super Fruit Tea (index 3) is included but mark it specially
-                        // Build the card for P1 with tangerine badge
-                        const p1Card = `
-                            <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col ${isDesktop ? 'h-full' : 'w-[72vw] max-w-[260px] shrink-0 snap-center'} hover:shadow-md transition-shadow">
-                                <div class="w-full ${isDesktop ? 'h-44' : 'h-40'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(3)'>
-                                    <img src="${superFruitItem ? superFruitItem.image : 'https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg'}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                  } else if (mockupState.menuTab === "featured") {
+                    const superFruitItem = MENU_ITEMS[3];
+                    const featuredItems = [...MENU_ITEMS.slice(0, 6)];
+                    // Ensure P1 Super Fruit Tea (index 3) is included but mark it specially
+                    // Build the card for P1 with tangerine badge
+                    const p1Card = `
+                            <div class="bg-white rounded-2xl ${isDesktop ? "pt-2.5 px-2.5 pb-5" : "pt-1.5 px-1.5 pb-3"} shadow-sm border border-gray-100 flex flex-col ${isDesktop ? "h-full" : "w-[72vw] max-w-[260px] shrink-0 snap-center"} hover:shadow-md transition-shadow">
+                                <div class="w-full ${isDesktop ? "h-44" : "h-40"} rounded-xl overflow-hidden ${isDesktop ? "mb-5" : "mb-3"} relative cursor-pointer" onclick='selectItemAndNavigate(3)'>
+                                    <img src="${superFruitItem ? superFruitItem.image : "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg"}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                     <div class="absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</div>
                                 </div>
                                 <div class="cursor-pointer" onclick='selectItemAndNavigate(3)'>
-                                    <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${superFruitItem ? superFruitItem.name : 'P1 Super Fruit Tea'}</h4>
-                                    <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${ superFruitItem ? superFruitItem.price.toFixed(2) : '5.95'}</div>
+                                    <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${superFruitItem ? superFruitItem.name : "P1 Super Fruit Tea"}</h4>
+                                    <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${superFruitItem ? superFruitItem.price.toFixed(2) : "5.95"}</div>
                                 </div>
-                                ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${superFruitItem ? superFruitItem.description : ''}</p>` : ''}
-                                <button onclick='selectItemAndNavigate(3)' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${superFruitItem ? superFruitItem.description : ""}</p>` : ""}
+                                <button onclick='selectItemAndNavigate(3)' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                             </div>
                         `;
-                        return `
+                    return `
                             <!-- Featured View -->
                             <div class="space-y-12">
                                 <!-- Featured Items Grid (Large Premium Cards) -->
@@ -1230,14 +1743,22 @@ function renderMenuPage(isAlternative) {
                                     <div class="flex justify-between items-end mb-6 px-1">
                                         <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Featured Specials</h3>
                                     </div>
-                                    ${isDesktop ? `
+                                    ${
+                                      isDesktop
+                                        ? `
                                     <div class="grid grid-cols-4 gap-x-3 gap-y-5">
-                                        ${featuredItems.map((item) => {
-                                            const actualIndex = MENU_ITEMS.indexOf(item);
+                                        ${featuredItems
+                                          .map((item) => {
+                                            const actualIndex =
+                                              MENU_ITEMS.indexOf(item);
                                             // Use tangerine badge for P1 (index 3), violet for others
                                             const isP1 = actualIndex === 3;
-                                            const badgeStyle = isP1 ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"' : '';
-                                            const badgeClass = isP1 ? 'absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm' : 'absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm';
+                                            const badgeStyle = isP1
+                                              ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"'
+                                              : "";
+                                            const badgeClass = isP1
+                                              ? "absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm"
+                                              : "absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm";
                                             return `
                                                 <div class="bg-white rounded-2xl pt-2.5 px-2.5 pb-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
                                                     <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -1246,23 +1767,31 @@ function renderMenuPage(isAlternative) {
                                                     </div>
                                                     <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <h4 class="font-black text-gray-900 text-lg leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                        <div class="font-black text-violet-600 text-base mb-2">$${ item.price.toFixed(2)}</div>
+                                                        <div class="font-black text-violet-600 text-base mb-2">$${item.price.toFixed(2)}</div>
                                                     </div>
                                                     <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>
                                                     <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-3 text-sm rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                 </div>
                                             `;
-                                        }).join('')}
+                                          })
+                                          .join("")}
                                         ${p1Card}
                                     </div>
-                                    ` : `
+                                    `
+                                        : `
                                     <!-- Mobile/Tablet: horizontal scrollable row -->
                                     <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-3 -mx-1 px-1">
-                                        ${featuredItems.map((item) => {
-                                            const actualIndex = MENU_ITEMS.indexOf(item);
+                                        ${featuredItems
+                                          .map((item) => {
+                                            const actualIndex =
+                                              MENU_ITEMS.indexOf(item);
                                             const isP1 = actualIndex === 3;
-                                            const badgeStyle = isP1 ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"' : '';
-                                            const badgeClass = isP1 ? 'absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm' : 'absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm';
+                                            const badgeStyle = isP1
+                                              ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"'
+                                              : "";
+                                            const badgeClass = isP1
+                                              ? "absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm"
+                                              : "absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm";
                                             return `
                                                 <div class="bg-white rounded-2xl pt-1.5 px-1.5 pb-3 shadow-sm border border-gray-100 flex flex-col w-[72vw] max-w-[260px] shrink-0 snap-center hover:shadow-md transition-shadow">
                                                     <div class="w-full h-40 rounded-xl overflow-hidden mb-3 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -1271,77 +1800,103 @@ function renderMenuPage(isAlternative) {
                                                     </div>
                                                     <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <h4 class="font-black text-gray-900 text-[15px] leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                        <div class="font-black text-violet-600 text-sm mb-3">$${ item.price.toFixed(2)}</div>
+                                                        <div class="font-black text-violet-600 text-sm mb-3">$${item.price.toFixed(2)}</div>
                                                     </div>
                                                     <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-2 text-[11px] rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                 </div>
                                             `;
-                                        }).join('')}
+                                          })
+                                          .join("")}
                                         ${p1Card}
                                     </div>
-                                    `}
+                                    `
+                                    }
                                 </div>
                             </div>
                         `;
-
-                    } else if (mockupState.menuTab === 'favorites') {
-                        const hasFavorites = mockupState.favorites && mockupState.favorites.length > 0;
-                        return `
+                  } else if (mockupState.menuTab === "favorites") {
+                    const hasFavorites =
+                      mockupState.favorites && mockupState.favorites.length > 0;
+                    return `
                             <div class="space-y-6">
                                 <div class="flex justify-between items-end mb-4 px-1">
                                     <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Your Saved Favorites</h3>
                                 </div>
-                                ${hasFavorites ? `
-                                    <div class="${isDesktop ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-1 md:grid-cols-2 gap-[10px]'}">
-                                        ${mockupState.favorites.map((fav) => {
-                                            const originalIndex = getActiveMenuItems().findIndex(item => item.name === fav.name);
-                                            const actualIndex = originalIndex >= 0 ? originalIndex : 0;
+                                ${
+                                  hasFavorites
+                                    ? `
+                                    <div class="${isDesktop ? "grid grid-cols-4 gap-5" : "grid grid-cols-1 md:grid-cols-2 gap-[10px]"}">
+                                        ${mockupState.favorites
+                                          .map((fav) => {
+                                            const originalIndex =
+                                              getActiveMenuItems().findIndex(
+                                                (item) =>
+                                                  item.name === fav.name,
+                                              );
+                                            const actualIndex =
+                                              originalIndex >= 0
+                                                ? originalIndex
+                                                : 0;
                                             return `
-                                                <div class="bg-white rounded-2xl ${isDesktop ? 'pt-2.5 px-2.5 pb-5' : 'pt-1.5 px-1.5 pb-3'} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card">
-                                                    <div class="w-full ${isDesktop ? 'h-44' : 'h-48'} rounded-xl overflow-hidden ${isDesktop ? 'mb-5' : 'mb-3'} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                <div class="bg-white rounded-2xl ${isDesktop ? "pt-2.5 px-2.5 pb-5" : "pt-1.5 px-1.5 pb-3"} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card">
+                                                    <div class="w-full ${isDesktop ? "h-44" : "h-48"} rounded-xl overflow-hidden ${isDesktop ? "mb-5" : "mb-3"} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <img src="${fav.image}" class="w-full h-full object-cover object-top group-hover/card:scale-105 transition-transform duration-500">
                                                         <button onclick="event.stopPropagation(); toggleFavorite(${fav.id})" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white text-red-500 shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-transform">
                                                             <i class="fa-solid fa-heart"></i>
                                                         </button>
                                                     </div>
                                                     <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <h4 class="font-black text-gray-900 ${isDesktop ? 'text-lg' : 'text-[15px]'} leading-tight tracking-tight uppercase mb-1">${fav.name}</h4>
-                                                        <div class="font-black text-violet-600 ${isDesktop ? 'text-base mb-2' : 'text-sm mb-3'}">$${fav.price.toFixed(2)}</div>
+                                                        <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${fav.name}</h4>
+                                                        <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${fav.price.toFixed(2)}</div>
                                                     </div>
-                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? 'py-3 text-sm' : 'py-2.5 text-[11px]'} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors tracking-wide mt-auto">+ Reorder</button>
+                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors tracking-wide mt-auto">+ Reorder</button>
                                                 </div>
                                             `;
-                                        }).join('')}
+                                          })
+                                          .join("")}
                                     </div>
-                                ` : `
+                                `
+                                    : `
                                     <div class="flex flex-col items-center justify-center py-16 text-center">
                                         <div class="w-20 h-20 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mb-6 shadow-sm"><i class="fa-regular fa-heart text-3xl"></i></div>
                                         <h4 class="font-black text-gray-900 uppercase tracking-tight text-lg mb-2">No Favorites Saved Yet</h4>
                                         <p class="text-sm text-gray-500 max-w-xs leading-relaxed">Items you heart on the menu will appear here for fast reordering!</p>
                                     </div>
-                                `}
+                                `
+                                }
                             </div>
                         `;
-                    } else if (mockupState.menuTab === 'history') {
-                        const ordersList = mockupState.apiOrders ? (Array.isArray(mockupState.apiOrders) ? mockupState.apiOrders : (mockupState.apiOrders.items || mockupState.apiOrders.data || [])) : [];
-                        
-                        let allOrders = [...ordersList];
-                        if (mockupState.lastOrder) {
-                            const lastOrderId = mockupState.lastOrder.orderId;
-                            const exists = allOrders.some(o => o.orderId === lastOrderId);
-                            if (!exists) {
-                                allOrders.unshift(mockupState.lastOrder);
-                            }
-                        }
-                        
-                        const getOrderTime = (order) => {
-                            const dateStr = order.orderDate || order.placedAt || order.placedDateTime;
-                            return dateStr ? new Date(dateStr).getTime() : 0;
-                        };
-                        allOrders.sort((a, b) => getOrderTime(b) - getOrderTime(a));
+                  } else if (mockupState.menuTab === "history") {
+                    const ordersList = mockupState.apiOrders
+                      ? Array.isArray(mockupState.apiOrders)
+                        ? mockupState.apiOrders
+                        : mockupState.apiOrders.items ||
+                          mockupState.apiOrders.data ||
+                          []
+                      : [];
 
-                        if (allOrders.length === 0) {
-                            return `
+                    let allOrders = [...ordersList];
+                    if (mockupState.lastOrder) {
+                      const lastOrderId = mockupState.lastOrder.orderId;
+                      const exists = allOrders.some(
+                        (o) => o.orderId === lastOrderId,
+                      );
+                      if (!exists) {
+                        allOrders.unshift(mockupState.lastOrder);
+                      }
+                    }
+
+                    const getOrderTime = (order) => {
+                      const dateStr =
+                        order.orderDate ||
+                        order.placedAt ||
+                        order.placedDateTime;
+                      return dateStr ? new Date(dateStr).getTime() : 0;
+                    };
+                    allOrders.sort((a, b) => getOrderTime(b) - getOrderTime(a));
+
+                    if (allOrders.length === 0) {
+                      return `
                                 <div class="space-y-6">
                                     <div class="flex justify-between items-end mb-4 px-1">
                                         <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
@@ -1354,18 +1909,36 @@ function renderMenuPage(isAlternative) {
                                     </div>
                                 </div>
                             `;
-                        }
+                    }
 
-                        const orderCardsHTML = allOrders.map(order => {
-                            const orderDate = new Date(order.orderDate || order.placedAt || Date.now()).toLocaleDateString();
-                            const orderTotal = (order.total || order.subTotal || 0).toFixed(2);
-                            const orderItems = order.orderMenuItems || order.items || order.orderItems || [];
-                            const orderNum = order.orderId || order.orderNumber || 'FB-' + Math.floor(1000 + Math.random() * 9000);
-                            
-                            const foundLoc = LOCATIONS.find(l => l.locationId === order.locationId);
-                            const locationName = foundLoc ? foundLoc.name : (mockupState.selectedLocation || 'i-Tea');
+                    const orderCardsHTML = allOrders
+                      .map((order) => {
+                        const orderDate = new Date(
+                          order.orderDate || order.placedAt || Date.now(),
+                        ).toLocaleDateString();
+                        const orderTotal = (
+                          order.total ||
+                          order.subTotal ||
+                          0
+                        ).toFixed(2);
+                        const orderItems =
+                          order.orderMenuItems ||
+                          order.items ||
+                          order.orderItems ||
+                          [];
+                        const orderNum =
+                          order.orderId ||
+                          order.orderNumber ||
+                          "FB-" + Math.floor(1000 + Math.random() * 9000);
 
-                            return `
+                        const foundLoc = LOCATIONS.find(
+                          (l) => l.locationId === order.locationId,
+                        );
+                        const locationName = foundLoc
+                          ? foundLoc.name
+                          : mockupState.selectedLocation || "i-Tea";
+
+                        return `
                                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-4">
                                     <div class="flex justify-between items-start">
                                         <div>
@@ -1375,9 +1948,12 @@ function renderMenuPage(isAlternative) {
                                         <span class="font-black text-gray-900 text-base">$${orderTotal}</span>
                                     </div>
                                     <div class="flex flex-col gap-1 flex-1">
-                                        ${orderItems.map(item =>
-                                            `<p class="text-xs text-gray-500 font-medium">${item.quantity} × ${item.name}</p>`
-                                        ).join('')}
+                                        ${orderItems
+                                          .map(
+                                            (item) =>
+                                              `<p class="text-xs text-gray-500 font-medium">${item.quantity} × ${item.name}</p>`,
+                                          )
+                                          .join("")}
                                     </div>
                                     <div class="flex gap-2 mt-2 pt-4 border-t border-gray-50">
                                         <button onclick="viewPastOrder(${order.orderId || `'${orderNum}'`})" class="flex-1 py-2.5 rounded-full border-2 border-violet-600 text-violet-600 font-black text-[10px] uppercase tracking-widest hover:bg-violet-50 transition-colors">View</button>
@@ -1385,25 +1961,28 @@ function renderMenuPage(isAlternative) {
                                     </div>
                                 </div>
                             `;
-                        }).join('');
+                      })
+                      .join("");
 
-                        return `
+                    return `
                             <div class="space-y-6">
                                 <div class="flex justify-between items-end mb-4 px-1">
                                     <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Order History</h3>
                                 </div>
-                                <div class="${isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-5' : 'flex flex-col gap-4'}">
+                                <div class="${isDesktop ? "grid grid-cols-2 lg:grid-cols-3 gap-5" : "flex flex-col gap-4"}">
                                     ${orderCardsHTML}
                                 </div>
                             </div>
                         `;
-                    }
+                  }
                 })()}
             </div>
         </div>
 
         <!-- Favorites See All Modal -->
-        ${mockupState.modalOpen === 'favorites-see-all' ? `
+        ${
+          mockupState.modalOpen === "favorites-see-all"
+            ? `
         <div class="absolute inset-0 bg-black/60 z-[110] flex flex-col justify-end backdrop-blur-sm transition-all duration-300">
             <div class="absolute inset-0" onclick="updateMockupState('modalOpen', null); navigateTo(currentPage)"></div>
             <div class="bg-white w-full rounded-t-[40px] shadow-2xl animate-[slideUp_0.4s_ease-out] flex flex-col max-h-[85vh] z-10 relative">
@@ -1418,7 +1997,10 @@ function renderMenuPage(isAlternative) {
                 </div>
 
                 <div class="flex-1 overflow-y-auto px-6 py-6 space-y-5 scrollbar-hide">
-                    ${(mockupState.favorites || []).slice(0, 6).map((fav, index) => `
+                    ${(mockupState.favorites || [])
+                      .slice(0, 6)
+                      .map(
+                        (fav, index) => `
                         <div class="flex items-center justify-between group">
                             <div class="flex items-center gap-4">
                                 <div class="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-50">
@@ -1427,7 +2009,7 @@ function renderMenuPage(isAlternative) {
                                 <div>
                                     <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2">${fav.name}</div>
                                     <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wide">
-                                        ${index === 0 ? 'Ordered 5+ times' : index === 1 ? 'Ordered 10+ times' : index === 2 ? 'Ordered 3 times' : index === 3 ? 'Ordered 8+ times' : index === 4 ? 'Ordered 12+ times' : 'Ordered 2 times'}
+                                        ${index === 0 ? "Ordered 5+ times" : index === 1 ? "Ordered 10+ times" : index === 2 ? "Ordered 3 times" : index === 3 ? "Ordered 8+ times" : index === 4 ? "Ordered 12+ times" : "Ordered 2 times"}
                                     </div>
                                 </div>
                             </div>
@@ -1435,7 +2017,9 @@ function renderMenuPage(isAlternative) {
                                 <i class="fa-solid fa-plus text-xs"></i>
                             </button>
                         </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 </div>
 
                 <div class="p-6 border-t border-gray-100">
@@ -1443,7 +2027,9 @@ function renderMenuPage(isAlternative) {
                 </div>
             </div>
         </div>
-        ` : ''}
+        `
+            : ""
+        }
 
         <!-- Category Bottom Sheet Modal -->
         <div id="category-modal" class="absolute inset-0 bg-black/60 z-[100] ${categoryModalClass} flex-col justify-end backdrop-blur-sm transition-all duration-300">
@@ -1465,7 +2051,9 @@ function renderMenuPage(isAlternative) {
 
                 <!-- Category List -->
                 <div class="flex-1 overflow-y-auto px-6 py-4 space-y-3 scrollbar-hide">
-                    ${categories.map(cat => `
+                    ${categories
+                      .map(
+                        (cat) => `
                         <div onclick="updateMockupState('modalOpen', null); navigateTo(currentPage); setTimeout(() => document.getElementById('${cat.id}').scrollIntoView({behavior: 'smooth'}), 100)" class="flex items-start gap-4 p-3 rounded-2xl border-2 border-gray-50 bg-white hover:border-violet-200 hover:bg-violet-50/30 transition-all cursor-pointer group active:scale-[0.98]">
                             <div class="flex items-center gap-4">
                                 <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm border border-gray-100">
@@ -1477,7 +2065,9 @@ function renderMenuPage(isAlternative) {
                                 <i class="fa-solid fa-chevron-right text-[10px]"></i>
                             </div>
                         </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 </div>
                 
                 <div class="p-6 bg-gray-50/50 border-t border-gray-100 font-black text-center text-[10px] text-gray-400 uppercase tracking-widest leading-loose">
@@ -1490,7 +2080,7 @@ function renderMenuPage(isAlternative) {
 }
 
 const routes = {
-    'landing': () => `
+  landing: () => `
             <div class="flex flex-col h-full relative overflow-hidden bg-black">
                 <div class="absolute inset-0 z-0">
                     <img src="${assets.featured}" class="w-full h-full object-cover opacity-80">
@@ -1506,7 +2096,7 @@ const routes = {
                     <button onclick="navigateTo('sign-in')" class="w-full bg-red-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(220,38,38,0.5)] active:scale-95 transition-transform uppercase tracking-wider">Log In</button>
                 </div>
             </div>`,
-    'dashboard': () => `
+  dashboard: () => `
             <div class="flex flex-col h-full bg-[#f0f2f5] relative">
                 <header class="bg-[#1a1a1a] px-6 py-4 flex justify-between items-center z-50 shrink-0 shadow-md">
                     <div class="flex flex-col text-left">
@@ -1581,13 +2171,13 @@ const routes = {
                     </div>
                 </div>
             </div>`,
-    'home': () => {
-        if (currentViewport === 'desktop') {
-            return `
+  home: () => {
+    if (currentViewport === "desktop") {
+      return `
                 <div class="flex flex-col w-full min-h-full">
                     <nav class="flex justify-between items-center px-16 py-6 bg-white sticky top-0 z-50 shadow-sm">
                         <div class="flex items-center gap-8"><span class="text-3xl font-black text-red-600 tracking-tighter cursor-pointer" onclick="navigateTo('home')">FAREBITES</span></div>
-                        <div class="flex items-center gap-6 cursor-pointer" onclick="navigateTo(mockupState.isLoggedIn ? 'account' : 'sign-in')"><span class="font-black text-gray-800">Hi ${mockupState.userName || 'User'}!</span><div class="w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center border-2 border-transparent group-hover:border-red-600 transition"><i class="fa-solid fa-user text-gray-600"></i></div></div>
+                        <div class="flex items-center gap-6 cursor-pointer" onclick="navigateTo(mockupState.isLoggedIn ? 'account' : 'sign-in')"><span class="font-black text-gray-800">Hi ${mockupState.userName || "User"}!</span><div class="w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center border-2 border-transparent group-hover:border-red-600 transition"><i class="fa-solid fa-user text-gray-600"></i></div></div>
                     </nav>
                     <div class="desktop-hero" style="background-image: url('${assets.featured}')">
                         <div class="relative z-10 w-full max-w-5xl px-12 text-center text-white py-24">
@@ -1599,8 +2189,8 @@ const routes = {
                         </div>
                     </div>
                 </div>`;
-        } else {
-            return `
+    } else {
+      return `
                 <div class="flex flex-col h-full bg-white relative">
                     <div class="flex-shrink-0 bg-white px-6 pt-10 pb-4">
                         <div class="bg-gray-100 flex items-center gap-3 px-5 py-3.5 rounded-full shadow-sm">
@@ -1647,9 +2237,9 @@ const routes = {
                         </div>
                     </div>
                 </div>`;
-        }
-    },
-    'restaurant-landing': () => `
+    }
+  },
+  "restaurant-landing": () => `
             <div class="flex flex-col h-full relative overflow-hidden bg-white">
                 <div class="absolute inset-0 z-0">
                     <img src="${assets.restaurantHero}" class="w-full h-full object-cover">
@@ -1670,27 +2260,29 @@ const routes = {
                     <button onclick="navigateTo('sign-in')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-transform uppercase tracking-wider">Log In</button>
                 </div>
             </div>`,
-    'sign-in': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const savedEmail = localStorage.getItem('farebites_remembered_email') || '';
-        const rememberMeChecked = !!localStorage.getItem('farebites_remembered_email');
-        return `
+  "sign-in": () => {
+    const isDesktop = currentViewport === "desktop";
+    const savedEmail = localStorage.getItem("farebites_remembered_email") || "";
+    const rememberMeChecked = !!localStorage.getItem(
+      "farebites_remembered_email",
+    );
+    return `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
             <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
             <div class="modal-overlay" onclick="navigateTo('restaurant-home')">
                 <div class="modal-content" onclick="event.stopPropagation()">
-                    <button class="absolute ${isDesktop ? 'top-4 left-4' : 'top-6 left-6'} text-gray-500" onclick="navigateTo('restaurant-home')"><i class="fa-solid fa-xmark text-2xl"></i></button>
-                    <div class="w-full ${isDesktop ? 'max-h-[36px] mb-2 mt-2' : 'max-h-[52px] mb-1 mt-4'} flex items-center justify-center">
-                         <img src="images/i-tea-logo-new.png" class="h-full ${isDesktop ? 'max-h-[36px]' : 'max-h-[52px]'} w-auto object-contain">
+                    <button class="absolute ${isDesktop ? "top-4 left-4" : "top-6 left-6"} text-gray-500" onclick="navigateTo('restaurant-home')"><i class="fa-solid fa-xmark text-2xl"></i></button>
+                    <div class="w-full ${isDesktop ? "max-h-[36px] mb-2 mt-2" : "max-h-[52px] mb-1 mt-4"} flex items-center justify-center">
+                         <img src="images/i-tea-logo-new.png" class="h-full ${isDesktop ? "max-h-[36px]" : "max-h-[52px]"} w-auto object-contain">
                     </div>
-                    <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? 'mb-2' : 'mb-4'} uppercase tracking-tight text-gray-900 leading-tight">Sign In</h2>
+                    <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? "mb-2" : "mb-4"} uppercase tracking-tight text-gray-900 leading-tight">Sign In</h2>
                     <div class="space-y-3">
                         <div class="relative group">
-                            <input type="email" id="auth-email-input" placeholder="Email Address" value="${savedEmail}" class="w-full bg-white px-8 ${isDesktop ? 'py-3' : 'py-4'} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
+                            <input type="email" id="auth-email-input" placeholder="Email Address" value="${savedEmail}" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
                             <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
                         </div>
                         <div class="relative group">
-                            <input type="password" id="auth-password-input" placeholder="Password" class="w-full bg-white pl-8 pr-12 ${isDesktop ? 'py-3' : 'py-4'} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
+                            <input type="password" id="auth-password-input" placeholder="Password" class="w-full bg-white pl-8 pr-12 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
                             <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
                             <button type="button" onclick="const p = document.getElementById('auth-password-input'); const i = this.querySelector('i'); if(p.type==='password'){p.type='text'; i.className='fa-solid fa-eye-slash text-gray-400';}else{p.type='password'; i.className='fa-solid fa-eye text-gray-400';}" class="absolute right-6 top-1/2 -translate-y-1/2 focus:outline-none">
                                 <i class="fa-solid fa-eye text-gray-400"></i>
@@ -1698,15 +2290,15 @@ const routes = {
                         </div>
                         <div class="flex justify-between items-center px-4">
                             <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" id="auth-remember-me" ${rememberMeChecked ? 'checked' : ''} class="w-4 h-4 text-violet-600 border-2 border-violet-100 rounded focus:ring-violet-500 focus:ring-2 transition-colors cursor-pointer accent-violet-600">
+                                <input type="checkbox" id="auth-remember-me" ${rememberMeChecked ? "checked" : ""} class="w-4 h-4 text-violet-600 border-2 border-violet-100 rounded focus:ring-violet-500 focus:ring-2 transition-colors cursor-pointer accent-violet-600">
                                 <span class="text-xs font-bold text-gray-500 group-hover:text-gray-700 transition-colors">Remember me</span>
                             </label>
                             <button type="button" onclick="navigateTo('forgot-password')" class="text-xs font-bold text-violet-600 hover:underline hover:text-violet-700 transition-colors">Forgot Password?</button>
                         </div>
                         <div id="auth-error" class="text-xs font-bold text-red-500 px-6 h-4 mb-2 transition-all opacity-0"></div>
                         <div class="space-y-2">
-                            <button onclick="handleLogin()" class="w-full bg-violet-600 text-white ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase">Sign In</button>
-                            <button onclick="navigateTo('registration')" class="w-full bg-white border-2 border-violet-600 text-violet-600 ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 hover:bg-violet-50/50 active:scale-95 transition-all uppercase">Create an Account</button>
+                            <button onclick="handleLogin()" class="w-full bg-violet-600 text-white ${isDesktop ? "py-3" : "py-4"} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase">Sign In</button>
+                            <button onclick="navigateTo('registration')" class="w-full bg-white border-2 border-violet-600 text-violet-600 ${isDesktop ? "py-3" : "py-4"} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 hover:bg-violet-50/50 active:scale-95 transition-all uppercase">Create an Account</button>
                         </div>
                     </div>
                     <div class="flex items-center gap-4 py-1">
@@ -1732,26 +2324,26 @@ const routes = {
                 </div>
             </div>
         `;
-    },
-    'forgot-password': () => {
-        const isDesktop = currentViewport === 'desktop';
-        return `
+  },
+  "forgot-password": () => {
+    const isDesktop = currentViewport === "desktop";
+    return `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
             <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
             <div class="modal-overlay" onclick="navigateTo('sign-in')">
                 <div class="modal-content" onclick="event.stopPropagation()">
-                    <button class="absolute ${isDesktop ? 'top-4 left-4' : 'top-6 left-6'} text-gray-500 hover:text-violet-600 transition-colors" onclick="navigateTo('sign-in')">
+                    <button class="absolute ${isDesktop ? "top-4 left-4" : "top-6 left-6"} text-gray-500 hover:text-violet-600 transition-colors" onclick="navigateTo('sign-in')">
                         <i class="fa-solid fa-chevron-left text-2xl"></i>
                     </button>
-                    <div class="w-full ${isDesktop ? 'max-h-[36px] mb-2 mt-2' : 'max-h-[52px] mb-1 mt-4'} flex items-center justify-center">
-                         <img src="images/i-tea-logo-new.png" class="h-full ${isDesktop ? 'max-h-[36px]' : 'max-h-[52px]'} w-auto object-contain">
+                    <div class="w-full ${isDesktop ? "max-h-[36px] mb-2 mt-2" : "max-h-[52px] mb-1 mt-4"} flex items-center justify-center">
+                         <img src="images/i-tea-logo-new.png" class="h-full ${isDesktop ? "max-h-[36px]" : "max-h-[52px]"} w-auto object-contain">
                     </div>
-                    <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? 'mb-2' : 'mb-4'} uppercase tracking-tight text-gray-900 leading-tight">Reset Password</h2>
+                    <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? "mb-2" : "mb-4"} uppercase tracking-tight text-gray-900 leading-tight">Reset Password</h2>
                     <p class="text-xs text-gray-500 font-bold text-center mb-6 uppercase tracking-wider px-2 leading-relaxed">Enter your email address below, and we'll send you a link to reset your password.</p>
                     
                     <div class="space-y-4">
                         <div class="relative group">
-                            <input type="email" id="forgot-email-input" placeholder="Email Address" class="w-full bg-white px-8 ${isDesktop ? 'py-3' : 'py-4'} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
+                            <input type="email" id="forgot-email-input" placeholder="Email Address" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
                             <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
                         </div>
                         
@@ -1759,17 +2351,17 @@ const routes = {
                         <div id="forgot-success" class="text-sm font-bold text-green-600 px-6 text-center leading-relaxed transition-all hidden"></div>
                         
                         <div class="space-y-2">
-                            <button id="forgot-submit-btn" onclick="handleForgotPassword()" class="w-full bg-violet-600 text-white ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase">Send Reset Link</button>
-                            <button id="forgot-back-btn" onclick="navigateTo('sign-in')" class="w-full bg-white border-2 border-violet-600 text-violet-600 ${isDesktop ? 'py-3' : 'py-4'} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 hover:bg-violet-50/50 active:scale-95 transition-all uppercase">Back to Sign In</button>
+                            <button id="forgot-submit-btn" onclick="handleForgotPassword()" class="w-full bg-violet-600 text-white ${isDesktop ? "py-3" : "py-4"} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase">Send Reset Link</button>
+                            <button id="forgot-back-btn" onclick="navigateTo('sign-in')" class="w-full bg-white border-2 border-violet-600 text-violet-600 ${isDesktop ? "py-3" : "py-4"} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 hover:bg-violet-50/50 active:scale-95 transition-all uppercase">Back to Sign In</button>
                         </div>
                     </div>
                 </div>
             </div>
         `;
-    },
-    'rewards': () => {
-        const isDesktop = currentViewport === 'desktop';
-        return `
+  },
+  rewards: () => {
+    const isDesktop = currentViewport === "desktop";
+    return `
             <div class="flex flex-col min-h-screen bg-slate-50 relative overflow-x-hidden animate-[fadeIn_0.3s_ease-out]">
                 <!-- Compact Header -->
                 <header class="bg-white border-b border-gray-100 sticky top-0 z-50 px-6 py-4 flex justify-between items-center shrink-0 shadow-sm">
@@ -1867,34 +2459,38 @@ const routes = {
                 </div>
             </div>
         `;
-    },
-    'restaurant-home': () => {
-        const isDesktop = currentViewport === 'desktop';
-        
-        let cardWidthClass = '';
-        let carouselAlign = '';
-        if (currentViewport === 'desktop') {
-            cardWidthClass = 'w-[23%] min-w-[200px] max-w-[260px] snap-align-none';
-            carouselAlign = 'lg:justify-center lg:overflow-x-visible';
-        } else if (currentViewport === 'tablet') {
-            cardWidthClass = 'w-[47%] shrink-0 snap-center';
-            carouselAlign = 'justify-start';
-        } else {
-            cardWidthClass = 'w-full shrink-0 snap-center';
-            carouselAlign = 'justify-start';
-        }
+  },
+  "restaurant-home": () => {
+    const isDesktop = currentViewport === "desktop";
 
-        const items = getActiveMenuItems();
-        const bobaItem = items.find(item => item.name.includes("Brown Sugar Boba")) || items[6];
-        const grapefruitItem = items.find(item => item.name.includes("Super Grapefruit")) || items[5];
-        const bobaIndex = items.indexOf(bobaItem);
-        const grapefruitIndex = items.indexOf(grapefruitItem);
+    let cardWidthClass = "";
+    let carouselAlign = "";
+    if (currentViewport === "desktop") {
+      cardWidthClass = "w-[23%] min-w-[200px] max-w-[260px] snap-align-none";
+      carouselAlign = "lg:justify-center lg:overflow-x-visible";
+    } else if (currentViewport === "tablet") {
+      cardWidthClass = "w-[47%] shrink-0 snap-center";
+      carouselAlign = "justify-start";
+    } else {
+      cardWidthClass = "w-full shrink-0 snap-center";
+      carouselAlign = "justify-start";
+    }
 
-        return `
+    const items = getActiveMenuItems();
+    const bobaItem =
+      items.find((item) => item.name.includes("Brown Sugar Boba")) || items[6];
+    const grapefruitItem =
+      items.find((item) => item.name.includes("Super Grapefruit")) || items[5];
+    const bobaIndex = items.indexOf(bobaItem);
+    const grapefruitIndex = items.indexOf(grapefruitItem);
+
+    return `
             <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
                 <!-- Hero Banner / Background Section -->
-                <div class="${isDesktop ? 'relative h-[480px] mx-1.5 mt-1.5 rounded-2xl shrink-0 overflow-hidden flex items-center bg-violet-600 shadow-md' : 'absolute inset-0 z-0'}">
-                    ${isDesktop ? `
+                <div class="${isDesktop ? "relative h-[480px] mx-1.5 mt-1.5 rounded-2xl shrink-0 overflow-hidden flex items-center bg-gradient-to-r from-violet-600 to-[#1f0b35] shadow-md" : "absolute inset-0 z-0"}">
+                    ${
+                      isDesktop
+                        ? `
                     <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <div class="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-violet-950/30 to-transparent z-0"></div>
                     <div class="relative z-10 w-full max-w-[1080px] mx-auto px-12 text-left flex flex-col justify-center h-full">
@@ -1911,11 +2507,13 @@ const routes = {
                             </button>
                         </div>
                     </div>
-                    ` : `
+                    `
+                        : `
                     <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <!-- Subtle gradient to ensure text readability -->
                     <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90 z-10"></div>
-                    `}
+                    `
+                    }
                 </div>
 
                 <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
@@ -1926,32 +2524,42 @@ const routes = {
                     <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('locations')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
                         <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
-                        ${mockupState.isLoggedIn ? `
+                        ${
+                          mockupState.isLoggedIn
+                            ? `
                         <div onclick="event.stopPropagation(); navigateTo('account')" class="mt-1 px-2.5 py-0.5 bg-white text-violet-600 border border-violet-100 rounded-full shadow-sm text-[10px] font-black uppercase tracking-wider whitespace-nowrap active:scale-95 transition-transform">
-                            Hi ${mockupState.userName || 'User'}!
+                            Hi ${mockupState.userName || "User"}!
                         </div>
-                        ` : ''}
+                        `
+                            : ""
+                        }
                     </div>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
                     </button>
                 </header>
                 
                 <div class="flex-1 overflow-y-auto relative scrollbar-hide z-10 flex flex-col">
                     <!-- Titles & CTA for Mobile/Tablet -->
-                    ${!isDesktop ? `
+                    ${
+                      !isDesktop
+                        ? `
                     <div class="text-center pt-24 relative z-10 shrink-0">
                         <div class="text-violet-600 text-[11px] font-black tracking-[0.2em] uppercase mb-1">Open 24 Hours</div>
                         <h1 class="text-5xl font-black text-violet-600 tracking-tighter leading-[0.9] font-sans scale-y-110 mt-2 mb-2 drop-shadow-md">i-Tea</h1>
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                     
                     <!-- Spacer so background image can be seen before the carousel (Desktop uses negative margin wrapper instead) -->
-                    ${!isDesktop ? '<div class="w-full flex-1 min-h-[140px]"></div>' : ''}
+                    ${!isDesktop ? '<div class="w-full flex-1 min-h-[140px]"></div>' : ""}
                     
                     <!-- Carousel Container -->
-                    ${!isDesktop ? `
+                    ${
+                      !isDesktop
+                        ? `
                     <div class="relative z-20 w-full mt-auto shrink-0 pb-2">
                         <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-6 ${carouselAlign}">
                             <!-- Card 1: P4 Brown Sugar Boba Latte -->
@@ -1984,16 +2592,22 @@ const routes = {
                             <div id="carousel-dot-1" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
                         </div>
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                     <!-- Desktop Categories Section -->
-                    ${isDesktop ? `
+                    ${
+                      isDesktop
+                        ? `
                     <div class="bg-white pt-24 pb-12 px-12 rounded-t-[40px] -mt-16 w-full shrink-0 relative z-30 shadow-[0_-15px_30px_-5px_rgba(0,0,0,0.05)]">
                         <div class="max-w-[1080px] mx-auto text-center">
                             <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Explore Our Menu</h2>
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Select a category to start ordering</p>
                             
                             <div class="grid grid-cols-3 gap-6 justify-items-center mb-8">
-                                ${getActiveCategories().map(cat => `
+                                ${getActiveCategories()
+                                  .map(
+                                    (cat) => `
                                     <div onclick="navigateTo('locations');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
                                         <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
@@ -2003,7 +2617,9 @@ const routes = {
                                             <span>Order Now</span><i class="fa-solid fa-arrow-right text-[9px]"></i>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                  )
+                                  .join("")}
                             </div>
  
                             <!-- Divider -->
@@ -2011,9 +2627,9 @@ const routes = {
 
                             <!-- Favorites Section (Desktop Only) -->
                             ${(() => {
-                                const favs = mockupState.favorites || [];
-                                if (favs.length === 0) {
-                                    return `
+                              const favs = mockupState.favorites || [];
+                              if (favs.length === 0) {
+                                return `
                                         <div class="mb-12">
                                             <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Your Favorites</h2>
                                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Order your usuals in one click</p>
@@ -2027,27 +2643,32 @@ const routes = {
                                             </div>
                                         </div>
                                     `;
-                                }
-                                return `
+                              }
+                              return `
                                     <div class="mb-12 text-center">
                                         <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Your Favorites</h2>
                                         <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Reorder your usual items in one click</p>
 
                                         <!-- 4-column grid matching the categories layout boundaries -->
                                         <div class="grid grid-cols-4 gap-6 justify-items-center max-w-[1080px] mx-auto w-full">
-                                            ${favs.slice(0, 4).map(item => `
+                                            ${favs
+                                              .slice(0, 4)
+                                              .map(
+                                                (item) => `
                                                 <div class="relative w-full h-[240px] rounded-2xl overflow-hidden shadow-md flex flex-col justify-end p-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.01] group cursor-pointer text-left" onclick="selectFavoriteAndNavigate('${item.name}')">
                                                     <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
                                                     <div class="absolute inset-0 bg-gradient-to-t from-violet-950/95 to-transparent to-65%"></div>
                                                     <span class="absolute top-3 left-4 bg-[#E61874] text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20 flex items-center gap-1"><i class="fa-solid fa-heart text-[7px]"></i> Favorites</span>
                                                     <div class="relative z-10 w-full">
-                                                        <div class="text-white/80 text-[8px] font-black tracking-widest uppercase mb-0.5 truncate">${item.category || 'Drink'}</div>
+                                                        <div class="text-white/80 text-[8px] font-black tracking-widest uppercase mb-0.5 truncate">${item.category || "Drink"}</div>
                                                         <h2 class="text-sm font-black text-white uppercase tracking-tight leading-tight font-branding mb-0.5 truncate" title="${item.name}">${item.name}</h2>
                                                         <div class="font-black text-white text-xs mb-2">$${item.price.toFixed(2)}</div>
                                                         <button class="bg-white text-[#E61874] px-4 py-1.5 rounded-full font-black uppercase text-[8px] shadow-md hover:scale-105 active:scale-95 tracking-wider transition-transform">Add to Order</button>
                                                     </div>
                                                 </div>
-                                            `).join('')}
+                                            `,
+                                              )
+                                              .join("")}
                                         </div>
 
                                         <!-- Manage Favorites Link below cards -->
@@ -2119,49 +2740,63 @@ const routes = {
                             </div>
                         </div>
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                 </div>
 
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <!-- Order Now Button (Fixed above bottom nav on mobile/tablet) -->
                 <div class="px-6 pb-6 pt-2 relative z-20 shrink-0">
                     <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
-                </div>` : ''}
+                </div>`
+                    : ""
+                }
             </div>`;
-    },
+  },
 
-    'locations': () => {
-        const getSet = () => {
-            const list = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
-                ? mockupState.apiLocations
-                : LOCATIONS;
-            if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return list;
-            if (mockupState.locationFilter === 'My Locations') {
-                const favorites = list.filter(loc => loc.fav);
-                const previous = list.length >= 3 ? [list[2 % list.length], list[0], list[1 % list.length]] : list;
-                const combined = [...favorites];
-                previous.forEach(loc => {
-                    if (!combined.some(c => c.name === loc.name)) {
-                        combined.push(loc);
-                    }
-                });
-                return combined;
-            }
-            
-            return list;
-        };
+  locations: () => {
+    const getSet = () => {
+      const list =
+        mockupState.apiLocations && mockupState.apiLocations.length > 0
+          ? mockupState.apiLocations
+          : LOCATIONS;
+      if (
+        mockupState.locationFilter === "Near Me" ||
+        mockupState.locationFilter === "Nearby"
+      )
+        return list;
+      if (mockupState.locationFilter === "My Locations") {
+        const favorites = list.filter((loc) => loc.fav);
+        const previous =
+          list.length >= 3
+            ? [list[2 % list.length], list[0], list[1 % list.length]]
+            : list;
+        const combined = [...favorites];
+        previous.forEach((loc) => {
+          if (!combined.some((c) => c.name === loc.name)) {
+            combined.push(loc);
+          }
+        });
+        return combined;
+      }
 
-        if (currentViewport === 'desktop') {
-            return `
+      return list;
+    };
+
+    if (currentViewport === "desktop") {
+      return `
                 <div class="flex flex-row bg-white" style="height: calc(100vh - 70px);">
                     <div class="w-[450px] flex flex-col shrink-0 border-r border-gray-200 z-10 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.05)]">
                         <header class="p-4 border-b border-gray-100 flex items-center bg-white">
                             <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
                             <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
-                            <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
+                            <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
                         </header>
                         <!-- Default Location Quick-Select -->
-                        <div class="px-[36px] py-5 border-b border-violet-700 bg-violet-600 flex items-center justify-between gap-3 text-white">
+                        <div class="px-[36px] py-5 border-b border-[#1f0b35] bg-gradient-to-r from-violet-600 to-[#1f0b35] flex items-center justify-between gap-3 text-white">
                             <div class="flex items-center gap-2.5 min-w-0">
                                 <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
                                     <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
@@ -2181,26 +2816,40 @@ const routes = {
                             </div>
                             <div class="flex border-b border-gray-100 w-full justify-start gap-8 mb-5 pb-2">
                                 ${[
-                                    { id: 'Near Me', name: 'Near Me' },
-                                    { id: 'My Locations', name: 'My Locations' }
-                                ].map(tab => {
-                                    const isActive = mockupState.locationFilter === tab.id || (tab.id === 'Near Me' && mockupState.locationFilter === 'Nearby');
-                                    const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
+                                  { id: "Near Me", name: "Near Me" },
+                                  { id: "My Locations", name: "My Locations" },
+                                ]
+                                  .map((tab) => {
+                                    const isActive =
+                                      mockupState.locationFilter === tab.id ||
+                                      (tab.id === "Near Me" &&
+                                        mockupState.locationFilter ===
+                                          "Nearby");
+                                    const activeClass = isActive
+                                      ? "border-violet-600 text-violet-600 border-b-2 font-black"
+                                      : "text-gray-400 font-bold hover:text-gray-600";
                                     return `
                                         <button onclick="updateMockupState('locationFilter', '${tab.id}');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
                                             ${tab.name}
                                         </button>
                                     `;
-                                }).join('')}
+                                  })
+                                  .join("")}
                             </div>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
-                            ${getSet().map((s, idx) => `
-                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 shadow-md' : ((idx === 0 || idx === 1) ? 'border-violet-200' : (s.fav ? 'border-violet-200' : 'border-gray-200'))} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" style="${(idx === 0 || idx === 1) ? 'background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);' : (s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'background: rgba(124,58,237,0.05);' : '')}" onclick="focusLocation('${s.name}')">
+                            ${getSet()
+                              .map(
+                                (s, idx) => `
+                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || "i-Tea - Tempe") ? "border-violet-600 shadow-md" : idx === 0 || idx === 1 ? "border-violet-200" : s.fav ? "border-violet-200" : "border-gray-200"} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" style="${idx === 0 || idx === 1 ? "background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);" : s.name === (mockupState.selectedLocation || "i-Tea - Tempe") ? "background: rgba(124,58,237,0.05);" : ""}" onclick="focusLocation('${s.name}')">
                                     <div>
                                         ${(() => {
-                                            const label = (mockupState.locationLabels && mockupState.locationLabels[s.name]);
-                                            return label ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>` : '';
+                                          const label =
+                                            mockupState.locationLabels &&
+                                            mockupState.locationLabels[s.name];
+                                          return label
+                                            ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>`
+                                            : "";
                                         })()}
                                         <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">
                                             <span>${s.name}</span>
@@ -2227,27 +2876,29 @@ const routes = {
                                     </div>
                                     <div class="flex flex-col items-end justify-between h-full gap-2">
                                         <div class="text-xs font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
-                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[10px] px-4 py-2 rounded-full uppercase font-black tracking-widest shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
+                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || "null"}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[10px] px-4 py-2 rounded-full uppercase font-black tracking-widest shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
                                         <span class="text-[10px] text-gray-400 underline uppercase font-bold hover:text-violet-600" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
                                     </div>
-                                </div>`).join('')}
+                                </div>`,
+                              )
+                              .join("")}
                         </div>
                     </div>
                     <div class="flex-1 relative bg-[#e5e3df]">
                         <div id="locations-map" class="absolute inset-0 w-full h-full"></div>
                     </div>
                 </div>`;
-        } else {
-            return `
+    } else {
+      return `
                 <div class="flex flex-col h-full bg-[#f4f4f2] relative">
                     <header class="p-4 flex items-center bg-white z-20 shrink-0 shadow-sm relative">
                         <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
                         <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
-                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
+                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
                     </header>
                     
                     <!-- Previous Order Location Quick-Select -->
-                    <div class="p-5 bg-violet-600 border-b border-violet-700 flex items-center justify-between gap-3 shrink-0 z-10 text-white">
+                    <div class="p-5 bg-gradient-to-r from-violet-600 to-[#1f0b35] border-b border-[#1f0b35] flex items-center justify-between gap-3 shrink-0 z-10 text-white">
                         <div class="flex items-center gap-2.5 min-w-0">
                             <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
                                 <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
@@ -2273,27 +2924,41 @@ const routes = {
                             </div>
                             <div class="flex border-b border-gray-100 w-full justify-around pb-1">
                                 ${[
-                                    { id: 'Near Me', name: 'Near Me' },
-                                    { id: 'My Locations', name: 'My Locations' }
-                                ].map(tab => {
-                                    const isActive = mockupState.locationFilter === tab.id || (tab.id === 'Near Me' && mockupState.locationFilter === 'Nearby');
-                                    const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
+                                  { id: "Near Me", name: "Near Me" },
+                                  { id: "My Locations", name: "My Locations" },
+                                ]
+                                  .map((tab) => {
+                                    const isActive =
+                                      mockupState.locationFilter === tab.id ||
+                                      (tab.id === "Near Me" &&
+                                        mockupState.locationFilter ===
+                                          "Nearby");
+                                    const activeClass = isActive
+                                      ? "border-violet-600 text-violet-600 border-b-2 font-black"
+                                      : "text-gray-400 font-bold hover:text-gray-600";
                                     return `
                                         <button onclick="updateMockupState('locationFilter', '${tab.id}');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
                                             ${tab.name}
                                         </button>
                                     `;
-                                }).join('')}
+                                  })
+                                  .join("")}
                             </div>
                         </div>
 
                         <div class="p-4 space-y-3 flex-1 bg-gray-50/30">
-                            ${getSet().map((s, idx) => `
-                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 shadow-md' : ((idx === 0 || idx === 1) ? 'border-violet-200' : (s.fav ? 'border-violet-200' : 'border-gray-200'))} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" style="${(idx === 0 || idx === 1) ? 'background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);' : (s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'background: rgba(124,58,237,0.05);' : '')}" onclick="focusLocation('${s.name}')">
+                            ${getSet()
+                              .map(
+                                (s, idx) => `
+                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || "i-Tea - Tempe") ? "border-violet-600 shadow-md" : idx === 0 || idx === 1 ? "border-violet-200" : s.fav ? "border-violet-200" : "border-gray-200"} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" style="${idx === 0 || idx === 1 ? "background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);" : s.name === (mockupState.selectedLocation || "i-Tea - Tempe") ? "background: rgba(124,58,237,0.05);" : ""}" onclick="focusLocation('${s.name}')">
                                     <div class="min-w-0 flex-1">
                                         ${(() => {
-                                            const label = (mockupState.locationLabels && mockupState.locationLabels[s.name]);
-                                            return label ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>` : '';
+                                          const label =
+                                            mockupState.locationLabels &&
+                                            mockupState.locationLabels[s.name];
+                                          return label
+                                            ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>`
+                                            : "";
                                         })()}
                                         <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">
                                             <span>${s.name}</span>
@@ -2320,47 +2985,57 @@ const routes = {
                                     </div>
                                     <div class="flex flex-col items-end justify-between h-full gap-2 shrink-0 ml-3">
                                         <div class="text-[11px] font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
-                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest whitespace-nowrap shadow-sm active:scale-95">Order Here</button>
+                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || "null"}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest whitespace-nowrap shadow-sm active:scale-95">Order Here</button>
                                         <span class="text-[10px] text-gray-400 underline uppercase font-bold" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
                                     </div>
-                                </div>`).join('')}
+                                </div>`,
+                              )
+                              .join("")}
                         </div>
                     </div>
                 </div>`;
-        }
-    },
-    'locations-alt': () => {
-        const getSet = () => {
-            const list = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
-                ? mockupState.apiLocations
-                : LOCATIONS;
-            if (mockupState.locationFilter === 'Near Me' || mockupState.locationFilter === 'Nearby') return list;
-            if (mockupState.locationFilter === 'My Locations') {
-                const favorites = list.filter(loc => loc.fav);
-                const previous = list.length >= 3 ? [list[2 % list.length], list[0], list[1 % list.length]] : list;
-                const combined = [...favorites];
-                previous.forEach(loc => {
-                    if (!combined.some(c => c.name === loc.name)) {
-                        combined.push(loc);
-                    }
-                });
-                return combined;
-            }
-            
-            return list;
-        };
+    }
+  },
+  "locations-alt": () => {
+    const getSet = () => {
+      const list =
+        mockupState.apiLocations && mockupState.apiLocations.length > 0
+          ? mockupState.apiLocations
+          : LOCATIONS;
+      if (
+        mockupState.locationFilter === "Near Me" ||
+        mockupState.locationFilter === "Nearby"
+      )
+        return list;
+      if (mockupState.locationFilter === "My Locations") {
+        const favorites = list.filter((loc) => loc.fav);
+        const previous =
+          list.length >= 3
+            ? [list[2 % list.length], list[0], list[1 % list.length]]
+            : list;
+        const combined = [...favorites];
+        previous.forEach((loc) => {
+          if (!combined.some((c) => c.name === loc.name)) {
+            combined.push(loc);
+          }
+        });
+        return combined;
+      }
 
-        if (currentViewport === 'desktop') {
-            return `
+      return list;
+    };
+
+    if (currentViewport === "desktop") {
+      return `
                 <div class="flex flex-row bg-white" style="height: calc(100vh - 70px);">
                     <div class="w-[450px] flex flex-col shrink-0 border-r border-gray-200 z-10 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.05)]">
                         <header class="p-4 border-b border-gray-100 flex items-center bg-white">
                             <button onclick="navigateTo('restaurant-home')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 mr-4 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-chevron-left text-gray-600"></i></button>
                             <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Choose Location</h1>
-                            <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
+                            <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
                         </header>
                         <!-- Default Location Quick-Select -->
-                        <div class="px-[36px] py-5 border-b border-violet-700 bg-violet-600 flex items-center justify-between gap-3 text-white">
+                        <div class="px-[36px] py-5 border-b border-[#1f0b35] bg-gradient-to-r from-violet-600 to-[#1f0b35] flex items-center justify-between gap-3 text-white">
                             <div class="flex items-center gap-2.5 min-w-0">
                                 <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
                                     <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
@@ -2380,26 +3055,40 @@ const routes = {
                             </div>
                             <div class="flex border-b border-gray-100 w-full justify-start gap-8 mb-5 pb-2">
                                 ${[
-                                    { id: 'Near Me', name: 'Near Me' },
-                                    { id: 'My Locations', name: 'My Locations' }
-                                ].map(tab => {
-                                    const isActive = mockupState.locationFilter === tab.id || (tab.id === 'Near Me' && mockupState.locationFilter === 'Nearby');
-                                    const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
+                                  { id: "Near Me", name: "Near Me" },
+                                  { id: "My Locations", name: "My Locations" },
+                                ]
+                                  .map((tab) => {
+                                    const isActive =
+                                      mockupState.locationFilter === tab.id ||
+                                      (tab.id === "Near Me" &&
+                                        mockupState.locationFilter ===
+                                          "Nearby");
+                                    const activeClass = isActive
+                                      ? "border-violet-600 text-violet-600 border-b-2 font-black"
+                                      : "text-gray-400 font-bold hover:text-gray-600";
                                     return `
                                         <button onclick="updateMockupState('locationFilter', '${tab.id}');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
                                             ${tab.name}
                                         </button>
                                     `;
-                                }).join('')}
+                                  })
+                                  .join("")}
                             </div>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
-                            ${getSet().map((s, idx) => `
-                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'border-violet-600 shadow-md' : ((idx === 0 || idx === 1) ? 'border-violet-200' : (s.fav ? 'border-violet-200' : 'border-gray-200'))} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" style="${(idx === 0 || idx === 1) ? 'background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);' : (s.name === (mockupState.selectedLocation || 'i-Tea - Tempe') ? 'background: rgba(124,58,237,0.05);' : '')}" onclick="focusLocation('${s.name}')">
+                            ${getSet()
+                              .map(
+                                (s, idx) => `
+                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || "i-Tea - Tempe") ? "border-violet-600 shadow-md" : idx === 0 || idx === 1 ? "border-violet-200" : s.fav ? "border-violet-200" : "border-gray-200"} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" style="${idx === 0 || idx === 1 ? "background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);" : s.name === (mockupState.selectedLocation || "i-Tea - Tempe") ? "background: rgba(124,58,237,0.05);" : ""}" onclick="focusLocation('${s.name}')">
                                     <div>
                                         ${(() => {
-                                            const label = (mockupState.locationLabels && mockupState.locationLabels[s.name]);
-                                            return label ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>` : '';
+                                          const label =
+                                            mockupState.locationLabels &&
+                                            mockupState.locationLabels[s.name];
+                                          return label
+                                            ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>`
+                                            : "";
                                         })()}
                                         <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">
                                             <span>${s.name}</span>
@@ -2426,24 +3115,26 @@ const routes = {
                                     </div>
                                     <div class="flex flex-col items-end justify-between h-full gap-2">
                                         <div class="text-xs font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
-                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[10px] px-4 py-2 rounded-full uppercase font-black tracking-widest shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
+                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || "null"}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[10px] px-4 py-2 rounded-full uppercase font-black tracking-widest shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
                                         <span class="text-[10px] text-gray-400 underline uppercase font-bold" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
                                     </div>
-                                </div>`).join('')}
+                                </div>`,
+                              )
+                              .join("")}
                         </div>
                     </div>
                     <div class="flex-1 relative bg-[#e5e3df]">
                         <div id="locations-map" class="absolute inset-0 w-full h-full"></div>
                     </div>
                 </div>`;
-        } else {
-            const list = getSet();
-            let featuredStore = list.find(s => s.name === 'i-Tea - Tempe');
-            if (!featuredStore && list.length > 0) {
-                featuredStore = list[0];
-            }
+    } else {
+      const list = getSet();
+      let featuredStore = list.find((s) => s.name === "i-Tea - Tempe");
+      if (!featuredStore && list.length > 0) {
+        featuredStore = list[0];
+      }
 
-            return `
+      return `
                 <div class="flex flex-col min-h-screen bg-[#f8f9fa] relative animate-[fadeIn_0.2s_ease-out] pb-12 w-full">
                     <header class="bg-white px-3 py-2 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center shrink-0 border-b border-gray-100">
                         <div class="w-full max-w-[1080px] flex items-center px-1">
@@ -2458,7 +3149,7 @@ const routes = {
                             <!-- Right: Cart icon -->
                             <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                                ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                                ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
                             </button>
                         </div>
                     </header>
@@ -2473,53 +3164,42 @@ const routes = {
                             <h1 class="font-branding font-black text-[#1f0b35] text-[32px] tracking-tight leading-none uppercase text-center w-full">Choose Location</h1>
                         </div>
 
-                        ${featuredStore ? `
-                        <!-- Featured Location Card -->
-                        <div class="bg-white rounded-3xl border border-gray-100 shadow-md overflow-hidden p-5 flex flex-col gap-4">
-                            <div class="flex justify-between items-start">
-                                <div class="min-w-0 flex-1">
-                                    <span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">
-                                        ${(mockupState.locationLabels && mockupState.locationLabels[featuredStore.name]) || (featuredStore.name === 'i-Tea - Tempe' ? 'Previous Order' : (featuredStore.fav ? 'Favorite Location' : 'Closest Location'))}
-                                    </span>
-                                    <h3 class="font-bold text-xl tracking-tight uppercase flex items-center gap-2 text-gray-900">
-                                        <span>${featuredStore.name}</span>
-                                        <button onclick="toggleLocationFavorite('${featuredStore.name}', event)" class="heart-btn relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100/80 transition-colors duration-200 active:scale-90" title="Toggle Favorite">
-                                            ${featuredStore.fav ? '<i class="fa-solid fa-heart text-violet-600 text-[22px]"></i>' : '<i class="fa-regular fa-heart text-gray-300 hover:text-violet-600 text-[22px]"></i>'}
-                                            <div class="burst-lines absolute inset-0 pointer-events-none opacity-0">
-                                                <span class="line line-1"></span>
-                                                <span class="line line-2"></span>
-                                                <span class="line line-3"></span>
-                                                <span class="line line-4"></span>
-                                                <span class="line line-5"></span>
-                                                <span class="line line-6"></span>
-                                                <span class="line line-7"></span>
-                                                <span class="line line-8"></span>
-                                            </div>
-                                        </button>
-                                    </h3>
-                                    <p class="text-xs text-gray-500 font-semibold mt-1">${featuredStore.address}</p>
-                                    <p class="text-xs font-bold text-gray-400 mt-1.5 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${featuredStore.hours}</p>
+                        ${
+                          featuredStore
+                            ? `
+                        <!-- Previous Order Quick-Select -->
+                        <div class="bg-gradient-to-br from-violet-600 to-[#1f0b35] rounded-3xl p-5 flex flex-col gap-4 text-white shadow-md border border-[#1f0b35]">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div class="flex items-start gap-3 w-full sm:w-auto min-w-0">
+                                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-inner mt-1">
+                                        <i class="fa-solid fa-house text-violet-600 text-sm"></i>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">
+                                            ${(mockupState.locationLabels && mockupState.locationLabels[featuredStore.name]) || (featuredStore.name === "i-Tea - Tempe" ? "Previous Order" : featuredStore.fav ? "Favorite Location" : "Closest Location")}
+                                        </p>
+                                        <p class="text-base font-black text-white truncate leading-tight mt-0.5">${featuredStore.name} <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; ${featuredStore.dist}</span></p>
+                                        <p class="text-xs text-violet-200 mt-1 truncate">${featuredStore.address}</p>
+                                        <p class="text-[10px] font-bold text-violet-300 mt-1.5 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1 text-violet-200"></i> ${featuredStore.hours}</p>
+                                        
+                                        <div class="flex gap-3 mt-3 overflow-x-auto no-scrollbar">
+                                            <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-violet-100 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop text-[11px] text-white"></i> In store</span>
+                                            <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-violet-100 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-car text-[11px] text-white"></i> Drive-thru</span>
+                                            <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-violet-100 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-square-parking text-[11px] text-white"></i> Curbside</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="flex flex-col items-end gap-2 shrink-0 ml-3">
-                                    <div class="text-xs font-black text-gray-400 uppercase mb-1" style="font-family: Roboto, sans-serif;">${featuredStore.dist}</div>
-                                    <button onclick="selectLocation(${featuredStore.locationId || 'null'}, '${featuredStore.name}', '${featuredStore.address}', '${featuredStore.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest whitespace-nowrap shadow-sm active:scale-95 transition-transform hover:bg-violet-700">Order Here</button>
-                                </div>
+                                <button onclick="selectLocation(${featuredStore.locationId || "null"}, '${featuredStore.name}', '${featuredStore.address}', '${featuredStore.dist}')" class="w-full sm:w-auto shrink-0 px-6 py-3 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-xs font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95 text-center">Order Here</button>
                             </div>
-
-                            <div class="flex justify-between items-center border-t border-gray-50 pt-3">
-                                <div class="flex gap-3">
-                                    <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop text-[11px]"></i> In store</span>
-                                    <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-car text-[11px]"></i> Drive-thru</span>
-                                    <span class="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-square-parking text-[11px]"></i> Curbside</span>
-                                </div>
-                            </div>
-
-                            <!-- Embedded Map preview with the pin at the bottom -->
-                            <div class="w-full h-[180px] rounded-2xl overflow-hidden relative border border-gray-100 z-0">
-                                <div id="locations-map" class="absolute inset-0 w-full h-full"></div>
+                            
+                            <!-- Embedded Map Container -->
+                            <div class="w-full h-[180px] rounded-2xl overflow-hidden relative border border-violet-500/50 shadow-inner z-0 mt-1">
+                                <div id="locations-map" class="absolute inset-0 w-full h-full bg-[#e5e3df]"></div>
                             </div>
                         </div>
-                        ` : ''}
+                        `
+                            : ""
+                        }
 
                         <!-- Search City & Filters -->
                         <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-4">
@@ -2529,29 +3209,48 @@ const routes = {
                             </div>
                             <div class="flex border-b border-gray-100 w-full justify-around pb-1">
                                 ${[
-                                    { id: 'Near Me', name: 'Near Me' },
-                                    { id: 'My Locations', name: 'My Locations' }
-                                ].map(tab => {
-                                    const isActive = mockupState.locationFilter === tab.id || (tab.id === 'Near Me' && mockupState.locationFilter === 'Nearby');
-                                    const activeClass = isActive ? 'border-violet-600 text-violet-600 border-b-2 font-black' : 'text-gray-400 font-bold hover:text-gray-600';
+                                  { id: "Near Me", name: "Near Me" },
+                                  { id: "My Locations", name: "My Locations" },
+                                ]
+                                  .map((tab) => {
+                                    const isActive =
+                                      mockupState.locationFilter === tab.id ||
+                                      (tab.id === "Near Me" &&
+                                        mockupState.locationFilter ===
+                                          "Nearby");
+                                    const activeClass = isActive
+                                      ? "border-violet-600 text-violet-600 border-b-2 font-black"
+                                      : "text-gray-400 font-bold hover:text-gray-600";
                                     return `
                                         <button onclick="updateMockupState('locationFilter', '${tab.id}');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
                                             ${tab.name}
                                         </button>
                                     `;
-                                }).join('')}
+                                  })
+                                  .join("")}
                             </div>
                         </div>
 
                         <!-- Other Locations List -->
                         <div class="space-y-3">
                             <h4 class="text-xs font-black uppercase tracking-wider text-gray-400 px-2" style="font-family: Roboto, sans-serif;">Other Locations</h4>
-                            ${list.filter(s => !featuredStore || s.name !== featuredStore.name).map((s, idx) => `
+                            ${list
+                              .filter(
+                                (s) =>
+                                  !featuredStore ||
+                                  s.name !== featuredStore.name,
+                              )
+                              .map(
+                                (s, idx) => `
                                 <div data-location-card="${s.name}" class="bg-white p-5 border border-gray-100 rounded-3xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" onclick="focusLocation('${s.name}')">
                                     <div class="min-w-0 flex-1">
                                         ${(() => {
-                                            const label = (mockupState.locationLabels && mockupState.locationLabels[s.name]);
-                                            return label ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>` : '';
+                                          const label =
+                                            mockupState.locationLabels &&
+                                            mockupState.locationLabels[s.name];
+                                          return label
+                                            ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>`
+                                            : "";
                                         })()}
                                         <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">
                                             <span>${s.name}</span>
@@ -2578,78 +3277,210 @@ const routes = {
                                     </div>
                                     <div class="flex flex-col items-end justify-between h-full gap-2 shrink-0 ml-3">
                                         <div class="text-[11px] font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
-                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest whitespace-nowrap shadow-sm active:scale-95 hover:bg-violet-700">Order Here</button>
+                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || "null"}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest whitespace-nowrap shadow-sm active:scale-95 hover:bg-violet-700">Order Here</button>
                                         <span class="text-[10px] text-gray-400 underline uppercase font-bold cursor-pointer" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                              )
+                              .join("")}
                         </div>
                     </div>
                 </div>`;
-        }
-    },
-    // Duplicate location-favorites route handler removed (actual implementation below)
-    'order-details': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const btn = (icon, label) => {
-            const isActive = mockupState.fulfillmentMode === label;
-            const clickHandler = label === 'Dine In' ? `navigateTo('menu-scan')` : `updateMockupState('fulfillmentMode', '${label}')`;
-            return `
-                    <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-1 py-3 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-800 border-gray-100'}">
-                        <i class="fa-solid ${icon} text-xl ${isActive ? 'text-white' : 'text-violet-600'}"></i>
+    }
+  },
+  // Duplicate location-favorites route handler removed (actual implementation below)
+  "order-details": () => {
+    const isDesktop = currentViewport === "desktop";
+    const btn = (icon, label) => {
+      const isActive = mockupState.fulfillmentMode === label;
+      const clickHandler =
+        label === "Dine In"
+          ? `navigateTo('menu-scan')`
+          : `updateMockupState('fulfillmentMode', '${label}')`;
+      return `
+                    <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-1 py-3 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-800 border-gray-100"}">
+                        <i class="fa-solid ${icon} text-xl ${isActive ? "text-white" : "text-violet-600"}"></i>
                         <span class="text-[11px] font-black uppercase">${label}</span>
                     </button>`;
-        };
+    };
 
-        const monthOffset = mockupState.monthOffset || 0;
-        const months = [
-            { name: 'March 2026', days: 31, startDay: 0 },
-            { name: 'April 2026', days: 30, startDay: 3 },
-            { name: 'May 2026', days: 31, startDay: 5 }
-        ];
-        const currentMonth = months[monthOffset];
+    const monthOffset = mockupState.monthOffset || 0;
+    const months = [
+      { name: "March 2026", days: 31, startDay: 0 },
+      { name: "April 2026", days: 30, startDay: 3 },
+      { name: "May 2026", days: 31, startDay: 5 },
+    ];
+    const currentMonth = months[monthOffset];
 
-        let calendarCells = '';
-        for (let i = 0; i < currentMonth.startDay; i++) {
-            calendarCells += `<div></div>`;
-        }
-        for (let i = 1; i <= currentMonth.days; i++) {
-            let isPast = monthOffset === 0 && i < 8; // Assuming the 8th is "Today" based on previous mockup
-            if (isPast) {
-                calendarCells += `<div class="py-2 text-gray-300 font-bold text-sm text-center">${i}</div>`;
-            } else {
-                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                const dayName = dayNames[(currentMonth.startDay + i - 1) % 7];
-                const monthNameShort = currentMonth.name.split(' ')[0].substring(0, 3);
-                let label = (i === 8 && monthOffset === 0) ? 'Today' : ((i === 9 && monthOffset === 0) ? 'Tomorrow' : `${dayName}, ${monthNameShort} ${i}`);
-                let isSelected = mockupState.selectedDay === label;
-                calendarCells += `<button onclick="updateMockupState('selectedDay', '${label}'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? 'bg-violet-600 text-white shadow-md flex items-center justify-center shrink-0 w-8 h-8 mx-auto' : 'text-gray-800 hover:bg-violet-100 transition-colors flex items-center justify-center shrink-0 w-8 h-8 mx-auto'}">${i}</button>`;
-            }
-        }
+    let calendarCells = "";
+    for (let i = 0; i < currentMonth.startDay; i++) {
+      calendarCells += `<div></div>`;
+    }
+    for (let i = 1; i <= currentMonth.days; i++) {
+      let isPast = monthOffset === 0 && i < 8; // Assuming the 8th is "Today" based on previous mockup
+      if (isPast) {
+        calendarCells += `<div class="py-2 text-gray-300 font-bold text-sm text-center">${i}</div>`;
+      } else {
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const dayName = dayNames[(currentMonth.startDay + i - 1) % 7];
+        const monthNameShort = currentMonth.name.split(" ")[0].substring(0, 3);
+        let label =
+          i === 8 && monthOffset === 0
+            ? "Today"
+            : i === 9 && monthOffset === 0
+              ? "Tomorrow"
+              : `${dayName}, ${monthNameShort} ${i}`;
+        let isSelected = mockupState.selectedDay === label;
+        calendarCells += `<button onclick="updateMockupState('selectedDay', '${label}'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? "bg-violet-600 text-white shadow-md flex items-center justify-center shrink-0 w-8 h-8 mx-auto" : "text-gray-800 hover:bg-violet-100 transition-colors flex items-center justify-center shrink-0 w-8 h-8 mx-auto"}">${i}</button>`;
+      }
+    }
 
-        const dateModalClass = mockupState.modalOpen === 'date' ? 'flex' : 'hidden';
-        const timeModalClass = mockupState.modalOpen === 'time' ? 'flex' : 'hidden';
-        const warningModalClass = mockupState.modalOpen === 'warning' ? 'flex' : 'hidden';
+    const dateModalClass = mockupState.modalOpen === "date" ? "flex" : "hidden";
+    const timeModalClass = mockupState.modalOpen === "time" ? "flex" : "hidden";
+    const warningModalClass =
+      mockupState.modalOpen === "warning" ? "flex" : "hidden";
 
-        const times15 = ['11:30 AM', '11:45 AM', '12:00 PM', '12:15 PM', '12:30 PM', '12:45 PM', '1:00 PM', '1:15 PM', '1:30 PM', '1:45 PM', '2:00 PM', '2:15 PM', '2:30 PM', '2:45 PM', '3:00 PM', '3:15 PM', '3:30 PM', '3:45 PM', '4:00 PM', '4:15 PM', '4:30 PM', '4:45 PM', '5:00 PM', '5:15 PM', '5:30 PM', '5:45 PM', '6:00 PM', '6:15 PM', '6:30 PM', '6:45 PM', '7:00 PM', '7:15 PM', '7:30 PM', '7:45 PM', '8:00 PM', '8:15 PM', '8:30 PM', '8:45 PM', '9:00 PM'];
-        
-        // Proximity to close check
-        const isNearClose = mockupState.selectedTimeSlot.includes('8:') || mockupState.selectedTimeSlot.includes('9:');
+    const times15 = [
+      "11:30 AM",
+      "11:45 AM",
+      "12:00 PM",
+      "12:15 PM",
+      "12:30 PM",
+      "12:45 PM",
+      "1:00 PM",
+      "1:15 PM",
+      "1:30 PM",
+      "1:45 PM",
+      "2:00 PM",
+      "2:15 PM",
+      "2:30 PM",
+      "2:45 PM",
+      "3:00 PM",
+      "3:15 PM",
+      "3:30 PM",
+      "3:45 PM",
+      "4:00 PM",
+      "4:15 PM",
+      "4:30 PM",
+      "4:45 PM",
+      "5:00 PM",
+      "5:15 PM",
+      "5:30 PM",
+      "5:45 PM",
+      "6:00 PM",
+      "6:15 PM",
+      "6:30 PM",
+      "6:45 PM",
+      "7:00 PM",
+      "7:15 PM",
+      "7:30 PM",
+      "7:45 PM",
+      "8:00 PM",
+      "8:15 PM",
+      "8:30 PM",
+      "8:45 PM",
+      "9:00 PM",
+    ];
 
-        const locationTitle = mockupState.selectedLocation || "i-Tea";
+    // Proximity to close check
+    const isNearClose =
+      mockupState.selectedTimeSlot.includes("8:") ||
+      mockupState.selectedTimeSlot.includes("9:");
 
-        return `
+    const locationTitle = mockupState.selectedLocation || "i-Tea - Tempe";
+    const locList =
+      mockupState.apiLocations && mockupState.apiLocations.length > 0
+        ? mockupState.apiLocations
+        : LOCATIONS;
+    const locationObj =
+      locList.find((l) => l.name === locationTitle) ||
+      locList.find((l) => l.name === "i-Tea - Tempe") ||
+      locList[0];
+    const rawLocationAddress =
+      locationObj?.address || "825 W UNIVERSITY, TEMPE, AZ";
+    const locationAddress = rawLocationAddress
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .replace(/,\s*[A-Z]{2}\b/i, (match) => match.toUpperCase());
+    const closeTime =
+      (locationObj?.hours || "11:30 AM to 9:30 PM").split("to")[1]?.trim() ||
+      "9:30 PM";
+    const getOrderCutoffTime = (timeStr, minutes) => {
+      const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!match) return timeStr;
+      let h = parseInt(match[1]),
+        m = parseInt(match[2]),
+        p = match[3].toUpperCase();
+      if (p === "PM" && h !== 12) h += 12;
+      if (p === "AM" && h === 12) h = 0;
+      let total = h * 60 + m - minutes;
+      if (total < 0) total += 24 * 60;
+      let nh = Math.floor(total / 60),
+        nm = total % 60;
+      let np = nh >= 12 ? "PM" : "AM";
+      let dh = nh % 12 || 12;
+      return `${dh}:${nm.toString().padStart(2, "0")} ${np}`;
+    };
+    const orderCutoffTime = getOrderCutoffTime(closeTime, 20);
+
+    return `
                 <div class="flex flex-col h-full bg-[#FAF9F6] relative overflow-hidden">
-                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black"><button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span><button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button></header>
-                    ${!isDesktop ? `
-                    <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black"><button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span><button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button></header>
+                    ${
+                      !isDesktop
+                        ? `
+                    <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2 flex items-center justify-between relative z-50">
                         <button onclick="navigateTo('locations')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                             <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                             <span>Back</span>
                         </button>
+                        <div>
+                            <button onclick="toggleMenu(event, 'location-dropdown-order-details')" class="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-600 font-bold hover:text-violet-600 hover:bg-violet-100 px-2 py-1.5 rounded-lg transition-colors text-right cursor-pointer">
+                                <i class="fa-solid fa-location-dot text-violet-600"></i>
+                                <span class="truncate max-w-[140px] sm:max-w-[200px] tracking-wider font-medium">${locationAddress.replace(/, [A-Z]{2}(\s\d{5})?$/, "")}</span>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div id="location-dropdown-order-details" class="hidden absolute left-4 right-4 sm:left-auto sm:right-4 sm:w-[320px] top-[calc(100%+0.5rem)] z-[100] animate-[slideUp_0.2s_ease-out]">
+                                <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
+                                    <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
+                                    <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
+                                    <div class="space-y-4 text-sm">
+                                        <div class="flex gap-3 items-start">
+                                            <i class="fa-regular fa-clock text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                            <div>
+                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Hours</span>
+                                                <span class="text-gray-600 font-medium block">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
+                                                <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
+                                                <span class="text-red-500 font-medium block text-xs leading-tight mt-0.5">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-3 items-start">
+                                            <i class="fa-solid fa-phone text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                            <div>
+                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Phone</span>
+                                                <span class="text-gray-600 font-medium">(480) 555-0123</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-3 items-start">
+                                            <i class="fa-solid fa-car text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                            <div>
+                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Drive-Thru / Curbside</span>
+                                                <span class="text-gray-600 font-medium leading-relaxed">Available during regular business hours. Pull up to the front for curbside.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-5 pt-4 border-t border-gray-100">
+                                        <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    ` : ''}
-                    <div class="flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full ${currentViewport === 'desktop' ? 'pb-12' : 'pb-32'}">
+                    `
+                        : ""
+                    }
+                    <div class="flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full ${currentViewport === "desktop" ? "pb-12" : "pb-32"}">
                         <!-- Location Info Card -->
                         <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('locations')">
                             <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
@@ -2657,6 +3488,7 @@ const routes = {
                             </div>
                             <div class="flex-1">
                                 <h3 class="font-black text-[#33424A] uppercase tracking-tight text-sm leading-tight">${locationTitle}</h3>
+                                <p class="text-xs text-gray-500 font-semibold mt-0.5">${locationAddress}</p>
                                 <p class="text-[10px] font-bold text-violet-600 mt-1 uppercase tracking-widest">Change Location</p>
                             </div>
                             <i class="fa-solid fa-chevron-right text-gray-300 text-sm"></i>
@@ -2664,52 +3496,60 @@ const routes = {
 
                         <h1 class="text-2xl font-black text-gray-900 leading-tight mb-4 tracking-tighter uppercase font-black">Order Details</h1>
                         <div class="grid grid-cols-2 gap-3">
-                            ${btn('fa-shop', 'In-store')}
-                            ${btn('fa-car', 'Drive Through')}
-                            ${btn('fa-square-parking', 'Curbside')}
-                            ${btn('fa-mobile-screen-button', 'Dine In')}
+                            ${btn("fa-shop", "In-store")}
+                            ${btn("fa-car", "Drive Through")}
+                            ${btn("fa-square-parking", "Curbside")}
+                            ${btn("fa-mobile-screen-button", "Dine In")}
                         </div>
                         <div class="mt-4 pt-4 border-t border-gray-100">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 font-black">Ordering For</p>
                             <div class="grid grid-cols-2 gap-3">
-                                <button onclick="updateMockupState('orderTime', 'ASAP')" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === 'ASAP' ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase"><i class="fa-solid fa-bolt text-lg mb-0.5"></i>ASAP</button>
-                                <button onclick="updateMockupState('orderTime', 'Later'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === 'Later' ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i>Later</button>
+                                <button onclick="updateMockupState('orderTime', 'ASAP')" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === "ASAP" ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-400 border-gray-100"} font-black uppercase"><i class="fa-solid fa-bolt text-lg mb-0.5"></i>ASAP</button>
+                                <button onclick="updateMockupState('orderTime', 'Later'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === "Later" ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-400 border-gray-100"} font-black uppercase"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i>Later</button>
                             </div>
                             
                             <div class="mt-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm transition-all">
                                 <div class="flex justify-between items-center mb-3">
                                     <p class="text-[10px] font-black text-violet-600 uppercase tracking-widest">
-                                        ${mockupState.orderTime === 'ASAP' ? 'Estimated Pickup Time' : 'Scheduled Pickup'}
+                                        ${mockupState.orderTime === "ASAP" ? "Estimated Pickup Time" : "Scheduled Pickup"}
                                     </p>
                                 </div>
                                 <div class="flex gap-3">
                                     <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
                                         <span class="flex items-center gap-2 overflow-hidden w-full">
                                             <i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> 
-                                            <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay === 'Today' ? 'Today' : mockupState.selectedDay}</span>
+                                            <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay}</span>
                                         </span>
                                         <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
                                     </button>
                                     <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
                                         <span class="flex items-center gap-2 overflow-hidden w-full">
                                             <i class="fa-regular fa-clock text-violet-600 shrink-0"></i> 
-                                            <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === 'ASAP' ? times15[0] : mockupState.selectedTimeSlot}</span>
+                                            <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === "ASAP" ? times15[0] : mockupState.selectedTimeSlot}</span>
                                         </span>
                                         <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
                                     </button>
                                 </div>
                             </div>
 
-                            ${currentViewport === 'desktop' ? `
+                            ${
+                              currentViewport === "desktop"
+                                ? `
                             <div class="mt-8">
                                 <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black">Start Order</button>
                             </div>
-                            ` : ''}
+                            `
+                                : ""
+                            }
                         </div>
                     </div>
-                    ${currentViewport !== 'desktop' ? `
+                    ${
+                      currentViewport !== "desktop"
+                        ? `
                     <div class="p-6 bg-white border-t border-gray-100 absolute bottom-0 left-0 right-0 z-50 shadow-lg"><button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black">Start Order</button></div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
 
                     <!-- Date Modal -->
                     <div id="date-modal" class="absolute inset-0 bg-black/60 z-[100] ${dateModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
@@ -2721,12 +3561,12 @@ const routes = {
                             <!-- Stylized Calendar -->
                             <div class="bg-white rounded-2xl p-4 border border-violet-100 shadow-sm overflow-y-auto scrollbar-hide">
                                 <div class="flex justify-between items-center mb-3 px-1">
-                                    <button onclick="mockupState.monthOffset = Math.max(0, (mockupState.monthOffset||0) - 1); navigateTo(currentPage);" class="${monthOffset === 0 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-500 hover:text-violet-600 transition-colors'} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-left text-sm"></i></button>
+                                    <button onclick="mockupState.monthOffset = Math.max(0, (mockupState.monthOffset||0) - 1); navigateTo(currentPage);" class="${monthOffset === 0 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:text-violet-600 transition-colors"} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-left text-sm"></i></button>
                                     <span class="font-black text-sm uppercase tracking-widest text-gray-800">${currentMonth.name}</span>
-                                    <button onclick="mockupState.monthOffset = Math.min(2, (mockupState.monthOffset||0) + 1); navigateTo(currentPage);" class="${monthOffset === 2 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-500 hover:text-violet-600 transition-colors'} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-right text-sm"></i></button>
+                                    <button onclick="mockupState.monthOffset = Math.min(2, (mockupState.monthOffset||0) + 1); navigateTo(currentPage);" class="${monthOffset === 2 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:text-violet-600 transition-colors"} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-right text-sm"></i></button>
                                 </div>
                                 <div class="grid grid-cols-7 gap-1 text-center mb-2">
-                                    ${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="text-[10px] font-black text-gray-400">${d}</div>`).join('')}
+                                    ${["S", "M", "T", "W", "T", "F", "S"].map((d) => `<div class="text-[10px] font-black text-gray-400">${d}</div>`).join("")}
                                 </div>
                                 <div class="grid grid-cols-7 gap-1 text-center">
                                     ${calendarCells}
@@ -2746,16 +3586,22 @@ const routes = {
                             <div class="flex-1 flex flex-col min-h-0 bg-gray-50/50 rounded-2xl p-4 border border-gray-100 mb-5">
                                 <div class="overflow-y-auto scrollbar-hide h-[230px] pr-1">
                                     <div class="grid grid-cols-3 gap-2">
-                                        ${times15.map((time, idx) => {
-                                            const isThisTimeNearClose = time.includes('8:') || time.includes('9:');
-                                            const clickAction = isThisTimeNearClose && !mockupState.acknowledgedClose 
-                                                ? `updateMockupState('selectedTimeSlot', '${time}'); mockupState.modalOpen = 'warning'; navigateTo(currentPage);` 
+                                        ${times15
+                                          .map((time, idx) => {
+                                            const isThisTimeNearClose =
+                                              time.includes("8:") ||
+                                              time.includes("9:");
+                                            const clickAction =
+                                              isThisTimeNearClose &&
+                                              !mockupState.acknowledgedClose
+                                                ? `updateMockupState('selectedTimeSlot', '${time}'); mockupState.modalOpen = 'warning'; navigateTo(currentPage);`
                                                 : `updateMockupState('selectedTimeSlot', '${time}'); navigateTo(currentPage);`;
-                                            
+
                                             return `
-                                            <button id="time-slot-${idx}" onclick="${clickAction}" class="py-3 rounded-full border-2 ${mockupState.selectedTimeSlot === time ? 'border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200' : 'border-gray-100 text-gray-700 hover:border-violet-300 bg-white'} font-black text-[11px] transition-all tracking-tight whitespace-nowrap">${time}</button>
+                                            <button id="time-slot-${idx}" onclick="${clickAction}" class="py-3 rounded-full border-2 ${mockupState.selectedTimeSlot === time ? "border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200" : "border-gray-100 text-gray-700 hover:border-violet-300 bg-white"} font-black text-[11px] transition-all tracking-tight whitespace-nowrap">${time}</button>
                                             `;
-                                        }).join('')}
+                                          })
+                                          .join("")}
                                     </div>
                                 </div>
 
@@ -2809,78 +3655,164 @@ const routes = {
                     </div>
 
                 </div>`;
-    },
-    'order-details-alt': () => {
-        const isDesktop = currentViewport === 'desktop';
-        
-        const options = [
-            {
-                id: 'In-store',
-                label: 'In-Store',
-                icon: 'fa-shop',
-                desc: 'Carry-out, walk-in, or pickup inside the restaurant'
-            },
-            {
-                id: 'Drive Through',
-                label: 'Drive-Thru',
-                icon: 'fa-car',
-                desc: 'Stay in your car and get your order from the window'
-            },
-            {
-                id: 'Curbside',
-                label: 'Curbside',
-                icon: 'fa-square-parking',
-                desc: 'Park in a designated spot and we\'ll bring it to you'
-            },
-            {
-                id: 'Dine In',
-                label: 'Dine In',
-                icon: 'fa-mobile-screen-button',
-                desc: 'Order at your table and dine inside the restaurant'
-            }
-        ];
+  },
+  "order-details-alt": () => {
+    const isDesktop = currentViewport === "desktop";
 
-        const monthOffset = mockupState.monthOffset || 0;
-        const months = [
-            { name: 'March 2026', days: 31, startDay: 0 },
-            { name: 'April 2026', days: 30, startDay: 3 },
-            { name: 'May 2026', days: 31, startDay: 5 }
-        ];
-        const currentMonth = months[monthOffset];
+    const options = [
+      {
+        id: "In-store",
+        label: "In-Store",
+        icon: "fa-shop",
+        desc: "Carry-out, walk-in, or pickup inside the restaurant",
+      },
+      {
+        id: "Drive Through",
+        label: "Drive-Thru",
+        icon: "fa-car",
+        desc: "Stay in your car and get your order from the window",
+      },
+      {
+        id: "Curbside",
+        label: "Curbside",
+        icon: "fa-square-parking",
+        desc: "Park in a designated spot and we'll bring it to you",
+      },
+      {
+        id: "Dine In",
+        label: "Dine In",
+        icon: "fa-mobile-screen-button",
+        desc: "Order at your table and dine inside the restaurant",
+      },
+    ];
 
-        let calendarCells = '';
-        for (let i = 0; i < currentMonth.startDay; i++) {
-            calendarCells += `<div></div>`;
-        }
-        for (let i = 1; i <= currentMonth.days; i++) {
-            let isPast = monthOffset === 0 && i < 8;
-            if (isPast) {
-                calendarCells += `<div class="py-2 text-gray-300 font-bold text-sm text-center">${i}</div>`;
-            } else {
-                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                const dayName = dayNames[(currentMonth.startDay + i - 1) % 7];
-                const monthNameShort = currentMonth.name.split(' ')[0].substring(0, 3);
-                let label = (i === 8 && monthOffset === 0) ? 'Today' : ((i === 9 && monthOffset === 0) ? 'Tomorrow' : `${dayName}, ${monthNameShort} ${i}`);
-                let isSelected = mockupState.selectedDay === label;
-                calendarCells += `<button onclick="updateMockupState('selectedDay', '${label}'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? 'bg-violet-600 text-white shadow-md flex items-center justify-center shrink-0 w-8 h-8 mx-auto' : 'text-gray-800 hover:bg-violet-100 transition-colors flex items-center justify-center shrink-0 w-8 h-8 mx-auto'}">${i}</button>`;
-            }
-        }
+    const monthOffset = mockupState.monthOffset || 0;
+    const months = [
+      { name: "March 2026", days: 31, startDay: 0 },
+      { name: "April 2026", days: 30, startDay: 3 },
+      { name: "May 2026", days: 31, startDay: 5 },
+    ];
+    const currentMonth = months[monthOffset];
 
-        const dateModalClass = mockupState.modalOpen === 'date' ? 'flex' : 'hidden';
-        const timeModalClass = mockupState.modalOpen === 'time' ? 'flex' : 'hidden';
-        const warningModalClass = mockupState.modalOpen === 'warning' ? 'flex' : 'hidden';
-        const scheduleModalClass = mockupState.modalOpen === 'schedule-pickup' ? 'flex' : 'hidden';
+    let calendarCells = "";
+    for (let i = 0; i < currentMonth.startDay; i++) {
+      calendarCells += `<div></div>`;
+    }
+    for (let i = 1; i <= currentMonth.days; i++) {
+      let isPast = monthOffset === 0 && i < 8;
+      if (isPast) {
+        calendarCells += `<div class="py-2 text-gray-300 font-bold text-sm text-center">${i}</div>`;
+      } else {
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const dayName = dayNames[(currentMonth.startDay + i - 1) % 7];
+        const monthNameShort = currentMonth.name.split(" ")[0].substring(0, 3);
+        let label =
+          i === 8 && monthOffset === 0
+            ? "Today"
+            : i === 9 && monthOffset === 0
+              ? "Tomorrow"
+              : `${dayName}, ${monthNameShort} ${i}`;
+        let isSelected = mockupState.selectedDay === label;
+        calendarCells += `<button onclick="updateMockupState('selectedDay', '${label}'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? "bg-violet-600 text-white shadow-md flex items-center justify-center shrink-0 w-8 h-8 mx-auto" : "text-gray-800 hover:bg-violet-100 transition-colors flex items-center justify-center shrink-0 w-8 h-8 mx-auto"}">${i}</button>`;
+      }
+    }
 
-        const times15 = ['11:30 AM', '11:45 AM', '12:00 PM', '12:15 PM', '12:30 PM', '12:45 PM', '1:00 PM', '1:15 PM', '1:30 PM', '1:45 PM', '2:00 PM', '2:15 PM', '2:30 PM', '2:45 PM', '3:00 PM', '3:15 PM', '3:30 PM', '3:45 PM', '4:00 PM', '4:15 PM', '4:30 PM', '4:45 PM', '5:00 PM', '5:15 PM', '5:30 PM', '5:45 PM', '6:00 PM', '6:15 PM', '6:30 PM', '6:45 PM', '7:00 PM', '7:15 PM', '7:30 PM', '7:45 PM', '8:00 PM', '8:15 PM', '8:30 PM', '8:45 PM', '9:00 PM'];
-        const isNearClose = mockupState.selectedTimeSlot.includes('8:') || mockupState.selectedTimeSlot.includes('9:');
-        const locationTitle = mockupState.selectedLocation || "i-Tea";
+    const dateModalClass = mockupState.modalOpen === "date" ? "flex" : "hidden";
+    const timeModalClass = mockupState.modalOpen === "time" ? "flex" : "hidden";
+    const warningModalClass =
+      mockupState.modalOpen === "warning" ? "flex" : "hidden";
+    const scheduleModalClass =
+      mockupState.modalOpen === "schedule-pickup" ? "flex" : "hidden";
 
-        const renderOptionCard = (opt) => {
-            const isActive = mockupState.fulfillmentMode === opt.id;
-            const clickHandler = opt.id === 'Dine In' ? `navigateTo('menu-scan')` : `updateMockupState('fulfillmentMode', '${opt.id}'); updateMockupState('modalOpen', 'schedule-pickup'); navigateTo(currentPage);`;
-            
-            return `
-                <div onclick="${clickHandler}" class="flex flex-col p-6 bg-white rounded-2xl shadow-sm border-2 cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md ${isActive ? 'border-violet-600 ring-2 ring-violet-100 bg-violet-50/10' : 'border-gray-100 hover:border-violet-300'}">
+    const times15 = [
+      "11:30 AM",
+      "11:45 AM",
+      "12:00 PM",
+      "12:15 PM",
+      "12:30 PM",
+      "12:45 PM",
+      "1:00 PM",
+      "1:15 PM",
+      "1:30 PM",
+      "1:45 PM",
+      "2:00 PM",
+      "2:15 PM",
+      "2:30 PM",
+      "2:45 PM",
+      "3:00 PM",
+      "3:15 PM",
+      "3:30 PM",
+      "3:45 PM",
+      "4:00 PM",
+      "4:15 PM",
+      "4:30 PM",
+      "4:45 PM",
+      "5:00 PM",
+      "5:15 PM",
+      "5:30 PM",
+      "5:45 PM",
+      "6:00 PM",
+      "6:15 PM",
+      "6:30 PM",
+      "6:45 PM",
+      "7:00 PM",
+      "7:15 PM",
+      "7:30 PM",
+      "7:45 PM",
+      "8:00 PM",
+      "8:15 PM",
+      "8:30 PM",
+      "8:45 PM",
+      "9:00 PM",
+    ];
+    const isNearClose =
+      mockupState.selectedTimeSlot.includes("8:") ||
+      mockupState.selectedTimeSlot.includes("9:");
+    const locationTitle = mockupState.selectedLocation || "i-Tea";
+    const locList =
+      mockupState.apiLocations && mockupState.apiLocations.length > 0
+        ? mockupState.apiLocations
+        : LOCATIONS;
+    const locationObj =
+      locList.find((l) => l.name === locationTitle) ||
+      locList.find((l) => l.name === "i-Tea - Tempe") ||
+      locList[0];
+    const rawLocationAddress =
+      locationObj?.address || "825 W UNIVERSITY, TEMPE, AZ";
+    const locationAddress = rawLocationAddress
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .replace(/,\s*[A-Z]{2}\b/i, (match) => match.toUpperCase());
+    const closeTime =
+      (locationObj?.hours || "11:30 AM to 9:30 PM").split("to")[1]?.trim() ||
+      "9:30 PM";
+    const getOrderCutoffTime = (timeStr, minutes) => {
+      const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!match) return timeStr;
+      let h = parseInt(match[1]),
+        m = parseInt(match[2]),
+        p = match[3].toUpperCase();
+      if (p === "PM" && h !== 12) h += 12;
+      if (p === "AM" && h === 12) h = 0;
+      let total = h * 60 + m - minutes;
+      if (total < 0) total += 24 * 60;
+      let nh = Math.floor(total / 60),
+        nm = total % 60;
+      let np = nh >= 12 ? "PM" : "AM";
+      let dh = nh % 12 || 12;
+      return `${dh}:${nm.toString().padStart(2, "0")} ${np}`;
+    };
+    const orderCutoffTime = getOrderCutoffTime(closeTime, 20);
+
+    const renderOptionCard = (opt) => {
+      const isActive = mockupState.fulfillmentMode === opt.id;
+      const clickHandler =
+        opt.id === "Dine In"
+          ? `navigateTo('menu-scan')`
+          : `updateMockupState('fulfillmentMode', '${opt.id}'); updateMockupState('modalOpen', 'schedule-pickup'); navigateTo(currentPage);`;
+
+      return `
+                <div onclick="${clickHandler}" class="flex flex-col p-6 bg-white rounded-2xl shadow-sm border-2 cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md ${isActive ? "border-violet-600 ring-2 ring-violet-100 bg-violet-50/10" : "border-gray-100 hover:border-violet-300"}">
                     <div class="flex items-center gap-5 w-full">
                         <div class="w-14 h-14 bg-violet-50 rounded-xl flex items-center justify-center shrink-0">
                             <i class="fa-solid ${opt.icon} text-2xl text-violet-600"></i>
@@ -2892,30 +3824,35 @@ const routes = {
                     </div>
                 </div>
             `;
-        };
+    };
 
-        const mainContent = `
+    const mainContent = `
             <div class="flex-1 flex flex-col py-6 px-6 md:px-12 max-w-2xl mx-auto w-full">
                 <div class="text-center mb-5 shrink-0">
                     <h2 class="text-3xl md:text-4xl font-branding font-black text-[#1A1A1A] uppercase tracking-tight leading-tight mb-3">What type of order can we get started for you?</h2>
                     <p class="text-sm md:text-base font-bold text-gray-400 uppercase tracking-widest leading-relaxed">Order ahead for pickup or dine in</p>
                 </div>
 
-                <div class="${isDesktop ? 'grid grid-cols-2 gap-4' : 'flex flex-col gap-4'} mb-6">
-                    ${options.map(renderOptionCard).join('')}
+                <div class="${isDesktop ? "grid grid-cols-2 gap-4" : "flex flex-col gap-4"} mb-6">
+                    ${options.map(renderOptionCard).join("")}
                 </div>
 
-                ${mockupState.fulfillmentMode && mockupState.fulfillmentMode !== 'Dine In' ? `
+                ${
+                  mockupState.fulfillmentMode &&
+                  mockupState.fulfillmentMode !== "Dine In"
+                    ? `
                 <div onclick="updateMockupState('modalOpen', 'schedule-pickup'); navigateTo(currentPage);" class="mb-8 p-6 bg-white rounded-3xl border border-gray-100 shadow-md text-center cursor-pointer hover:border-violet-300 transition-all active:scale-[0.99] flex flex-col items-center justify-center gap-1">
                     <span class="text-[11px] font-black text-violet-600 uppercase tracking-widest">
                         ${mockupState.fulfillmentMode.toUpperCase()} PICKUP TIME
                     </span>
                     <div class="font-branding font-black text-gray-900 text-[40px] md:text-[44px] tracking-tight uppercase leading-none mt-1.5 mb-1">
-                        ${mockupState.orderTime === 'ASAP' ? `ASAP ~ ${times15[0]}` : `${mockupState.selectedDay === 'Today' ? 'Today' : mockupState.selectedDay.split(',')[0]} at ${mockupState.selectedTimeSlot}`}
+                        ${mockupState.orderTime === "ASAP" ? `ASAP ~ ${times15[0]}` : `${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay.split(",")[0]} at ${mockupState.selectedTimeSlot}`}
                     </div>
                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider underline">Tap to Change Time</span>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
 
                 <div>
                     <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black">Start Order</button>
@@ -2923,31 +3860,80 @@ const routes = {
             </div>
         `;
 
-        return `
-            <div class="flex flex-col bg-[#FAF9F6] relative overflow-hidden" style="${isDesktop ? 'height: calc(100vh - 70px);' : 'height: 100vh;'}">
+    return `
+            <div class="flex flex-col bg-[#FAF9F6] relative overflow-hidden" style="${isDesktop ? "height: calc(100vh - 70px);" : "height: 100vh;"}">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
                     </button>
                 </header>
-                ${!isDesktop ? `
-                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                ${
+                  !isDesktop
+                    ? `
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2 flex items-center justify-between relative z-50">
                     <button onclick="navigateTo('locations-alt')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
+                    <div>
+                        <button onclick="toggleMenu(event, 'location-dropdown-order-details-alt')" class="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-600 font-bold hover:text-violet-600 hover:bg-violet-100 px-2 py-1.5 rounded-lg transition-colors text-right cursor-pointer">
+                            <i class="fa-solid fa-location-dot text-violet-600"></i>
+                            <span class="truncate max-w-[140px] sm:max-w-[200px] tracking-wider font-medium">${locationAddress.replace(/, [A-Z]{2}(\s\d{5})?$/, "")}</span>
+                        </button>
+                        <!-- Dropdown Menu -->
+                        <div id="location-dropdown-order-details-alt" class="hidden absolute left-4 right-4 sm:left-auto sm:right-4 sm:w-[320px] top-[calc(100%+0.5rem)] z-[100] animate-[slideUp_0.2s_ease-out]">
+                            <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
+                                <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
+                                <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
+                                <div class="space-y-4 text-sm">
+                                    <div class="flex gap-3 items-start">
+                                        <i class="fa-regular fa-clock text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                        <div>
+                                            <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Hours</span>
+                                            <span class="text-gray-600 font-medium block">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
+                                            <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
+                                            <span class="text-red-500 font-medium block text-xs leading-tight mt-0.5">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-3 items-start">
+                                        <i class="fa-solid fa-phone text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                        <div>
+                                            <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Phone</span>
+                                            <span class="text-gray-600 font-medium">(480) 555-0123</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-3 items-start">
+                                        <i class="fa-solid fa-car text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                        <div>
+                                            <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Drive-Thru / Curbside</span>
+                                            <span class="text-gray-600 font-medium leading-relaxed">Available during regular business hours. Pull up to the front for curbside.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-5 pt-4 border-t border-gray-100">
+                                    <button onclick="navigateTo('locations-alt')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
 
                 <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden h-full">
-                    ${isDesktop ? `
+                    ${
+                      isDesktop
+                        ? `
                     <div class="w-[38%] relative h-full shrink-0 overflow-hidden">
                         <img src="images/hero2.png" class="w-full h-full object-cover object-right" style="height: 100% !important; object-fit: cover !important;">
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
 
                     <div class="flex-1 overflow-y-auto pb-12 w-full">
                         ${mainContent}
@@ -2969,7 +3955,7 @@ const routes = {
                                 <div class="flex items-center gap-2 mt-2">
                                     <i class="fa-regular fa-clock text-violet-600 border border-violet-100 rounded p-1 bg-white"></i>
                                     <p class="font-black text-gray-800 text-sm tracking-tight">
-                                        ${mockupState.orderTime === 'ASAP' ? `Today ASAP (approx. at ${times15[0]})` : `${mockupState.selectedDay} at ${mockupState.selectedTimeSlot}`}
+                                        ${mockupState.orderTime === "ASAP" ? `Today ASAP (approx. at ${times15[0]})` : `${mockupState.selectedDay} at ${mockupState.selectedTimeSlot}`}
                                     </p>
                                 </div>
                             </div>
@@ -2977,17 +3963,17 @@ const routes = {
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 font-black text-left">Ordering For</p>
                                 <div class="grid grid-cols-2 gap-3 mb-4">
-                                    <button onclick="updateMockupState('orderTime', 'ASAP'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === 'ASAP' ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase"><i class="fa-solid fa-bolt text-lg mb-0.5"></i>ASAP</button>
-                                    <button onclick="updateMockupState('orderTime', 'Later'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === 'Later' ? 'bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]' : 'bg-white text-gray-400 border-gray-100'} font-black uppercase"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i>Later</button>
+                                    <button onclick="updateMockupState('orderTime', 'ASAP'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === "ASAP" ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-400 border-gray-100"} font-black uppercase"><i class="fa-solid fa-bolt text-lg mb-0.5"></i>ASAP</button>
+                                    <button onclick="updateMockupState('orderTime', 'Later'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === "Later" ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-400 border-gray-100"} font-black uppercase"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i>Later</button>
                                 </div>
 
                                 <div class="space-y-3">
                                     <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay === 'Today' ? 'Today' : mockupState.selectedDay}</span></span>
+                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay}</span></span>
                                         <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
                                     </button>
                                     <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === 'ASAP' ? times15[0] : mockupState.selectedTimeSlot}</span></span>
+                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === "ASAP" ? times15[0] : mockupState.selectedTimeSlot}</span></span>
                                         <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
                                     </button>
                                 </div>
@@ -3009,12 +3995,12 @@ const routes = {
                         </div>
                         <div class="bg-white rounded-2xl p-4 border border-violet-100 shadow-sm overflow-y-auto scrollbar-hide">
                             <div class="flex justify-between items-center mb-3 px-1">
-                                <button onclick="mockupState.monthOffset = Math.max(0, (mockupState.monthOffset||0) - 1); navigateTo(currentPage);" class="${monthOffset === 0 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-500 hover:text-violet-600 transition-colors'} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-left text-sm"></i></button>
+                                <button onclick="mockupState.monthOffset = Math.max(0, (mockupState.monthOffset||0) - 1); navigateTo(currentPage);" class="${monthOffset === 0 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:text-violet-600 transition-colors"} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-left text-sm"></i></button>
                                 <span class="font-black text-sm uppercase tracking-widest text-gray-800">${currentMonth.name}</span>
-                                <button onclick="mockupState.monthOffset = Math.min(2, (mockupState.monthOffset||0) + 1); navigateTo(currentPage);" class="${monthOffset === 2 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-500 hover:text-violet-600 transition-colors'} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-right text-sm"></i></button>
+                                <button onclick="mockupState.monthOffset = Math.min(2, (mockupState.monthOffset||0) + 1); navigateTo(currentPage);" class="${monthOffset === 2 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:text-violet-600 transition-colors"} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-right text-sm"></i></button>
                             </div>
                             <div class="grid grid-cols-7 gap-1 text-center mb-2">
-                                ${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="text-[10px] font-black text-gray-400">${d}</div>`).join('')}
+                                ${["S", "M", "T", "W", "T", "F", "S"].map((d) => `<div class="text-[10px] font-black text-gray-400">${d}</div>`).join("")}
                             </div>
                             <div class="grid grid-cols-7 gap-1 text-center">
                                 ${calendarCells}
@@ -3034,16 +4020,22 @@ const routes = {
                         <div class="flex-1 flex flex-col min-h-0 bg-gray-50/50 rounded-2xl p-4 border border-gray-100 mb-5">
                             <div class="overflow-y-auto scrollbar-hide h-[230px] pr-1">
                                 <div class="grid grid-cols-3 gap-2">
-                                    ${times15.map((time, idx) => {
-                                        const isThisTimeNearClose = time.includes('8:') || time.includes('9:');
-                                        const clickAction = isThisTimeNearClose && !mockupState.acknowledgedClose 
-                                            ? `updateMockupState('selectedTimeSlot', '${time}'); mockupState.modalOpen = 'warning'; navigateTo(currentPage);` 
+                                    ${times15
+                                      .map((time, idx) => {
+                                        const isThisTimeNearClose =
+                                          time.includes("8:") ||
+                                          time.includes("9:");
+                                        const clickAction =
+                                          isThisTimeNearClose &&
+                                          !mockupState.acknowledgedClose
+                                            ? `updateMockupState('selectedTimeSlot', '${time}'); mockupState.modalOpen = 'warning'; navigateTo(currentPage);`
                                             : `updateMockupState('selectedTimeSlot', '${time}'); navigateTo(currentPage);`;
-                                        
+
                                         return `
-                                        <button id="time-slot-${idx}" onclick="${clickAction}" class="py-3 rounded-full border-2 ${mockupState.selectedTimeSlot === time ? 'border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200' : 'border-gray-100 text-gray-700 hover:border-violet-300 bg-white'} font-black text-[11px] transition-all tracking-tight whitespace-nowrap">${time}</button>
+                                        <button id="time-slot-${idx}" onclick="${clickAction}" class="py-3 rounded-full border-2 ${mockupState.selectedTimeSlot === time ? "border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200" : "border-gray-100 text-gray-700 hover:border-violet-300 bg-white"} font-black text-[11px] transition-all tracking-tight whitespace-nowrap">${time}</button>
                                         `;
-                                    }).join('')}
+                                      })
+                                      .join("")}
                                 </div>
                             </div>
 
@@ -3093,20 +4085,21 @@ const routes = {
                 </div>
             </div>
         `;
-    },
-    'menu-scan': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const isDesktopOrTablet = currentViewport === 'desktop' || currentViewport === 'tablet';
+  },
+  "menu-scan": () => {
+    const isDesktop = currentViewport === "desktop";
+    const isDesktopOrTablet =
+      currentViewport === "desktop" || currentViewport === "tablet";
 
-        const imageHtml = `
-            <div class="${isDesktop ? 'w-[38%] relative h-full shrink-0 overflow-hidden' : 'w-full max-w-md aspect-square rounded-[32px] overflow-hidden shadow-2xl mt-8 mx-auto'}">
-                <img src="images/qr-scan-table-sm.jpg" class="w-full h-full object-cover object-center" ${isDesktop ? 'style="height: 100% !important; object-fit: cover !important;"' : ''}>
+    const imageHtml = `
+            <div class="${isDesktop ? "w-[38%] relative h-full shrink-0 overflow-hidden" : "w-full max-w-md aspect-square rounded-[32px] overflow-hidden shadow-2xl mt-8 mx-auto"}">
+                <img src="images/qr-scan-table-sm.jpg" class="w-full h-full object-cover object-center" ${isDesktop ? 'style="height: 100% !important; object-fit: cover !important;"' : ""}>
             </div>
         `;
 
-        let scanOverlayHtml = '';
-        if (mockupState.isScanning) {
-            scanOverlayHtml = `
+    let scanOverlayHtml = "";
+    if (mockupState.isScanning) {
+      scanOverlayHtml = `
                 <div class="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md transition-all animate-[fadeIn_0.3s_ease-out]">
                     <!-- Target box -->
                     <div class="relative w-64 h-64 border-4 border-violet-500 rounded-3xl overflow-hidden flex items-center justify-center shadow-[0_0_50px_rgba(124,58,237,0.3)]">
@@ -3126,9 +4119,9 @@ const routes = {
                     <span class="mt-2 text-xs font-bold text-gray-400 uppercase tracking-wider">DO NOT CLOSE CAMERA</span>
                 </div>
             `;
-        }
+    }
 
-        const formContentHtml = `
+    const formContentHtml = `
             <div class="flex-1 flex flex-col justify-center py-6 px-6 md:px-12 max-w-2xl mx-auto w-full text-center">
                 <h2 class="text-2xl md:text-3xl font-black mb-6 uppercase tracking-tight font-black text-gray-900 leading-tight">Ready to Dine In?</h2>
                 <div class="space-y-4 text-left uppercase font-black text-gray-600 mb-8 max-w-sm mx-auto w-full">
@@ -3144,171 +4137,183 @@ const routes = {
                     </button>
                 </div>
 
-                ${!isDesktop ? imageHtml : ''}
+                ${!isDesktop ? imageHtml : ""}
             </div>
         `;
 
-        return `
-            <div class="flex flex-col bg-white relative overflow-hidden" style="${isDesktop ? 'height: calc(100vh - 70px);' : 'height: 100vh;'}">
+    return `
+            <div class="flex flex-col bg-white relative overflow-hidden" style="${isDesktop ? "height: calc(100vh - 70px);" : "height: 100vh;"}">
                 ${scanOverlayHtml}
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 font-black shrink-0">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Scan to Dine In</span>
-                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
                 </header>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                     <button onclick="navigateTo('restaurant-home')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
 
                 <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden h-full">
-                    ${isDesktop ? imageHtml : ''}
+                    ${isDesktop ? imageHtml : ""}
 
                     <div class="flex-1 overflow-y-auto pb-12 w-full flex items-center justify-center">
                         ${formContentHtml}
                     </div>
                 </div>
             </div>`;
-    },
-    'menu': () => renderMenuPage(false),
-    'menu-alt': () => renderMenuPage(true),
-    'customize': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const item = mockupState.selectedItem || MENU_ITEMS[1]; // Fallback to Taro Latte
-        const basePrice = item.price;
-        const detail = mockupState.selectedItemDetail;
-        const sels = mockupState._customizeSubItems || {};
-        const modSels = mockupState._customizeModifyTypes || {};
+  },
+  menu: () => renderMenuPage(false),
+  "menu-alt": () => renderMenuPage(true),
+  customize: () => {
+    const isDesktop = currentViewport === "desktop";
+    const item = mockupState.selectedItem || MENU_ITEMS[1]; // Fallback to Taro Latte
+    const basePrice = item.price;
+    const detail = mockupState.selectedItemDetail;
+    const sels = mockupState._customizeSubItems || {};
+    const modSels = mockupState._customizeModifyTypes || {};
 
-        // --- Dynamic total calculation from selected sub-items ---
-        let extrasTotal = 0;
-        for (const gid in sels) {
-            const groupItems = sels[gid]?.items || {};
-            for (const sid in groupItems) {
-                extrasTotal += (groupItems[sid].price || 0) * (groupItems[sid].quantity || 1);
-            }
-        }
-        const totalPrice = ((basePrice + extrasTotal) * mockupState.itemQuantity).toFixed(2);
+    // --- Dynamic total calculation from selected sub-items ---
+    let extrasTotal = 0;
+    for (const gid in sels) {
+      const groupItems = sels[gid]?.items || {};
+      for (const sid in groupItems) {
+        extrasTotal +=
+          (groupItems[sid].price || 0) * (groupItems[sid].quantity || 1);
+      }
+    }
+    const totalPrice = (
+      (basePrice + extrasTotal) *
+      mockupState.itemQuantity
+    ).toFixed(2);
 
-        // --- Section header helper ---
-        const sectionHeader = (label, required) => `
+    // --- Section header helper ---
+    const sectionHeader = (label, required) => `
             <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
                 <span class="text-xs font-black text-violet-600 uppercase tracking-widest">${label}</span>
-                ${required ? '<span class="text-[9px] font-bold text-red-400 uppercase tracking-widest">Required</span>' : ''}
+                ${required ? '<span class="text-[9px] font-bold text-red-400 uppercase tracking-widest">Required</span>' : ""}
             </div>`;
 
-        // --- Render a single-select group (radio pills) ---
-        const renderRadioGroup = (group) => {
-            const gid = group.menuSubItemGroupId;
-            const prices = (group.groupPrices || []);
-            const selectedId = Object.keys(sels[gid]?.items || {})[0];
-            return prices.map(p => {
-                const sub = p.menuSubItem || {};
-                const name = (sub.name || '').toUpperCase();
-                const isSelected = String(p.menuSubItemId) === String(selectedId);
-                return `
-                <button onclick="window._selectSubItem(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${name.replace(/'/g, "\\'")}', ${p.price || 0}, true)" class="w-full flex justify-between items-center py-2 group">
+    // --- Render a single-select group (radio pills) ---
+    const renderRadioGroup = (group) => {
+      const gid = group.menuSubItemGroupId;
+      const prices = group.groupPrices || [];
+      const selectedId = Object.keys(sels[gid]?.items || {})[0];
+      return prices
+        .map((p) => {
+          const sub = p.menuSubItem || {};
+          const name = (sub.name || "").toUpperCase();
+          const isSelected = String(p.menuSubItemId) === String(selectedId);
+          return `
+                <button onclick="window._selectSubItem(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${name.replace(/'/g, "\\'")}', ${p.price || 0}, true)" class="w-full flex justify-between items-center py-2 group">
                     <span class="text-sm font-black text-gray-700 uppercase tracking-tight">${name}</span>
-                    <div class="w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${isSelected ? 'border-violet-600 bg-violet-600' : 'border-gray-200 group-hover:border-violet-300'}">
-                        ${isSelected ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ''}
+                    <div class="w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${isSelected ? "border-violet-600 bg-violet-600" : "border-gray-200 group-hover:border-violet-300"}">
+                        ${isSelected ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ""}
                     </div>
                 </button>`;
-            }).join('');
-        };
+        })
+        .join("");
+    };
 
-        // --- Render a multi-select group (stepper rows) ---
-        const renderStepperGroup = (group) => {
-            const gid = group.menuSubItemGroupId;
-            const prices = (group.groupPrices || []);
-            return prices.map(p => {
-                const sub = p.menuSubItem || {};
-                const name = (sub.name || '').toUpperCase();
-                const price = p.price || 0;
-                const fmtPrice = price === 0 ? 'FREE' : `+$${price.toFixed(2)}`;
-                const qty = (sels[gid]?.items?.[p.menuSubItemId]?.quantity) || 0;
-                const safeName = name.replace(/'/g, "\\'");
-                return `
+    // --- Render a multi-select group (stepper rows) ---
+    const renderStepperGroup = (group) => {
+      const gid = group.menuSubItemGroupId;
+      const prices = group.groupPrices || [];
+      return prices
+        .map((p) => {
+          const sub = p.menuSubItem || {};
+          const name = (sub.name || "").toUpperCase();
+          const price = p.price || 0;
+          const fmtPrice = price === 0 ? "FREE" : `+$${price.toFixed(2)}`;
+          const qty = sels[gid]?.items?.[p.menuSubItemId]?.quantity || 0;
+          const safeName = name.replace(/'/g, "\\'");
+          return `
                 <div class="flex justify-between items-center py-2.5 border-b border-gray-50">
                     <div class="flex flex-col">
                         <span class="text-sm font-black text-gray-800 uppercase tracking-tight">${name}</span>
                         <span class="text-[11px] font-bold text-gray-400">${fmtPrice}</span>
                     </div>
                     <div class="flex items-center gap-3">
-                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${safeName}', ${price}, -1)" class="w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 transition-all active:scale-90 text-xs">
+                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, -1)" class="w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 transition-all active:scale-90 text-xs">
                             <i class="fa-solid fa-minus"></i>
                         </button>
                         <span class="font-black text-gray-900 w-4 text-center text-sm">${qty}</span>
-                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${(sub.itemTypeId || 2)}, '${safeName}', ${price}, 1)" class="w-7 h-7 rounded-full border border-violet-200 bg-violet-50 flex items-center justify-center text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all active:scale-90 text-xs">
+                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, 1)" class="w-7 h-7 rounded-full border border-violet-200 bg-violet-50 flex items-center justify-center text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all active:scale-90 text-xs">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </div>
                 </div>`;
-            }).join('');
-        };
+        })
+        .join("");
+    };
 
-        // --- Render modifier groups dynamically ---
-        const renderGroups = (colLayout) => {
-            if (!groups.length) {
-                return `<div class="text-center py-8 text-gray-400 text-sm font-bold uppercase tracking-widest">
-                    ${mockupState.isLoading ? '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading customizations...' : 'No customization options available'}
+    // --- Render modifier groups dynamically ---
+    const renderGroups = (colLayout) => {
+      if (!groups.length) {
+        return `<div class="text-center py-8 text-gray-400 text-sm font-bold uppercase tracking-widest">
+                    ${mockupState.isLoading ? '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading customizations...' : "No customization options available"}
                 </div>`;
-            }
-            // Separate single-select (radio) and multi-select (stepper) groups
-            const radioGroups = groups.filter(g => (g.maxSelect || 1) === 1);
-            const stepperGroups = groups.filter(g => (g.maxSelect || 1) > 1);
+      }
+      // Separate single-select (radio) and multi-select (stepper) groups
+      const radioGroups = groups.filter((g) => (g.maxSelect || 1) === 1);
+      const stepperGroups = groups.filter((g) => (g.maxSelect || 1) > 1);
 
-            let html = '';
-            // Radio groups
-            for (const g of radioGroups) {
-                const isRequired = (g.minSelect || 0) >= 1;
-                html += `<div>
-                    ${sectionHeader(g.displayName || g.groupName || 'Options', isRequired)}
-                    <div class="${colLayout === 'grid' ? 'grid grid-cols-3 gap-x-8 gap-y-1' : 'space-y-1'}">
+      let html = "";
+      // Radio groups
+      for (const g of radioGroups) {
+        const isRequired = (g.minSelect || 0) >= 1;
+        html += `<div>
+                    ${sectionHeader(g.displayName || g.groupName || "Options", isRequired)}
+                    <div class="${colLayout === "grid" ? "grid grid-cols-3 gap-x-8 gap-y-1" : "space-y-1"}">
                         ${renderRadioGroup(g)}
                     </div>
                 </div>`;
-            }
-            // Stepper groups
-            if (stepperGroups.length > 0) {
-                if (colLayout === 'grid') {
-                    // Desktop: side-by-side columns
-                    html += `<div class="grid grid-cols-2 gap-8">`;
-                    for (const g of stepperGroups) {
-                        html += `<div>
-                            ${sectionHeader(g.displayName || g.groupName || 'Options', false)}
+      }
+      // Stepper groups
+      if (stepperGroups.length > 0) {
+        if (colLayout === "grid") {
+          // Desktop: side-by-side columns
+          html += `<div class="grid grid-cols-2 gap-8">`;
+          for (const g of stepperGroups) {
+            html += `<div>
+                            ${sectionHeader(g.displayName || g.groupName || "Options", false)}
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">${renderStepperGroup(g)}</div>
                         </div>`;
-                    }
-                    html += `</div>`;
-                } else {
-                    // Mobile: stacked
-                    for (const g of stepperGroups) {
-                        html += `<div>
-                            ${sectionHeader(g.displayName || g.groupName || 'Options', false)}
+          }
+          html += `</div>`;
+        } else {
+          // Mobile: stacked
+          for (const g of stepperGroups) {
+            html += `<div>
+                            ${sectionHeader(g.displayName || g.groupName || "Options", false)}
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">${renderStepperGroup(g)}</div>
                         </div>`;
-                    }
-                }
-            }
-            return html;
-        };
+          }
+        }
+      }
+      return html;
+    };
 
-        // ---- DESKTOP LAYOUT ----
-        if (isDesktop) {
-            return `
+    // ---- DESKTOP LAYOUT ----
+    if (isDesktop) {
+      return `
                 <div class="flex flex-col h-full bg-[#f6f6f6] relative overflow-y-auto">
                     <div class="w-full max-w-3xl mx-auto p-6 md:p-8 flex flex-col gap-6">
 
                         <!-- Page Title -->
                         <div>
                             <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Customize Order</h1>
-                            <p class="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">${item.category || ''}</p>
+                            <p class="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">${item.category || ""}</p>
                         </div>
 
                         <!-- Item Image + Info Card -->
@@ -3322,7 +4327,7 @@ const routes = {
                                 <div>
                                     <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
                                     <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-2">${item.name}</h3>
-                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || (detail?.description || '')}</p>
+                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || detail?.description || ""}</p>
                                 </div>
                                 <!-- Quantity inline -->
                                 <div class="flex items-center gap-4">
@@ -3338,14 +4343,18 @@ const routes = {
 
                         <!-- Customization Options Card -->
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col gap-7">
-                            ${renderAllModifierSections(detail, sels, modSels, 'grid')}
+                            ${renderAllModifierSections(detail, sels, modSels, "grid")}
 
                             <!-- Special Instructions -->
-                            ${detail && !detail.disableSpecialInstruction ? `
+                            ${
+                              detail && !detail.disableSpecialInstruction
+                                ? `
                             <div>
                                 <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions <span class="text-gray-300">(Max 250 Characters)</span></div>
-                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ''}</textarea>
-                            </div>` : ''}
+                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ""}</textarea>
+                            </div>`
+                                : ""
+                            }
                         </div>
 
                         <!-- Add to Cart Card (bottom) -->
@@ -3361,10 +4370,10 @@ const routes = {
                     </div>
                 </div>
             `;
-        }
+    }
 
-        // ---- MOBILE LAYOUT ----
-        return `
+    // ---- MOBILE LAYOUT ----
+    return `
                 <div class="flex flex-col h-full bg-white">
                     <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
                     <div class="w-full max-w-[1080px] flex items-center px-2">
@@ -3372,17 +4381,21 @@ const routes = {
                             <i class="fa-solid fa-bars text-xl"></i>
                         </button>
                         <span class="text-lg font-black text-violet-600 flex-1 text-center">Customize</span>
-                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
+                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
                     </div>
                 </header>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                     <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
 
                     <div id="order-details-scroller" class="flex-1 overflow-y-auto scrollbar-hide">
                         <!-- Item Banner Image -->
@@ -3396,7 +4409,7 @@ const routes = {
                         <div class="px-6 pt-5 pb-4 text-center border-b border-gray-100">
                             <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
                             <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-1">${item.name}</h3>
-                            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || (detail?.description || '')}</p>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || detail?.description || ""}</p>
                         </div>
 
                         <!-- Customizations -->
@@ -3412,14 +4425,18 @@ const routes = {
                                 </div>
                             </div>
 
-                            ${renderAllModifierSections(detail, sels, modSels, 'stacked')}
+                            ${renderAllModifierSections(detail, sels, modSels, "stacked")}
 
                             <!-- Special Instructions -->
-                            ${detail && !detail.disableSpecialInstruction ? `
+                            ${
+                              detail && !detail.disableSpecialInstruction
+                                ? `
                             <div>
                                 <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions <span class="text-gray-300">(Max 250 Characters)</span></div>
-                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ''}</textarea>
-                            </div>` : ''}
+                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ""}</textarea>
+                            </div>`
+                                : ""
+                            }
 
                         </div>
                     </div>
@@ -3434,55 +4451,69 @@ const routes = {
                     </div>
                 </div>
             `;
-    },
-    'customize-alt': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const mode = mockupState.fulfillmentMode || 'In-store';
-        let modeText = 'IN-STORE PICKUP';
-        if (mode === 'In-store' || mode === 'In-Store') modeText = 'IN-STORE PICKUP';
-        else if (mode === 'Drive Through' || mode === 'Drive-thru') modeText = 'DRIVE-THRU';
-        else if (mode === 'Curbside') modeText = 'CURBSIDE PICKUP';
-        else if (mode === 'Dine In' || mode === 'Dine-In') modeText = 'DINE-IN';
-        else if (mode === 'Delivery') modeText = 'DELIVERY';
-        else modeText = mode.toUpperCase() + ' PICKUP';
+  },
+  "customize-alt": () => {
+    const isDesktop = currentViewport === "desktop";
+    const mode = mockupState.fulfillmentMode || "In-store";
+    let modeText = "IN-STORE PICKUP";
+    if (mode === "In-store" || mode === "In-Store")
+      modeText = "IN-STORE PICKUP";
+    else if (mode === "Drive Through" || mode === "Drive-thru")
+      modeText = "DRIVE-THRU";
+    else if (mode === "Curbside") modeText = "CURBSIDE PICKUP";
+    else if (mode === "Dine In" || mode === "Dine-In") modeText = "DINE-IN";
+    else if (mode === "Delivery") modeText = "DELIVERY";
+    else modeText = mode.toUpperCase() + " PICKUP";
 
-        const timeText = mockupState.orderTime === 'Later' 
-            ? `at ${mockupState.selectedTimeSlot}` 
-            : 'ASAP';
+    const timeText =
+      mockupState.orderTime === "Later"
+        ? `at ${mockupState.selectedTimeSlot}`
+        : "ASAP";
 
-        const selectedLoc = mockupState.apiLocations.find(loc => loc.locationId === mockupState.selectedLocationId) 
-            || LOCATIONS.find(loc => loc.locationId === mockupState.selectedLocationId) 
-            || LOCATIONS[0];
-        const addressText = mockupState.selectedAddress || (selectedLoc ? selectedLoc.address : '825 W UNIVERSITY, TEMPE, AZ');
+    const selectedLoc =
+      mockupState.apiLocations.find(
+        (loc) => loc.locationId === mockupState.selectedLocationId,
+      ) ||
+      LOCATIONS.find(
+        (loc) => loc.locationId === mockupState.selectedLocationId,
+      ) ||
+      LOCATIONS[0];
+    const addressText =
+      mockupState.selectedAddress ||
+      (selectedLoc ? selectedLoc.address : "825 W UNIVERSITY, TEMPE, AZ");
 
-        const item = mockupState.selectedItem || MENU_ITEMS[1];
-        const basePrice = item.price;
-        const detail = mockupState.selectedItemDetail;
-        const sels = mockupState._customizeSubItems || {};
-        const modSels = mockupState._customizeModifyTypes || {};
+    const item = mockupState.selectedItem || MENU_ITEMS[1];
+    const basePrice = item.price;
+    const detail = mockupState.selectedItemDetail;
+    const sels = mockupState._customizeSubItems || {};
+    const modSels = mockupState._customizeModifyTypes || {};
 
-        let extrasTotal = 0;
-        for (const gid in sels) {
-            const groupItems = sels[gid]?.items || {};
-            for (const sid in groupItems) {
-                extrasTotal += (groupItems[sid].price || 0) * (groupItems[sid].quantity || 1);
-            }
-        }
-        for (const sid in modSels) {
-            extrasTotal += modSels[sid]?.price || 0;
-        }
-        const totalPrice = ((basePrice + extrasTotal) * mockupState.itemQuantity).toFixed(2);
+    let extrasTotal = 0;
+    for (const gid in sels) {
+      const groupItems = sels[gid]?.items || {};
+      for (const sid in groupItems) {
+        extrasTotal +=
+          (groupItems[sid].price || 0) * (groupItems[sid].quantity || 1);
+      }
+    }
+    for (const sid in modSels) {
+      extrasTotal += modSels[sid]?.price || 0;
+    }
+    const totalPrice = (
+      (basePrice + extrasTotal) *
+      mockupState.itemQuantity
+    ).toFixed(2);
 
-        // ---- DESKTOP LAYOUT ----
-        if (isDesktop) {
-            return `
+    // ---- DESKTOP LAYOUT ----
+    if (isDesktop) {
+      return `
                 <div class="flex flex-col h-full bg-[#f6f6f6] relative overflow-y-auto">
                     <div class="w-full max-w-3xl mx-auto p-6 md:p-8 flex flex-col gap-6">
 
                         <!-- Page Title -->
                         <div>
                             <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Customize Order</h1>
-                            <p class="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">${item.category || ''}</p>
+                            <p class="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">${item.category || ""}</p>
                         </div>
 
                         <!-- Item Image + Info Card -->
@@ -3496,7 +4527,7 @@ const routes = {
                                 <div>
                                     <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
                                     <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-2">${item.name}</h3>
-                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || (detail?.description || '')}</p>
+                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || detail?.description || ""}</p>
                                 </div>
                                 <div class="flex items-center gap-4">
                                     <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Quantity</span>
@@ -3510,14 +4541,18 @@ const routes = {
                         </div>
 
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col gap-7">
-                            ${renderAllModifierSections(detail, sels, modSels, 'grid')}
+                            ${renderAllModifierSections(detail, sels, modSels, "grid")}
 
                             <!-- Special Instructions -->
-                            ${detail && !detail.disableSpecialInstruction ? `
+                            ${
+                              detail && !detail.disableSpecialInstruction
+                                ? `
                             <div>
                                 <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions <span class="text-gray-300">(Max 250 Characters)</span></div>
-                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ''}</textarea>
-                            </div>` : ''}
+                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ""}</textarea>
+                            </div>`
+                                : ""
+                            }
                         </div>
 
                         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-6">
@@ -3532,10 +4567,10 @@ const routes = {
                     </div>
                 </div>
             `;
-        }
+    }
 
-        // ---- MOBILE LAYOUT ----
-        return `
+    // ---- MOBILE LAYOUT ----
+    return `
                 <div class="flex flex-col h-full bg-white animate-[fadeIn_0.2s_ease-out]">
                     <header class="bg-white px-3 py-2 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center shrink-0 border-b border-gray-100">
                         <div class="w-full max-w-[1080px] flex items-center px-1">
@@ -3550,7 +4585,7 @@ const routes = {
                             <!-- Right: Cart icon -->
                             <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                                ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                                ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
                             </button>
                         </div>
                     </header>
@@ -3593,7 +4628,7 @@ const routes = {
                         <div class="px-6 pt-5 pb-4 text-center border-b border-gray-100">
                             <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
                             <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-1">${item.name}</h3>
-                            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || (detail?.description || '')}</p>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || detail?.description || ""}</p>
                         </div>
 
                         <!-- Customizations -->
@@ -3609,14 +4644,18 @@ const routes = {
                                 </div>
                             </div>
 
-                            ${renderAllModifierSections(detail, sels, modSels, 'stacked')}
+                            ${renderAllModifierSections(detail, sels, modSels, "stacked")}
 
                             <!-- Special Instructions -->
-                            ${detail && !detail.disableSpecialInstruction ? `
+                            ${
+                              detail && !detail.disableSpecialInstruction
+                                ? `
                             <div>
                                 <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions <span class="text-gray-300">(Max 250 Characters)</span></div>
-                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ''}</textarea>
-                            </div>` : ''}
+                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ""}</textarea>
+                            </div>`
+                                : ""
+                            }
 
                         </div>
                     </div>
@@ -3631,29 +4670,42 @@ const routes = {
                     </div>
                 </div>
             `;
-    },
-    'cart': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const selectedLoc = mockupState.apiLocations.find(loc => loc.locationId === mockupState.selectedLocationId) 
-            || LOCATIONS.find(loc => loc.locationId === mockupState.selectedLocationId) 
-            || LOCATIONS[0];
-        const addressText = mockupState.selectedAddress || (selectedLoc ? selectedLoc.address : '825 W UNIVERSITY, TEMPE, AZ');
-        const bagFee = (mockupState.bagQuantity * 0.10);
-        // Dynamic pricing from cart
-        const cart = mockupState.cart || [];
-        const subtotal = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-        const taxRate = mockupState.locationTaxRate || 0.0925;
-        const taxes = subtotal * taxRate;
-        const convenienceFee = mockupState.locationConvenienceFee || 0;
-        const finalTotal = (subtotal + taxes + bagFee + convenienceFee).toFixed(2);
+  },
+  cart: () => {
+    const isDesktop = currentViewport === "desktop";
+    const selectedLoc =
+      mockupState.apiLocations.find(
+        (loc) => loc.locationId === mockupState.selectedLocationId,
+      ) ||
+      LOCATIONS.find(
+        (loc) => loc.locationId === mockupState.selectedLocationId,
+      ) ||
+      LOCATIONS[0];
+    const addressText =
+      mockupState.selectedAddress ||
+      (selectedLoc ? selectedLoc.address : "825 W UNIVERSITY, TEMPE, AZ");
+    const bagFee = mockupState.bagQuantity * 0.1;
+    // Dynamic pricing from cart
+    const cart = mockupState.cart || [];
+    const subtotal = cart.reduce(
+      (sum, item) => sum + item.unitPrice * item.quantity,
+      0,
+    );
+    const taxRate = mockupState.locationTaxRate || 0.0925;
+    const taxes = subtotal * taxRate;
+    const convenienceFee = mockupState.locationConvenienceFee || 0;
+    const finalTotal = (subtotal + taxes + bagFee + convenienceFee).toFixed(2);
 
-        const selectionNotMade = mockupState.bagQuantity === 0 && !mockupState.noBagsSelected;
-        const paymentAction = selectionNotMade ? `updateMockupState('modalOpen', 'bag-alert')` : `navigateTo('checkout')`;
+    const selectionNotMade =
+      mockupState.bagQuantity === 0 && !mockupState.noBagsSelected;
+    const paymentAction = selectionNotMade
+      ? `updateMockupState('modalOpen', 'bag-alert')`
+      : `navigateTo('checkout')`;
 
-        // Render cart items dynamically
-        const renderCartItems = () => {
-            if (cart.length === 0) {
-                return `
+    // Render cart items dynamically
+    const renderCartItems = () => {
+      if (cart.length === 0) {
+        return `
                 <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
                     <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fa-solid fa-bag-shopping text-2xl text-gray-300"></i>
@@ -3664,18 +4716,24 @@ const routes = {
                         Browse Menu
                     </button>
                 </div>`;
-            }
-            return `
+      }
+      return `
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 divide-y divide-gray-100">
-                ${cart.map((item, idx) => {
+                ${cart
+                  .map((item, idx) => {
                     // Build customization summary text
-                    const customSummary = (item.selectedSubItems || [])
-                        .map(s => s.quantity > 1 ? `${s.name} x${s.quantity}` : s.name)
-                        .join(', ') || 'No customizations';
-                    const itemTotal = (item.unitPrice * item.quantity).toFixed(2);
+                    const customSummary =
+                      (item.selectedSubItems || [])
+                        .map((s) =>
+                          s.quantity > 1 ? `${s.name} x${s.quantity}` : s.name,
+                        )
+                        .join(", ") || "No customizations";
+                    const itemTotal = (item.unitPrice * item.quantity).toFixed(
+                      2,
+                    );
 
                     return `
-                    <div class="flex justify-between items-start ${idx > 0 ? 'pt-5' : ''} ${idx < cart.length - 1 ? 'pb-5' : ''}">
+                    <div class="flex justify-between items-start ${idx > 0 ? "pt-5" : ""} ${idx < cart.length - 1 ? "pb-5" : ""}">
                         <div class="flex gap-4 items-start">
                             <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0">
                                 <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
@@ -3683,12 +4741,12 @@ const routes = {
                             <div>
                                 <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight">${item.name}</h3>
                                 <div class="flex items-start gap-2 mb-3">
-                                    <p class="text-[11px] text-gray-500 font-medium line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed flex-1" id="desc-${idx}" onclick="this.classList.toggle('line-clamp-2')">${customSummary}${item.specialInstruction ? ' • ' + item.specialInstruction : ''}</p>
+                                    <p class="text-[11px] text-gray-500 font-medium line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed flex-1" id="desc-${idx}" onclick="this.classList.toggle('line-clamp-2')">${customSummary}${item.specialInstruction ? " • " + item.specialInstruction : ""}</p>
                                 </div>
                                 <!-- Quantity Controls -->
                                 <div class="flex items-center bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-50 px-3 py-1.5 gap-5 w-fit">
                                     <button onclick="window._updateCartQty(${idx}, ${item.quantity === 1 ? 0 : item.quantity - 1})" class="text-gray-900 hover:text-red-500 transition-colors active:scale-90">
-                                        <i class="fa-${item.quantity === 1 ? 'regular fa-trash-can' : 'solid fa-minus'} text-[13px]"></i>
+                                        <i class="fa-${item.quantity === 1 ? "regular fa-trash-can" : "solid fa-minus"} text-[13px]"></i>
                                     </button>
                                     <span class="font-black text-[13px] text-gray-900 min-w-[8px] text-center">${item.quantity}</span>
                                     <button onclick="window._updateCartQty(${idx}, ${item.quantity + 1})" class="text-gray-900 hover:text-violet-600 transition-colors active:scale-90">
@@ -3701,11 +4759,12 @@ const routes = {
                             <span class="font-black text-gray-900">$${itemTotal}</span>
                         </div>
                     </div>`;
-                }).join('')}
+                  })
+                  .join("")}
             </div>`;
-        };
+    };
 
-        return `
+    return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
                     <div class="w-full max-w-[1080px] flex items-center px-2">
@@ -3713,26 +4772,34 @@ const routes = {
                             <i class="fa-solid fa-bars text-xl"></i>
                         </button>
                         <span class="text-lg font-black text-violet-600 flex-1 text-center">Review order</span>
-                        ${!isDesktop ? `
+                        ${
+                          !isDesktop
+                            ? `
                         <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                            ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                            ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
                         </button>
-                        ` : '<div class="w-10"></div>'}
+                        `
+                            : '<div class="w-10"></div>'
+                        }
                     </div>
                 </header>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                     <button onclick="navigateTo('menu')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
                 </div>
-                ` : ''}
-                <div id="cart-scroller" class="flex-1 overflow-y-auto p-6 flex ${isDesktop ? 'flex-row items-start pb-6 gap-8' : 'flex-col gap-6 pb-32'} scrollbar-hide w-full max-w-[1080px] mx-auto">
+                `
+                    : ""
+                }
+                <div id="cart-scroller" class="flex-1 overflow-y-auto p-6 flex ${isDesktop ? "flex-row items-start pb-6 gap-8" : "flex-col gap-6 pb-32"} scrollbar-hide w-full max-w-[1080px] mx-auto">
                     
                     <!-- Left Column (2/3 width on desktop) -->
-                    <div class="${isDesktop ? 'flex flex-col gap-6 w-2/3 shrink' : 'contents'}">
+                    <div class="${isDesktop ? "flex flex-col gap-6 w-2/3 shrink" : "contents"}">
                         <!-- Consolidated Order Details Card -->
                     <div class="bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col gap-4 shrink-0 transition-all">
                         <!-- Store Info (Compact) -->
@@ -3742,7 +4809,7 @@ const routes = {
                                     <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
                                 </div>
                                 <div>
-                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${(mockupState.selectedLocation || "i-Tea - Tempe").replace(/\b\d{5}\b/g, '').trim()}</h3>
+                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${(mockupState.selectedLocation || "i-Tea - Tempe").replace(/\b\d{5}\b/g, "").trim()}</h3>
                                     <p class="text-[10px] font-bold text-gray-400 mt-1 tracking-wide uppercase">${addressText}</p>
                                 </div>
                             </div>
@@ -3755,11 +4822,11 @@ const routes = {
                         <div class="grid grid-cols-2 gap-4">
                             <div onclick="navigateTo('order-details')" class="flex gap-3 items-center cursor-pointer group">
                                 <div class="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
-                                    <i class="fa-solid ${mockupState.fulfillmentMode === 'Delivery' ? 'fa-truck' : mockupState.fulfillmentMode === 'Curbside' ? 'fa-car' : mockupState.fulfillmentMode === 'DriveUp' ? 'fa-car-side' : 'fa-shop'} text-white text-sm"></i>
+                                    <i class="fa-solid ${mockupState.fulfillmentMode === "Delivery" ? "fa-truck" : mockupState.fulfillmentMode === "Curbside" ? "fa-car" : mockupState.fulfillmentMode === "DriveUp" ? "fa-car-side" : "fa-shop"} text-white text-sm"></i>
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup method</span>
-                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight">${mockupState.fulfillmentMode || 'Pickup'}</span>
+                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight">${mockupState.fulfillmentMode || "Pickup"}</span>
                                 </div>
                             </div>
                             <div onclick="navigateTo('order-details')" class="flex gap-3 items-center cursor-pointer group border-l border-gray-50 pl-2">
@@ -3768,7 +4835,7 @@ const routes = {
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup time</span>
-                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight">${mockupState.orderTime === 'Later' ? mockupState.selectedTimeSlot : 'ASAP'} (4-7m)</span>
+                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight">${mockupState.orderTime === "Later" ? mockupState.selectedTimeSlot : "ASAP"} (4-7m)</span>
                                 </div>
                             </div>
                         </div>
@@ -3786,41 +4853,82 @@ const routes = {
                         <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-3 px-1">You May Also Like</h3>
                         <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2">
                             ${(() => {
-                                let crossSellItems = [];
-                                const ordersList = mockupState.apiOrders ? (Array.isArray(mockupState.apiOrders) ? mockupState.apiOrders : (mockupState.apiOrders.items || mockupState.apiOrders.data || [])) : [];
-                                if (ordersList.length > 0) {
-                                    const itemCounts = {};
-                                    ordersList.forEach(order => {
-                                        const itemsList = order.orderMenuItems || order.items || order.orderItems || [];
-                                        itemsList.forEach(orderItem => {
-                                            const name = (orderItem.name || '').trim();
-                                            if (!name) return;
-                                            if (!itemCounts[name]) itemCounts[name] = 0;
-                                            itemCounts[name] += orderItem.quantity || 1;
-                                        });
-                                    });
-                                    
-                                    const sortedHistoryNames = Object.keys(itemCounts).sort((a, b) => itemCounts[b] - itemCounts[a]);
-                                    crossSellItems = sortedHistoryNames
-                                        .map(name => MENU_ITEMS.find(mi => mi.name.toLowerCase() === name.toLowerCase()))
-                                        .filter(Boolean);
-                                }
+                              let crossSellItems = [];
+                              const ordersList = mockupState.apiOrders
+                                ? Array.isArray(mockupState.apiOrders)
+                                  ? mockupState.apiOrders
+                                  : mockupState.apiOrders.items ||
+                                    mockupState.apiOrders.data ||
+                                    []
+                                : [];
+                              if (ordersList.length > 0) {
+                                const itemCounts = {};
+                                ordersList.forEach((order) => {
+                                  const itemsList =
+                                    order.orderMenuItems ||
+                                    order.items ||
+                                    order.orderItems ||
+                                    [];
+                                  itemsList.forEach((orderItem) => {
+                                    const name = (orderItem.name || "").trim();
+                                    if (!name) return;
+                                    if (!itemCounts[name]) itemCounts[name] = 0;
+                                    itemCounts[name] += orderItem.quantity || 1;
+                                  });
+                                });
 
-                                const cartItemNames = mockupState.cart.map(c => c.name.toLowerCase());
-                                let finalCrossSells = crossSellItems.filter(item => !cartItemNames.includes(item.name.toLowerCase()));
+                                const sortedHistoryNames = Object.keys(
+                                  itemCounts,
+                                ).sort((a, b) => itemCounts[b] - itemCounts[a]);
+                                crossSellItems = sortedHistoryNames
+                                  .map((name) =>
+                                    MENU_ITEMS.find(
+                                      (mi) =>
+                                        mi.name.toLowerCase() ===
+                                        name.toLowerCase(),
+                                    ),
+                                  )
+                                  .filter(Boolean);
+                              }
 
-                                const numSells = isDesktop ? 4 : 5;
-                                if (finalCrossSells.length < numSells) {
-                                    const fallbackItems = getActiveMenuItems().filter(item => !cartItemNames.includes(item.name.toLowerCase()) && !finalCrossSells.find(s => s.name === item.name));
-                                    finalCrossSells = [...finalCrossSells, ...fallbackItems].slice(0, numSells);
-                                } else {
-                                    finalCrossSells = finalCrossSells.slice(0, numSells);
-                                }
+                              const cartItemNames = mockupState.cart.map((c) =>
+                                c.name.toLowerCase(),
+                              );
+                              let finalCrossSells = crossSellItems.filter(
+                                (item) =>
+                                  !cartItemNames.includes(
+                                    item.name.toLowerCase(),
+                                  ),
+                              );
 
-                                return finalCrossSells.map((item) => {
-                                    return `
-                                        <div class="snap-center shrink-0 ${isDesktop ? 'w-auto flex-1' : 'w-[140px]'} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md group cursor-pointer" onclick="mockupState.menuTab = 'menu'; selectItemAndNavigate(${getActiveMenuItems().findIndex(m => m.name === item.name)})">
-                                            <div class="${isDesktop ? 'h-36' : 'h-24'} relative overflow-hidden">
+                              const numSells = isDesktop ? 4 : 5;
+                              if (finalCrossSells.length < numSells) {
+                                const fallbackItems =
+                                  getActiveMenuItems().filter(
+                                    (item) =>
+                                      !cartItemNames.includes(
+                                        item.name.toLowerCase(),
+                                      ) &&
+                                      !finalCrossSells.find(
+                                        (s) => s.name === item.name,
+                                      ),
+                                  );
+                                finalCrossSells = [
+                                  ...finalCrossSells,
+                                  ...fallbackItems,
+                                ].slice(0, numSells);
+                              } else {
+                                finalCrossSells = finalCrossSells.slice(
+                                  0,
+                                  numSells,
+                                );
+                              }
+
+                              return finalCrossSells
+                                .map((item) => {
+                                  return `
+                                        <div class="snap-center shrink-0 ${isDesktop ? "w-auto flex-1" : "w-[140px]"} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md group cursor-pointer" onclick="mockupState.menuTab = 'menu'; selectItemAndNavigate(${getActiveMenuItems().findIndex((m) => m.name === item.name)})">
+                                            <div class="${isDesktop ? "h-36" : "h-24"} relative overflow-hidden">
                                                 <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                             </div>
                                             <div class="p-3 md:p-4 text-left flex flex-col flex-1">
@@ -3832,7 +4940,8 @@ const routes = {
                                             </div>
                                         </div>
                                     `;
-                                }).join('');
+                                })
+                                .join("");
                             })()}
                         </div>
                     </div>
@@ -3840,7 +4949,7 @@ const routes = {
                     </div> <!-- End Left Column -->
 
                     <!-- Right Column (1/3 width on desktop) -->
-                    <div class="${isDesktop ? 'flex flex-col gap-6 w-1/3 shrink sticky top-0' : 'contents'}">
+                    <div class="${isDesktop ? "flex flex-col gap-6 w-1/3 shrink sticky top-0" : "contents"}">
 
                     <!-- Bag Selection (California Compliance) -->
                     <div class="shrink-0 bg-violet-50 rounded-2xl p-4 border border-violet-100 flex flex-col gap-4">
@@ -3849,8 +4958,8 @@ const routes = {
                                 <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight leading-tight">
                                     Do you need plastic bag(s)?
                                 </h3>
-                                <div class="${mockupState.bagQuantity > 0 || mockupState.noBagsSelected ? 'text-green-600' : 'text-violet-600'} text-[10px] font-bold flex items-center gap-1 normal-case tracking-normal mt-1">
-                                    <i class="fa-solid ${mockupState.bagQuantity > 0 || mockupState.noBagsSelected ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i>
+                                <div class="${mockupState.bagQuantity > 0 || mockupState.noBagsSelected ? "text-green-600" : "text-violet-600"} text-[10px] font-bold flex items-center gap-1 normal-case tracking-normal mt-1">
+                                    <i class="fa-solid ${mockupState.bagQuantity > 0 || mockupState.noBagsSelected ? "fa-circle-check" : "fa-triangle-exclamation"}"></i>
                                     Required • Select 1
                                 </div>
                                 <p class="text-[10px] font-bold text-gray-500 mt-0.5">10 cents for each bag</p>
@@ -3864,8 +4973,8 @@ const routes = {
                         
                         <div class="flex gap-2">
                             <button onclick="mockupState.bagQuantity = 0; updateMockupState('noBagsSelected', true);" 
-                                    class="flex-1 py-2 px-3 rounded-lg border-2 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${mockupState.noBagsSelected ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-gray-400 border-gray-100 hover:border-violet-200'}">
-                                <i class="fa-solid ${mockupState.noBagsSelected ? 'fa-circle-check' : 'fa-circle-dot'}"></i>
+                                    class="flex-1 py-2 px-3 rounded-lg border-2 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${mockupState.noBagsSelected ? "bg-violet-600 text-white border-violet-600 shadow-md" : "bg-white text-gray-400 border-gray-100 hover:border-violet-200"}">
+                                <i class="fa-solid ${mockupState.noBagsSelected ? "fa-circle-check" : "fa-circle-dot"}"></i>
                                 No plastic bags needed
                             </button>
                         </div>
@@ -3875,13 +4984,13 @@ const routes = {
                     <div class="mt-auto bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3 shrink-0">
                         <div class="flex justify-between text-sm font-bold text-gray-600"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
                         <div class="flex justify-between text-sm font-bold text-gray-600"><span>Taxes & Fees</span><span>$${taxes.toFixed(2)}</span></div>
-                        ${convenienceFee > 0 ? `<div class="flex justify-between text-sm font-bold text-gray-600"><span>Convenience Fee</span><span>$${convenienceFee.toFixed(2)}</span></div>` : ''}
-                        ${mockupState.bagQuantity > 0 ? `<div class="flex justify-between text-sm font-bold text-gray-600"><span>Plastic Bag(s)</span><span>$${bagFee.toFixed(2)}</span></div>` : ''}
+                        ${convenienceFee > 0 ? `<div class="flex justify-between text-sm font-bold text-gray-600"><span>Convenience Fee</span><span>$${convenienceFee.toFixed(2)}</span></div>` : ""}
+                        ${mockupState.bagQuantity > 0 ? `<div class="flex justify-between text-sm font-bold text-gray-600"><span>Plastic Bag(s)</span><span>$${bagFee.toFixed(2)}</span></div>` : ""}
                         <div class="h-px bg-gray-200 w-full my-2"></div>
                         <div class="flex justify-between text-lg font-black text-gray-900 uppercase"><span>Total</span><span>$${finalTotal}</span></div>
                         
                         <!-- Inline Checkout Button (Desktop Only) -->
-                        <button onclick="${paymentAction}" class="${isDesktop ? 'block' : 'hidden'} w-full mt-4 bg-violet-600 text-white px-6 py-4 rounded-full font-black text-[15px] shadow-[0_8px_20px_-5px_rgba(124,58,237,0.3)] hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">
+                        <button onclick="${paymentAction}" class="${isDesktop ? "block" : "hidden"} w-full mt-4 bg-violet-600 text-white px-6 py-4 rounded-full font-black text-[15px] shadow-[0_8px_20px_-5px_rgba(124,58,237,0.3)] hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">
                             Checkout $${finalTotal}
                         </button>
                     </div>
@@ -3890,7 +4999,7 @@ const routes = {
                 </div>
 
                 <!-- Floating Checkout Button -->
-                <div class="absolute bottom-8 left-0 right-0 w-full z-[60] pointer-events-none px-6 flex justify-center ${isDesktop ? 'hidden' : ''}">
+                <div class="absolute bottom-8 left-0 right-0 w-full z-[60] pointer-events-none px-6 flex justify-center ${isDesktop ? "hidden" : ""}">
                     <div class="w-full max-w-[1080px] flex justify-end">
                         <button onclick="${paymentAction}" class="pointer-events-auto bg-violet-600 text-white px-8 py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">
                             Checkout $${finalTotal}
@@ -3899,7 +5008,9 @@ const routes = {
                 </div>
 
                 <!-- Bag Alert Modal -->
-                ${mockupState.modalOpen === 'bag-alert' ? `
+                ${
+                  mockupState.modalOpen === "bag-alert"
+                    ? `
                 <div class="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center p-4">
                     <div class="bg-white w-[90%] max-w-[400px] rounded-3xl text-center p-8 relative shadow-2xl">
                         <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -3924,18 +5035,23 @@ const routes = {
                             </div>
                         </div>
                     </div>
-                </div>` : ''}
+                </div>`
+                    : ""
+                }
 
             </div>`;
-    },
+  },
 
-    'account': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const menuFavsCount = (mockupState.favorites || []).length;
-        const locList = (mockupState.apiLocations && mockupState.apiLocations.length > 0) ? mockupState.apiLocations : LOCATIONS;
-        const savedLocsCount = locList.filter(l => l.fav).length;
+  account: () => {
+    const isDesktop = currentViewport === "desktop";
+    const menuFavsCount = (mockupState.favorites || []).length;
+    const locList =
+      mockupState.apiLocations && mockupState.apiLocations.length > 0
+        ? mockupState.apiLocations
+        : LOCATIONS;
+    const savedLocsCount = locList.filter((l) => l.fav).length;
 
-        return `
+    return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
                 <!-- Subtle top-aligned brand gradient overlay fading down -->
                 <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
@@ -3948,17 +5064,21 @@ const routes = {
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">My Account</span>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
                     </button>
                 </header>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                     <button onclick="navigateTo('restaurant-home')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
 
                 <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 pb-16 relative z-10">
 
@@ -3984,41 +5104,43 @@ const routes = {
                         <div class="px-5 py-4 grid grid-cols-2 gap-x-8 gap-y-4">
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">First Name</p>
-                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.firstName || 'Not set'}</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.firstName || "Not set"}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Last Name</p>
-                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.lastName || 'Not set'}</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.lastName || "Not set"}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Email</p>
-                                <p class="font-bold text-violet-600 text-sm truncate">${mockupState.userProfile?.email || 'Not set'}</p>
+                                <p class="font-bold text-violet-600 text-sm truncate">${mockupState.userProfile?.email || "Not set"}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Phone</p>
-                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.phoneNumber || 'Not set'}</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.phoneNumber || "Not set"}</p>
                             </div>
                             <div class="col-span-2">
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Street Address</p>
-                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.address || 'Not set'}</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.address || "Not set"}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">City</p>
-                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.city || 'Not set'}</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.city || "Not set"}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">State</p>
-                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.state || 'Not set'}</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.state || "Not set"}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Zip Code</p>
-                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.zipCode || 'Not set'}</p>
+                                <p class="font-bold text-gray-800 text-sm">${mockupState.userProfile?.zipCode || "Not set"}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Edit Profile Modal -->
-                    ${mockupState.modalOpen === 'edit-profile' ? `
+                    ${
+                      mockupState.modalOpen === "edit-profile"
+                        ? `
                     <div class="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center p-4 animate-[fadeIn_0.3s_ease-out]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
                         <div class="bg-white w-[92%] max-w-[420px] rounded-3xl p-5 relative shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-hide animate-[slideUp_0.3s_ease-out]">
                             <div class="flex items-center justify-between mb-4">
@@ -4032,37 +5154,37 @@ const routes = {
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">First Name</label>
-                                        <input type="text" id="prof-first-name" value="${mockupState.userProfile?.firstName || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <input type="text" id="prof-first-name" value="${mockupState.userProfile?.firstName || ""}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                     </div>
                                     <div>
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Last Name</label>
-                                        <input type="text" id="prof-last-name" value="${mockupState.userProfile?.lastName || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <input type="text" id="prof-last-name" value="${mockupState.userProfile?.lastName || ""}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                     </div>
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Email (Read-only)</label>
-                                    <input type="email" id="prof-email" value="${mockupState.userProfile?.email || ''}" class="w-full border-2 border-gray-100 bg-gray-50 text-violet-400 rounded-xl px-4 py-2.5 font-bold text-sm focus:outline-none cursor-not-allowed" readonly>
+                                    <input type="email" id="prof-email" value="${mockupState.userProfile?.email || ""}" class="w-full border-2 border-gray-100 bg-gray-50 text-violet-400 rounded-xl px-4 py-2.5 font-bold text-sm focus:outline-none cursor-not-allowed" readonly>
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Phone</label>
-                                    <input type="tel" id="prof-phone" value="${mockupState.userProfile?.phoneNumber || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    <input type="tel" id="prof-phone" value="${mockupState.userProfile?.phoneNumber || ""}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Street Address</label>
-                                    <input type="text" id="prof-address" value="${mockupState.userProfile?.address || ''}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                    <input type="text" id="prof-address" value="${mockupState.userProfile?.address || ""}" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                 </div>
                                 <div class="grid grid-cols-3 gap-2">
                                     <div class="col-span-1">
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1 truncate">City</label>
-                                        <input type="text" id="prof-city" value="${mockupState.userProfile?.city || ''}" class="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <input type="text" id="prof-city" value="${mockupState.userProfile?.city || ""}" class="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                     </div>
                                     <div class="col-span-1">
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1 truncate">State</label>
-                                        <input type="text" id="prof-state" value="${mockupState.userProfile?.state || ''}" class="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <input type="text" id="prof-state" value="${mockupState.userProfile?.state || ""}" class="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                     </div>
                                     <div class="col-span-1">
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1 truncate">Zip Code</label>
-                                        <input type="text" id="prof-zip" value="${mockupState.userProfile?.zipCode || ''}" class="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <input type="text" id="prof-zip" value="${mockupState.userProfile?.zipCode || ""}" class="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                     </div>
                                 </div>
                                 <button onclick="handleUpdateProfile()" class="w-full mt-2 py-3 bg-violet-600 text-white rounded-full font-black uppercase tracking-widest text-xs shadow-lg hover:bg-violet-700 transition-colors active:scale-95">
@@ -4070,10 +5192,14 @@ const routes = {
                                 </button>
                             </div>
                         </div>
-                    </div>` : ''}
+                    </div>`
+                        : ""
+                    }
 
                     <!-- Change Password Modal -->
-                    ${mockupState.modalOpen === 'change-password' ? `
+                    ${
+                      mockupState.modalOpen === "change-password"
+                        ? `
                     <div class="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center p-4 animate-[fadeIn_0.3s_ease-out]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
                         <div class="bg-white w-[92%] max-w-[420px] rounded-3xl p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out]">
                             <div class="flex items-center justify-between mb-6">
@@ -4116,7 +5242,9 @@ const routes = {
                                 </button>
                             </div>
                         </div>
-                    </div>` : ''}
+                    </div>`
+                        : ""
+                    }
 
                     <!-- Account Settings Card -->
                     <div class="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
@@ -4156,7 +5284,7 @@ const routes = {
                                 <span class="font-bold text-gray-800 text-sm">Menu Favorites</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="bg-violet-100 text-violet-600 text-xs font-black px-2.5 py-0.5 rounded-full">${menuFavsCount} ${menuFavsCount === 1 ? 'item' : 'items'}</span>
+                                <span class="bg-violet-100 text-violet-600 text-xs font-black px-2.5 py-0.5 rounded-full">${menuFavsCount} ${menuFavsCount === 1 ? "item" : "items"}</span>
                                 <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
                             </div>
                         </button>
@@ -4166,7 +5294,7 @@ const routes = {
                                 <span class="font-bold text-gray-800 text-sm">Saved Locations</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="bg-violet-100 text-violet-600 text-xs font-black px-2.5 py-0.5 rounded-full">${savedLocsCount} ${savedLocsCount === 1 ? 'store' : 'stores'}</span>
+                                <span class="bg-violet-100 text-violet-600 text-xs font-black px-2.5 py-0.5 rounded-full">${savedLocsCount} ${savedLocsCount === 1 ? "store" : "stores"}</span>
                                 <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
                             </div>
                         </button>
@@ -4183,48 +5311,90 @@ const routes = {
 
                         <div id="order-history-container" class="divide-y divide-gray-100">
                             ${(() => {
-                                 const ordersList = mockupState.apiOrders ? (Array.isArray(mockupState.apiOrders) ? mockupState.apiOrders : (mockupState.apiOrders.items || mockupState.apiOrders.data || [])) : [];
-                                 
-                                 // Combine local lastOrder and API orders, removing duplicate order IDs
-                                 let allOrders = [...ordersList];
-                                 if (mockupState.lastOrder) {
-                                     const lastOrderId = mockupState.lastOrder.orderId;
-                                     const exists = allOrders.some(o => o.orderId === lastOrderId);
-                                     if (!exists) {
-                                         allOrders.unshift(mockupState.lastOrder);
-                                     }
-                                 }
-                                 
-                                 // Sort by date descending
-                                 const getOrderTime = (order) => {
-                                     const dateStr = order.orderDate || order.placedAt || order.placedDateTime;
-                                     return dateStr ? new Date(dateStr).getTime() : 0;
-                                 };
-                                 allOrders.sort((a, b) => getOrderTime(b) - getOrderTime(a));
-                                 
-                                 if (allOrders.length === 0) {
-                                     return `
+                              const ordersList = mockupState.apiOrders
+                                ? Array.isArray(mockupState.apiOrders)
+                                  ? mockupState.apiOrders
+                                  : mockupState.apiOrders.items ||
+                                    mockupState.apiOrders.data ||
+                                    []
+                                : [];
+
+                              // Combine local lastOrder and API orders, removing duplicate order IDs
+                              let allOrders = [...ordersList];
+                              if (mockupState.lastOrder) {
+                                const lastOrderId =
+                                  mockupState.lastOrder.orderId;
+                                const exists = allOrders.some(
+                                  (o) => o.orderId === lastOrderId,
+                                );
+                                if (!exists) {
+                                  allOrders.unshift(mockupState.lastOrder);
+                                }
+                              }
+
+                              // Sort by date descending
+                              const getOrderTime = (order) => {
+                                const dateStr =
+                                  order.orderDate ||
+                                  order.placedAt ||
+                                  order.placedDateTime;
+                                return dateStr
+                                  ? new Date(dateStr).getTime()
+                                  : 0;
+                              };
+                              allOrders.sort(
+                                (a, b) => getOrderTime(b) - getOrderTime(a),
+                              );
+
+                              if (allOrders.length === 0) {
+                                return `
                                          <div class="px-5 py-8 text-center">
                                              <p class="text-sm text-gray-400 font-medium">No orders yet — place your first order!</p>
                                              <button onclick="navigateTo('menu')" class="mt-3 text-violet-600 font-black text-xs uppercase tracking-widest hover:underline">Browse Menu →</button>
                                          </div>
                                      `;
-                                 }
-                                 
-                                 const showLimit = mockupState.showAllHistory ? 20 : 5;
-                                 const displayedOrders = allOrders.slice(0, showLimit);
-                                 
-                                 let html = displayedOrders.map(order => {
-                                     const orderDate = new Date(order.orderDate || order.placedAt || Date.now()).toLocaleDateString();
-                                     const orderTotal = (order.total || order.subTotal || 0).toFixed(2);
-                                     const orderItems = order.orderMenuItems || order.items || order.orderItems || [];
-                                     const orderNum = order.orderId || order.orderNumber || 'FB-' + Math.floor(1000 + Math.random() * 9000);
-                                     
-                                     // Look up location name
-                                     const foundLoc = LOCATIONS.find(l => l.locationId === order.locationId);
-                                     const locationName = foundLoc ? foundLoc.name : (mockupState.selectedLocation || 'i-Tea');
-                                     
-                                     return `
+                              }
+
+                              const showLimit = mockupState.showAllHistory
+                                ? 20
+                                : 5;
+                              const displayedOrders = allOrders.slice(
+                                0,
+                                showLimit,
+                              );
+
+                              let html = displayedOrders
+                                .map((order) => {
+                                  const orderDate = new Date(
+                                    order.orderDate ||
+                                      order.placedAt ||
+                                      Date.now(),
+                                  ).toLocaleDateString();
+                                  const orderTotal = (
+                                    order.total ||
+                                    order.subTotal ||
+                                    0
+                                  ).toFixed(2);
+                                  const orderItems =
+                                    order.orderMenuItems ||
+                                    order.items ||
+                                    order.orderItems ||
+                                    [];
+                                  const orderNum =
+                                    order.orderId ||
+                                    order.orderNumber ||
+                                    "FB-" +
+                                      Math.floor(1000 + Math.random() * 9000);
+
+                                  // Look up location name
+                                  const foundLoc = LOCATIONS.find(
+                                    (l) => l.locationId === order.locationId,
+                                  );
+                                  const locationName = foundLoc
+                                    ? foundLoc.name
+                                    : mockupState.selectedLocation || "i-Tea";
+
+                                  return `
                                          <div class="px-5 py-4 flex flex-col gap-3">
                                              <div class="flex justify-between items-start">
                                                  <div>
@@ -4234,9 +5404,12 @@ const routes = {
                                                  <span class="font-black text-gray-900 text-base">$${orderTotal}</span>
                                              </div>
                                              <div class="flex flex-col gap-0.5">
-                                                 ${orderItems.map(item =>
-                                                     `<p class="text-xs text-gray-500 font-medium">${item.quantity} × ${item.name}</p>`
-                                                 ).join('')}
+                                                 ${orderItems
+                                                   .map(
+                                                     (item) =>
+                                                       `<p class="text-xs text-gray-500 font-medium">${item.quantity} × ${item.name}</p>`,
+                                                   )
+                                                   .join("")}
                                              </div>
                                              <div class="flex gap-2 mt-1">
                                                  <button onclick="viewPastOrder(${order.orderId || `'${orderNum}'`})" class="flex-1 py-2 rounded-full border-2 border-violet-600 text-violet-600 font-black text-[10px] uppercase tracking-widest hover:bg-violet-50 transition-colors">View</button>
@@ -4244,30 +5417,31 @@ const routes = {
                                              </div>
                                          </div>
                                      `;
-                                 }).join('');
-                                 
-                                 if (allOrders.length > 5) {
-                                     if (!mockupState.showAllHistory) {
-                                         html += `
+                                })
+                                .join("");
+
+                              if (allOrders.length > 5) {
+                                if (!mockupState.showAllHistory) {
+                                  html += `
                                              <div class="px-5 py-4 text-center">
                                                  <button onclick="updateMockupState('showAllHistory', true)" class="w-full py-2.5 rounded-full border-2 border-dashed border-violet-300 text-violet-600 font-black text-xs uppercase tracking-widest hover:border-violet-400 hover:bg-violet-50/50 transition-all flex items-center justify-center gap-2">
                                                      <i class="fa-solid fa-chevron-down text-[10px]"></i> View More Orders (${allOrders.length - 5} more)
                                                  </button>
                                              </div>
                                          `;
-                                     } else {
-                                         html += `
+                                } else {
+                                  html += `
                                              <div class="px-5 py-4 text-center">
                                                  <button onclick="updateMockupState('showAllHistory', false)" class="w-full py-2.5 rounded-full border-2 border-dashed border-gray-200 text-gray-500 font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
                                                      <i class="fa-solid fa-chevron-up text-[10px]"></i> Show Less
                                                  </button>
                                              </div>
                                          `;
-                                     }
-                                 }
-                                 
-                                 return html;
-                             })()}
+                                }
+                              }
+
+                              return html;
+                            })()}
                         </div>
                     </div>
 
@@ -4313,7 +5487,9 @@ const routes = {
                     </div>
 
                     <!-- Delete Account Modal -->
-                    ${mockupState.modalOpen === 'delete-account' ? `
+                    ${
+                      mockupState.modalOpen === "delete-account"
+                        ? `
                     <div class="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center p-4 animate-[fadeIn_0.3s_ease-out]" onclick="if(event.target===this){mockupState.modalOpen=null;navigateTo(currentPage);}">
                         <div class="bg-white w-[92%] max-w-[420px] rounded-3xl p-8 relative shadow-2xl animate-[fadeIn_0.3s_ease-out]">
                             <div class="text-center mb-8">
@@ -4340,33 +5516,39 @@ const routes = {
                                 </div>
                             </div>
                         </div>
-                    </div>` : ''}
+                    </div>`
+                        : ""
+                    }
 
                 </div>
             </div>`;
-    },
-    'order-status': () => {
-        const isDesktop = currentViewport === 'desktop';
-        return `
+  },
+  "order-status": () => {
+    const isDesktop = currentViewport === "desktop";
+    return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button>
                     <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center">Order Status</h1>
-                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
                 </header>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                     <button onclick="navigateTo('account')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
                 
-                <div class="${isDesktop ? 'flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full space-y-6 scrollbar-hide' : 'flex-1 overflow-y-auto space-y-6 scrollbar-hide'}">
+                <div class="${isDesktop ? "flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full space-y-6 scrollbar-hide" : "flex-1 overflow-y-auto space-y-6 scrollbar-hide"}">
                     <div class="flex gap-2 overflow-x-auto scrollbar-hide shrink-0 pb-2">
                         <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
-                            <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
+                            <i class="fa-solid ${mockupState.orderDetailsExpanded ? "fa-chevron-up" : "fa-chevron-down"} text-[10px] text-gray-500"></i>
                             <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
                         </button>
                         <button onclick="navigateTo('cart')" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-violet-600 text-white shadow-md whitespace-nowrap active:scale-95 transition-all hover:bg-violet-700">
@@ -4375,14 +5557,16 @@ const routes = {
                         </button>
                     </div>
 
-                    ${mockupState.orderDetailsExpanded ? `
+                    ${
+                      mockupState.orderDetailsExpanded
+                        ? `
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
                                 <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
                             </div>
                             <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - Tempe'}</h3>
+                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || "i-Tea - Tempe"}</h3>
                                 <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
                             </div>
                         </div>
@@ -4483,12 +5667,14 @@ const routes = {
                             <p class="text-[10px] font-bold text-gray-400 mt-4 leading-relaxed line-clamp-2">You'll be charged at the end of the day for this and other orders.</p>
                         </div>
                     </div>
-                    ` : `
+                    `
+                        : `
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 text-center">
                         <h2 class="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-1">Preparing</h2>
                         <p class="text-sm font-bold text-gray-500">Estimated pickup at 12:45 PM</p>
                     </div>
-                    `}
+                    `
+                    }
 
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 relative">
                         <!-- Vertical line connecting steps -->
@@ -4527,15 +5713,21 @@ const routes = {
                             </div>
                         </div>
                     </div>
-                    ${isDesktop ? `
+                    ${
+                      isDesktop
+                        ? `
                     <div class="pt-4">
                         <button onclick="navigateTo('cart')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
                             <i class="fa-solid fa-rotate-left"></i> Reorder
                         </button>
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                 </div>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-t border-gray-100 shrink-0 sticky bottom-0">
                     <div class="p-6 w-full">
                         <button onclick="navigateTo('cart')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
@@ -4543,46 +5735,54 @@ const routes = {
                         </button>
                     </div>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
             </div>`;
-    },
-    'track-order': () => {
-        const isDesktop = currentViewport === 'desktop';
-        return `
-            <div class="flex flex-col h-full ${isDesktop ? 'bg-[#f6f6f6]' : 'bg-white'} relative">
+  },
+  "track-order": () => {
+    const isDesktop = currentViewport === "desktop";
+    return `
+            <div class="flex flex-col h-full ${isDesktop ? "bg-[#f6f6f6]" : "bg-white"} relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 justify-center">
                     <div class="w-full max-w-[1080px] flex items-center">
                         <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button>
                         <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center">Track Order</h1>
-                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
+                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
                     </div>
                 </header>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                     <button onclick="navigateTo('order-status')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
                 
-                <div class="${isDesktop ? 'flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full space-y-6 scrollbar-hide' : 'px-6 py-4 space-y-4 w-full max-w-[1080px] mx-auto'}">
+                <div class="${isDesktop ? "flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full space-y-6 scrollbar-hide" : "px-6 py-4 space-y-4 w-full max-w-[1080px] mx-auto"}">
 
                     <div class="flex justify-end shrink-0 pb-2">
                         <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
-                            <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
+                            <i class="fa-solid ${mockupState.orderDetailsExpanded ? "fa-chevron-up" : "fa-chevron-down"} text-[10px] text-gray-500"></i>
                             <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
                         </button>
                     </div>
 
-                    ${mockupState.orderDetailsExpanded ? `
+                    ${
+                      mockupState.orderDetailsExpanded
+                        ? `
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
                                 <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
                             </div>
                             <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || 'i-Tea - Tempe'}</h3>
+                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || "i-Tea - Tempe"}</h3>
                                 <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
                             </div>
                         </div>
@@ -4683,12 +5883,14 @@ const routes = {
                             <p class="text-[10px] font-bold text-gray-400 mt-4 leading-relaxed line-clamp-2">You'll be charged at the end of the day for this and other orders.</p>
                         </div>
                     </div>
-                    ` : `
+                    `
+                        : `
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 text-center">
                         <h2 class="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-1">Preparing</h2>
                         <p class="text-sm font-bold text-gray-500">Estimated pickup at 12:45 PM</p>
                     </div>
-                    `}
+                    `
+                    }
 
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 relative">
                         <!-- Vertical line connecting steps -->
@@ -4727,16 +5929,22 @@ const routes = {
                             </div>
                         </div>
                     </div>
-                    ${isDesktop ? `
+                    ${
+                      isDesktop
+                        ? `
                     <div class="pt-4 space-y-3">
                         <button onclick="alert('Calling store at (602) 555-0123...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
                             <i class="fa-solid fa-phone"></i> Contact Store
                         </button>
                         <button onclick="navigateTo('home')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                 </div>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-t border-gray-100 shrink-0 sticky bottom-0">
                     <div class="p-6 w-full space-y-3">
                         <button onclick="alert('Calling store at (602) 555-0123...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
@@ -4745,28 +5953,34 @@ const routes = {
                         <button onclick="navigateTo('home')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                     </div>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
             </div>`;
-    },
-    'registration': () => {
-        const isDesktop = currentViewport === 'desktop';
-        return `
-            <div class="flex flex-col h-full ${isDesktop ? 'bg-[#f6f6f6]' : 'bg-white'} relative overflow-y-auto">
+  },
+  registration: () => {
+    const isDesktop = currentViewport === "desktop";
+    return `
+            <div class="flex flex-col h-full ${isDesktop ? "bg-[#f6f6f6]" : "bg-white"} relative overflow-y-auto">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Create Account</span>
-                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
                 </header>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                     <button onclick="navigateTo('sign-in')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
                 
                 <div class="w-full max-w-3xl mx-auto p-6 md:p-8 flex flex-col gap-8 font-sans">
                     <div class="text-center mb-2">
@@ -4774,7 +5988,7 @@ const routes = {
                         <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mt-2">Create a new account</p>
                     </div>
 
-                    <div class="${isDesktop ? 'bg-white rounded-2xl p-8 shadow-sm border border-gray-100' : ''} flex flex-col gap-8">
+                    <div class="${isDesktop ? "bg-white rounded-2xl p-8 shadow-sm border border-gray-100" : ""} flex flex-col gap-8">
                         <div class="space-y-6">
                             <!-- Account Info Section -->
                             <div class="space-y-4">
@@ -4876,13 +6090,14 @@ const routes = {
                 </div>
             </div>
         `;
-    },
-    'directions': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const mapSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.9880816825!2d-111.95254172421831!3d33.42224097339947!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08da35c246f9%3A0xe21289658ec91e!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1714088000000!5m2!1sen!2sus";
+  },
+  directions: () => {
+    const isDesktop = currentViewport === "desktop";
+    const mapSrc =
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.9880816825!2d-111.95254172421831!3d33.42224097339947!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08da35c246f9%3A0xe21289658ec91e!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1714088000000!5m2!1sen!2sus";
 
-        if (isDesktop) {
-            return `
+    if (isDesktop) {
+      return `
             <div class="flex h-full bg-white overflow-hidden" style="height: calc(100vh - 70px);">
 
                 <!-- ===== LEFT SIDEBAR PANEL ===== -->
@@ -4976,15 +6191,41 @@ const routes = {
                         <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Step-by-Step</div>
                         <div class="space-y-1">
                             ${[
-                                { icon: 'fa-arrow-right', label: 'Head east on E University Dr', dist: '0.3 mi' },
-                                { icon: 'fa-turn-right', label: 'Turn right onto S Mill Ave', dist: '0.1 mi' },
-                                { icon: 'fa-turn-left', label: 'Turn left onto E 7th St', dist: '0.5 mi' },
-                                { icon: 'fa-turn-right', label: 'Turn right onto S Rural Rd', dist: '0.8 mi' },
-                                { icon: 'fa-turn-left', label: 'Turn left onto E University Dr', dist: '0.4 mi' },
-                                { icon: 'fa-location-dot', label: 'Arrive at i-Tea Tempe', dist: 'Destination' },
-                            ].map((step, i) => `
+                              {
+                                icon: "fa-arrow-right",
+                                label: "Head east on E University Dr",
+                                dist: "0.3 mi",
+                              },
+                              {
+                                icon: "fa-turn-right",
+                                label: "Turn right onto S Mill Ave",
+                                dist: "0.1 mi",
+                              },
+                              {
+                                icon: "fa-turn-left",
+                                label: "Turn left onto E 7th St",
+                                dist: "0.5 mi",
+                              },
+                              {
+                                icon: "fa-turn-right",
+                                label: "Turn right onto S Rural Rd",
+                                dist: "0.8 mi",
+                              },
+                              {
+                                icon: "fa-turn-left",
+                                label: "Turn left onto E University Dr",
+                                dist: "0.4 mi",
+                              },
+                              {
+                                icon: "fa-location-dot",
+                                label: "Arrive at i-Tea Tempe",
+                                dist: "Destination",
+                              },
+                            ]
+                              .map(
+                                (step, i) => `
                                 <div class="flex items-start gap-4 p-3.5 rounded-xl hover:bg-gray-50 transition-colors group cursor-default">
-                                    <div class="w-8 h-8 rounded-full ${i === 5 ? 'bg-violet-600 text-white' : 'bg-gray-100 text-gray-600 group-hover:bg-violet-100 group-hover:text-violet-600'} flex items-center justify-center shrink-0 transition-colors">
+                                    <div class="w-8 h-8 rounded-full ${i === 5 ? "bg-violet-600 text-white" : "bg-gray-100 text-gray-600 group-hover:bg-violet-100 group-hover:text-violet-600"} flex items-center justify-center shrink-0 transition-colors">
                                         <i class="fa-solid ${step.icon} text-xs"></i>
                                     </div>
                                     <div class="flex-1 min-w-0">
@@ -4992,7 +6233,9 @@ const routes = {
                                         <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">${step.dist}</div>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                              )
+                              .join("")}
                         </div>
                     </div>
 
@@ -5035,10 +6278,10 @@ const routes = {
                     </div>
                 </div>
             </div>`;
-        }
+    }
 
-        // ===== MOBILE / TABLET (original layout preserved) =====
-        return `
+    // ===== MOBILE / TABLET (original layout preserved) =====
+    return `
             <div class="flex flex-col h-full bg-white relative">
 
                 <!-- Map Area -->
@@ -5099,27 +6342,42 @@ const routes = {
                 </div>
             </div>
         `;
-    },
+  },
 
-    'order-confirm': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const order = mockupState.lastOrder || {};
-        const orderItems = order.orderItems || [];
-        const orderNum = order.orderId || order.orderNumber || ('FB-' + Math.floor(1000 + Math.random() * 9000));
-        const locationName = mockupState.selectedLocation || 'i-Tea';
-        const selectedLoc = (mockupState.apiLocations || []).find(loc => loc.locationId === mockupState.selectedLocationId) 
-            || LOCATIONS.find(loc => loc.locationId === mockupState.selectedLocationId) 
-            || LOCATIONS.find(loc => loc.name === locationName) || {};
-        const locationAddress = selectedLoc.address || selectedLoc.streetAddress || '825 W UNIVERSITY, TEMPE, AZ';
-        const now = new Date();
-        const pickupTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        const orderSubtotal = (order.subtotal || 0).toFixed(2);
-        const orderTaxes = (order.taxes || 0).toFixed(2);
-        const orderTip = (order.tipAmount || 0).toFixed(2);
-        const orderTotal = (order.total || 0).toFixed(2);
-        const itemCount = orderItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
+  "order-confirm": () => {
+    const isDesktop = currentViewport === "desktop";
+    const order = mockupState.lastOrder || {};
+    const orderItems = order.orderItems || [];
+    const orderNum =
+      order.orderId ||
+      order.orderNumber ||
+      "FB-" + Math.floor(1000 + Math.random() * 9000);
+    const locationName = mockupState.selectedLocation || "i-Tea";
+    const selectedLoc =
+      (mockupState.apiLocations || []).find(
+        (loc) => loc.locationId === mockupState.selectedLocationId,
+      ) ||
+      LOCATIONS.find(
+        (loc) => loc.locationId === mockupState.selectedLocationId,
+      ) ||
+      LOCATIONS.find((loc) => loc.name === locationName) ||
+      {};
+    const locationAddress =
+      selectedLoc.address ||
+      selectedLoc.streetAddress ||
+      "825 W UNIVERSITY, TEMPE, AZ";
+    const now = new Date();
+    const pickupTime = now.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    const orderSubtotal = (order.subtotal || 0).toFixed(2);
+    const orderTaxes = (order.taxes || 0).toFixed(2);
+    const orderTip = (order.tipAmount || 0).toFixed(2);
+    const orderTotal = (order.total || 0).toFixed(2);
+    const itemCount = orderItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
 
-        return `
+    return `
             <div class="flex flex-col h-full bg-white relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
                     <div class="w-full max-w-[1080px] flex items-center px-2">
@@ -5130,15 +6388,19 @@ const routes = {
                         <div class="w-10"></div>
                     </div>
                 </header>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                     <button onclick="navigateTo('menu')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back to Menu</span>
                     </button>
                 </div>
-                ` : ''}
-                <div class="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6 w-full ${isDesktop ? 'max-w-2xl' : 'max-w-[1080px]'} mx-auto">
+                `
+                    : ""
+                }
+                <div class="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6 w-full ${isDesktop ? "max-w-2xl" : "max-w-[1080px]"} mx-auto">
                     
                     <div class="contents">
                         <div class="text-center">
@@ -5165,12 +6427,14 @@ const routes = {
                     <div class="contents">
                         <div class="flex gap-2 overflow-x-auto scrollbar-hide shrink-0 pb-2">
                             <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
-                                <i class="fa-solid ${mockupState.orderDetailsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px] text-gray-500"></i>
+                                <i class="fa-solid ${mockupState.orderDetailsExpanded ? "fa-chevron-up" : "fa-chevron-down"} text-[10px] text-gray-500"></i>
                                 <span class="text-sm font-black text-gray-900 uppercase tracking-tight">Order details</span>
                             </button>
                         </div>
 
-                        ${mockupState.orderDetailsExpanded ? `
+                        ${
+                          mockupState.orderDetailsExpanded
+                            ? `
                         <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
@@ -5178,16 +6442,24 @@ const routes = {
                                 </div>
                                 <div>
                                     <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${locationName}</h3>
-                                    <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">${itemCount} item${itemCount !== 1 ? 's' : ''}</p>
+                                    <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">${itemCount} item${itemCount !== 1 ? "s" : ""}</p>
                                 </div>
                             </div>
 
                             <div class="space-y-4">
-                                ${orderItems.map(item => {
-                                    const customSummary = (item.selectedSubItems || [])
-                                        .map(s => s.quantity > 1 ? `${s.name} x${s.quantity}` : s.name)
-                                        .join(' • ') || 'Standard';
-                                    const itemTotal = (item.unitPrice * item.quantity).toFixed(2);
+                                ${orderItems
+                                  .map((item) => {
+                                    const customSummary =
+                                      (item.selectedSubItems || [])
+                                        .map((s) =>
+                                          s.quantity > 1
+                                            ? `${s.name} x${s.quantity}`
+                                            : s.name,
+                                        )
+                                        .join(" • ") || "Standard";
+                                    const itemTotal = (
+                                      item.unitPrice * item.quantity
+                                    ).toFixed(2);
                                     return `
                                     <div class="flex gap-4">
                                         <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
@@ -5201,7 +6473,8 @@ const routes = {
                                             <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">${customSummary}</p>
                                         </div>
                                     </div>`;
-                                }).join('')}
+                                  })
+                                  .join("")}
                             </div>
 
                             <div class="space-y-2 pt-4 border-t border-gray-100">
@@ -5213,11 +6486,15 @@ const routes = {
                                     <span>Tax</span>
                                     <span>$${orderTaxes}</span>
                                 </div>
-                                ${parseFloat(orderTip) > 0 ? `
+                                ${
+                                  parseFloat(orderTip) > 0
+                                    ? `
                                 <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
                                     <span>Tip</span>
                                     <span>$${orderTip}</span>
-                                </div>` : ''}
+                                </div>`
+                                    : ""
+                                }
                                 <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
                                     <span>Total</span>
                                     <span>$${orderTotal}</span>
@@ -5233,14 +6510,16 @@ const routes = {
                                         </div>
                                         <div>
                                             <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Card Payment</p>
-                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">${now.toLocaleDateString('en-US')}, ${pickupTime}</p>
+                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">${now.toLocaleDateString("en-US")}, ${pickupTime}</p>
                                         </div>
                                     </div>
                                     <span class="text-base font-black text-gray-900">$${orderTotal}</span>
                                 </div>
                             </div>
                         </div>
-                        ` : ''}
+                        `
+                            : ""
+                        }
 
                         <div class="w-full space-y-4 pt-4">
                             <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Order Again</button>
@@ -5250,32 +6529,41 @@ const routes = {
                 </div>
             </div>
         `;
-    },
-    'checkout': () => {
-        const isDesktop = currentViewport === 'desktop';
-        // Dynamic pricing from cart
-        const cart = mockupState.cart || [];
-        const subtotal = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-        const taxRate = mockupState.locationTaxRate || 0.0925;
-        const taxes = subtotal * taxRate;
-        const bagFee = mockupState.bagQuantity * 0.10;
-        const convenienceFee = mockupState.locationConvenienceFee || 0;
-        
-        let tipAmount = 0;
-        if (mockupState.tipPercentage === 'other') {
-            tipAmount = parseFloat(mockupState.customTipAmount) || 0;
-        } else {
-            tipAmount = subtotal * (mockupState.tipPercentage / 100);
-        }
+  },
+  checkout: () => {
+    const isDesktop = currentViewport === "desktop";
+    // Dynamic pricing from cart
+    const cart = mockupState.cart || [];
+    const subtotal = cart.reduce(
+      (sum, item) => sum + item.unitPrice * item.quantity,
+      0,
+    );
+    const taxRate = mockupState.locationTaxRate || 0.0925;
+    const taxes = subtotal * taxRate;
+    const bagFee = mockupState.bagQuantity * 0.1;
+    const convenienceFee = mockupState.locationConvenienceFee || 0;
 
-        const finalTotal = (subtotal + taxes + bagFee + convenienceFee + tipAmount).toFixed(2);
+    let tipAmount = 0;
+    if (mockupState.tipPercentage === "other") {
+      tipAmount = parseFloat(mockupState.customTipAmount) || 0;
+    } else {
+      tipAmount = subtotal * (mockupState.tipPercentage / 100);
+    }
 
-        const openPaymentModal = (method) => {
-            mockupState.paymentMethod = method;
-            updateMockupState('modalOpen', `payment-${method}`);
-        };
+    const finalTotal = (
+      subtotal +
+      taxes +
+      bagFee +
+      convenienceFee +
+      tipAmount
+    ).toFixed(2);
 
-        return `
+    const openPaymentModal = (method) => {
+      mockupState.paymentMethod = method;
+      updateMockupState("modalOpen", `payment-${method}`);
+    };
+
+    return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
                     <div class="w-full max-w-[1080px] flex items-center px-2">
@@ -5286,16 +6574,20 @@ const routes = {
                         <div class="w-10"></div>
                     </div>
                 </header>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                     <button onclick="navigateTo('cart')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
                 
-                <div id="payment-scroller" class="flex-1 overflow-y-auto ${isDesktop ? 'p-6 md:p-8 space-y-8 w-full max-w-3xl mx-auto pb-12' : 'p-4 space-y-6 w-full max-w-[1080px] mx-auto pb-32'} scrollbar-hide">
+                <div id="payment-scroller" class="flex-1 overflow-y-auto ${isDesktop ? "p-6 md:p-8 space-y-8 w-full max-w-3xl mx-auto pb-12" : "p-4 space-y-6 w-full max-w-[1080px] mx-auto pb-32"} scrollbar-hide">
 
                     
                     <!-- Payment Methods -->
@@ -5303,7 +6595,7 @@ const routes = {
                         <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Payment Method</h2>
                         <div class="space-y-3">
                             <!-- Card -->
-                            <div onclick="updateMockupState('modalOpen', 'payment-card')" class="bg-white rounded-2xl ${isDesktop ? 'p-4' : 'p-3'} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                            <div onclick="updateMockupState('modalOpen', 'payment-card')" class="bg-white rounded-2xl ${isDesktop ? "p-4" : "p-3"} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400">
                                         <i class="fa-solid fa-credit-card text-lg"></i>
@@ -5319,7 +6611,7 @@ const routes = {
                             <!-- Gift Card & Loyalty (Two Column) -->
                             <div class="grid grid-cols-2 gap-3">
                                 <!-- Gift Card -->
-                                <div onclick="updateMockupState('modalOpen', 'payment-gift')" class="bg-white rounded-2xl ${isDesktop ? 'p-4' : 'p-3'} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                                <div onclick="updateMockupState('modalOpen', 'payment-gift')" class="bg-white rounded-2xl ${isDesktop ? "p-4" : "p-3"} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
                                     <div class="flex items-center gap-3 min-w-0">
                                         <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-400 shrink-0">
                                             <i class="fa-solid fa-gift text-lg"></i>
@@ -5330,7 +6622,7 @@ const routes = {
                                 </div>
 
                                 <!-- Loyalty -->
-                                <div onclick="updateMockupState('modalOpen', 'payment-rewards')" class="bg-white rounded-2xl ${isDesktop ? 'p-4' : 'p-3'} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                                <div onclick="updateMockupState('modalOpen', 'payment-rewards')" class="bg-white rounded-2xl ${isDesktop ? "p-4" : "p-3"} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
                                     <div class="flex items-center gap-3 min-w-0">
                                         <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-400 shrink-0">
                                             <i class="fa-solid fa-award text-lg"></i>
@@ -5350,16 +6642,23 @@ const routes = {
                     <div>
                         <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Add a Tip</h2>
                         <div class="grid grid-cols-4 gap-3">
-                            ${[10, 15, 20, 'other'].map(val => {
-                                const isSelected = mockupState.tipPercentage === val;
-                                const label = val === 'other' ? 'Other' : `${val}%`;
-                                const action = val === 'other' ? "updateMockupState('modalOpen', 'tip-other')" : `updateMockupState('tipPercentage', ${val})`;
+                            ${[10, 15, 20, "other"]
+                              .map((val) => {
+                                const isSelected =
+                                  mockupState.tipPercentage === val;
+                                const label =
+                                  val === "other" ? "Other" : `${val}%`;
+                                const action =
+                                  val === "other"
+                                    ? "updateMockupState('modalOpen', 'tip-other')"
+                                    : `updateMockupState('tipPercentage', ${val})`;
                                 return `
-                                    <button onclick="${action}" class="py-3.5 rounded-2xl border-2 font-black uppercase text-xs tracking-tighter transition-all ${isSelected ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-gray-400 border-gray-100 hover:border-violet-100'}">
+                                    <button onclick="${action}" class="py-3.5 rounded-2xl border-2 font-black uppercase text-xs tracking-tighter transition-all ${isSelected ? "bg-violet-600 text-white border-violet-600 shadow-md" : "bg-white text-gray-400 border-gray-100 hover:border-violet-100"}">
                                         ${label}
                                     </button>
                                 `;
-                            }).join('')}
+                              })
+                              .join("")}
                         </div>
                     </div>
 
@@ -5371,28 +6670,38 @@ const routes = {
                         <div class="h-px bg-gray-50 w-full my-4"></div>
                         <div class="flex justify-between text-xl font-black text-gray-900 uppercase"><span>Total</span><span class="text-violet-600">$${finalTotal}</span></div>
                     </div>
-                    ${isDesktop ? `
+                    ${
+                      isDesktop
+                        ? `
                     <div class="pt-4 flex justify-between gap-4 w-full">
                         <button onclick="navigateTo('cart')" class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:text-violet-600 hover:bg-violet-50 shadow-md transition-all active:scale-95 shrink-0"><i class="fa-solid fa-arrow-left text-xl"></i></button>
                         <button onclick="window._handlePlaceOrder()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">Purchase Order</button>
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                 </div>
 
                 <!-- Footer Action Buttons -->
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-t border-gray-100 shrink-0 sticky bottom-0 z-50">
                     <div class="p-6 flex justify-between gap-4 w-full max-w-[1080px] mx-auto">
                         <button onclick="navigateTo('cart')" class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:text-violet-600 hover:bg-violet-50 shadow-md transition-all active:scale-95 shrink-0"><i class="fa-solid fa-arrow-left text-xl"></i></button>
                         <button onclick="window._handlePlaceOrder()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">Purchase Order</button>
                     </div>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
 
                 <!-- PAYMENT MODALS -->
                 
                 <!-- Credit Card Modal -->
-                ${mockupState.modalOpen === 'payment-card' ? `
+                ${
+                  mockupState.modalOpen === "payment-card"
+                    ? `
                 <div class="modal-overlay z-[200]">
                     <div class="bg-white w-[90%] max-w-[420px] rounded-[32px] p-8 shadow-2xl animate-[slideUp_0.4s_ease-out]">
                         <div class="flex justify-between items-center mb-6">
@@ -5426,10 +6735,14 @@ const routes = {
                         </div>
                         <button onclick="updateMockupState('modalOpen', null)" class="w-full bg-violet-600 text-white py-4 rounded-2xl font-black uppercase tracking-wide shadow-lg active:scale-95 transition-all">Save & Continue</button>
                     </div>
-                </div>` : ''}
+                </div>`
+                    : ""
+                }
 
                 <!-- Gift Card Modal -->
-                ${mockupState.modalOpen === 'payment-gift' ? `
+                ${
+                  mockupState.modalOpen === "payment-gift"
+                    ? `
                 <div class="modal-overlay z-[200]">
                     <div class="bg-white w-[90%] max-w-[400px] rounded-[32px] p-8 shadow-2xl text-center">
                         <div class="w-16 h-16 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -5445,10 +6758,14 @@ const routes = {
                             <button onclick="updateMockupState('modalOpen', null)" class="flex-[2] bg-violet-600 text-white py-4 rounded-2xl font-black uppercase shadow-md active:scale-95 transition-all">Apply</button>
                         </div>
                     </div>
-                </div>` : ''}
+                </div>`
+                    : ""
+                }
 
                 <!-- Rewards Modal -->
-                ${mockupState.modalOpen === 'payment-rewards' ? `
+                ${
+                  mockupState.modalOpen === "payment-rewards"
+                    ? `
                 <div class="modal-overlay z-[200]">
                     <div class="bg-white w-[95%] max-w-[420px] rounded-[32px] p-8 shadow-2xl animate-[slideUp_0.4s_ease-out]">
                         <div class="flex justify-between items-center mb-8">
@@ -5458,15 +6775,20 @@ const routes = {
                         
                         <div class="bg-violet-50 rounded-[24px] p-6 border border-violet-100 mb-8">
                             <div class="grid grid-cols-5 gap-3 mb-6">
-                                ${Array.from({ length: 10 }).map((_, i) => {
-                                    let stampClass = 'bg-white border-violet-100 text-violet-100';
-                                    if (i < 7) stampClass = 'bg-violet-600 border-violet-600 text-white shadow-sm';
+                                ${Array.from({ length: 10 })
+                                  .map((_, i) => {
+                                    let stampClass =
+                                      "bg-white border-violet-100 text-violet-100";
+                                    if (i < 7)
+                                      stampClass =
+                                        "bg-violet-600 border-violet-600 text-white shadow-sm";
                                     return `
                                     <div class="aspect-square rounded-full border-2 flex items-center justify-center ${stampClass}">
                                         <i class="fa-solid fa-mug-hot text-lg"></i>
                                     </div>
                                     `;
-                                }).join('')}
+                                  })
+                                  .join("")}
                             </div>
                             <div class="text-center">
                                 <p class="text-sm font-black text-violet-600 uppercase tracking-widest mb-1">3 More Bobas Left!</p>
@@ -5482,10 +6804,14 @@ const routes = {
                             <button class="w-full py-4 rounded-full bg-gray-100 text-gray-400 font-black uppercase text-xs tracking-widest cursor-not-allowed">Claim Free Drink (3 to go)</button>
                         </div>
                     </div>
-                </div>` : ''}
+                </div>`
+                    : ""
+                }
 
                 <!-- Custom Tip Modal -->
-                ${mockupState.modalOpen === 'tip-other' ? `
+                ${
+                  mockupState.modalOpen === "tip-other"
+                    ? `
                 <div class="modal-overlay z-[200]">
                     <div class="bg-white w-[90%] max-w-[420px] rounded-[40px] overflow-hidden shadow-2xl animate-[slideUp_0.4s_ease-out] flex flex-col items-center pb-8">
                         <div class="w-full h-48 relative">
@@ -5500,7 +6826,7 @@ const routes = {
                             
                             <div class="relative mb-10 group">
                                 <span class="absolute left-6 top-1/2 -translate-y-1/2 text-4xl font-black text-violet-600 opacity-40 group-focus-within:opacity-100 transition-opacity">$</span>
-                                <input type="number" id="custom-tip-input" value="${mockupState.customTipAmount || ''}" placeholder="0.00" 
+                                <input type="number" id="custom-tip-input" value="${mockupState.customTipAmount || ""}" placeholder="0.00" 
                                        class="w-full bg-gray-50 border-2 border-transparent focus:border-violet-600 px-12 py-6 rounded-[24px] text-4xl font-black text-center text-gray-900 outline-none transition-all placeholder:text-gray-200"
                                        onchange="mockupState.customTipAmount = this.value">
                             </div>
@@ -5511,42 +6837,55 @@ const routes = {
                             </button>
                         </div>
                     </div>
-                </div>` : ''}
+                </div>`
+                    : ""
+                }
 
             </div>`;
-    },
+  },
 
-    'location-favorites': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const list = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
-            ? mockupState.apiLocations
-            : LOCATIONS;
-        const favorites = list.filter(loc => loc.fav);
+  "location-favorites": () => {
+    const isDesktop = currentViewport === "desktop";
+    const list =
+      mockupState.apiLocations && mockupState.apiLocations.length > 0
+        ? mockupState.apiLocations
+        : LOCATIONS;
+    const favorites = list.filter((loc) => loc.fav);
 
-        return `
+    return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Favorite Locations</span>
                     <div class="w-10"></div>
                 </header>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                     <button onclick="navigateTo('locations')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
                 <div class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-hide w-full max-w-3xl mx-auto">
-                    ${isDesktop ? `
+                    ${
+                      isDesktop
+                        ? `
                     <div class="mb-2">
                         <h1 class="text-3xl font-black text-gray-900 tracking-tighter mb-1 uppercase font-black">Favorite Locations</h1>
                         <p class="text-gray-600 font-medium mb-4">Manage your saved home, work, and custom store labels.</p>
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
 
-                    ${favorites.length === 0 ? `
+                    ${
+                      favorites.length === 0
+                        ? `
                         <div class="py-20 text-center flex flex-col items-center bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
                             <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 text-gray-300">
                                 <i class="fa-solid fa-heart-crack text-4xl"></i>
@@ -5555,14 +6894,21 @@ const routes = {
                             <p class="text-gray-500 font-medium mb-8">You haven't saved any locations as favorites yet.</p>
                             <button onclick="navigateTo('locations')" class="bg-violet-600 text-white px-8 py-3.5 rounded-full font-black uppercase text-xs tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] hover:bg-violet-700 transition active:scale-95">Find a Store</button>
                         </div>
-                    ` : favorites.map(s => {
-                        const activeLabel = mockupState.locationLabels?.[s.name] || '';
-                        const isCustom = activeLabel && activeLabel !== 'Home' && activeLabel !== 'Office' && activeLabel !== 'Work';
-                        return `
+                    `
+                        : favorites
+                            .map((s) => {
+                              const activeLabel =
+                                mockupState.locationLabels?.[s.name] || "";
+                              const isCustom =
+                                activeLabel &&
+                                activeLabel !== "Home" &&
+                                activeLabel !== "Office" &&
+                                activeLabel !== "Work";
+                              return `
                             <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
                                 <div class="flex justify-between items-start">
                                     <div>
-                                        ${activeLabel ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1 block" style="font-family: Roboto, sans-serif;">${activeLabel}</span>` : ''}
+                                        ${activeLabel ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1 block" style="font-family: Roboto, sans-serif;">${activeLabel}</span>` : ""}
                                         <h3 class="font-black text-gray-900 uppercase tracking-tight">${s.name}</h3>
                                         <p class="text-xs text-gray-500 font-medium">${s.address}</p>
                                     </div>
@@ -5574,37 +6920,47 @@ const routes = {
                                 <div class="space-y-3">
                                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Assign Label</p>
                                     <div class="flex gap-2">
-                                        <button onclick="setLocationLabel('${s.name}', '${activeLabel === 'Home' ? '' : 'Home'}')" class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 transition active:scale-95 ${activeLabel === 'Home' ? 'border-violet-600 bg-violet-600 text-white shadow-sm' : 'border-gray-200 text-gray-500 hover:border-violet-400 bg-white'}">Home</button>
-                                        <button onclick="setLocationLabel('${s.name}', '${activeLabel === 'Office' ? '' : 'Office'}')" class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 transition active:scale-95 ${activeLabel === 'Office' ? 'border-violet-600 bg-violet-600 text-white shadow-sm' : 'border-gray-200 text-gray-500 hover:border-violet-400 bg-white'}">Office</button>
-                                        <button onclick="setLocationLabel('${s.name}', '${activeLabel === 'Work' ? '' : 'Work'}')" class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 transition active:scale-95 ${activeLabel === 'Work' ? 'border-violet-600 bg-violet-600 text-white shadow-sm' : 'border-gray-200 text-gray-500 hover:border-violet-400 bg-white'}">Work</button>
+                                        <button onclick="setLocationLabel('${s.name}', '${activeLabel === "Home" ? "" : "Home"}')" class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 transition active:scale-95 ${activeLabel === "Home" ? "border-violet-600 bg-violet-600 text-white shadow-sm" : "border-gray-200 text-gray-500 hover:border-violet-400 bg-white"}">Home</button>
+                                        <button onclick="setLocationLabel('${s.name}', '${activeLabel === "Office" ? "" : "Office"}')" class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 transition active:scale-95 ${activeLabel === "Office" ? "border-violet-600 bg-violet-600 text-white shadow-sm" : "border-gray-200 text-gray-500 hover:border-violet-400 bg-white"}">Office</button>
+                                        <button onclick="setLocationLabel('${s.name}', '${activeLabel === "Work" ? "" : "Work"}')" class="px-5 py-2 rounded-full text-[10px] font-black uppercase border-2 transition active:scale-95 ${activeLabel === "Work" ? "border-violet-600 bg-violet-600 text-white shadow-sm" : "border-gray-200 text-gray-500 hover:border-violet-400 bg-white"}">Work</button>
                                     </div>
                                     <div class="relative">
-                                        <input type="text" placeholder="Custom Label (e.g. Gym)" value="${isCustom ? activeLabel : ''}" onchange="setLocationLabel('${s.name}', this.value)" onkeydown="if(event.key === 'Enter') setLocationLabel('${s.name}', this.value)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-violet-300 transition-colors">
+                                        <input type="text" placeholder="Custom Label (e.g. Gym)" value="${isCustom ? activeLabel : ""}" onchange="setLocationLabel('${s.name}', this.value)" onkeydown="if(event.key === 'Enter') setLocationLabel('${s.name}', this.value)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-violet-300 transition-colors">
                                     </div>
                                 </div>
                             </div>
                         `;
-                    }).join('')}
+                            })
+                            .join("")
+                    }
 
-                    ${favorites.length > 0 && isDesktop ? `
+                    ${
+                      favorites.length > 0 && isDesktop
+                        ? `
                     <div class="flex justify-start pt-2">
                         <button onclick="navigateTo('locations')" class="w-1/3 bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] hover:bg-violet-700 transition-all">Done</button>
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                 </div>
-                ${favorites.length > 0 && !isDesktop ? `
+                ${
+                  favorites.length > 0 && !isDesktop
+                    ? `
                 <div class="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
                     <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black uppercase tracking-wider shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-[0.98] transition-all">Done</button>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
             </div>
         `;
-    },
-    'menu-favorites': () => {
-        const isDesktop = currentViewport === 'desktop';
-        const favorites = mockupState.favorites || [];
+  },
+  "menu-favorites": () => {
+    const isDesktop = currentViewport === "desktop";
+    const favorites = mockupState.favorites || [];
 
-        return `
+    return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
                 <!-- Header Component -->
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
@@ -5612,25 +6968,31 @@ const routes = {
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <span class="text-lg font-black text-violet-600 flex-1 text-center">Menu Favorites</span>
-                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}</button>
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
                 </header>
-                ${!isDesktop ? `
+                ${
+                  !isDesktop
+                    ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                     <button onclick="navigateTo('menu')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
 
                 <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 pb-16">
                     <div class="mb-8">
                         <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1 uppercase">Your Favorites</h1>
                         <p class="text-gray-600 font-medium mb-4">Keep track of the items you love most.</p>
-                        ${!isDesktop ? '<button class="w-full py-3 bg-violet-600 text-white rounded-full font-black uppercase text-sm shadow-lg tracking-widest mb-2">Menu Favorites</button>' : ''}
+                        ${!isDesktop ? '<button class="w-full py-3 bg-violet-600 text-white rounded-full font-black uppercase text-sm shadow-lg tracking-widest mb-2">Menu Favorites</button>' : ""}
                     </div>
 
-                    ${favorites.length === 0 ? `
+                    ${
+                      favorites.length === 0
+                        ? `
                         <div class="py-20 text-center flex flex-col items-center">
                             <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 text-gray-300">
                                 <i class="fa-solid fa-heart-crack text-4xl"></i>
@@ -5639,17 +7001,20 @@ const routes = {
                             <p class="text-gray-500 font-medium mb-8">Start adding items you love to see them here!</p>
                             <button onclick="navigateTo('menu')" class="bg-violet-600 text-white px-8 py-3 rounded-full font-black uppercase text-sm shadow-lg tracking-wide">Explore Menu</button>
                         </div>
-                    ` : `
-                    <div class="grid grid-cols-1 md:grid-cols-2 ${isDesktop ? 'gap-6' : 'gap-[10px]'}">
-                        ${favorites.map(item => `
-                            <div class="bg-white rounded-2xl ${isDesktop ? 'p-5' : 'p-4'} shadow-sm border border-gray-100 flex ${isDesktop ? 'gap-5' : 'flex-col gap-4'} hover:shadow-md transition-shadow relative group">
-                                <div class="${isDesktop ? 'w-24 h-24' : 'w-full h-56'} rounded-xl overflow-hidden shrink-0 border border-gray-50">
+                    `
+                        : `
+                    <div class="grid grid-cols-1 md:grid-cols-2 ${isDesktop ? "gap-6" : "gap-[10px]"}">
+                        ${favorites
+                          .map(
+                            (item) => `
+                            <div class="bg-white rounded-2xl ${isDesktop ? "p-5" : "p-4"} shadow-sm border border-gray-100 flex ${isDesktop ? "gap-5" : "flex-col gap-4"} hover:shadow-md transition-shadow relative group">
+                                <div class="${isDesktop ? "w-24 h-24" : "w-full h-56"} rounded-xl overflow-hidden shrink-0 border border-gray-50">
                                     <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                 </div>
                                 <div class="flex-1 flex flex-col justify-between py-1 min-w-0">
                                     <div class="cursor-pointer">
                                         <div class="text-violet-600 text-[9px] font-black tracking-widest uppercase mb-1">${item.category}</div>
-                                        <h4 class="font-black text-gray-900 ${isDesktop ? 'text-base' : 'text-lg'} leading-tight tracking-tight mb-1 pr-8 truncate">${item.name}</h4>
+                                        <h4 class="font-black text-gray-900 ${isDesktop ? "text-base" : "text-lg"} leading-tight tracking-tight mb-1 pr-8 truncate">${item.name}</h4>
                                         <div class="font-black text-violet-600 text-sm">$${item.price.toFixed(2)}</div>
                                     </div>
                                     <div class="flex gap-2 mt-4">
@@ -5658,13 +7023,16 @@ const routes = {
                                         <button onclick="navigateTo('cart')" class="text-violet-600 font-black text-[10px] uppercase tracking-widest hover:underline">Add to Order</button>
                                     </div>
                                 </div>
-                                <button onclick="removeFavorite(${item.id})" class="absolute ${isDesktop ? 'top-4 right-4' : 'top-4 right-4'} w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors shadow-sm" title="Remove from favorites">
+                                <button onclick="removeFavorite(${item.id})" class="absolute ${isDesktop ? "top-4 right-4" : "top-4 right-4"} w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors shadow-sm" title="Remove from favorites">
                                     <i class="fa-solid fa-heart text-sm"></i>
                                 </button>
                             </div>
-                        `).join('')}
+                        `,
+                          )
+                          .join("")}
                     </div>
-                    `}
+                    `
+                    }
 
                     <div class="mt-12 p-8 bg-violet-600 rounded-3xl text-white text-center relative overflow-hidden shadow-xl">
                         <i class="fa-solid fa-gift absolute -right-6 -bottom-6 text-9xl text-white/10 rotate-12"></i>
@@ -5674,15 +7042,13 @@ const routes = {
                     </div>
                 </div>
             </div>`;
-    },
-
-
+  },
 };
 
-routes['privacy'] = () => {
-    const isDesktop = currentViewport === 'desktop';
-    return `
-        <div class="flex flex-col ${isDesktop ? 'min-h-screen' : 'h-full'} bg-[#f9fafb] relative ${isDesktop ? '' : 'overflow-y-auto scrollbar-hide'} privacy-override">
+routes["privacy"] = () => {
+  const isDesktop = currentViewport === "desktop";
+  return `
+        <div class="flex flex-col ${isDesktop ? "min-h-screen" : "h-full"} bg-[#f9fafb] relative ${isDesktop ? "" : "overflow-y-auto scrollbar-hide"} privacy-override">
             <!-- Subtle top-aligned brand gradient overlay fading down -->
             <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
 
@@ -5694,16 +7060,20 @@ routes['privacy'] = () => {
                 <span class="text-lg font-black text-violet-600 flex-1 text-center">Privacy Policy & Terms</span>
                 <div class="w-10"></div>
             </header>
-            ${!isDesktop ? `
+            ${
+              !isDesktop
+                ? `
             <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
                 <button onclick="navigateTo('restaurant-home')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                     <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                     <span>Back</span>
                 </button>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
 
-            <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 ${isDesktop ? 'pb-12' : 'pb-24'} relative z-10">
+            <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 ${isDesktop ? "pb-12" : "pb-24"} relative z-10">
                 <div class="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100 p-6 md:p-8 space-y-6 text-left">
                     <h1 class="text-2xl font-black text-gray-900 mb-6 uppercase tracking-tight">Web Site Privacy Policy and Terms of Use</h1>
 
@@ -5875,9 +7245,11 @@ routes['privacy'] = () => {
     `;
 };
 
-routes['sections'] = () => {
-    const grapefruitImg = MENU_ITEMS[5] ? MENU_ITEMS[5].image : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
-    return `
+routes["sections"] = () => {
+  const grapefruitImg = MENU_ITEMS[5]
+    ? MENU_ITEMS[5].image
+    : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
+  return `
         <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto">
             <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shrink-0">
                 <div class="px-3 py-4 flex items-center justify-between w-full max-w-[1080px] mx-auto">
@@ -5929,9 +7301,10 @@ routes['sections'] = () => {
                     <div class="w-full">
                         <div class="relative w-full rounded-3xl overflow-hidden shadow-lg min-h-[300px] flex flex-col justify-end p-8 transition-all duration-500">
                             ${(() => {
-                                const activeSlide = mockupState.sectionsCarouselIndex || 0;
-                                if (activeSlide === 0) {
-                                    return `
+                              const activeSlide =
+                                mockupState.sectionsCarouselIndex || 0;
+                              if (activeSlide === 0) {
+                                return `
                                         <!-- Grapefruit Slide -->
                                         <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover animate-[fadeIn_0.5s_ease-out]">
                                         <div class="absolute inset-0 bg-gradient-to-r from-orange-950/95 via-orange-900/60 to-transparent"></div>
@@ -5943,8 +7316,8 @@ routes['sections'] = () => {
                                             <button onclick="selectItemAndNavigate(5)" class="bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
                                         </div>
                                     `;
-                                } else {
-                                    return `
+                              } else {
+                                return `
                                         <!-- Boba Latte Slide -->
                                         <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover animate-[fadeIn_0.5s_ease-out]">
                                         <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
@@ -5956,13 +7329,13 @@ routes['sections'] = () => {
                                             <button onclick="selectItemAndNavigate(6)" class="bg-violet-600 hover:bg-violet-700 text-white px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 inline-block tracking-wide">Add to Order</button>
                                         </div>
                                     `;
-                                }
+                              }
                             })()}
                             
                             <!-- Pagination Dots -->
                             <div class="absolute bottom-4 left-8 flex items-center gap-1.5 z-20">
-                                <span onclick="updateMockupState('sectionsCarouselIndex', 0); navigateTo('sections');" class="cursor-pointer h-1.5 rounded-full transition-all duration-300 ${ (mockupState.sectionsCarouselIndex || 0) === 0 ? 'bg-orange-500 w-6' : 'bg-white/40 w-3' }"></span>
-                                <span onclick="updateMockupState('sectionsCarouselIndex', 1); navigateTo('sections');" class="cursor-pointer h-1.5 rounded-full transition-all duration-300 ${ (mockupState.sectionsCarouselIndex || 0) === 1 ? 'bg-violet-500 w-6' : 'bg-white/40 w-3' }"></span>
+                                <span onclick="updateMockupState('sectionsCarouselIndex', 0); navigateTo('sections');" class="cursor-pointer h-1.5 rounded-full transition-all duration-300 ${(mockupState.sectionsCarouselIndex || 0) === 0 ? "bg-orange-500 w-6" : "bg-white/40 w-3"}"></span>
+                                <span onclick="updateMockupState('sectionsCarouselIndex', 1); navigateTo('sections');" class="cursor-pointer h-1.5 rounded-full transition-all duration-300 ${(mockupState.sectionsCarouselIndex || 0) === 1 ? "bg-violet-500 w-6" : "bg-white/40 w-3"}"></span>
                             </div>
                             
                             <!-- White Caret Toggle Bracket -->
@@ -6060,9 +7433,9 @@ routes['sections'] = () => {
     `;
 };
 
-routes['accessibility'] = () => {
-    const isDesktop = currentViewport === 'desktop';
-    return `
+routes["accessibility"] = () => {
+  const isDesktop = currentViewport === "desktop";
+  return `
         <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto pb-24">
             <!-- Subtle top-aligned brand gradient overlay fading down -->
             <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
@@ -6101,12 +7474,12 @@ routes['accessibility'] = () => {
 };
 
 function renderPage() {
-    const viewport = document.getElementById('app-viewport');
-    if (!viewport) return;
+  const viewport = document.getElementById("app-viewport");
+  if (!viewport) return;
 
-    let loadingOverlayHtml = '';
-    if (mockupState.isLoading) {
-        loadingOverlayHtml = `
+  let loadingOverlayHtml = "";
+  if (mockupState.isLoading) {
+    loadingOverlayHtml = `
             <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 backdrop-blur-[1px] transition-all">
                 <div class="flex flex-col items-center gap-3">
                     <div class="w-10 h-10 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin"></div>
@@ -6114,25 +7487,37 @@ function renderPage() {
                 </div>
             </div>
         `;
-    }
+  }
 
-    let contentHtml = '';
-    try {
-        contentHtml = routes[currentPage]
-            ? routes[currentPage]()
-            : `<div class="p-10 text-center uppercase font-black">404 - Page Not Found</div>`;
-    } catch (err) {
-        console.error('Page Render Error:', err);
-        contentHtml = `<div class="p-10 text-left w-full h-full bg-white text-red-600 font-mono text-xs break-words whitespace-pre-wrap overflow-auto z-[99999] relative"><b>Render Error:</b> ${err.message}\n\n${err.stack}</div>`;
-    }
+  let contentHtml = "";
+  try {
+    contentHtml = routes[currentPage]
+      ? routes[currentPage]()
+      : `<div class="p-10 text-center uppercase font-black">404 - Page Not Found</div>`;
+  } catch (err) {
+    console.error("Page Render Error:", err);
+    contentHtml = `<div class="p-10 text-left w-full h-full bg-white text-red-600 font-mono text-xs break-words whitespace-pre-wrap overflow-auto z-[99999] relative"><b>Render Error:</b> ${err.message}\n\n${err.stack}</div>`;
+  }
 
-    const isRestaurantPage = !['landing', 'home', 'sign-in', 'dashboard', 'privacy', 'forgot-password', 'rewards'].includes(currentPage);
-    const showDesktopNav = isRestaurantPage || currentPage === 'privacy' || currentPage === 'rewards';
-    if (currentViewport === 'desktop' && showDesktopNav) {
-        // Strip the mobile header before injecting the desktop nav
-        contentHtml = contentHtml.replace(/<header\b[^>]*>([\s\S]*?)<\/header>/i, '');
-        
-        const desktopNavHtml = `
+  const isRestaurantPage = ![
+    "landing",
+    "home",
+    "sign-in",
+    "dashboard",
+    "privacy",
+    "forgot-password",
+    "rewards",
+  ].includes(currentPage);
+  const showDesktopNav =
+    isRestaurantPage || currentPage === "privacy" || currentPage === "rewards";
+  if (currentViewport === "desktop" && showDesktopNav) {
+    // Strip the mobile header before injecting the desktop nav
+    contentHtml = contentHtml.replace(
+      /<header\b[^>]*>([\s\S]*?)<\/header>/i,
+      "",
+    );
+
+    const desktopNavHtml = `
             <nav class="hidden lg:flex md:flex justify-between items-center px-4 lg:px-8 h-[70px] bg-white sticky top-0 z-[9999] border-b border-gray-100 shadow-sm w-full shrink-0">
                 <div class="flex items-center gap-4 lg:gap-8">
                     <div class="w-16 h-12 lg:w-20 lg:h-14 flex items-center justify-center cursor-pointer shrink-0" onclick="navigateTo('restaurant-home')">
@@ -6153,7 +7538,9 @@ function renderPage() {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
                         <span class="nav-link-animated">Locations</span>
                     </div>
-                    ${mockupState.isLoggedIn ? `
+                    ${
+                      mockupState.isLoggedIn
+                        ? `
                         <div class="relative">
                             <button class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1f0b35]" onclick="toggleMenu(event, 'user-profile-dropdown')">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
@@ -6168,15 +7555,17 @@ function renderPage() {
                                 <div class="dropdown-item text-red-500 hover:text-red-600" onclick="signOutUser()">Sign Out</div>
                             </div>
                         </div>
-                    ` : `
+                    `
+                        : `
                         <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap" onclick="navigateTo('sign-in')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                             <span class="nav-link-animated">Sign In / Join</span>
                         </div>
-                    `}
+                    `
+                    }
                     <div class="cursor-pointer relative hover:text-violet-600 transition-colors shrink-0 w-10 h-10 lg:w-11 lg:h-11 flex items-center justify-center -mr-2" onclick="navigateTo('cart')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ''}
+                        ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
                     </div>
                 </div>
                 
@@ -6216,16 +7605,18 @@ function renderPage() {
                 </div>
             </nav>
         `;
-        contentHtml = desktopNavHtml + contentHtml;
-    }
+    contentHtml = desktopNavHtml + contentHtml;
+  }
 
-    const noFooterPages = [];
-    if (!noFooterPages.includes(currentPage) && currentViewport === 'desktop') {
-        const showLinks = currentPage === 'sections';
-        const globalFooter = `
+  const noFooterPages = [];
+  if (!noFooterPages.includes(currentPage) && currentViewport === "desktop") {
+    const showLinks = currentPage === "sections";
+    const globalFooter = `
             <div class="hidden lg:block w-full bg-white shrink-0">
-                <div class="max-w-[1080px] mx-auto px-6 border-t border-gray-200 ${showLinks ? 'mt-16 pt-10' : 'mt-6 pt-6'}">
-                    ${showLinks ? `
+                <div class="max-w-[1080px] mx-auto px-6 border-t border-gray-200 ${showLinks ? "mt-16 pt-10" : "mt-6 pt-6"}">
+                    ${
+                      showLinks
+                        ? `
                     <!-- Logo Section -->
                     <div class="mb-6 flex flex-col items-center justify-center">
                         <img src="images/nav-logo.png" alt="i-Tea" class="h-14 w-auto object-contain">
@@ -6257,12 +7648,14 @@ function renderPage() {
                             </ul>
                         </div>
                     </div>
-                    ` : `
+                    `
+                        : `
                     <!-- Logo Section (Moved Down) -->
                     <div class="mb-4 flex flex-col items-center justify-center">
                         <img src="images/nav-logo.png" alt="i-Tea" class="h-10 w-auto object-contain">
                     </div>
-                    `}
+                    `
+                    }
                     <div class="flex flex-col-reverse md:flex-row justify-between items-center py-6 border-t border-gray-100 text-[11px] text-gray-400 font-medium gap-4">
                         <p>© 2026 iTea Online Ordering. All rights reserved. | <a href="privacy.html" class="hover:text-violet-600 transition-colors">Privacy Policy</a> | <a href="accessibility.html" class="hover:text-violet-600 transition-colors">Web Accessibility</a> <span class="ml-2 opacity-50">${VERSION_STR}</span></p>
                         <div class="flex gap-5 text-gray-400 items-center">
@@ -6279,92 +7672,108 @@ function renderPage() {
                     </div>
                 </div>
             </div>`;
-        contentHtml += globalFooter;
-    }
+    contentHtml += globalFooter;
+  }
 
-    // Inject hamburger drawer for all restaurant pages
-    const nonRestaurantPages = ['landing', 'home', 'sign-in', 'dashboard', 'privacy', 'forgot-password', 'rewards'];
-    if (!nonRestaurantPages.includes(currentPage) && mockupState.hamburgerOpen) {
-        contentHtml += hamburgerDrawerHTML();
-    }
+  // Inject hamburger drawer for all restaurant pages
+  const nonRestaurantPages = [
+    "landing",
+    "home",
+    "sign-in",
+    "dashboard",
+    "privacy",
+    "forgot-password",
+    "rewards",
+  ];
+  if (!nonRestaurantPages.includes(currentPage) && mockupState.hamburgerOpen) {
+    contentHtml += hamburgerDrawerHTML();
+  }
 
-    viewport.innerHTML = contentHtml + loadingOverlayHtml;
-    let scrolledToHash = false;
-    if (window.location.hash) {
-        const hashId = window.location.hash.slice(1);
-        const element = document.getElementById(hashId);
-        if (element) {
-            setTimeout(() => {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-            scrolledToHash = true;
+  viewport.innerHTML = contentHtml + loadingOverlayHtml;
+  let scrolledToHash = false;
+  if (window.location.hash) {
+    const hashId = window.location.hash.slice(1);
+    const element = document.getElementById(hashId);
+    if (element) {
+      setTimeout(() => {
+        element.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+      scrolledToHash = true;
+    }
+  }
+  if (!scrolledToHash && !isUpdatingMockupState) {
+    window.scrollTo(0, 0);
+  }
+  persistAllState();
+  document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
+
+  if (currentPage === "locations" || currentPage === "locations-alt") {
+    initLocationsMap();
+  }
+
+  // Re-focus menu search input after render (keeps cursor active while typing)
+  if (
+    (currentPage === "menu" || currentPage === "menu-alt") &&
+    mockupState.menuSearchOpen
+  ) {
+    const searchInput = document.getElementById("menu-search-input");
+    if (searchInput) {
+      searchInput.focus();
+      const len = searchInput.value.length;
+      searchInput.setSelectionRange(len, len);
+    }
+  }
+
+  // Attach carousel scroll listener if on home page
+  if (currentPage === "restaurant-home") {
+    const carousel = document.getElementById("home-carousel");
+    if (carousel) {
+      carousel.addEventListener("scroll", () => {
+        const index = Math.round(
+          carousel.scrollLeft / (carousel.offsetWidth + 16),
+        );
+        for (let i = 0; i < 2; i++) {
+          const dot = document.getElementById(`carousel-dot-${i}`);
+          if (dot) {
+            if (i === index) {
+              dot.classList.remove("bg-violet-200");
+              dot.classList.add("bg-violet-600");
+            } else {
+              dot.classList.remove("bg-violet-600");
+              dot.classList.add("bg-violet-200");
+            }
+          }
         }
+      });
     }
-    if (!scrolledToHash && !isUpdatingMockupState) {
-        window.scrollTo(0, 0);
-    }
-    persistAllState();
-    document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
-
-    if (currentPage === 'locations' || currentPage === 'locations-alt') {
-        initLocationsMap();
-    }
-
-    // Re-focus menu search input after render (keeps cursor active while typing)
-    if ((currentPage === 'menu' || currentPage === 'menu-alt') && mockupState.menuSearchOpen) {
-        const searchInput = document.getElementById('menu-search-input');
-        if (searchInput) {
-            searchInput.focus();
-            const len = searchInput.value.length;
-            searchInput.setSelectionRange(len, len);
-        }
-    }
-
-    // Attach carousel scroll listener if on home page
-    if (currentPage === 'restaurant-home') {
-        const carousel = document.getElementById('home-carousel');
-        if (carousel) {
-            carousel.addEventListener('scroll', () => {
-                const index = Math.round(carousel.scrollLeft / (carousel.offsetWidth + 16));
-                for (let i = 0; i < 2; i++) {
-                    const dot = document.getElementById(`carousel-dot-${i}`);
-                    if (dot) {
-                        if (i === index) {
-                            dot.classList.remove('bg-violet-200');
-                            dot.classList.add('bg-violet-600');
-                        } else {
-                            dot.classList.remove('bg-violet-600');
-                            dot.classList.add('bg-violet-200');
-                        }
-                    }
-                }
-            });
-        }
-    }
-    
+  }
 }
 
-
-
 function adjustBagQuantity(delta) {
-    mockupState.bagQuantity = Math.max(0, mockupState.bagQuantity + delta);
-    mockupState.noBagsSelected = false;
-    persistAllState();
-    
-    // Update DOM directly to avoid flicker
-    const display = document.getElementById('bag-count-display');
-    if (display) display.innerText = mockupState.bagQuantity;
-    
-    const contBtn = document.getElementById('bag-continue-btn');
-    if (contBtn) {
-        if (mockupState.bagQuantity > 0) {
-            contBtn.innerText = `Continue with ${mockupState.bagQuantity} bag(s)`;
-            contBtn.setAttribute('onclick', "mockupState.modalOpen = null; navigateTo('checkout');");
-        } else {
-            contBtn.innerText = "I don't need bags";
-            contBtn.setAttribute('onclick', "mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('checkout');");
-        }
+  mockupState.bagQuantity = Math.max(0, mockupState.bagQuantity + delta);
+  mockupState.noBagsSelected = false;
+  persistAllState();
+
+  // Update DOM directly to avoid flicker
+  const display = document.getElementById("bag-count-display");
+  if (display) display.innerText = mockupState.bagQuantity;
+
+  const contBtn = document.getElementById("bag-continue-btn");
+  if (contBtn) {
+    if (mockupState.bagQuantity > 0) {
+      contBtn.innerText = `Continue with ${mockupState.bagQuantity} bag(s)`;
+      contBtn.setAttribute(
+        "onclick",
+        "mockupState.modalOpen = null; navigateTo('checkout');",
+      );
+    } else {
+      contBtn.innerText = "I don't need bags";
+      contBtn.setAttribute(
+        "onclick",
+        "mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('checkout');",
+      );
     }
+  }
 }
 
 // =============================================================================
@@ -6375,13 +7784,13 @@ function adjustBagQuantity(delta) {
  * Section header with optional required badge and icon.
  */
 function _modSectionHeader(label, required, icon, isFallback = false) {
-    const textColor = isFallback ? 'text-pink-500' : 'text-violet-600';
-    return `
+  const textColor = isFallback ? "text-pink-500" : "text-violet-600";
+  return `
         <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
             <span class="text-base font-black ${textColor} uppercase tracking-widest flex items-center gap-1.5">
                 ${label}
             </span>
-            ${required ? '<span class="text-[9px] font-bold text-red-400 uppercase tracking-widest">Required</span>' : ''}
+            ${required ? '<span class="text-[9px] font-bold text-red-400 uppercase tracking-widest">Required</span>' : ""}
         </div>`;
 }
 
@@ -6390,63 +7799,73 @@ function _modSectionHeader(label, required, icon, isFallback = false) {
  * Selected pill = solid violet; unselected = outlined.
  */
 function _renderPillGroup(group, sels) {
-    const gid = group.menuSubItemGroupId;
-    const prices = (group.groupPrices || []).slice().sort((a, b) => (a.position || 0) - (b.position || 0));
-    const selectedId = Object.keys(sels[gid]?.items || {})[0];
-    const pills = prices.map(p => {
-        const sub = p.menuSubItem || {};
-        const name = sub.name || '';
-        const isSelected = String(p.menuSubItemId) === String(selectedId);
-        const safeName = name.replace(/'/g, "\\'");
-        const priceTag = p.price > 0 ? ` +$${p.price.toFixed(2)}` : '';
-        return `<button
+  const gid = group.menuSubItemGroupId;
+  const prices = (group.groupPrices || [])
+    .slice()
+    .sort((a, b) => (a.position || 0) - (b.position || 0));
+  const selectedId = Object.keys(sels[gid]?.items || {})[0];
+  const pills = prices
+    .map((p) => {
+      const sub = p.menuSubItem || {};
+      const name = sub.name || "";
+      const isSelected = String(p.menuSubItemId) === String(selectedId);
+      const safeName = name.replace(/'/g, "\\'");
+      const priceTag = p.price > 0 ? ` +$${p.price.toFixed(2)}` : "";
+      return `<button
             onclick="window._selectSubItem(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${p.price || 0}, true)"
             class="shrink-0 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wide transition-all active:scale-95 whitespace-nowrap
-                   ${isSelected
-                     ? 'bg-violet-600 text-white shadow-[0_4px_12px_rgba(124,58,237,0.35)]'
-                     : 'bg-white border border-gray-200 text-gray-600 hover:border-violet-400 hover:text-violet-600'}">
+                   ${
+                     isSelected
+                       ? "bg-violet-600 text-white shadow-[0_4px_12px_rgba(124,58,237,0.35)]"
+                       : "bg-white border border-gray-200 text-gray-600 hover:border-violet-400 hover:text-violet-600"
+                   }">
             ${name}${priceTag}
         </button>`;
-    }).join('');
-    return `<div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">${pills}</div>`;
+    })
+    .join("");
+  return `<div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">${pills}</div>`;
 }
 
 /**
  * Checkbox + optional stepper rows for multi-select groups (toppings, extras).
  */
 function _renderStepperGroup(group, sels) {
-    const gid = group.menuSubItemGroupId;
-    const prices = (group.groupPrices || []).slice().sort((a, b) => (a.position || 0) - (b.position || 0));
-    const maxSel = group.maxSelect || 99;
-    return prices.map(p => {
-        const sub = p.menuSubItem || {};
-        const name = sub.name || '';
-        const price = p.price || 0;
-        const fmtPrice = price === 0 ? 'Free' : `+$${price.toFixed(2)}`;
-        const qty = sels[gid]?.items?.[p.menuSubItemId]?.quantity || 0;
-        const safeName = name.replace(/'/g, "\\'");
-        const canAdd = qty < maxSel;
-        return `
+  const gid = group.menuSubItemGroupId;
+  const prices = (group.groupPrices || [])
+    .slice()
+    .sort((a, b) => (a.position || 0) - (b.position || 0));
+  const maxSel = group.maxSelect || 99;
+  return prices
+    .map((p) => {
+      const sub = p.menuSubItem || {};
+      const name = sub.name || "";
+      const price = p.price || 0;
+      const fmtPrice = price === 0 ? "Free" : `+$${price.toFixed(2)}`;
+      const qty = sels[gid]?.items?.[p.menuSubItemId]?.quantity || 0;
+      const safeName = name.replace(/'/g, "\\'");
+      const canAdd = qty < maxSel;
+      return `
         <div class="flex justify-between items-center py-2.5 border-b border-gray-50 last:border-0">
             <div class="flex flex-col min-w-0 pr-3">
                 <span class="text-sm font-black text-gray-800 uppercase tracking-tight leading-tight">${name}</span>
-                <span class="text-[11px] font-bold ${price === 0 ? 'text-emerald-500' : 'text-gray-400'}">${fmtPrice}</span>
+                <span class="text-[11px] font-bold ${price === 0 ? "text-emerald-500" : "text-gray-400"}">${fmtPrice}</span>
             </div>
             <div class="flex items-center gap-2 shrink-0">
                 <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, -1)"
                     class="w-7 h-7 rounded-full border transition-all active:scale-90 flex items-center justify-center text-xs
-                           ${qty > 0 ? 'border-violet-200 bg-violet-50 text-violet-600 hover:bg-red-50 hover:border-red-300 hover:text-red-500' : 'border-gray-100 bg-gray-50 text-gray-300 cursor-default'}">
+                           ${qty > 0 ? "border-violet-200 bg-violet-50 text-violet-600 hover:bg-red-50 hover:border-red-300 hover:text-red-500" : "border-gray-100 bg-gray-50 text-gray-300 cursor-default"}">
                     <i class="fa-solid fa-minus"></i>
                 </button>
                 <span class="font-black text-gray-900 w-5 text-center text-sm">${qty}</span>
                 <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, 1)"
                     class="w-7 h-7 rounded-full border transition-all active:scale-90 flex items-center justify-center text-xs
-                           ${canAdd ? 'border-violet-200 bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600' : 'border-gray-100 bg-gray-50 text-gray-300 cursor-default'}">
+                           ${canAdd ? "border-violet-200 bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600" : "border-gray-100 bg-gray-50 text-gray-300 cursor-default"}">
                     <i class="fa-solid fa-plus"></i>
                 </button>
             </div>
         </div>`;
-    }).join('');
+    })
+    .join("");
 }
 
 /**
@@ -6455,30 +7874,40 @@ function _renderStepperGroup(group, sels) {
  * NOTE: modifyType string values ('add','extra','less','no') — confirm with API developer if order fails.
  */
 function _renderModifyTypeSection(modifyPrices, modSels) {
-    if (!modifyPrices || modifyPrices.length === 0) return '';
-    const rows = modifyPrices.map(mp => {
-        const sub = mp.menuSubItem || {};
-        const name = sub.name || `Item ${mp.menuSubItemId}`;
-        const currentType = modSels[mp.menuSubItemId]?.modifyType || 'add'; // Default = Regular (add)
-        const options = [
-            { key: 'no',    label: 'None',    price: mp.noPrice || 0 },
-            { key: 'less',  label: 'Less',    price: mp.lessPrice || 0 },
-            { key: 'add',   label: 'Regular', price: mp.addPrice || 0 },
-            { key: 'extra', label: 'Extra',   price: mp.extraPrice || 0 }
-        ];
-        const btns = options.map(opt => {
-            const isActive = currentType === opt.key;
-            const priceTag = opt.price > 0 ? ` +$${opt.price.toFixed(2)}` : (opt.price < 0 ? ` -$${Math.abs(opt.price).toFixed(2)}` : '');
-            return `<button
+  if (!modifyPrices || modifyPrices.length === 0) return "";
+  const rows = modifyPrices
+    .map((mp) => {
+      const sub = mp.menuSubItem || {};
+      const name = sub.name || `Item ${mp.menuSubItemId}`;
+      const currentType = modSels[mp.menuSubItemId]?.modifyType || "add"; // Default = Regular (add)
+      const options = [
+        { key: "no", label: "None", price: mp.noPrice || 0 },
+        { key: "less", label: "Less", price: mp.lessPrice || 0 },
+        { key: "add", label: "Regular", price: mp.addPrice || 0 },
+        { key: "extra", label: "Extra", price: mp.extraPrice || 0 },
+      ];
+      const btns = options
+        .map((opt) => {
+          const isActive = currentType === opt.key;
+          const priceTag =
+            opt.price > 0
+              ? ` +$${opt.price.toFixed(2)}`
+              : opt.price < 0
+                ? ` -$${Math.abs(opt.price).toFixed(2)}`
+                : "";
+          return `<button
                 onclick="window._selectModifyType(${mp.menuSubItemId}, '${opt.key}', ${opt.price})"
                 class="flex-1 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wide transition-all active:scale-95
-                       ${isActive
-                         ? 'bg-white text-violet-600 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
-                         : 'text-gray-500 hover:text-gray-900'}">
+                       ${
+                         isActive
+                           ? "bg-white text-violet-600 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                           : "text-gray-500 hover:text-gray-900"
+                       }">
                 ${opt.label}${priceTag}
             </button>`;
-        }).join('');
-        return `
+        })
+        .join("");
+      return `
         <div class="flex flex-col gap-2">
             <div class="flex justify-between items-baseline">
                 <span class="text-sm font-black text-gray-800 uppercase tracking-tight">${name}</span>
@@ -6486,34 +7915,36 @@ function _renderModifyTypeSection(modifyPrices, modSels) {
             </div>
             <div class="flex bg-gray-100 p-1 rounded-full w-full">${btns}</div>
         </div>`;
-    }).join('<div class="border-b border-gray-50 my-3"></div>');
-    return rows;
+    })
+    .join('<div class="border-b border-gray-50 my-3"></div>');
+  return rows;
 }
 
 /**
  * Stepper rows for flat ungrouped sub-items (menuSubItems).
  */
 function _renderFlatSubItemSection(subItems, sels) {
-    if (!subItems || subItems.length === 0) return '';
-    // Use a synthetic group id based on a fixed key so steppers work
-    const gid = 'flat';
-    if (!sels[gid]) sels[gid] = { items: {} };
-    return subItems.map(sub => {
-        const name = sub.name || '';
-        const price = sub.price || 0;
-        const fmtPrice = price === 0 ? 'Free' : `+$${price.toFixed(2)}`;
-        const qty = sels[gid]?.items?.[sub.menuSubItemId]?.quantity || 0;
-        const safeName = name.replace(/'/g, "\\'");
-        return `
+  if (!subItems || subItems.length === 0) return "";
+  // Use a synthetic group id based on a fixed key so steppers work
+  const gid = "flat";
+  if (!sels[gid]) sels[gid] = { items: {} };
+  return subItems
+    .map((sub) => {
+      const name = sub.name || "";
+      const price = sub.price || 0;
+      const fmtPrice = price === 0 ? "Free" : `+$${price.toFixed(2)}`;
+      const qty = sels[gid]?.items?.[sub.menuSubItemId]?.quantity || 0;
+      const safeName = name.replace(/'/g, "\\'");
+      return `
         <div class="flex justify-between items-center py-2.5 border-b border-gray-50 last:border-0">
             <div class="flex flex-col min-w-0 pr-3">
                 <span class="text-sm font-black text-gray-800 uppercase tracking-tight leading-tight">${name}</span>
-                <span class="text-[11px] font-bold ${price === 0 ? 'text-emerald-500' : 'text-gray-400'}">${fmtPrice}</span>
+                <span class="text-[11px] font-bold ${price === 0 ? "text-emerald-500" : "text-gray-400"}">${fmtPrice}</span>
             </div>
             <div class="flex items-center gap-2 shrink-0">
                 <button onclick="window._adjustSubItemQty('${gid}', ${sub.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, -1)"
                     class="w-7 h-7 rounded-full border transition-all active:scale-90 flex items-center justify-center text-xs
-                           ${qty > 0 ? 'border-violet-200 bg-violet-50 text-violet-600 hover:bg-red-50 hover:border-red-300 hover:text-red-500' : 'border-gray-100 bg-gray-50 text-gray-300 cursor-default'}">
+                           ${qty > 0 ? "border-violet-200 bg-violet-50 text-violet-600 hover:bg-red-50 hover:border-red-300 hover:text-red-500" : "border-gray-100 bg-gray-50 text-gray-300 cursor-default"}">
                     <i class="fa-solid fa-minus"></i>
                 </button>
                 <span class="font-black text-gray-900 w-5 text-center text-sm">${qty}</span>
@@ -6524,7 +7955,8 @@ function _renderFlatSubItemSection(subItems, sels) {
                 </button>
             </div>
         </div>`;
-    }).join('');
+    })
+    .join("");
 }
 
 /**
@@ -6532,34 +7964,40 @@ function _renderFlatSubItemSection(subItems, sels) {
  * Each choice has its own sub-item list, displayed as a pill selector.
  */
 function _renderSubMenuChoiceSection(choices, sels) {
-    if (!choices || choices.length === 0) return '';
-    return choices.map(choice => {
-        // Treat subMenuChoiceId as a group id so pills work with existing _selectSubItem
-        const gid = `choice_${choice.subMenuChoiceId}`;
-        if (!sels[gid]) sels[gid] = { items: {} };
-        const selectedId = Object.keys(sels[gid]?.items || {})[0];
-        const pills = (choice.subItems || []).map(sub => {
-            const isSelected = String(sub.menuSubItemId) === String(selectedId);
-            const name = sub.name || '';
-            const price = sub.price || 0;
-            const safeName = name.replace(/'/g, "\\'");
-            const priceTag = price > 0 ? ` +$${price.toFixed(2)}` : '';
-            return `<button
+  if (!choices || choices.length === 0) return "";
+  return choices
+    .map((choice) => {
+      // Treat subMenuChoiceId as a group id so pills work with existing _selectSubItem
+      const gid = `choice_${choice.subMenuChoiceId}`;
+      if (!sels[gid]) sels[gid] = { items: {} };
+      const selectedId = Object.keys(sels[gid]?.items || {})[0];
+      const pills = (choice.subItems || [])
+        .map((sub) => {
+          const isSelected = String(sub.menuSubItemId) === String(selectedId);
+          const name = sub.name || "";
+          const price = sub.price || 0;
+          const safeName = name.replace(/'/g, "\\'");
+          const priceTag = price > 0 ? ` +$${price.toFixed(2)}` : "";
+          return `<button
                 onclick="window._selectSubItem('${gid}', ${sub.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, true)"
                 class="shrink-0 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wide transition-all active:scale-95 whitespace-nowrap
-                       ${isSelected
-                         ? 'bg-violet-600 text-white shadow-[0_4px_12px_rgba(124,58,237,0.35)]'
-                         : 'bg-white border border-gray-200 text-gray-600 hover:border-violet-400 hover:text-violet-600'}">
+                       ${
+                         isSelected
+                           ? "bg-violet-600 text-white shadow-[0_4px_12px_rgba(124,58,237,0.35)]"
+                           : "bg-white border border-gray-200 text-gray-600 hover:border-violet-400 hover:text-violet-600"
+                       }">
                 ${name}${priceTag}
             </button>`;
-        }).join('');
-        const isRequired = (choice.minSelect || 0) >= 1;
-        return `
+        })
+        .join("");
+      const isRequired = (choice.minSelect || 0) >= 1;
+      return `
         <div>
-            ${_modSectionHeader(choice.displayName || choice.name || 'Choose', isRequired, '📋')}
+            ${_modSectionHeader(choice.displayName || choice.name || "Choose", isRequired, "📋")}
             <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">${pills}</div>
         </div>`;
-    }).join('');
+    })
+    .join("");
 }
 
 /**
@@ -6567,1456 +8005,1764 @@ function _renderSubMenuChoiceSection(choices, sels) {
  * Order: SubMenuChoices (size/base) → Radio groups (sugar/ice) → Stepper groups (toppings) → ModifyPrice → FlatSubItems
  */
 function renderAllModifierSections(detail, sels, modSels, colLayout) {
-    const hasAny = detail && (
-        (detail.subMenuChoices && detail.subMenuChoices.length > 0) ||
-        (detail.menuSubItemGroups && detail.menuSubItemGroups.length > 0) ||
-        (detail.menuSubItemModifyPrices && detail.menuSubItemModifyPrices.length > 0) ||
-        (detail.menuSubItems && detail.menuSubItems.length > 0)
-    );
+  const hasAny =
+    detail &&
+    ((detail.subMenuChoices && detail.subMenuChoices.length > 0) ||
+      (detail.menuSubItemGroups && detail.menuSubItemGroups.length > 0) ||
+      (detail.menuSubItemModifyPrices &&
+        detail.menuSubItemModifyPrices.length > 0) ||
+      (detail.menuSubItems && detail.menuSubItems.length > 0));
 
-    if (!hasAny) {
-        return `<div class="text-center py-8 text-gray-400 text-sm font-bold uppercase tracking-widest flex flex-col items-center gap-3">
-            ${mockupState.isLoading
+  if (!hasAny) {
+    return `<div class="text-center py-8 text-gray-400 text-sm font-bold uppercase tracking-widest flex flex-col items-center gap-3">
+            ${
+              mockupState.isLoading
                 ? '<i class="fa-solid fa-spinner fa-spin text-violet-400 text-2xl mb-2"></i><span>Loading customizations…</span>'
-                : '<i class="fa-solid fa-sliders text-gray-300 text-2xl mb-2"></i><span>No customization options available</span>'}
+                : '<i class="fa-solid fa-sliders text-gray-300 text-2xl mb-2"></i><span>No customization options available</span>'
+            }
         </div>`;
-    }
+  }
 
-    let html = '';
-    
-    if (detail._isFallback) {
-        html += `<div class="bg-pink-50 border border-pink-200 text-pink-500 text-[11px] font-black uppercase tracking-widest p-3 rounded-xl mb-4 text-center shadow-sm">
+  let html = "";
+
+  if (detail._isFallback) {
+    html += `<div class="bg-pink-50 border border-pink-200 text-pink-500 text-[11px] font-black uppercase tracking-widest p-3 rounded-xl mb-4 text-center shadow-sm">
             ⚠️ Generic Options Displayed
         </div>`;
-    }
+  }
 
-    // 1. SubMenuChoices (size / base drink) — always first
-    const choiceHtml = _renderSubMenuChoiceSection(detail?.subMenuChoices || [], sels);
-    if (choiceHtml) html += choiceHtml;
+  // 1. SubMenuChoices (size / base drink) — always first
+  const choiceHtml = _renderSubMenuChoiceSection(
+    detail?.subMenuChoices || [],
+    sels,
+  );
+  if (choiceHtml) html += choiceHtml;
 
-    // 2. MenuSubItemGroups — split into radio (single-select) and stepper (multi-select)
-    const groups = (detail?.menuSubItemGroups || []).filter(g => g.isActive !== false);
-    const radioGroups = groups.filter(g => (g.maxSelect || 1) === 1);
-    const stepperGroups = groups.filter(g => (g.maxSelect || 1) > 1);
+  // 2. MenuSubItemGroups — split into radio (single-select) and stepper (multi-select)
+  const groups = (detail?.menuSubItemGroups || []).filter(
+    (g) => g.isActive !== false,
+  );
+  const radioGroups = groups.filter((g) => (g.maxSelect || 1) === 1);
+  const stepperGroups = groups.filter((g) => (g.maxSelect || 1) > 1);
 
-    // Radio groups (sugar level, ice level, temperature, etc.)
-    for (const g of radioGroups) {
-        const isRequired = (g.minSelect || 0) >= 1;
-        const icon = _groupIcon(g.displayName || g.groupName || '');
-        const hasValidation = isRequired && Object.keys(sels[g.menuSubItemGroupId]?.items || {}).length === 0;
-        html += `<div id="mod-group-${g.menuSubItemGroupId}" class="${hasValidation ? 'validation-error' : ''}">
-            ${_modSectionHeader(g.displayName || g.groupName || 'Options', isRequired, icon, detail._isFallback)}
-            ${hasValidation ? '<p class="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-2">Please select one</p>' : ''}
+  // Radio groups (sugar level, ice level, temperature, etc.)
+  for (const g of radioGroups) {
+    const isRequired = (g.minSelect || 0) >= 1;
+    const icon = _groupIcon(g.displayName || g.groupName || "");
+    const hasValidation =
+      isRequired &&
+      Object.keys(sels[g.menuSubItemGroupId]?.items || {}).length === 0;
+    html += `<div id="mod-group-${g.menuSubItemGroupId}" class="${hasValidation ? "validation-error" : ""}">
+            ${_modSectionHeader(g.displayName || g.groupName || "Options", isRequired, icon, detail._isFallback)}
+            ${hasValidation ? '<p class="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-2">Please select one</p>' : ""}
             ${_renderPillGroup(g, sels)}
         </div>`;
-    }
+  }
 
-    // Stepper groups (toppings, extras) — desktop shows 2 columns if there are multiple groups
-    if (stepperGroups.length > 0) {
-        const isMultiCol = colLayout === 'grid' && stepperGroups.length > 1;
-        html += isMultiCol ? '<div class="grid grid-cols-2 gap-8">' : '';
-        for (const g of stepperGroups) {
-            const icon = _groupIcon(g.displayName || g.groupName || '');
-            html += `<div id="mod-group-${g.menuSubItemGroupId}">
-                ${_modSectionHeader(g.displayName || g.groupName || 'Options', false, icon, detail._isFallback)}
+  // Stepper groups (toppings, extras) — desktop shows 2 columns if there are multiple groups
+  if (stepperGroups.length > 0) {
+    const isMultiCol = colLayout === "grid" && stepperGroups.length > 1;
+    html += isMultiCol ? '<div class="grid grid-cols-2 gap-8">' : "";
+    for (const g of stepperGroups) {
+      const icon = _groupIcon(g.displayName || g.groupName || "");
+      html += `<div id="mod-group-${g.menuSubItemGroupId}">
+                ${_modSectionHeader(g.displayName || g.groupName || "Options", false, icon, detail._isFallback)}
                 <div>${_renderStepperGroup(g, sels)}</div>
             </div>`;
-        }
-        html += isMultiCol ? '</div>' : '';
     }
+    html += isMultiCol ? "</div>" : "";
+  }
 
-    // 3. ModifyPrice items (None/Less/Regular/Extra for included ingredients)
-    const modifyPrices = (detail?.menuSubItemModifyPrices || []).filter(m => m.isActive !== false);
-    if (modifyPrices.length > 0) {
-        html += `<div>
-            ${_modSectionHeader('Included Options', false, '⚙️')}
+  // 3. ModifyPrice items (None/Less/Regular/Extra for included ingredients)
+  const modifyPrices = (detail?.menuSubItemModifyPrices || []).filter(
+    (m) => m.isActive !== false,
+  );
+  if (modifyPrices.length > 0) {
+    html += `<div>
+            ${_modSectionHeader("Included Options", false, "⚙️")}
             <div class="space-y-4">${_renderModifyTypeSection(modifyPrices, modSels)}</div>
         </div>`;
-    }
+  }
 
-    // 4. Flat sub-items (ungrouped add-ons) — last
-    const activeSubItems = (detail?.menuSubItems || []).filter(s => s.isActive !== false);
-    if (activeSubItems.length > 0) {
-        html += `<div>
-            ${_modSectionHeader('Add-Ons', false, '✨')}
+  // 4. Flat sub-items (ungrouped add-ons) — last
+  const activeSubItems = (detail?.menuSubItems || []).filter(
+    (s) => s.isActive !== false,
+  );
+  if (activeSubItems.length > 0) {
+    html += `<div>
+            ${_modSectionHeader("Add-Ons", false, "✨")}
             <div>${_renderFlatSubItemSection(activeSubItems, sels)}</div>
         </div>`;
-    }
+  }
 
-    return html;
+  return html;
 }
 
 /**
  * Returns a decorative icon for common modifier group names.
  */
 function _groupIcon(name) {
-    const n = name.toLowerCase();
-    const svgBase = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">`;
-    
-    // Included / Options
-    if (n.includes('include') || n.includes('option')) 
-        return svgBase + `<path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M3 6l1 1 2-2"/><path d="M3 12l1 1 2-2"/><path d="M3 18l1 1 2-2"/></svg>`;
-        
-    // Sugar / Sweet (Spoon)
-    if (n.includes('sugar') || n.includes('sweet')) 
-        return svgBase + `<path d="m16 13 5.223 5.222a2.25 2.25 0 0 1-3.182 3.182l-6.89-6.892"/><path d="M11 12A6 6 0 1 0 2.5 3.5 6 6 0 0 0 11 12Z"/></svg>`;
-        
-    // Ice (3D Cube)
-    if (n.includes('ice')) 
-        return svgBase + `<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7l8.7 5 8.7-5"/><path d="M12 22V12"/></svg>`;
-        
-    // Cup / Size (To-go Cup)
-    if (n.includes('size') || n.includes('cup')) 
-        return svgBase + `<path d="m6 7 1.5 14h9L18 7"/><path d="M4 7h16"/><path d="M14 3 13 7"/></svg>`;
-        
-    // Temp (Thermometer)
-    if (n.includes('temp') || n.includes('hot') || n.includes('cold')) 
-        return svgBase + `<path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/><path d="M11.5 7v6"/></svg>`;
-        
-    // Topping / Boba / Extra (Plus Circle)
-    if (n.includes('topping') || n.includes('boba') || n.includes('extra') || n.includes('add')) 
-        return svgBase + `<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>`;
-        
-    // Milk / Cream (Milk Bottle)
-    if (n.includes('milk') || n.includes('cream')) 
-        return svgBase + `<path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.52 16h12.96"/><path d="M6 10l-2 10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2l-2-10"/></svg>`;
-        
-    // Flavor (Leaf)
-    if (n.includes('flavor')) 
-        return svgBase + `<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`;
-        
-    // Default fallback icon: Sliders
-    return svgBase + `<path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg>`;
+  const n = name.toLowerCase();
+  const svgBase = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">`;
+
+  // Included / Options
+  if (n.includes("include") || n.includes("option"))
+    return (
+      svgBase +
+      `<path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M3 6l1 1 2-2"/><path d="M3 12l1 1 2-2"/><path d="M3 18l1 1 2-2"/></svg>`
+    );
+
+  // Sugar / Sweet (Spoon)
+  if (n.includes("sugar") || n.includes("sweet"))
+    return (
+      svgBase +
+      `<path d="m16 13 5.223 5.222a2.25 2.25 0 0 1-3.182 3.182l-6.89-6.892"/><path d="M11 12A6 6 0 1 0 2.5 3.5 6 6 0 0 0 11 12Z"/></svg>`
+    );
+
+  // Ice (3D Cube)
+  if (n.includes("ice"))
+    return (
+      svgBase +
+      `<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7l8.7 5 8.7-5"/><path d="M12 22V12"/></svg>`
+    );
+
+  // Cup / Size (To-go Cup)
+  if (n.includes("size") || n.includes("cup"))
+    return (
+      svgBase +
+      `<path d="m6 7 1.5 14h9L18 7"/><path d="M4 7h16"/><path d="M14 3 13 7"/></svg>`
+    );
+
+  // Temp (Thermometer)
+  if (n.includes("temp") || n.includes("hot") || n.includes("cold"))
+    return (
+      svgBase +
+      `<path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/><path d="M11.5 7v6"/></svg>`
+    );
+
+  // Topping / Boba / Extra (Plus Circle)
+  if (
+    n.includes("topping") ||
+    n.includes("boba") ||
+    n.includes("extra") ||
+    n.includes("add")
+  )
+    return (
+      svgBase +
+      `<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>`
+    );
+
+  // Milk / Cream (Milk Bottle)
+  if (n.includes("milk") || n.includes("cream"))
+    return (
+      svgBase +
+      `<path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.52 16h12.96"/><path d="M6 10l-2 10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2l-2-10"/></svg>`
+    );
+
+  // Flavor (Leaf)
+  if (n.includes("flavor"))
+    return (
+      svgBase +
+      `<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`
+    );
+
+  // Default fallback icon: Sliders
+  return (
+    svgBase +
+    `<path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg>`
+  );
 }
 
 function getDefaultCustomizeGroups() {
-    return [
+  return [
+    {
+      menuSubItemGroupId: 9001,
+      groupName: "Sweetness Level",
+      displayName: "Sweetness Level",
+      minSelect: 1,
+      maxSelect: 1,
+      groupPrices: [
         {
-            menuSubItemGroupId: 9001,
-            groupName: "Sweetness Level",
-            displayName: "Sweetness Level",
-            minSelect: 1,
-            maxSelect: 1,
-            groupPrices: [
-                { menuSubItemId: 8001, price: 0, isDefault: true, menuSubItem: { name: "Regular Sweet (100%)", itemTypeId: 2 } },
-                { menuSubItemId: 8002, price: 0, isDefault: false, menuSubItem: { name: "Less Sweet (70%)", itemTypeId: 2 } },
-                { menuSubItemId: 8003, price: 0, isDefault: false, menuSubItem: { name: "Half Sweet (50%)", itemTypeId: 2 } },
-                { menuSubItemId: 8004, price: 0, isDefault: false, menuSubItem: { name: "Light Sweet (30%)", itemTypeId: 2 } },
-                { menuSubItemId: 8005, price: 0, isDefault: false, menuSubItem: { name: "Unsweetened (0%)", itemTypeId: 2 } }
-            ]
+          menuSubItemId: 8001,
+          price: 0,
+          isDefault: true,
+          menuSubItem: { name: "Regular Sweet (100%)", itemTypeId: 2 },
         },
         {
-            menuSubItemGroupId: 9002,
-            groupName: "Ice Level",
-            displayName: "Ice Level",
-            minSelect: 1,
-            maxSelect: 1,
-            groupPrices: [
-                { menuSubItemId: 8101, price: 0, isDefault: true, menuSubItem: { name: "Regular Ice", itemTypeId: 2 } },
-                { menuSubItemId: 8102, price: 0, isDefault: false, menuSubItem: { name: "Less Ice", itemTypeId: 2 } },
-                { menuSubItemId: 8103, price: 0, isDefault: false, menuSubItem: { name: "No Ice", itemTypeId: 2 } }
-            ]
+          menuSubItemId: 8002,
+          price: 0,
+          isDefault: false,
+          menuSubItem: { name: "Less Sweet (70%)", itemTypeId: 2 },
         },
         {
-            menuSubItemGroupId: 9003,
-            groupName: "Add Toppings",
-            displayName: "Add Toppings",
-            minSelect: 0,
-            maxSelect: 5,
-            groupPrices: [
-                { menuSubItemId: 8201, price: 0.75, isDefault: false, menuSubItem: { name: "Boba", itemTypeId: 2 } },
-                { menuSubItemId: 8202, price: 0.75, isDefault: false, menuSubItem: { name: "Pudding", itemTypeId: 2 } },
-                { menuSubItemId: 8203, price: 0.75, isDefault: false, menuSubItem: { name: "Grass Jelly", itemTypeId: 2 } },
-                { menuSubItemId: 8204, price: 0.75, isDefault: false, menuSubItem: { name: "Red Bean", itemTypeId: 2 } },
-                { menuSubItemId: 8205, price: 0.75, isDefault: false, menuSubItem: { name: "Aloe Vera", itemTypeId: 2 } }
-            ]
-        }
-    ];
+          menuSubItemId: 8003,
+          price: 0,
+          isDefault: false,
+          menuSubItem: { name: "Half Sweet (50%)", itemTypeId: 2 },
+        },
+        {
+          menuSubItemId: 8004,
+          price: 0,
+          isDefault: false,
+          menuSubItem: { name: "Light Sweet (30%)", itemTypeId: 2 },
+        },
+        {
+          menuSubItemId: 8005,
+          price: 0,
+          isDefault: false,
+          menuSubItem: { name: "Unsweetened (0%)", itemTypeId: 2 },
+        },
+      ],
+    },
+    {
+      menuSubItemGroupId: 9002,
+      groupName: "Ice Level",
+      displayName: "Ice Level",
+      minSelect: 1,
+      maxSelect: 1,
+      groupPrices: [
+        {
+          menuSubItemId: 8101,
+          price: 0,
+          isDefault: true,
+          menuSubItem: { name: "Regular Ice", itemTypeId: 2 },
+        },
+        {
+          menuSubItemId: 8102,
+          price: 0,
+          isDefault: false,
+          menuSubItem: { name: "Less Ice", itemTypeId: 2 },
+        },
+        {
+          menuSubItemId: 8103,
+          price: 0,
+          isDefault: false,
+          menuSubItem: { name: "No Ice", itemTypeId: 2 },
+        },
+      ],
+    },
+    {
+      menuSubItemGroupId: 9003,
+      groupName: "Add Toppings",
+      displayName: "Add Toppings",
+      minSelect: 0,
+      maxSelect: 5,
+      groupPrices: [
+        {
+          menuSubItemId: 8201,
+          price: 0.75,
+          isDefault: false,
+          menuSubItem: { name: "Boba", itemTypeId: 2 },
+        },
+        {
+          menuSubItemId: 8202,
+          price: 0.75,
+          isDefault: false,
+          menuSubItem: { name: "Pudding", itemTypeId: 2 },
+        },
+        {
+          menuSubItemId: 8203,
+          price: 0.75,
+          isDefault: false,
+          menuSubItem: { name: "Grass Jelly", itemTypeId: 2 },
+        },
+        {
+          menuSubItemId: 8204,
+          price: 0.75,
+          isDefault: false,
+          menuSubItem: { name: "Red Bean", itemTypeId: 2 },
+        },
+        {
+          menuSubItemId: 8205,
+          price: 0.75,
+          isDefault: false,
+          menuSubItem: { name: "Aloe Vera", itemTypeId: 2 },
+        },
+      ],
+    },
+  ];
 }
 
 function isDrinkCategory(categoryName) {
-    if (!categoryName) return true; // Assume drink if category is unknown
-    const cat = categoryName.toLowerCase();
-    if (cat.includes('food') || cat.includes('snack') || cat.includes('bento') || cat.includes('onigiri') || cat.includes('ramen')) {
-        return false;
-    }
-    return true;
+  if (!categoryName) return true; // Assume drink if category is unknown
+  const cat = categoryName.toLowerCase();
+  if (
+    cat.includes("food") ||
+    cat.includes("snack") ||
+    cat.includes("bento") ||
+    cat.includes("onigiri") ||
+    cat.includes("ramen")
+  ) {
+    return false;
+  }
+  return true;
 }
 
 function selectItemAndNavigate(index) {
-    const item = getActiveMenuItems()[index];
-    mockupState.selectedItem = item;
-    // Reset quantity and customization defaults for new item
-    mockupState.itemQuantity = 1;
-    mockupState.sugarLevel = '50%';
-    mockupState.toppingQty = {};
-    mockupState.cupQty = {};
-    mockupState.freeToppings = [];
-    mockupState.iceLevel = 'ICE';
-    // Reset selected sub-items and modify-types for new customization
-    mockupState._customizeSubItems = {};
-    mockupState._customizeModifyTypes = {};
-    mockupState.selectedItemDetail = null;
-    mockupState.lastMenuPage = currentPage;
-    persistAllState();
+  const item = getActiveMenuItems()[index];
+  mockupState.selectedItem = item;
+  // Reset quantity and customization defaults for new item
+  mockupState.itemQuantity = 1;
+  mockupState.sugarLevel = "50%";
+  mockupState.toppingQty = {};
+  mockupState.cupQty = {};
+  mockupState.freeToppings = [];
+  mockupState.iceLevel = "ICE";
+  // Reset selected sub-items and modify-types for new customization
+  mockupState._customizeSubItems = {};
+  mockupState._customizeModifyTypes = {};
+  mockupState.selectedItemDetail = null;
+  mockupState.lastMenuPage = currentPage;
+  persistAllState();
 
-    const applyDefaultSelections = (detail) => {
-        if (detail.menuSubItemGroups) {
-            const selections = {};
-            for (const g of detail.menuSubItemGroups) {
-                const groupId = g.menuSubItemGroupId;
-                const maxSel = g.maxSelect || 1;
-                selections[groupId] = { groupName: g.displayName || g.groupName || '', maxSelect: maxSel, minSelect: g.minSelect || 0, items: {} };
-                for (const p of (g.groupPrices || [])) {
-                    if (p.isDefault) {
-                        selections[groupId].items[p.menuSubItemId] = {
-                            menuSubItemId: p.menuSubItemId,
-                            itemTypeId: (p.menuSubItem || {}).itemTypeId || 2,
-                            itemGroupPriceId: parseInt(groupId),
-                            quantity: 1,
-                            name: (p.menuSubItem || {}).name || '',
-                            price: p.price || 0
-                        };
-                    }
-                }
-            }
-            mockupState._customizeSubItems = selections;
+  const applyDefaultSelections = (detail) => {
+    if (detail.menuSubItemGroups) {
+      const selections = {};
+      for (const g of detail.menuSubItemGroups) {
+        const groupId = g.menuSubItemGroupId;
+        const maxSel = g.maxSelect || 1;
+        selections[groupId] = {
+          groupName: g.displayName || g.groupName || "",
+          maxSelect: maxSel,
+          minSelect: g.minSelect || 0,
+          items: {},
+        };
+        for (const p of g.groupPrices || []) {
+          if (p.isDefault) {
+            selections[groupId].items[p.menuSubItemId] = {
+              menuSubItemId: p.menuSubItemId,
+              itemTypeId: (p.menuSubItem || {}).itemTypeId || 2,
+              itemGroupPriceId: parseInt(groupId),
+              quantity: 1,
+              name: (p.menuSubItem || {}).name || "",
+              price: p.price || 0,
+            };
+          }
         }
-    };
+      }
+      mockupState._customizeSubItems = selections;
+    }
+  };
 
-    // Fetch full item detail (with sub-item groups) from API
-    if (item.id && mockupState.selectedLocationId && window.ApiService) {
-        mockupState.isLoading = true;
-        renderPage();
-        window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
-            .then(detail => {
-                // If the detail is empty or has no customization groups, use default mock groups
-                if (!detail || !detail.menuSubItemGroups || detail.menuSubItemGroups.length === 0) {
-                    const isDrink = isDrinkCategory(item.category);
-                    detail = {
-                        menuItemId: item.id,
-                        name: item.name,
-                        price: item.price,
-                        menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
-                        _isFallback: isDrink
-                    };
-                } else {
-                    // Remove inactive modifiers so they aren't displayed or ordered
-                    detail.menuSubItemGroups.forEach(g => {
-                        if (g.groupPrices) {
-                            g.groupPrices = g.groupPrices.filter(p => !p.menuSubItem || p.menuSubItem.isActive !== false);
-                        }
-                    });
-                }
-                mockupState.selectedItemDetail = detail;
-                
-                // Extract restaurantId from sub-item data
-                if (!mockupState.selectedRestaurantId && detail.menuSubItemGroups) {
-                    for (const g of detail.menuSubItemGroups) {
-                        for (const p of (g.groupPrices || [])) {
-                            const sub = p.menuSubItem || {};
-                            if (sub.restaurantId) {
-                                mockupState.selectedRestaurantId = sub.restaurantId;
-                                break;
-                            }
-                        }
-                        if (mockupState.selectedRestaurantId) break;
-                    }
-                }
-                
-                applyDefaultSelections(detail);
-                persistAllState();
-            })
-            .catch(err => {
-                console.error('Failed to fetch item detail, using fallback:', err);
-                const isDrink = isDrinkCategory(item.category);
-                const fallbackDetail = {
-                    menuItemId: item.id,
-                    name: item.name,
-                    price: item.price,
-                    menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
-                    _isFallback: isDrink
-                };
-                mockupState.selectedItemDetail = fallbackDetail;
-                applyDefaultSelections(fallbackDetail);
-                persistAllState();
-            })
-            .finally(() => {
-                mockupState.isLoading = false;
-                renderPage();
-                navigateTo('customize');
-            });
-    } else {
-        const isDrink = isDrinkCategory(item.category);
-        const fallbackDetail = {
-            menuItemId: item.id || 0,
+  // Fetch full item detail (with sub-item groups) from API
+  if (item.id && mockupState.selectedLocationId && window.ApiService) {
+    mockupState.isLoading = true;
+    renderPage();
+    window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
+      .then((detail) => {
+        // If the detail is empty or has no customization groups, use default mock groups
+        if (
+          !detail ||
+          !detail.menuSubItemGroups ||
+          detail.menuSubItemGroups.length === 0
+        ) {
+          const isDrink = isDrinkCategory(item.category);
+          detail = {
+            menuItemId: item.id,
             name: item.name,
             price: item.price,
             menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
-            _isFallback: isDrink
+            _isFallback: isDrink,
+          };
+        } else {
+          // Remove inactive modifiers so they aren't displayed or ordered
+          detail.menuSubItemGroups.forEach((g) => {
+            if (g.groupPrices) {
+              g.groupPrices = g.groupPrices.filter(
+                (p) => !p.menuSubItem || p.menuSubItem.isActive !== false,
+              );
+            }
+          });
+        }
+        mockupState.selectedItemDetail = detail;
+
+        // Extract restaurantId from sub-item data
+        if (!mockupState.selectedRestaurantId && detail.menuSubItemGroups) {
+          for (const g of detail.menuSubItemGroups) {
+            for (const p of g.groupPrices || []) {
+              const sub = p.menuSubItem || {};
+              if (sub.restaurantId) {
+                mockupState.selectedRestaurantId = sub.restaurantId;
+                break;
+              }
+            }
+            if (mockupState.selectedRestaurantId) break;
+          }
+        }
+
+        applyDefaultSelections(detail);
+        persistAllState();
+      })
+      .catch((err) => {
+        console.error("Failed to fetch item detail, using fallback:", err);
+        const isDrink = isDrinkCategory(item.category);
+        const fallbackDetail = {
+          menuItemId: item.id,
+          name: item.name,
+          price: item.price,
+          menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
+          _isFallback: isDrink,
         };
         mockupState.selectedItemDetail = fallbackDetail;
         applyDefaultSelections(fallbackDetail);
+        persistAllState();
+      })
+      .finally(() => {
         mockupState.isLoading = false;
-        navigateTo('customize');
-    }
+        renderPage();
+        navigateTo("customize");
+      });
+  } else {
+    const isDrink = isDrinkCategory(item.category);
+    const fallbackDetail = {
+      menuItemId: item.id || 0,
+      name: item.name,
+      price: item.price,
+      menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
+      _isFallback: isDrink,
+    };
+    mockupState.selectedItemDetail = fallbackDetail;
+    applyDefaultSelections(fallbackDetail);
+    mockupState.isLoading = false;
+    navigateTo("customize");
+  }
 }
 
 function selectFavoriteAndNavigate(name) {
-    const list = getActiveMenuItems();
-    const idx = list.findIndex(item => item.name === name);
-    if (idx !== -1) {
-        selectItemAndNavigate(idx);
-    } else {
-        navigateTo('menu');
-    }
+  const list = getActiveMenuItems();
+  const idx = list.findIndex((item) => item.name === name);
+  if (idx !== -1) {
+    selectItemAndNavigate(idx);
+  } else {
+    navigateTo("menu");
+  }
 }
 
 // --- Customize page helpers (global, called from inline onclick) ---
 
 // Single-select: replaces entire group selection with one item
-window._selectSubItem = function(groupId, subItemId, itemTypeId, name, price, isSingleSelect) {
-    if (!mockupState._customizeSubItems) mockupState._customizeSubItems = {};
-    if (!mockupState._customizeSubItems[groupId]) {
-        mockupState._customizeSubItems[groupId] = { items: {} };
-    }
-    if (isSingleSelect) {
-        // Clear group and set only this item
-        mockupState._customizeSubItems[groupId].items = {};
-    }
-    mockupState._customizeSubItems[groupId].items[subItemId] = {
-        menuSubItemId: subItemId,
-        itemTypeId: itemTypeId,
-        itemGroupPriceId: parseInt(groupId),
-        quantity: 1,
-        name: name,
-        price: price
-    };
-    updateMockupState('_lastUpdated', Date.now());
+window._selectSubItem = function (
+  groupId,
+  subItemId,
+  itemTypeId,
+  name,
+  price,
+  isSingleSelect,
+) {
+  if (!mockupState._customizeSubItems) mockupState._customizeSubItems = {};
+  if (!mockupState._customizeSubItems[groupId]) {
+    mockupState._customizeSubItems[groupId] = { items: {} };
+  }
+  if (isSingleSelect) {
+    // Clear group and set only this item
+    mockupState._customizeSubItems[groupId].items = {};
+  }
+  mockupState._customizeSubItems[groupId].items[subItemId] = {
+    menuSubItemId: subItemId,
+    itemTypeId: itemTypeId,
+    itemGroupPriceId: parseInt(groupId),
+    quantity: 1,
+    name: name,
+    price: price,
+  };
+  updateMockupState("_lastUpdated", Date.now());
 };
 
 // Multi-select stepper: increment/decrement quantity for a sub-item
-window._adjustSubItemQty = function(groupId, subItemId, itemTypeId, name, price, delta) {
-    if (!mockupState._customizeSubItems) mockupState._customizeSubItems = {};
-    if (!mockupState._customizeSubItems[groupId]) {
-        mockupState._customizeSubItems[groupId] = { items: {} };
-    }
-    const current = mockupState._customizeSubItems[groupId].items[subItemId];
-    const newQty = Math.max(0, (current ? current.quantity : 0) + delta);
-    if (newQty === 0) {
-        delete mockupState._customizeSubItems[groupId].items[subItemId];
-    } else {
-        mockupState._customizeSubItems[groupId].items[subItemId] = {
-            menuSubItemId: subItemId,
-            itemTypeId: itemTypeId,
-            itemGroupPriceId: parseInt(groupId),
-            quantity: newQty,
-            name: name,
-            price: price
-        };
-    }
-    updateMockupState('_lastUpdated', Date.now());
+window._adjustSubItemQty = function (
+  groupId,
+  subItemId,
+  itemTypeId,
+  name,
+  price,
+  delta,
+) {
+  if (!mockupState._customizeSubItems) mockupState._customizeSubItems = {};
+  if (!mockupState._customizeSubItems[groupId]) {
+    mockupState._customizeSubItems[groupId] = { items: {} };
+  }
+  const current = mockupState._customizeSubItems[groupId].items[subItemId];
+  const newQty = Math.max(0, (current ? current.quantity : 0) + delta);
+  if (newQty === 0) {
+    delete mockupState._customizeSubItems[groupId].items[subItemId];
+  } else {
+    mockupState._customizeSubItems[groupId].items[subItemId] = {
+      menuSubItemId: subItemId,
+      itemTypeId: itemTypeId,
+      itemGroupPriceId: parseInt(groupId),
+      quantity: newQty,
+      name: name,
+      price: price,
+    };
+  }
+  updateMockupState("_lastUpdated", Date.now());
 };
 
 // Modify-type selector: sets None/Less/Regular/Extra for an included ingredient.
 // NOTE: modifyType values ('add','extra','less','no') — verify with API developer if order results are unexpected.
-window._selectModifyType = function(menuSubItemId, modifyType, price) {
-    if (!mockupState._customizeModifyTypes) mockupState._customizeModifyTypes = {};
-    mockupState._customizeModifyTypes[menuSubItemId] = { modifyType, price };
-    updateMockupState('_lastUpdated', Date.now());
+window._selectModifyType = function (menuSubItemId, modifyType, price) {
+  if (!mockupState._customizeModifyTypes)
+    mockupState._customizeModifyTypes = {};
+  mockupState._customizeModifyTypes[menuSubItemId] = { modifyType, price };
+  updateMockupState("_lastUpdated", Date.now());
 };
 
 // Add to Cart: builds cart item from current selections, validates required groups, then navigates.
-window._addToCart = function() {
-    const item = mockupState.selectedItem;
-    if (!item) return;
+window._addToCart = function () {
+  const item = mockupState.selectedItem;
+  if (!item) return;
 
-    // --- Required-group validation ---
-    const detail = mockupState.selectedItemDetail;
-    const sels = mockupState._customizeSubItems || {};
-    const modSels = mockupState._customizeModifyTypes || {};
-    const groups = (detail?.menuSubItemGroups || []).filter(g => g.isActive !== false);
-    let firstFailId = null;
-    for (const g of groups) {
-        const isRequired = (g.minSelect || 0) >= 1;
-        if (isRequired && Object.keys(sels[g.menuSubItemGroupId]?.items || {}).length === 0) {
-            firstFailId = g.menuSubItemGroupId;
-            break;
-        }
+  // --- Required-group validation ---
+  const detail = mockupState.selectedItemDetail;
+  const sels = mockupState._customizeSubItems || {};
+  const modSels = mockupState._customizeModifyTypes || {};
+  const groups = (detail?.menuSubItemGroups || []).filter(
+    (g) => g.isActive !== false,
+  );
+  let firstFailId = null;
+  for (const g of groups) {
+    const isRequired = (g.minSelect || 0) >= 1;
+    if (
+      isRequired &&
+      Object.keys(sels[g.menuSubItemGroupId]?.items || {}).length === 0
+    ) {
+      firstFailId = g.menuSubItemGroupId;
+      break;
     }
-    if (firstFailId !== null) {
-        // Scroll the failing group into view and flash it
-        const el = document.getElementById(`mod-group-${firstFailId}`);
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el.classList.add('validation-error');
-            el.style.animation = 'none';
-            requestAnimationFrame(() => { el.style.animation = ''; el.classList.add('shake'); });
-            setTimeout(() => el.classList.remove('shake'), 600);
-        }
-        // Re-render so the validation badge shows
-        updateMockupState('_lastUpdated', Date.now());
-        return;
+  }
+  if (firstFailId !== null) {
+    // Scroll the failing group into view and flash it
+    const el = document.getElementById(`mod-group-${firstFailId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("validation-error");
+      el.style.animation = "none";
+      requestAnimationFrame(() => {
+        el.style.animation = "";
+        el.classList.add("shake");
+      });
+      setTimeout(() => el.classList.remove("shake"), 600);
     }
+    // Re-render so the validation badge shows
+    updateMockupState("_lastUpdated", Date.now());
+    return;
+  }
 
-    // --- Collect all selected sub-items across groups ---
-    const selectedSubItems = [];
-    for (const gid in sels) {
-        const groupItems = sels[gid]?.items || {};
-        for (const sid in groupItems) {
-            const s = groupItems[sid];
-            selectedSubItems.push({
-                menuSubItemId: s.menuSubItemId,
-                itemTypeId: s.itemTypeId,
-                itemGroupPriceId: s.itemGroupPriceId,
-                quantity: s.quantity,
-                name: s.name,
-                price: s.price,
-                groupName: sels[gid]?.groupName || '',
-                modifyType: null // standard group items have no modify type
-            });
-        }
+  // --- Collect all selected sub-items across groups ---
+  const selectedSubItems = [];
+  for (const gid in sels) {
+    const groupItems = sels[gid]?.items || {};
+    for (const sid in groupItems) {
+      const s = groupItems[sid];
+      selectedSubItems.push({
+        menuSubItemId: s.menuSubItemId,
+        itemTypeId: s.itemTypeId,
+        itemGroupPriceId: s.itemGroupPriceId,
+        quantity: s.quantity,
+        name: s.name,
+        price: s.price,
+        groupName: sels[gid]?.groupName || "",
+        modifyType: null, // standard group items have no modify type
+      });
     }
+  }
 
-    // --- Collect modify-type items (None/Less/Regular/Extra) ---
-    for (const sid in modSels) {
-        const m = modSels[sid];
-        if (m.modifyType && m.modifyType !== 'add') {
-            // Only send non-default modify types to keep payload clean
-            // 'add' (Regular) is the default — omitting it reduces noise
-            selectedSubItems.push({
-                menuSubItemId: parseInt(sid),
-                itemTypeId: 2,
-                itemGroupPriceId: 0,
-                quantity: 1,
-                name: '',
-                price: m.price || 0,
-                groupName: 'Included Options',
-                modifyType: m.modifyType
-            });
-        }
+  // --- Collect modify-type items (None/Less/Regular/Extra) ---
+  for (const sid in modSels) {
+    const m = modSels[sid];
+    if (m.modifyType && m.modifyType !== "add") {
+      // Only send non-default modify types to keep payload clean
+      // 'add' (Regular) is the default — omitting it reduces noise
+      selectedSubItems.push({
+        menuSubItemId: parseInt(sid),
+        itemTypeId: 2,
+        itemGroupPriceId: 0,
+        quantity: 1,
+        name: "",
+        price: m.price || 0,
+        groupName: "Included Options",
+        modifyType: m.modifyType,
+      });
     }
+  }
 
-    // Get special instruction from textarea
-    const instructionEl = document.getElementById('special-instruction-input');
-    const specialInstruction = instructionEl ? instructionEl.value.trim() : '';
+  // Get special instruction from textarea
+  const instructionEl = document.getElementById("special-instruction-input");
+  const specialInstruction = instructionEl ? instructionEl.value.trim() : "";
 
-    // Calculate unit price (base + extras)
-    let extrasTotal = 0;
-    selectedSubItems.forEach(s => { extrasTotal += (s.price || 0) * (s.quantity || 1); });
-    for (const sid in modSels) {
-        if (modSels[sid]?.modifyType !== 'add') extrasTotal += modSels[sid]?.price || 0;
-    }
+  // Calculate unit price (base + extras)
+  let extrasTotal = 0;
+  selectedSubItems.forEach((s) => {
+    extrasTotal += (s.price || 0) * (s.quantity || 1);
+  });
+  for (const sid in modSels) {
+    if (modSels[sid]?.modifyType !== "add")
+      extrasTotal += modSels[sid]?.price || 0;
+  }
 
-    // Build cart item
-    const cartItem = {
-        cartId: Date.now(),
-        menuItemId: item.id,
-        name: item.name,
-        basePrice: item.price,
-        unitPrice: item.price + extrasTotal,
-        quantity: mockupState.itemQuantity,
-        image: item.image,
-        selectedSubItems: selectedSubItems,
-        specialInstruction: specialInstruction
-    };
+  // Build cart item
+  const cartItem = {
+    cartId: Date.now(),
+    menuItemId: item.id,
+    name: item.name,
+    basePrice: item.price,
+    unitPrice: item.price + extrasTotal,
+    quantity: mockupState.itemQuantity,
+    image: item.image,
+    selectedSubItems: selectedSubItems,
+    specialInstruction: specialInstruction,
+  };
 
-    // Add to cart
-    mockupState.cart.push(cartItem);
-    mockupState.cartItemCount = mockupState.cart.reduce((sum, i) => sum + i.quantity, 0);
+  // Add to cart
+  mockupState.cart.push(cartItem);
+  mockupState.cartItemCount = mockupState.cart.reduce(
+    (sum, i) => sum + i.quantity,
+    0,
+  );
 
-    // Reset customize state
-    mockupState._customizeSubItems = {};
-    mockupState._customizeModifyTypes = {};
-    mockupState._specialInstruction = '';
-    mockupState.itemQuantity = 1;
+  // Reset customize state
+  mockupState._customizeSubItems = {};
+  mockupState._customizeModifyTypes = {};
+  mockupState._specialInstruction = "";
+  mockupState.itemQuantity = 1;
 
-    persistAllState();
-    navigateTo('cart');
+  persistAllState();
+  navigateTo("cart");
 };
 
 // Update cart item quantity (0 = remove)
-window._updateCartQty = function(index, newQty) {
-    if (!mockupState.cart) return;
-    if (newQty <= 0) {
-        mockupState.cart.splice(index, 1);
-    } else {
-        mockupState.cart[index].quantity = newQty;
-    }
-    mockupState.cartItemCount = mockupState.cart.reduce((sum, i) => sum + i.quantity, 0);
-    persistAllState();
-    renderPage();
+window._updateCartQty = function (index, newQty) {
+  if (!mockupState.cart) return;
+  if (newQty <= 0) {
+    mockupState.cart.splice(index, 1);
+  } else {
+    mockupState.cart[index].quantity = newQty;
+  }
+  mockupState.cartItemCount = mockupState.cart.reduce(
+    (sum, i) => sum + i.quantity,
+    0,
+  );
+  persistAllState();
+  renderPage();
 };
 
 // Place Order: login gate + API call
-window._handlePlaceOrder = async function() {
-    // Login gate — require authenticated user
-    const token = window.ApiService?.getToken();
-    if (!token) {
-        // Show sign-in modal
-        alert('Please sign in to place your order.');
-        navigateTo('sign-in');
-        return;
-    }
+window._handlePlaceOrder = async function () {
+  // Login gate — require authenticated user
+  const token = window.ApiService?.getToken();
+  if (!token) {
+    // Show sign-in modal
+    alert("Please sign in to place your order.");
+    navigateTo("sign-in");
+    return;
+  }
 
-    const cart = mockupState.cart || [];
-    if (cart.length === 0) {
-        alert('Your cart is empty. Add items before placing an order.');
-        return;
-    }
+  const cart = mockupState.cart || [];
+  if (cart.length === 0) {
+    alert("Your cart is empty. Add items before placing an order.");
+    return;
+  }
 
-    // Calculate pricing
-    const subtotal = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-    const taxRate = mockupState.locationTaxRate || 0.0925;
-    const taxes = subtotal * taxRate;
-    const bagFee = (mockupState.bagQuantity || 0) * 0.10;
-    const convenienceFee = mockupState.locationConvenienceFee || 0;
-    let tipAmount = 0;
-    if (mockupState.tipPercentage === 'other') {
-        tipAmount = parseFloat(mockupState.customTipAmount) || 0;
-    } else {
-        tipAmount = subtotal * ((mockupState.tipPercentage || 0) / 100);
-    }
-    const finalTotal = subtotal + taxes + bagFee + convenienceFee + tipAmount;
+  // Calculate pricing
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.unitPrice * item.quantity,
+    0,
+  );
+  const taxRate = mockupState.locationTaxRate || 0.0925;
+  const taxes = subtotal * taxRate;
+  const bagFee = (mockupState.bagQuantity || 0) * 0.1;
+  const convenienceFee = mockupState.locationConvenienceFee || 0;
+  let tipAmount = 0;
+  if (mockupState.tipPercentage === "other") {
+    tipAmount = parseFloat(mockupState.customTipAmount) || 0;
+  } else {
+    tipAmount = subtotal * ((mockupState.tipPercentage || 0) / 100);
+  }
+  const finalTotal = subtotal + taxes + bagFee + convenienceFee + tipAmount;
 
-    // Build PlaceOrderRequest
-    const orderData = {
-        orderType: mockupState.fulfillmentMode || 'In-store',
-        locationId: mockupState.selectedLocationId || 7,
-        restaurantId: mockupState.selectedRestaurantId || 7,
-        tipAmount: parseFloat(tipAmount.toFixed(2)),
-        pickUpTime: mockupState.orderTime === 'Later' ? new Date().toISOString() : null,
-        isCustomTime: mockupState.orderTime === 'Later',
-        tableNum: null,
-        isGuestUser: false,
-        guestFirstName: mockupState.userProfile?.firstName || 'Guest',
-        guestLastName: mockupState.userProfile?.lastName || 'User',
-        guestPhoneNumber: mockupState.userProfile?.phoneNumber || '0000000000',
-        guestEmailAddress: mockupState.userProfile?.email || 'guest@farebites.com',
-        items: cart.map(item => ({
-            menuItemId: item.menuItemId,
-            quantity: item.quantity,
-            specialInstruction: item.specialInstruction || null,
-            subItems: (item.selectedSubItems || [])
-                .filter(sub => sub.menuSubItemId < 8000 || sub.menuSubItemId > 8300)
-                .map(sub => ({
-                    menuSubItemId: sub.menuSubItemId,
-                    itemTypeId: sub.itemTypeId || 2,
-                    itemGroupPriceId: sub.itemGroupPriceId || 0,
-                    quantity: sub.quantity || 1
-                })),
-            subMenuChoices: []
+  // Build PlaceOrderRequest
+  const orderData = {
+    orderType: mockupState.fulfillmentMode || "In-store",
+    locationId: mockupState.selectedLocationId || 7,
+    restaurantId: mockupState.selectedRestaurantId || 7,
+    tipAmount: parseFloat(tipAmount.toFixed(2)),
+    pickUpTime:
+      mockupState.orderTime === "Later" ? new Date().toISOString() : null,
+    isCustomTime: mockupState.orderTime === "Later",
+    tableNum: null,
+    isGuestUser: false,
+    guestFirstName: mockupState.userProfile?.firstName || "Guest",
+    guestLastName: mockupState.userProfile?.lastName || "User",
+    guestPhoneNumber: mockupState.userProfile?.phoneNumber || "0000000000",
+    guestEmailAddress: mockupState.userProfile?.email || "guest@farebites.com",
+    items: cart.map((item) => ({
+      menuItemId: item.menuItemId,
+      quantity: item.quantity,
+      specialInstruction: item.specialInstruction || null,
+      subItems: (item.selectedSubItems || [])
+        .filter((sub) => sub.menuSubItemId < 8000 || sub.menuSubItemId > 8300)
+        .map((sub) => ({
+          menuSubItemId: sub.menuSubItemId,
+          itemTypeId: sub.itemTypeId || 2,
+          itemGroupPriceId: sub.itemGroupPriceId || 0,
+          quantity: sub.quantity || 1,
         })),
+      subMenuChoices: [],
+    })),
+  };
+
+  console.log("Placing order:", JSON.stringify(orderData, null, 2));
+
+  // Show loading state
+  const btns = document.querySelectorAll("button");
+  btns.forEach((b) => {
+    if (b.textContent.includes("Purchase Order")) {
+      b.textContent = "Placing Order...";
+      b.disabled = true;
+    }
+  });
+
+  try {
+    const response = await window.ApiService.placeOrder(orderData);
+    console.log("Order placed successfully:", response);
+
+    // Store order response
+    mockupState.lastOrder = {
+      ...response,
+      orderId: response.data?.orderId || response.orderId,
+      orderItems: cart.map((i) => ({ ...i })),
+      subtotal,
+      taxes,
+      tipAmount,
+      bagFee,
+      convenienceFee,
+      total: finalTotal,
+      placedAt: new Date().toISOString(),
     };
 
-    console.log('Placing order:', JSON.stringify(orderData, null, 2));
+    // Clear cart
+    mockupState.cart = [];
+    mockupState.cartItemCount = 0;
 
-    // Show loading state
-    const btns = document.querySelectorAll('button');
-    btns.forEach(b => { if (b.textContent.includes('Purchase Order')) { b.textContent = 'Placing Order...'; b.disabled = true; } });
+    persistAllState();
+    navigateTo("order-confirm");
+  } catch (error) {
+    console.error("Failed to place order:", error);
+    const errorMsg =
+      error?.data?.message ||
+      error?.data?.title ||
+      "Failed to place order. Please try again.";
 
-    try {
-        const response = await window.ApiService.placeOrder(orderData);
-        console.log('Order placed successfully:', response);
+    // Auto-retry if there is a payment total mismatch
+    // Example error: "Payment total $10.73 does not match order total $8.44"
+    const match = errorMsg.match(
+      /Payment total \$[\d\.]+ does not match order total \$([\d\.]+)/i,
+    );
+    if (match && match[1]) {
+      const correctTotal = parseFloat(match[1]);
+      console.log(
+        `Payment mismatch detected. Retrying with correct total: ${correctTotal}`,
+      );
+      orderData.payments[0].amount = correctTotal;
+      try {
+        const retryResponse = await window.ApiService.placeOrder(orderData);
+        console.log("Order placed successfully on retry:", retryResponse);
 
-        // Store order response
         mockupState.lastOrder = {
-            ...response,
-            orderId: response.data?.orderId || response.orderId,
-            orderItems: cart.map(i => ({ ...i })),
-            subtotal,
-            taxes,
-            tipAmount,
-            bagFee,
-            convenienceFee,
-            total: finalTotal,
-            placedAt: new Date().toISOString()
+          ...retryResponse,
+          orderItems: cart.map((i) => ({ ...i })),
+          subtotal,
+          taxes,
+          tipAmount,
+          bagFee,
+          convenienceFee,
+          total: finalTotal,
+          placedAt: new Date().toISOString(),
         };
 
-        // Clear cart
         mockupState.cart = [];
         mockupState.cartItemCount = 0;
-
         persistAllState();
-        navigateTo('order-confirm');
-    } catch (error) {
-        console.error('Failed to place order:', error);
-        const errorMsg = error?.data?.message || error?.data?.title || 'Failed to place order. Please try again.';
-        
-        // Auto-retry if there is a payment total mismatch
-        // Example error: "Payment total $10.73 does not match order total $8.44"
-        const match = errorMsg.match(/Payment total \$[\d\.]+ does not match order total \$([\d\.]+)/i);
-        if (match && match[1]) {
-            const correctTotal = parseFloat(match[1]);
-            console.log(`Payment mismatch detected. Retrying with correct total: ${correctTotal}`);
-            orderData.payments[0].amount = correctTotal;
-            try {
-                const retryResponse = await window.ApiService.placeOrder(orderData);
-                console.log('Order placed successfully on retry:', retryResponse);
-                
-                mockupState.lastOrder = {
-                    ...retryResponse,
-                    orderItems: cart.map(i => ({ ...i })),
-                    subtotal,
-                    taxes,
-                    tipAmount,
-                    bagFee,
-                    convenienceFee,
-                    total: finalTotal,
-                    placedAt: new Date().toISOString()
-                };
-                
-                mockupState.cart = [];
-                mockupState.cartItemCount = 0;
-                persistAllState();
-                navigateTo('order-confirm');
-                return;
-            } catch (retryError) {
-                console.error('Retry failed:', retryError);
-                const retryErrorMsg = retryError?.data?.message || retryError?.data?.title || 'Failed to place order. Please try again.';
-                alert(retryErrorMsg);
-            }
-        } else {
-            alert(errorMsg);
-        }
-        
-        // Reset buttons
-        btns.forEach(b => { if (b.textContent.includes('Placing')) { b.textContent = 'Purchase Order'; b.disabled = false; } });
+        navigateTo("order-confirm");
+        return;
+      } catch (retryError) {
+        console.error("Retry failed:", retryError);
+        const retryErrorMsg =
+          retryError?.data?.message ||
+          retryError?.data?.title ||
+          "Failed to place order. Please try again.";
+        alert(retryErrorMsg);
+      }
+    } else {
+      alert(errorMsg);
     }
+
+    // Reset buttons
+    btns.forEach((b) => {
+      if (b.textContent.includes("Placing")) {
+        b.textContent = "Purchase Order";
+        b.disabled = false;
+      }
+    });
+  }
 };
 
 function updateMockupState(key, value) {
-    mockupState[key] = value;
-    persistAllState();
+  mockupState[key] = value;
+  persistAllState();
 
-    const scroller = document.getElementById('order-details-scroller') ||
-        document.getElementById('cart-scroller') ||
-        document.getElementById('payment-scroller') ||
-        document.querySelector('.overflow-y-auto') ||
-        document.getElementById('app-viewport');
+  const scroller =
+    document.getElementById("order-details-scroller") ||
+    document.getElementById("cart-scroller") ||
+    document.getElementById("payment-scroller") ||
+    document.querySelector(".overflow-y-auto") ||
+    document.getElementById("app-viewport");
 
-    const scrollPos = scroller ? scroller.scrollTop : 0;
-    const windowScrollPos = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+  const scrollPos = scroller ? scroller.scrollTop : 0;
+  const windowScrollPos =
+    window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
 
-    isUpdatingMockupState = true;
-    renderPage();
-    isUpdatingMockupState = false;
+  isUpdatingMockupState = true;
+  renderPage();
+  isUpdatingMockupState = false;
 
-    // Restore window scroll position (critical for desktop layout where body/window scrolls)
-    window.scrollTo(0, windowScrollPos);
+  // Restore window scroll position (critical for desktop layout where body/window scrolls)
+  window.scrollTo(0, windowScrollPos);
 
-    // Restore element scroll position (synchronously and asynchronously to handle browser rendering delay)
-    const restoreContainerScroll = () => {
-        const newScroller = document.getElementById('order-details-scroller') ||
-            document.getElementById('cart-scroller') ||
-            document.getElementById('payment-scroller') ||
-            document.querySelector('.overflow-y-auto') ||
-            document.getElementById('app-viewport');
-        if (newScroller) {
-            newScroller.scrollTop = scrollPos;
-        }
-    };
+  // Restore element scroll position (synchronously and asynchronously to handle browser rendering delay)
+  const restoreContainerScroll = () => {
+    const newScroller =
+      document.getElementById("order-details-scroller") ||
+      document.getElementById("cart-scroller") ||
+      document.getElementById("payment-scroller") ||
+      document.querySelector(".overflow-y-auto") ||
+      document.getElementById("app-viewport");
+    if (newScroller) {
+      newScroller.scrollTop = scrollPos;
+    }
+  };
 
+  restoreContainerScroll();
+  requestAnimationFrame(() => {
     restoreContainerScroll();
-    requestAnimationFrame(() => {
-        restoreContainerScroll();
-        setTimeout(restoreContainerScroll, 0);
-    });
+    setTimeout(restoreContainerScroll, 0);
+  });
 }
 
 async function handleRegistration() {
-    const email = document.getElementById('reg-email')?.value;
-    const password = document.getElementById('reg-password')?.value;
-    const confirmPassword = document.getElementById('reg-confirm-password')?.value;
-    const firstName = document.getElementById('reg-first-name')?.value;
-    const lastName = document.getElementById('reg-last-name')?.value;
-    const phoneNumber = document.getElementById('reg-phone')?.value;
-    const errorEl = document.getElementById('reg-error');
+  const email = document.getElementById("reg-email")?.value;
+  const password = document.getElementById("reg-password")?.value;
+  const confirmPassword = document.getElementById(
+    "reg-confirm-password",
+  )?.value;
+  const firstName = document.getElementById("reg-first-name")?.value;
+  const lastName = document.getElementById("reg-last-name")?.value;
+  const phoneNumber = document.getElementById("reg-phone")?.value;
+  const errorEl = document.getElementById("reg-error");
 
+  if (errorEl) {
+    errorEl.style.opacity = "0";
+    errorEl.textContent = "";
+  }
+
+  if (!email || !password || !firstName || !lastName || !phoneNumber) {
     if (errorEl) {
-        errorEl.style.opacity = '0';
-        errorEl.textContent = '';
+      errorEl.textContent = "Please fill out all required fields.";
+      errorEl.style.opacity = "1";
     }
+    return;
+  }
 
-    if (!email || !password || !firstName || !lastName || !phoneNumber) {
-        if (errorEl) {
-            errorEl.textContent = 'Please fill out all required fields.';
-            errorEl.style.opacity = '1';
-        }
-        return;
+  if (password !== confirmPassword) {
+    if (errorEl) {
+      errorEl.textContent = "Passwords do not match.";
+      errorEl.style.opacity = "1";
     }
+    return;
+  }
 
-    if (password !== confirmPassword) {
-        if (errorEl) {
-            errorEl.textContent = 'Passwords do not match.';
-            errorEl.style.opacity = '1';
-        }
-        return;
+  try {
+    if (!window.ApiService) {
+      throw new Error("API Service not loaded");
     }
+    const data = {
+      firstName,
+      lastName,
+      email,
+      password,
+      phoneNumber,
+    };
 
-    try {
-        if (!window.ApiService) {
-            throw new Error('API Service not loaded');
-        }
-        const data = {
-            firstName,
-            lastName,
-            email,
-            password,
-            phoneNumber
-        };
-        
-        await window.ApiService.register(data);
-        
-        // On success, redirect to login page
-        navigateTo('sign-in');
-    } catch (err) {
-        if (errorEl) {
-            errorEl.textContent = (err.data && err.data.message) ? err.data.message : (err.message || 'Registration failed. Please try again.');
-            errorEl.style.opacity = '1';
-        }
+    await window.ApiService.register(data);
+
+    // On success, redirect to login page
+    navigateTo("sign-in");
+  } catch (err) {
+    if (errorEl) {
+      errorEl.textContent =
+        err.data && err.data.message
+          ? err.data.message
+          : err.message || "Registration failed. Please try again.";
+      errorEl.style.opacity = "1";
     }
+  }
 }
 
 async function handleLogin() {
-    const email = document.getElementById('auth-email-input')?.value;
-    const password = document.getElementById('auth-password-input')?.value;
-    const errorEl = document.getElementById('auth-error');
+  const email = document.getElementById("auth-email-input")?.value;
+  const password = document.getElementById("auth-password-input")?.value;
+  const errorEl = document.getElementById("auth-error");
 
+  if (errorEl) {
+    errorEl.style.opacity = "0";
+    errorEl.textContent = "";
+  }
+
+  if (!email || !password) {
     if (errorEl) {
-        errorEl.style.opacity = '0';
-        errorEl.textContent = '';
+      errorEl.textContent = "Please enter both email and password.";
+      errorEl.style.opacity = "1";
     }
+    return;
+  }
 
-    if (!email || !password) {
-        if (errorEl) {
-            errorEl.textContent = 'Please enter both email and password.';
-            errorEl.style.opacity = '1';
-        }
-        return;
+  try {
+    if (!window.ApiService) {
+      throw new Error("API Service not loaded");
     }
+    const rememberMe =
+      document.getElementById("auth-remember-me")?.checked || false;
+    if (rememberMe) {
+      localStorage.setItem("farebites_remembered_email", email);
+    } else {
+      localStorage.removeItem("farebites_remembered_email");
+    }
+    const data = await window.ApiService.login(email, password, rememberMe);
 
+    mockupState.isLoggedIn = true;
+    mockupState.userEmail = email;
+    // Try to get user name from profile
     try {
-        if (!window.ApiService) {
-            throw new Error('API Service not loaded');
-        }
-        const rememberMe = document.getElementById('auth-remember-me')?.checked || false;
-        if (rememberMe) {
-            localStorage.setItem('farebites_remembered_email', email);
-        } else {
-            localStorage.removeItem('farebites_remembered_email');
-        }
-        const data = await window.ApiService.login(email, password, rememberMe);
-        
-        mockupState.isLoggedIn = true;
-        mockupState.userEmail = email;
-        // Try to get user name from profile
-        try {
-            const profile = await window.ApiService.getProfile();
-            console.log('Successfully fetched profile on login:', profile);
-            
-            // Merge local address details if they exist in localStorage (since API drops them in GET schema)
-            const emailKey = profile.email || profile.emailAddress || email || mockupState.userEmail;
-            let mergedProfile = { ...profile };
-            if (emailKey) {
-                const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
-                const savedAddress = localStorage.getItem(localAddressKey);
-                if (savedAddress) {
-                    try {
-                        const parsedAddress = JSON.parse(savedAddress);
-                        mergedProfile = { ...mergedProfile, ...parsedAddress };
-                    } catch(e) {
-                        console.error('Error parsing local profile address:', e);
-                    }
-                }
-            }
-            
-            mockupState.userName = mergedProfile.firstName || mergedProfile.email?.split('@')[0] || 'User';
-            mockupState.userProfile = mergedProfile;
-        } catch(e) {
-            console.error('Failed to fetch profile on login:', e);
-            mockupState.userName = 'User';
-            mockupState.userProfile = {};
-        }
+      const profile = await window.ApiService.getProfile();
+      console.log("Successfully fetched profile on login:", profile);
 
-        loadCartFromStorage();
-        persistAllState();
-        if (typeof resetInactivityTimer === 'function') resetInactivityTimer();
-        navigateTo('restaurant-home');
-    } catch (err) {
-        if (errorEl) {
-            errorEl.textContent = (err.data && err.data.message) ? err.data.message : (err.message || 'Invalid email or password.');
-            errorEl.style.opacity = '1';
+      // Merge local address details if they exist in localStorage (since API drops them in GET schema)
+      const emailKey =
+        profile.email || profile.emailAddress || email || mockupState.userEmail;
+      let mergedProfile = { ...profile };
+      if (emailKey) {
+        const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
+        const savedAddress = localStorage.getItem(localAddressKey);
+        if (savedAddress) {
+          try {
+            const parsedAddress = JSON.parse(savedAddress);
+            mergedProfile = { ...mergedProfile, ...parsedAddress };
+          } catch (e) {
+            console.error("Error parsing local profile address:", e);
+          }
         }
+      }
+
+      mockupState.userName =
+        mergedProfile.firstName || mergedProfile.email?.split("@")[0] || "User";
+      mockupState.userProfile = mergedProfile;
+    } catch (e) {
+      console.error("Failed to fetch profile on login:", e);
+      mockupState.userName = "User";
+      mockupState.userProfile = {};
     }
+
+    loadCartFromStorage();
+    persistAllState();
+    if (typeof resetInactivityTimer === "function") resetInactivityTimer();
+    navigateTo("restaurant-home");
+  } catch (err) {
+    if (errorEl) {
+      errorEl.textContent =
+        err.data && err.data.message
+          ? err.data.message
+          : err.message || "Invalid email or password.";
+      errorEl.style.opacity = "1";
+    }
+  }
 }
 
 async function handleForgotPassword() {
-    const emailEl = document.getElementById('forgot-email-input');
-    const errorEl = document.getElementById('forgot-error');
-    const successEl = document.getElementById('forgot-success');
-    const submitBtn = document.getElementById('forgot-submit-btn');
+  const emailEl = document.getElementById("forgot-email-input");
+  const errorEl = document.getElementById("forgot-error");
+  const successEl = document.getElementById("forgot-success");
+  const submitBtn = document.getElementById("forgot-submit-btn");
 
-    if (!emailEl || !errorEl || !successEl || !submitBtn) return;
+  if (!emailEl || !errorEl || !successEl || !submitBtn) return;
 
-    const email = emailEl.value.trim();
+  const email = emailEl.value.trim();
 
-    // Reset messages
-    errorEl.style.opacity = '0';
-    errorEl.textContent = '';
-    successEl.classList.add('hidden');
-    successEl.textContent = '';
+  // Reset messages
+  errorEl.style.opacity = "0";
+  errorEl.textContent = "";
+  successEl.classList.add("hidden");
+  successEl.textContent = "";
 
-    if (!email) {
-        errorEl.textContent = 'Please enter your email address.';
-        errorEl.style.opacity = '1';
-        return;
+  if (!email) {
+    errorEl.textContent = "Please enter your email address.";
+    errorEl.style.opacity = "1";
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    errorEl.textContent = "Please enter a valid email address.";
+    errorEl.style.opacity = "1";
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Sending...";
+
+  try {
+    if (!window.ApiService) {
+      throw new Error("API Service not loaded");
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        errorEl.textContent = 'Please enter a valid email address.';
-        errorEl.style.opacity = '1';
-        return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
-
-    try {
-        if (!window.ApiService) {
-            throw new Error('API Service not loaded');
-        }
-        const result = await window.ApiService.forgotPassword(email);
-        successEl.textContent = result.message || 'Reset link sent successfully!';
-        successEl.classList.remove('hidden');
-        emailEl.value = '';
-    } catch (err) {
-        console.error('Forgot password error:', err);
-        errorEl.textContent = (err.data && err.data.message) ? err.data.message : (err.message || 'Failed to send reset link.');
-        errorEl.style.opacity = '1';
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Send Reset Link';
-    }
+    const result = await window.ApiService.forgotPassword(email);
+    successEl.textContent = result.message || "Reset link sent successfully!";
+    successEl.classList.remove("hidden");
+    emailEl.value = "";
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    errorEl.textContent =
+      err.data && err.data.message
+        ? err.data.message
+        : err.message || "Failed to send reset link.";
+    errorEl.style.opacity = "1";
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Send Reset Link";
+  }
 }
 
 async function handleUpdateProfile() {
-    const firstName = document.getElementById('prof-first-name')?.value;
-    const lastName = document.getElementById('prof-last-name')?.value;
-    const email = document.getElementById('prof-email')?.value;
-    const phoneNumber = document.getElementById('prof-phone')?.value;
-    const address = document.getElementById('prof-address')?.value || '';
-    const city = document.getElementById('prof-city')?.value || '';
-    const state = document.getElementById('prof-state')?.value || '';
-    const zipCode = document.getElementById('prof-zip')?.value || '';
-    const errorEl = document.getElementById('prof-error');
+  const firstName = document.getElementById("prof-first-name")?.value;
+  const lastName = document.getElementById("prof-last-name")?.value;
+  const email = document.getElementById("prof-email")?.value;
+  const phoneNumber = document.getElementById("prof-phone")?.value;
+  const address = document.getElementById("prof-address")?.value || "";
+  const city = document.getElementById("prof-city")?.value || "";
+  const state = document.getElementById("prof-state")?.value || "";
+  const zipCode = document.getElementById("prof-zip")?.value || "";
+  const errorEl = document.getElementById("prof-error");
 
+  if (errorEl) {
+    errorEl.style.opacity = "0";
+    errorEl.textContent = "";
+  }
+
+  if (!firstName || !lastName || !email || !phoneNumber) {
     if (errorEl) {
-        errorEl.style.opacity = '0';
-        errorEl.textContent = '';
+      errorEl.textContent = "Please fill out all fields.";
+      errorEl.style.opacity = "1";
+    }
+    return;
+  }
+
+  try {
+    if (!window.ApiService) throw new Error("API Service not loaded");
+
+    const payload = {
+      firstName,
+      lastName,
+      phoneNumber,
+      address,
+      city,
+      state,
+      zipCode,
+    };
+    await window.ApiService.updateProfile(payload);
+
+    // Save address fields to localStorage so they persist across page refreshes
+    const emailKey =
+      email || mockupState.userEmail || mockupState.userProfile?.email;
+    if (emailKey) {
+      const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
+      localStorage.setItem(
+        localAddressKey,
+        JSON.stringify({ address, city, state, zipCode }),
+      );
     }
 
-    if (!firstName || !lastName || !email || !phoneNumber) {
-        if (errorEl) {
-            errorEl.textContent = 'Please fill out all fields.';
-            errorEl.style.opacity = '1';
-        }
-        return;
+    // Update local state by merging to preserve email
+    mockupState.userProfile = {
+      ...mockupState.userProfile,
+      ...payload,
+    };
+    mockupState.userName = firstName;
+    mockupState.modalOpen = null;
+    persistAllState();
+    navigateTo(currentPage); // reload page
+  } catch (err) {
+    if (errorEl) {
+      errorEl.textContent =
+        err.data && err.data.message
+          ? err.data.message
+          : err.message || "Update failed. Please try again.";
+      errorEl.style.opacity = "1";
     }
-
-    try {
-        if (!window.ApiService) throw new Error('API Service not loaded');
-        
-        const payload = { firstName, lastName, phoneNumber, address, city, state, zipCode };
-        await window.ApiService.updateProfile(payload);
-        
-        // Save address fields to localStorage so they persist across page refreshes
-        const emailKey = email || mockupState.userEmail || mockupState.userProfile?.email;
-        if (emailKey) {
-            const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
-            localStorage.setItem(localAddressKey, JSON.stringify({ address, city, state, zipCode }));
-        }
-        
-        // Update local state by merging to preserve email
-        mockupState.userProfile = {
-            ...mockupState.userProfile,
-            ...payload
-        };
-        mockupState.userName = firstName;
-        mockupState.modalOpen = null;
-        persistAllState();
-        navigateTo(currentPage); // reload page
-    } catch (err) {
-        if (errorEl) {
-            errorEl.textContent = (err.data && err.data.message) ? err.data.message : (err.message || 'Update failed. Please try again.');
-            errorEl.style.opacity = '1';
-        }
-    }
+  }
 }
 
 async function handleChangePassword() {
-    const currentPwd = document.getElementById('pwd-current')?.value;
-    const newPwd = document.getElementById('pwd-new')?.value;
-    const confirmPwd = document.getElementById('pwd-confirm')?.value;
-    const errorEl = document.getElementById('pwd-error');
+  const currentPwd = document.getElementById("pwd-current")?.value;
+  const newPwd = document.getElementById("pwd-new")?.value;
+  const confirmPwd = document.getElementById("pwd-confirm")?.value;
+  const errorEl = document.getElementById("pwd-error");
 
+  if (errorEl) {
+    errorEl.style.opacity = "0";
+    errorEl.textContent = "";
+  }
+
+  if (!currentPwd || !newPwd || !confirmPwd) {
     if (errorEl) {
-        errorEl.style.opacity = '0';
-        errorEl.textContent = '';
+      errorEl.textContent = "Please fill out all fields.";
+      errorEl.style.opacity = "1";
     }
+    return;
+  }
 
-    if (!currentPwd || !newPwd || !confirmPwd) {
-        if (errorEl) {
-            errorEl.textContent = 'Please fill out all fields.';
-            errorEl.style.opacity = '1';
-        }
-        return;
+  if (newPwd !== confirmPwd) {
+    if (errorEl) {
+      errorEl.textContent = "New passwords do not match.";
+      errorEl.style.opacity = "1";
     }
+    return;
+  }
 
-    if (newPwd !== confirmPwd) {
-        if (errorEl) {
-            errorEl.textContent = 'New passwords do not match.';
-            errorEl.style.opacity = '1';
-        }
-        return;
-    }
+  try {
+    if (!window.ApiService) throw new Error("API Service not loaded");
 
-    try {
-        if (!window.ApiService) throw new Error('API Service not loaded');
-        
-        await window.ApiService.changePassword(currentPwd, newPwd);
-        
-        mockupState.modalOpen = null;
-        persistAllState();
-        navigateTo(currentPage);
-        setTimeout(() => alert('Password updated successfully!'), 100);
-    } catch (err) {
-        if (errorEl) {
-            errorEl.textContent = (err.data && err.data.message) ? err.data.message : (err.message || 'Password update failed.');
-            errorEl.style.opacity = '1';
-        }
+    await window.ApiService.changePassword(currentPwd, newPwd);
+
+    mockupState.modalOpen = null;
+    persistAllState();
+    navigateTo(currentPage);
+    setTimeout(() => alert("Password updated successfully!"), 100);
+  } catch (err) {
+    if (errorEl) {
+      errorEl.textContent =
+        err.data && err.data.message
+          ? err.data.message
+          : err.message || "Password update failed.";
+      errorEl.style.opacity = "1";
     }
+  }
 }
 
 async function signOutUser() {
-    // Save current cart before logging out
-    if (mockupState.isLoggedIn) {
-        syncCartToStorage();
-    }
-    
-    if (window.ApiService) {
-        await window.ApiService.logout();
-    }
-    
-    // Clear user state and screen cart
-    mockupState.isLoggedIn = false;
-    mockupState.userName = 'Guest';
-    mockupState.userEmail = '';
-    mockupState.userProfile = {};
-    
-    mockupState.cart = [];
-    mockupState.cartItemCount = 0;
-    mockupState.bagQuantity = 0;
-    mockupState.noBagsSelected = false;
+  // Save current cart before logging out
+  if (mockupState.isLoggedIn) {
+    syncCartToStorage();
+  }
 
-    // Persist to session storage manually to avoid syncCartToStorage overwriting with empty
-    sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
-    
-    navigateTo('sign-in');
+  if (window.ApiService) {
+    await window.ApiService.logout();
+  }
+
+  // Clear user state and screen cart
+  mockupState.isLoggedIn = false;
+  mockupState.userName = "Guest";
+  mockupState.userEmail = "";
+  mockupState.userProfile = {};
+
+  mockupState.cart = [];
+  mockupState.cartItemCount = 0;
+  mockupState.bagQuantity = 0;
+  mockupState.noBagsSelected = false;
+
+  // Persist to session storage manually to avoid syncCartToStorage overwriting with empty
+  sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
+
+  navigateTo("sign-in");
 }
 
-window.toggleLocationFavorite = function(name, event) {
-    if (event) {
-        event.stopPropagation();
+window.toggleLocationFavorite = function (name, event) {
+  if (event) {
+    event.stopPropagation();
+  }
+
+  // Find in LOCATIONS and toggle
+  const loc = LOCATIONS.find((l) => l.name === name);
+  let isFavNow = false;
+  if (loc) {
+    loc.fav = !loc.fav;
+    isFavNow = loc.fav;
+  }
+
+  // Find in apiLocations and toggle
+  if (mockupState.apiLocations && mockupState.apiLocations.length > 0) {
+    const apiLoc = mockupState.apiLocations.find((l) => l.name === name);
+    if (apiLoc) {
+      apiLoc.fav = !apiLoc.fav;
+      isFavNow = apiLoc.fav;
     }
-    
-    // Find in LOCATIONS and toggle
-    const loc = LOCATIONS.find(l => l.name === name);
-    let isFavNow = false;
-    if (loc) {
-        loc.fav = !loc.fav;
-        isFavNow = loc.fav;
+  }
+
+  // Animate the heart
+  const heartBtn = event ? event.currentTarget : null;
+  if (heartBtn) {
+    const iconEl = heartBtn.querySelector("i");
+    if (iconEl) {
+      const sizeClass = iconEl.className.includes("text-[22px]")
+        ? "text-[22px]"
+        : "text-[19px]";
+      if (isFavNow) {
+        iconEl.className = `fa-solid fa-heart text-violet-600 ${sizeClass}`;
+      } else {
+        iconEl.className = `fa-regular fa-heart text-gray-300 hover:text-violet-600 ${sizeClass}`;
+      }
     }
-    
-    // Find in apiLocations and toggle
-    if (mockupState.apiLocations && mockupState.apiLocations.length > 0) {
-        const apiLoc = mockupState.apiLocations.find(l => l.name === name);
-        if (apiLoc) {
-            apiLoc.fav = !apiLoc.fav;
-            isFavNow = apiLoc.fav;
-        }
-    }
-    
-    // Animate the heart
-    const heartBtn = event ? event.currentTarget : null;
-    if (heartBtn) {
-        const iconEl = heartBtn.querySelector('i');
-        if (iconEl) {
-            const sizeClass = iconEl.className.includes('text-[22px]') ? 'text-[22px]' : 'text-[19px]';
-            if (isFavNow) {
-                iconEl.className = `fa-solid fa-heart text-violet-600 ${sizeClass}`;
-            } else {
-                iconEl.className = `fa-regular fa-heart text-gray-300 hover:text-violet-600 ${sizeClass}`;
-            }
-        }
-        heartBtn.classList.add('animate-heart-burst');
-        setTimeout(() => {
-            heartBtn.classList.remove('animate-heart-burst');
-            updateMockupState('lastAction', 'favorite_' + name);
-        }, 600);
-    } else {
-        updateMockupState('lastAction', 'favorite_' + name);
-    }
+    heartBtn.classList.add("animate-heart-burst");
+    setTimeout(() => {
+      heartBtn.classList.remove("animate-heart-burst");
+      updateMockupState("lastAction", "favorite_" + name);
+    }, 600);
+  } else {
+    updateMockupState("lastAction", "favorite_" + name);
+  }
 };
 
-window.setLocationLabel = function(name, label) {
-    if (!mockupState.locationLabels) {
-        mockupState.locationLabels = {};
-    }
-    mockupState.locationLabels[name] = label;
-    updateMockupState('lastAction', 'label_' + name);
+window.setLocationLabel = function (name, label) {
+  if (!mockupState.locationLabels) {
+    mockupState.locationLabels = {};
+  }
+  mockupState.locationLabels[name] = label;
+  updateMockupState("lastAction", "label_" + name);
 };
 
-window.togglePasswordVisibility = function(inputId, buttonEl) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    const icon = buttonEl.querySelector('i');
-    if (input.type === 'password') {
-        input.type = 'text';
-        if (icon) {
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        }
-    } else {
-        input.type = 'password';
-        if (icon) {
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-        }
+window.togglePasswordVisibility = function (inputId, buttonEl) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const icon = buttonEl.querySelector("i");
+  if (input.type === "password") {
+    input.type = "text";
+    if (icon) {
+      icon.classList.remove("fa-eye");
+      icon.classList.add("fa-eye-slash");
     }
+  } else {
+    input.type = "password";
+    if (icon) {
+      icon.classList.remove("fa-eye-slash");
+      icon.classList.add("fa-eye");
+    }
+  }
 };
 
-window.viewPastOrder = function(orderId) {
-    const apiOrdersList = mockupState.apiOrders ? (Array.isArray(mockupState.apiOrders) ? mockupState.apiOrders : (mockupState.apiOrders.items || mockupState.apiOrders.data || [])) : [];
-    let allOrders = [...apiOrdersList];
-    if (mockupState.lastOrder) {
-        const lastOrderId = mockupState.lastOrder.orderId;
-        const exists = allOrders.some(o => o.orderId === lastOrderId);
-        if (!exists) {
-            allOrders.push(mockupState.lastOrder);
-        }
+window.viewPastOrder = function (orderId) {
+  const apiOrdersList = mockupState.apiOrders
+    ? Array.isArray(mockupState.apiOrders)
+      ? mockupState.apiOrders
+      : mockupState.apiOrders.items || mockupState.apiOrders.data || []
+    : [];
+  let allOrders = [...apiOrdersList];
+  if (mockupState.lastOrder) {
+    const lastOrderId = mockupState.lastOrder.orderId;
+    const exists = allOrders.some((o) => o.orderId === lastOrderId);
+    if (!exists) {
+      allOrders.push(mockupState.lastOrder);
     }
-    
-    const order = allOrders.find(o => o.orderId === orderId || String(o.orderId) === String(orderId));
-    if (order) {
-        mockupState.lastOrder = {
-            ...order,
-            orderId: order.orderId,
-            subtotal: order.subTotal || order.subtotal || 0,
-            taxes: order.salesTax || order.taxes || 0,
-            tipAmount: order.tipApplied || order.tipAmount || 0,
-            bagFee: order.bagFeeCharged || order.bagFee || 0,
-            convenienceFee: order.convenienceFeeCharged || order.convenienceFee || 0,
-            total: order.total || 0,
-            orderItems: (order.orderMenuItems || order.items || order.orderItems || []).map(i => ({
-                name: i.name,
-                quantity: i.quantity,
-                price: i.paidPrice || i.unitPrice || i.price || 0
-            })),
-            placedAt: order.orderDate || order.placedAt || new Date().toISOString()
-        };
-        if (order.locationId) {
-            mockupState.selectedLocationId = order.locationId;
-            const foundLoc = LOCATIONS.find(l => l.locationId === order.locationId);
-            if (foundLoc) {
-                mockupState.selectedLocation = foundLoc.name;
-            }
-        }
-        persistAllState();
-        navigateTo('order-confirm');
+  }
+
+  const order = allOrders.find(
+    (o) => o.orderId === orderId || String(o.orderId) === String(orderId),
+  );
+  if (order) {
+    mockupState.lastOrder = {
+      ...order,
+      orderId: order.orderId,
+      subtotal: order.subTotal || order.subtotal || 0,
+      taxes: order.salesTax || order.taxes || 0,
+      tipAmount: order.tipApplied || order.tipAmount || 0,
+      bagFee: order.bagFeeCharged || order.bagFee || 0,
+      convenienceFee: order.convenienceFeeCharged || order.convenienceFee || 0,
+      total: order.total || 0,
+      orderItems: (
+        order.orderMenuItems ||
+        order.items ||
+        order.orderItems ||
+        []
+      ).map((i) => ({
+        name: i.name,
+        quantity: i.quantity,
+        price: i.paidPrice || i.unitPrice || i.price || 0,
+      })),
+      placedAt: order.orderDate || order.placedAt || new Date().toISOString(),
+    };
+    if (order.locationId) {
+      mockupState.selectedLocationId = order.locationId;
+      const foundLoc = LOCATIONS.find((l) => l.locationId === order.locationId);
+      if (foundLoc) {
+        mockupState.selectedLocation = foundLoc.name;
+      }
     }
+    persistAllState();
+    navigateTo("order-confirm");
+  }
 };
 
-window.reorderPastOrder = function(orderId) {
-    const apiOrdersList = mockupState.apiOrders ? (Array.isArray(mockupState.apiOrders) ? mockupState.apiOrders : (mockupState.apiOrders.items || mockupState.apiOrders.data || [])) : [];
-    let allOrders = [...apiOrdersList];
-    if (mockupState.lastOrder) {
-        const lastOrderId = mockupState.lastOrder.orderId;
-        const exists = allOrders.some(o => o.orderId === lastOrderId);
-        if (!exists) {
-            allOrders.push(mockupState.lastOrder);
-        }
+window.reorderPastOrder = function (orderId) {
+  const apiOrdersList = mockupState.apiOrders
+    ? Array.isArray(mockupState.apiOrders)
+      ? mockupState.apiOrders
+      : mockupState.apiOrders.items || mockupState.apiOrders.data || []
+    : [];
+  let allOrders = [...apiOrdersList];
+  if (mockupState.lastOrder) {
+    const lastOrderId = mockupState.lastOrder.orderId;
+    const exists = allOrders.some((o) => o.orderId === lastOrderId);
+    if (!exists) {
+      allOrders.push(mockupState.lastOrder);
     }
-    
-    const order = allOrders.find(o => o.orderId === orderId || String(o.orderId) === String(orderId));
-    if (order) {
-        const orderItems = order.orderMenuItems || order.items || order.orderItems || [];
-        orderItems.forEach(item => {
-            const menuItem = MENU_ITEMS.find(mi => mi.name.toLowerCase() === item.name.toLowerCase()) || 
-                             (item.menuItemId ? MENU_ITEMS.find(mi => mi.id === item.menuItemId) : null);
-            
-            const basePrice = menuItem ? menuItem.price : (item.unitPrice || item.price || 0);
-            const image = menuItem ? menuItem.image : '';
-            
-            const cartItem = {
-                cartId: Date.now() + Math.random(),
-                menuItemId: item.menuItemId || (menuItem ? menuItem.id : 0),
-                name: item.name,
-                basePrice: basePrice,
-                unitPrice: item.unitPrice || item.price || basePrice,
-                quantity: item.quantity || 1,
-                image: image,
-                selectedSubItems: [],
-                specialInstruction: item.specialInstruction || ''
-            };
-            mockupState.cart.push(cartItem);
-        });
-        mockupState.cartItemCount = mockupState.cart.reduce((sum, i) => sum + i.quantity, 0);
-        persistAllState();
-        navigateTo('cart');
-    }
+  }
+
+  const order = allOrders.find(
+    (o) => o.orderId === orderId || String(o.orderId) === String(orderId),
+  );
+  if (order) {
+    const orderItems =
+      order.orderMenuItems || order.items || order.orderItems || [];
+    orderItems.forEach((item) => {
+      const menuItem =
+        MENU_ITEMS.find(
+          (mi) => mi.name.toLowerCase() === item.name.toLowerCase(),
+        ) ||
+        (item.menuItemId
+          ? MENU_ITEMS.find((mi) => mi.id === item.menuItemId)
+          : null);
+
+      const basePrice = menuItem
+        ? menuItem.price
+        : item.unitPrice || item.price || 0;
+      const image = menuItem ? menuItem.image : "";
+
+      const cartItem = {
+        cartId: Date.now() + Math.random(),
+        menuItemId: item.menuItemId || (menuItem ? menuItem.id : 0),
+        name: item.name,
+        basePrice: basePrice,
+        unitPrice: item.unitPrice || item.price || basePrice,
+        quantity: item.quantity || 1,
+        image: image,
+        selectedSubItems: [],
+        specialInstruction: item.specialInstruction || "",
+      };
+      mockupState.cart.push(cartItem);
+    });
+    mockupState.cartItemCount = mockupState.cart.reduce(
+      (sum, i) => sum + i.quantity,
+      0,
+    );
+    persistAllState();
+    navigateTo("cart");
+  }
 };
 
 function removeFavorite(id) {
-    mockupState.favorites = mockupState.favorites.filter(item => item.id !== id);
-    persistAllState();
-    renderPage();
+  mockupState.favorites = mockupState.favorites.filter(
+    (item) => item.id !== id,
+  );
+  persistAllState();
+  renderPage();
 }
 
-function selectLocation(locationId, locationName, locationAddress, locationDistance) {
-    mockupState.selectedLocation = locationName;
-    mockupState.selectedLocationId = locationId || null;
-    if (locationAddress) mockupState.selectedAddress = locationAddress;
-    if (locationDistance) mockupState.selectedDistance = locationDistance;
-    mockupState.orderTime = 'ASAP';
-    
-    mockupState.apiCategories = [];
-    mockupState.apiMenuItems = [];
-    persistAllState();
-    
-    if (locationId) {
-        fetchMenuAndItems(locationId);
-    }
-    
-    navigateTo('order-details');
+function selectLocation(
+  locationId,
+  locationName,
+  locationAddress,
+  locationDistance,
+) {
+  mockupState.selectedLocation = locationName;
+  mockupState.selectedLocationId = locationId || null;
+  if (locationAddress) mockupState.selectedAddress = locationAddress;
+  if (locationDistance) mockupState.selectedDistance = locationDistance;
+  mockupState.orderTime = "ASAP";
+
+  mockupState.apiCategories = [];
+  mockupState.apiMenuItems = [];
+  persistAllState();
+
+  if (locationId) {
+    fetchMenuAndItems(locationId);
+  }
+
+  navigateTo("order-details");
 }
 
 let leafletMap = null;
 let mapMarkers = {};
 
 function getNearbyLocationsCount(targetLat, targetLng, radiusMiles = 15) {
-    let count = 0;
-    LOCATIONS.forEach(loc => {
-        const dLat = (loc.lat - targetLat) * Math.PI / 180;
-        const dLng = (loc.lng - targetLng) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                  Math.cos(targetLat * Math.PI / 180) * Math.cos(loc.lat * Math.PI / 180) *
-                  Math.sin(dLng/2) * Math.sin(dLng/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        const distanceMiles = 3959 * c;
-        if (distanceMiles > 0.1 && distanceMiles <= radiusMiles) {
-            count++;
-        }
-    });
-    return count;
+  let count = 0;
+  LOCATIONS.forEach((loc) => {
+    const dLat = ((loc.lat - targetLat) * Math.PI) / 180;
+    const dLng = ((loc.lng - targetLng) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((targetLat * Math.PI) / 180) *
+        Math.cos((loc.lat * Math.PI) / 180) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distanceMiles = 3959 * c;
+    if (distanceMiles > 0.1 && distanceMiles <= radiusMiles) {
+      count++;
+    }
+  });
+  return count;
 }
 
 function initLocationsMap() {
-    const mapElement = document.getElementById('locations-map');
-    if (!mapElement) return;
+  const mapElement = document.getElementById("locations-map");
+  if (!mapElement) return;
 
-    // Default center at Tempe, AZ or first location
-    const centerLat = 37.7749; // Bay Area general center
-    const centerLng = -122.4194;
-    
-    let startLat = centerLat;
-    let startLng = centerLng;
-    let startZoom = 9;
+  // Default center at Tempe, AZ or first location
+  const centerLat = 37.7749; // Bay Area general center
+  const centerLng = -122.4194;
 
-    const currentLoc = LOCATIONS.find(l => l.name === mockupState.selectedLocation);
-    if (currentLoc) {
-        startLat = currentLoc.lat;
-        startLng = currentLoc.lng;
-        // Auto zoom based on density on initial load
-        const nearbyCount = getNearbyLocationsCount(startLat, startLng, 15);
-        startZoom = nearbyCount > 0 ? 12 : 15;
-    } else if (LOCATIONS.length > 0) {
-        startLat = LOCATIONS[0].lat;
-        startLng = LOCATIONS[0].lng;
+  let startLat = centerLat;
+  let startLng = centerLng;
+  let startZoom = 9;
+
+  const currentLoc = LOCATIONS.find(
+    (l) => l.name === mockupState.selectedLocation,
+  );
+  if (currentLoc) {
+    startLat = currentLoc.lat;
+    startLng = currentLoc.lng;
+    // Auto zoom based on density on initial load
+    const nearbyCount = getNearbyLocationsCount(startLat, startLng, 15);
+    startZoom = nearbyCount > 0 ? 12 : 15;
+  } else if (LOCATIONS.length > 0) {
+    startLat = LOCATIONS[0].lat;
+    startLng = LOCATIONS[0].lng;
+  }
+
+  try {
+    if (leafletMap) {
+      leafletMap.remove();
     }
 
-    try {
-        if (leafletMap) {
-            leafletMap.remove();
-        }
-        
-        leafletMap = L.map('locations-map', {
-            zoomControl: true,
-            scrollWheelZoom: true
-        }).setView([startLat, startLng], startZoom);
+    leafletMap = L.map("locations-map", {
+      zoomControl: true,
+      scrollWheelZoom: true,
+    }).setView([startLat, startLng], startZoom);
 
-        L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            attribution: '© Google Maps'
-        }).addTo(leafletMap);
+    L.tileLayer("https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
+      subdomains: ["mt0", "mt1", "mt2", "mt3"],
+      attribution: "© Google Maps",
+    }).addTo(leafletMap);
 
-        mapMarkers = {};
-        LOCATIONS.forEach(s => {
-            const customIcon = L.divIcon({
-                html: `
+    mapMarkers = {};
+    LOCATIONS.forEach((s) => {
+      const customIcon = L.divIcon({
+        html: `
                     <div class="relative flex flex-col items-center group">
-                        <!-- Pin circle with logo inside -->
-                        <div class="w-9 h-9 rounded-full bg-white border-2 border-violet-600 flex items-center justify-center shadow-md overflow-hidden transform transition-transform group-hover:scale-110 duration-200">
-                            <img src="images/itea_logo.png" class="w-full h-full object-contain p-1">
+                        <div class="relative w-12 h-16 flex justify-center filter drop-shadow-md transform transition-transform group-hover:scale-110 duration-200">
+                            <svg viewBox="0 0 384 512" class="absolute inset-0 w-full h-full fill-[#e61874] z-0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; fill: #e61874; z-index: 0;">
+                                <path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0z"/>
+                            </svg>
+                            <div style="position: absolute; z-index: 10; top: 8px; left: 8px; width: 32px; height: 32px; background-color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                                <img src="images/i-tea-logo-new.png" alt="IT" style="width: 24px; height: 24px; object-fit: contain;">
+                            </div>
                         </div>
-                        <!-- Arrow down -->
-                        <div class="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-violet-600 -mt-[1px]"></div>
-                        <!-- Label -->
-                        <div class="bg-violet-950/90 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-sm whitespace-nowrap mt-1 leading-none border border-violet-800/30">
+                        <div class="bg-violet-950/90 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-sm whitespace-nowrap -mt-1 leading-none border border-violet-800/30">
                             i-Tea
                         </div>
                     </div>
                 `,
-                className: 'custom-div-icon',
-                iconSize: [60, 60],
-                iconAnchor: [30, 45]
-            });
+        className: "custom-div-icon",
+        iconSize: [60, 60],
+        iconAnchor: [30, 45],
+      });
 
-            const marker = L.marker([s.lat, s.lng], { icon: customIcon }).addTo(leafletMap);
-            
-            const popupContent = `
-                <div class="p-3 font-sans min-w-[200px]">
-                    ${s.name === 'i-Tea - Tempe' ? '<div class="text-[9px] font-black text-gray-900 uppercase tracking-widest mb-1.5">Previous Order</div>' : ''}
-                    <h4 class="font-black text-sm uppercase tracking-tight text-violet-700 mb-1">${s.name}</h4>
-                    <p class="text-xs text-gray-500 font-semibold mb-2">${s.address}</p>
-                    <p class="text-[10px] font-black text-gray-400 uppercase mb-3"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
-                    <button onclick="selectLocation(${s.locationId || 'null'}, '${s.name}', '${s.address}', '${s.dist}')" class="w-full bg-violet-600 text-white text-[10px] font-black uppercase tracking-wider py-2 rounded-full shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
-                </div>
-            `;
-            marker.bindPopup(popupContent);
-            
-            marker.on('click', () => {
-                focusLocation(s.name, false);
-            });
+      const marker = L.marker([s.lat, s.lng], { icon: customIcon }).addTo(
+        leafletMap,
+      );
 
-            mapMarkers[s.name.toLowerCase()] = marker;
-        });
+      if (
+        currentViewport === "desktop" &&
+        currentLoc &&
+        s.name === currentLoc.name
+      ) {
+        const popupContent = `
+                    <div class="p-3 font-sans min-w-[200px]">
+                        ${s.name === "i-Tea - Tempe" ? '<div class="text-[9px] font-black text-gray-900 uppercase tracking-widest mb-1.5">Previous Order</div>' : ""}
+                        <h4 class="font-black text-sm uppercase tracking-tight text-violet-700 mb-1">${s.name}</h4>
+                        <p class="text-xs text-gray-500 font-semibold mb-2">${s.address}</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-3"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
+                        <button onclick="selectLocation(${s.locationId || "null"}, '${s.name}', '${s.address}', '${s.dist}')" class="w-full bg-violet-600 text-white text-[10px] font-black uppercase tracking-wider py-2 rounded-full shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
+                    </div>
+                `;
+        marker.bindPopup(popupContent);
+      }
 
-        if (currentLoc && mapMarkers[currentLoc.name.toLowerCase()]) {
-            setTimeout(() => {
-                if (leafletMap) {
-                    leafletMap.invalidateSize();
-                }
-                if (mapMarkers[currentLoc.name.toLowerCase()]) {
-                    mapMarkers[currentLoc.name.toLowerCase()].openPopup();
-                }
-            }, 300);
-        } else {
-            setTimeout(() => {
-                if (leafletMap) {
-                    leafletMap.invalidateSize();
-                }
-            }, 300);
+      marker.on("click", () => {
+        focusLocation(s.name, false);
+      });
+
+      mapMarkers[s.name.toLowerCase()] = marker;
+    });
+
+    if (currentLoc && mapMarkers[currentLoc.name.toLowerCase()]) {
+      setTimeout(() => {
+        if (leafletMap) {
+          leafletMap.invalidateSize();
         }
-
-    } catch (e) {
-        console.error("Map initialization failed", e);
+        if (
+          mapMarkers[currentLoc.name.toLowerCase()] &&
+          currentViewport === "desktop"
+        ) {
+          mapMarkers[currentLoc.name.toLowerCase()].openPopup();
+        }
+      }, 300);
+    } else {
+      setTimeout(() => {
+        if (leafletMap) {
+          leafletMap.invalidateSize();
+        }
+      }, 300);
     }
+  } catch (e) {
+    console.error("Map initialization failed", e);
+  }
 }
 
 function focusLocation(name, openPopup = true) {
-    const list = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
-        ? mockupState.apiLocations
-        : LOCATIONS;
-    const store = list.find(l => l.name.toLowerCase() === name.toLowerCase()) || LOCATIONS.find(l => l.name.toLowerCase() === name.toLowerCase());
+  const list =
+    mockupState.apiLocations && mockupState.apiLocations.length > 0
+      ? mockupState.apiLocations
+      : LOCATIONS;
+  const store =
+    list.find((l) => l.name.toLowerCase() === name.toLowerCase()) ||
+    LOCATIONS.find((l) => l.name.toLowerCase() === name.toLowerCase());
 
-    if (!store) {
-        console.error("Store not found:", name);
-        return;
-    }
+  if (!store) {
+    console.error("Store not found:", name);
+    return;
+  }
 
-    const parsedLat = parseFloat(store.lat);
-    const parsedLng = parseFloat(store.lng);
+  const parsedLat = parseFloat(store.lat);
+  const parsedLng = parseFloat(store.lng);
 
-    if (isNaN(parsedLat) || isNaN(parsedLng)) {
-        console.error("Store coordinates invalid:", store);
-        return;
-    }
+  if (isNaN(parsedLat) || isNaN(parsedLng)) {
+    console.error("Store coordinates invalid:", store);
+    return;
+  }
 
-    if (leafletMap) {
-        leafletMap.invalidateSize();
-        // Dynamically calculate zoom: zoom out if there are nearby alternative locations
-        const nearbyCount = getNearbyLocationsCount(parsedLat, parsedLng, 15);
-        const zoomLevel = nearbyCount > 0 ? 12 : 15;
-        
-        leafletMap.setView([parsedLat, parsedLng], zoomLevel, { animate: true, duration: 0.8 });
-    }
+  if (leafletMap) {
+    leafletMap.invalidateSize();
+    // Dynamically calculate zoom: zoom out if there are nearby alternative locations
+    const nearbyCount = getNearbyLocationsCount(parsedLat, parsedLng, 15);
+    const zoomLevel = nearbyCount > 0 ? 12 : 15;
 
-    const key = name.toLowerCase();
-    if (openPopup && mapMarkers[key]) {
-        mapMarkers[key].openPopup();
-    }
-
-    const cards = document.querySelectorAll('[data-location-card]');
-    cards.forEach(card => {
-        const cardName = card.getAttribute('data-location-card');
-        if (cardName.toLowerCase() === name.toLowerCase()) {
-            card.classList.remove('border-gray-200', 'bg-white');
-            card.classList.add('border-violet-600', 'bg-violet-50/10', 'shadow-md');
-            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        } else {
-            card.classList.remove('border-violet-600', 'bg-violet-50/10', 'shadow-md');
-            card.classList.add('border-gray-200', 'bg-white');
-        }
+    leafletMap.setView([parsedLat, parsedLng], zoomLevel, {
+      animate: true,
+      duration: 0.8,
     });
+  }
+
+  const key = name.toLowerCase();
+  if (openPopup && mapMarkers[key]) {
+    mapMarkers[key].openPopup();
+  }
+
+  const cards = document.querySelectorAll("[data-location-card]");
+  cards.forEach((card) => {
+    const cardName = card.getAttribute("data-location-card");
+    if (cardName.toLowerCase() === name.toLowerCase()) {
+      card.classList.remove("border-gray-200", "bg-white");
+      card.classList.add("border-violet-600", "bg-violet-50/10", "shadow-md");
+      card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } else {
+      card.classList.remove(
+        "border-violet-600",
+        "bg-violet-50/10",
+        "shadow-md",
+      );
+      card.classList.add("border-gray-200", "bg-white");
+    }
+  });
 }
 
 function navigateTo(pageId) {
-    persistAllState();
-    let [basePageId, hash] = pageId.split('#');
-    
-    // Redirect to location selector if accessing menu or customization without a selected store
-    if ((basePageId === 'menu' || basePageId === 'menu-alt' || basePageId === 'customize' || basePageId === 'customize-alt') && !mockupState.selectedLocationId) {
-        basePageId = (basePageId === 'menu-alt' || basePageId === 'customize-alt') ? 'locations-alt' : 'locations';
-        hash = '';
-    }
+  persistAllState();
+  let [basePageId, hash] = pageId.split("#");
 
-    if (basePageId === currentPage) {
-        if (hash) {
-            const element = document.getElementById(hash);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-                window.location.hash = hash;
-            }
-        } else {
-            renderPage();
-        }
-        return;
+  // Redirect to location selector if accessing menu or customization without a selected store
+  if (
+    (basePageId === "menu" ||
+      basePageId === "menu-alt" ||
+      basePageId === "customize" ||
+      basePageId === "customize-alt") &&
+    !mockupState.selectedLocationId
+  ) {
+    basePageId =
+      basePageId === "menu-alt" || basePageId === "customize-alt"
+        ? "locations-alt"
+        : "locations";
+    hash = "";
+  }
+
+  if (basePageId === currentPage) {
+    if (hash) {
+      const element = document.getElementById(hash);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+        window.location.hash = hash;
+      }
+    } else {
+      renderPage();
     }
-    const nextFile = PAGE_FILE_MAP[basePageId] || `${basePageId}.html`;
-    window.location.href = hash ? `${nextFile}#${hash}` : nextFile;
+    return;
+  }
+  const nextFile = PAGE_FILE_MAP[basePageId] || `${basePageId}.html`;
+  window.location.href = hash ? `${nextFile}#${hash}` : nextFile;
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-    // Redirect to location selector if landing directly on menu or customization without a selected store
-    if ((currentPage === 'menu' || currentPage === 'menu-alt' || currentPage === 'customize' || currentPage === 'customize-alt') && !mockupState.selectedLocationId) {
-        const targetLocationsPage = (currentPage === 'menu-alt' || currentPage === 'customize-alt') ? 'locations-alt.html' : 'locations.html';
-        window.location.href = targetLocationsPage;
-        return;
-    }
+window.addEventListener("DOMContentLoaded", () => {
+  // Redirect to location selector if landing directly on menu or customization without a selected store
+  if (
+    (currentPage === "menu" ||
+      currentPage === "menu-alt" ||
+      currentPage === "customize" ||
+      currentPage === "customize-alt") &&
+    !mockupState.selectedLocationId
+  ) {
+    const targetLocationsPage =
+      currentPage === "menu-alt" || currentPage === "customize-alt"
+        ? "locations-alt.html"
+        : "locations.html";
+    window.location.href = targetLocationsPage;
+    return;
+  }
 
-    if (window.ApiService && window.ApiService.getToken()) {
-        mockupState.isLoggedIn = true;
-        
-        // Fetch profile
-        window.ApiService.getProfile().then(profile => {
-            console.log('Successfully fetched profile on page load:', profile);
-            
-            // Merge local address details if they exist in localStorage (since API drops them in GET schema)
-            const emailKey = profile.email || profile.emailAddress || mockupState.userEmail;
-            let mergedProfile = { ...profile };
-            if (emailKey) {
-                const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
-                const savedAddress = localStorage.getItem(localAddressKey);
-                if (savedAddress) {
-                    try {
-                        const parsedAddress = JSON.parse(savedAddress);
-                        mergedProfile = { ...mergedProfile, ...parsedAddress };
-                    } catch(e) {
-                        console.error('Error parsing local profile address:', e);
-                    }
-                }
-            }
-            
-            mockupState.userName = mergedProfile.firstName || mergedProfile.email?.split('@')[0] || 'User';
-            mockupState.userProfile = mergedProfile;
-            loadCartFromStorage();
-            persistAllState();
-            if (typeof resetInactivityTimer === 'function') resetInactivityTimer();
-            renderPage();
-        }).catch(err => {
-            console.error('Failed to auto-fetch profile on start:', err);
-            if (err.status === 401) {
-                signOutUser();
-            }
-        });
-        
-        // Fetch orders
-        window.ApiService.getOrders(1, 20).then(orders => {
-            console.log('Successfully fetched orders on page load:', orders);
-            mockupState.apiOrders = orders;
-            persistAllState();
-            renderPage();
-        }).catch(err => console.error('Failed to auto-fetch orders:', err));
-    }
+  if (window.ApiService && window.ApiService.getToken()) {
+    mockupState.isLoggedIn = true;
 
-    fetchLocations().then(() => {
-        if (currentPage === 'locations' || currentPage === 'locations-alt') {
-            renderPage();
+    // Fetch profile
+    window.ApiService.getProfile()
+      .then((profile) => {
+        console.log("Successfully fetched profile on page load:", profile);
+
+        // Merge local address details if they exist in localStorage (since API drops them in GET schema)
+        const emailKey =
+          profile.email || profile.emailAddress || mockupState.userEmail;
+        let mergedProfile = { ...profile };
+        if (emailKey) {
+          const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
+          const savedAddress = localStorage.getItem(localAddressKey);
+          if (savedAddress) {
+            try {
+              const parsedAddress = JSON.parse(savedAddress);
+              mergedProfile = { ...mergedProfile, ...parsedAddress };
+            } catch (e) {
+              console.error("Error parsing local profile address:", e);
+            }
+          }
         }
-    });
 
-    if (mockupState.selectedLocationId && mockupState.apiMenuItems.length === 0) {
-        fetchMenuAndItems(mockupState.selectedLocationId);
+        mockupState.userName =
+          mergedProfile.firstName ||
+          mergedProfile.email?.split("@")[0] ||
+          "User";
+        mockupState.userProfile = mergedProfile;
+        loadCartFromStorage();
+        persistAllState();
+        if (typeof resetInactivityTimer === "function") resetInactivityTimer();
+        renderPage();
+      })
+      .catch((err) => {
+        console.error("Failed to auto-fetch profile on start:", err);
+        if (err.status === 401) {
+          signOutUser();
+        }
+      });
+
+    // Fetch orders
+    window.ApiService.getOrders(1, 20)
+      .then((orders) => {
+        console.log("Successfully fetched orders on page load:", orders);
+        mockupState.apiOrders = orders;
+        persistAllState();
+        renderPage();
+      })
+      .catch((err) => console.error("Failed to auto-fetch orders:", err));
+  }
+
+  fetchLocations().then(() => {
+    if (currentPage === "locations" || currentPage === "locations-alt") {
+      renderPage();
     }
+  });
 
-    renderPage();
+  if (mockupState.selectedLocationId && mockupState.apiMenuItems.length === 0) {
+    fetchMenuAndItems(mockupState.selectedLocationId);
+  }
+
+  renderPage();
 });
 
 // --- Session Timeout Manager ---
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
-const WARNING_TIME_MS = 13 * 60 * 1000;    // 13 minutes (2 minute warning)
+const WARNING_TIME_MS = 13 * 60 * 1000; // 13 minutes (2 minute warning)
 
 let inactivityTimer = null;
 let warningTimer = null;
 
 function resetInactivityTimer() {
-    // If warning modal is open, don't reset automatically on user action 
-    // unless they explicitly click "Stay Logged In"
-    if (mockupState.modalOpen === 'timeout-warning') return;
+  // If warning modal is open, don't reset automatically on user action
+  // unless they explicitly click "Stay Logged In"
+  if (mockupState.modalOpen === "timeout-warning") return;
 
-    clearTimeout(inactivityTimer);
-    clearTimeout(warningTimer);
+  clearTimeout(inactivityTimer);
+  clearTimeout(warningTimer);
 
-    // Only track if logged in
-    if (!mockupState.isLoggedIn) return;
+  // Only track if logged in
+  if (!mockupState.isLoggedIn) return;
 
-    warningTimer = setTimeout(showTimeoutWarning, WARNING_TIME_MS);
-    inactivityTimer = setTimeout(executeAutoLogout, SESSION_TIMEOUT_MS);
+  warningTimer = setTimeout(showTimeoutWarning, WARNING_TIME_MS);
+  inactivityTimer = setTimeout(executeAutoLogout, SESSION_TIMEOUT_MS);
 }
 
 function showTimeoutWarning() {
-    if (!mockupState.isLoggedIn) return;
-    mockupState.modalOpen = 'timeout-warning';
-    persistAllState();
-    renderTimeoutWarningModal();
+  if (!mockupState.isLoggedIn) return;
+  mockupState.modalOpen = "timeout-warning";
+  persistAllState();
+  renderTimeoutWarningModal();
 }
 
 function executeAutoLogout() {
-    mockupState.modalOpen = null;
-    persistAllState();
-    removeTimeoutWarningModal();
-    if (mockupState.isLoggedIn) {
-        signOutUser(); // This handles logout and redirect
-        
-        // Optional: show a quick alert or toast that they were logged out
-        setTimeout(() => {
-            alert("You have been automatically logged out due to inactivity.");
-        }, 500);
-    }
+  mockupState.modalOpen = null;
+  persistAllState();
+  removeTimeoutWarningModal();
+  if (mockupState.isLoggedIn) {
+    signOutUser(); // This handles logout and redirect
+
+    // Optional: show a quick alert or toast that they were logged out
+    setTimeout(() => {
+      alert("You have been automatically logged out due to inactivity.");
+    }, 500);
+  }
 }
 
 function handleStayLoggedIn() {
-    mockupState.modalOpen = null;
-    persistAllState();
-    removeTimeoutWarningModal();
-    resetInactivityTimer();
+  mockupState.modalOpen = null;
+  persistAllState();
+  removeTimeoutWarningModal();
+  resetInactivityTimer();
 }
 
 function renderTimeoutWarningModal() {
-    if (!document.getElementById('timeout-warning-modal')) {
-        const modalHtml = `
+  if (!document.getElementById("timeout-warning-modal")) {
+    const modalHtml = `
             <div id="timeout-warning-modal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-[fadeIn_0.3s_ease-out]">
                 <div class="bg-white w-[92%] max-w-[380px] rounded-[32px] p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out]">
                     <div class="flex items-center justify-between mb-4">
@@ -8041,48 +9787,54 @@ function renderTimeoutWarningModal() {
                 </div>
             </div>
         `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-    }
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+  }
 }
 
 function removeTimeoutWarningModal() {
-    const modal = document.getElementById('timeout-warning-modal');
-    if (modal) {
-        modal.remove();
-    }
+  const modal = document.getElementById("timeout-warning-modal");
+  if (modal) {
+    modal.remove();
+  }
 }
 
 // Global Event Listeners for Activity
-const activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-activityEvents.forEach(event => {
-    window.addEventListener(event, resetInactivityTimer, { passive: true });
+const activityEvents = [
+  "mousemove",
+  "keydown",
+  "click",
+  "scroll",
+  "touchstart",
+];
+activityEvents.forEach((event) => {
+  window.addEventListener(event, resetInactivityTimer, { passive: true });
 });
 
 // Initialize on load
-window.addEventListener('DOMContentLoaded', () => {
-    resetInactivityTimer();
+window.addEventListener("DOMContentLoaded", () => {
+  resetInactivityTimer();
 });
 
 // Native camera QR code capture callback
-window.handleQRCameraCapture = function(event) {
-    const file = event.target.files[0];
-    if (file) {
-        // Set scanning state to true, causing the page to render the premium overlay
-        updateMockupState('isScanning', true);
-        
-        // Simulate decoding progress for 1.5 seconds, then transition to menu
-        setTimeout(() => {
-            updateMockupState('isScanning', false);
-            navigateTo('menu');
-        }, 1500);
-    }
+window.handleQRCameraCapture = function (event) {
+  const file = event.target.files[0];
+  if (file) {
+    // Set scanning state to true, causing the page to render the premium overlay
+    updateMockupState("isScanning", true);
+
+    // Simulate decoding progress for 1.5 seconds, then transition to menu
+    setTimeout(() => {
+      updateMockupState("isScanning", false);
+      navigateTo("menu");
+    }, 1500);
+  }
 };
 
 // Handle back/forward cache (bfcache) restoration to clear loading state
-window.addEventListener('pageshow', (event) => {
-    if (event.persisted) {
-        mockupState.isLoading = false;
-        persistAllState();
-        renderPage();
-    }
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    mockupState.isLoading = false;
+    persistAllState();
+    renderPage();
+  }
 });
