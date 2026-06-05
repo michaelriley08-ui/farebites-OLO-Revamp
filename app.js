@@ -1075,24 +1075,17 @@ function hamburgerDrawerHTML() {
   const userName = mockupState.userName || "Guest";
 
   const navItems = [
+    { label: "Rewards", icon: "fa-award", page: "rewards" },
     { label: "Home", icon: "fa-house", page: "restaurant-home" },
     { label: "Menu", icon: "fa-utensils", page: "menu" },
-    { label: "Menu Favorites", icon: "fa-heart", page: "menu-favorites" },
     { label: "Locations", icon: "fa-location-dot", page: "locations" },
-    {
-      label: "Saved Locations",
-      icon: "fa-bookmark",
-      page: "location-favorites",
-    },
-    { label: "Rewards", icon: "fa-award", page: "account" },
-    { label: "Scan QR Code", icon: "fa-qrcode", page: "menu-scan" },
     { label: "Cart", icon: "fa-bag-shopping", page: "cart" },
     {
       label: "Order Status",
       icon: "fa-clock-rotate-left",
       page: "order-status",
     },
-    { label: "My Account", icon: "fa-user", page: "account" },
+    { label: "Scan QR code for menu", icon: "fa-qrcode", page: "menu-scan" },
   ];
 
   if (isLoggedIn) {
@@ -1101,6 +1094,12 @@ function hamburgerDrawerHTML() {
       icon: "fa-arrow-right-from-bracket",
       page: "logout",
     });
+  } else {
+    navItems.push({
+      label: "Log In",
+      icon: "fa-arrow-right-to-bracket",
+      page: "sign-in",
+    });
   }
 
   return `
@@ -1108,16 +1107,17 @@ function hamburgerDrawerHTML() {
             <!-- Drawer Panel -->
             <div class="w-[78%] max-w-[310px] bg-white h-full flex flex-col shadow-2xl relative z-10">
                 <!-- Header -->
-                <div class="px-6 pt-10 pb-6 border-b border-gray-100 flex items-start justify-between">
+                <div class="px-6 pt-10 pb-3 border-b border-gray-100 flex items-start justify-between">
                     <div>
                         ${
                           isLoggedIn
                             ? `
                             <p class="font-black text-[22px] text-gray-900 leading-tight">Hi, ${userName}</p>
-                            <button onclick="closeHamburger(); navigateTo('account');" class="text-sm font-bold text-violet-600 mt-1 hover:underline">View My Account</button>
+                            <button onclick="closeHamburger(); navigateTo('account');" class="text-[17px] font-black text-violet-600 mt-2 hover:underline">My Account</button>
                         `
                             : `
-                            <button onclick="closeHamburger(); navigateTo('sign-in');" class="font-black text-[22px] text-gray-900">Sign In</button>
+                            <p class="font-black text-[22px] text-gray-900 leading-tight">Hi, Guest</p>
+                            <button onclick="closeHamburger(); navigateTo('sign-in');" class="text-[17px] font-black text-violet-600 mt-2 hover:underline">Sign In</button>
                         `
                         }
                     </div>
@@ -1133,54 +1133,67 @@ function hamburgerDrawerHTML() {
                           item.page === "logout"
                             ? "closeHamburger(); signOutUser();"
                             : `closeHamburger(); navigateTo('${item.page}');`;
+                            
+                        if (item.label === "Rewards") {
+                          return `
+                            <div class="border-b border-gray-100 px-4 py-1.5">
+                                <button onclick="${clickAction}" 
+                                    class="w-full text-left bg-violet-50 rounded-xl px-4 py-2 border border-violet-200 shadow-sm relative overflow-hidden flex items-center gap-4 transition-colors hover:bg-violet-100 group">
+                                    <!-- Ribbon -->
+                                    <div class="absolute -right-6 -top-6 w-16 h-16 bg-violet-200 rotate-45 opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                                    
+                                    <div class="w-10 h-10 rounded-full bg-violet-600 text-white flex items-center justify-center shadow-md relative z-10 shrink-0">
+                                        <i class="fa-solid fa-award text-lg"></i>
+                                    </div>
+                                    <div class="flex flex-col relative z-10">
+                                        <span class="text-[17px] font-black tracking-tight text-violet-900">
+                                            ${item.label}
+                                        </span>
+                                        <span class="text-[11px] font-bold text-violet-600 uppercase tracking-widest mt-0.5">View your points</span>
+                                    </div>
+                                </button>
+                            </div>`;
+                        }
+
                         return `
-                        <button onclick="${clickAction}" 
-                            class="w-full text-left px-6 py-4 text-[17px] font-black tracking-tight transition-colors hover:bg-violet-50 ${
-                              currentPage === item.page
-                                ? "text-violet-600"
-                                : "text-gray-900"
-                            }">
-                            ${item.label}
-                        </button>`;
+                        <div class="border-b border-gray-100">
+                            <button onclick="${clickAction}" 
+                                class="w-full flex items-center gap-4 text-left px-6 py-4 text-[17px] font-black tracking-tight transition-colors hover:bg-violet-50 ${
+                                  currentPage === item.page
+                                    ? "text-violet-600"
+                                    : "text-gray-900"
+                                }">
+                                <i class="fa-solid ${item.icon} text-violet-400 w-5 text-center"></i>
+                                ${item.label}
+                            </button>
+                        </div>`;
                       })
                       .join("")}
                     
-                    <div class="px-6 py-4 mt-2 border-t border-gray-100">
-                        <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Pages</div>
+                    <div class="px-6 py-4 mt-2">
+                        <div class="font-black text-[22px] text-gray-900 leading-tight mb-3">Pages</div>
                         <div class="flex flex-col gap-3">
-                            <a href="index.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">index.html</a>
-                            <a href="menu.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu.html</a>
-                            <a href="menu-alt.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu-alt.html</a>
-                            <a href="locations.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">locations.html</a>
-                            <a href="location-favorites.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">location-favorites.html</a>
-                            <a href="cart.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">cart.html</a>
-                            <a href="checkout.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">checkout.html</a>
-                            <a href="order-customize.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-customize.html</a>
-                            <a href="order-confirm.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-confirm.html</a>
-                            <a href="order-status.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-status.html</a>
-                            <a href="order-details.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-details.html</a>
-                            <a href="order-details-alt.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-details-alt.html</a>
-                            <a href="track-order.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">track-order.html</a>
-                            <a href="profile.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">profile.html</a>
-                            <a href="registration.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">registration.html</a>
-                            <a href="sign-in.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">sign-in.html</a>
-                            <a href="menu-favorites.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu-favorites.html</a>
-                            <a href="menu-scan.html" class="text-[15px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu-scan.html</a>
+                            <a href="index.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">index.html</a>
+                            <a href="menu.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu.html</a>
+                            <a href="menu-alt.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu-alt.html</a>
+                            <a href="locations.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">locations.html</a>
+                            <a href="location-favorites.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">location-favorites.html</a>
+                            <a href="cart.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">cart.html</a>
+                            <a href="checkout.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">checkout.html</a>
+                            <a href="order-customize.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-customize.html</a>
+                            <a href="order-confirm.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-confirm.html</a>
+                            <a href="order-status.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-status.html</a>
+                            <a href="order-details.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-details.html</a>
+                            <a href="order-details-alt.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-details-alt.html</a>
+                            <a href="track-order.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">track-order.html</a>
+                            <a href="profile.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">profile.html</a>
+                            <a href="registration.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">registration.html</a>
+                            <a href="sign-in.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">sign-in.html</a>
+                            <a href="menu-favorites.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu-favorites.html</a>
+                            <a href="menu-scan.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu-scan.html</a>
                         </div>
                     </div>
                 </nav>
-                <!-- Footer -->
-                <div class="px-6 py-6 border-t border-gray-100">
-                    ${
-                      isLoggedIn
-                        ? `
-                        <button onclick="closeHamburger(); signOutUser();" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Sign Out</button>
-                    `
-                        : `
-                        <button onclick="closeHamburger(); navigateTo('sign-in');" class="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-violet-600 transition-colors">Sign In / Create Account</button>
-                    `
-                    }
-                </div>
             </div>
             <!-- Backdrop -->
             <div class="flex-1 bg-black/50 backdrop-blur-[2px]" onclick="closeHamburger()"></div>
@@ -1268,16 +1281,7 @@ function renderMenuPage(isAlternative) {
                     <div class="flex-1 flex items-center justify-center">
                         <img src="images/i-tea-logo-new.png" class="h-9 w-auto object-contain" alt="i-Tea">
                     </div>
-                    <!-- Right: Rewards + Cart -->
-                    ${
-                      !isAlternative
-                        ? `
-                    <button onclick="updateMockupState('modalOpen', 'rewards'); navigateTo(currentPage)" class="w-10 h-10 flex items-center justify-center text-violet-600 hover:text-violet-700 transition-all active:scale-90 shrink-0">
-                        <i class="fa-solid fa-award text-2xl"></i>
-                    </button>
-                    `
-                        : ""
-                    }
+                    <!-- Right: Cart -->
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                         ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
