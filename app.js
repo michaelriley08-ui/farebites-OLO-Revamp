@@ -2503,6 +2503,9 @@ const routes = {
     if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
         featuredItems = items.filter(item => item.category === "New Items" || item.categoryKey === "New Items" || item.categoryId === "new-items-section");
     }
+    if (!featuredItems || featuredItems.length === 0) {
+        featuredItems = items.slice(0, 3);
+    }
 
     return `
             <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
@@ -2512,7 +2515,7 @@ const routes = {
                       isDesktop
                         ? `
                     <img src="images/iTea-hero3.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
-                    <div class="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-violet-950/30 to-transparent z-0"></div>
+                    <div class="absolute inset-0 bg-gradient-to-br from-violet-600 via-violet-600/50 to-transparent via-[30%] to-[70%] z-0"></div>
                     <div class="relative z-10 w-full max-w-[1080px] mx-auto px-12 text-left flex flex-col justify-center h-full">
                         <div class="max-w-[480px] pt-2">
                             <h2 class="font-branding font-black text-5xl tracking-tight text-white uppercase leading-none">SIP THE</h2>
@@ -7727,6 +7730,18 @@ function renderPage() {
     contentHtml += hamburgerDrawerHTML();
   }
 
+  const scrollToTopBtnHtml = `
+      <!-- Global Scroll to Top Button -->
+      <div class="fixed bottom-8 right-8 z-[90] pb-bottom-safe pointer-events-none">
+          <button id="scroll-to-top-btn" 
+                  onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+                  class="w-14 h-14 bg-violet-600 text-white rounded-full shadow-xl flex items-center justify-center hover:bg-violet-700 hover:-translate-y-1 active:translate-y-0 transition-all duration-300 opacity-0 pointer-events-none">
+              <i class="fa-solid fa-arrow-up text-xl pointer-events-none"></i>
+          </button>
+      </div>
+  `;
+  contentHtml += scrollToTopBtnHtml;
+
   viewport.innerHTML = contentHtml + loadingOverlayHtml;
   let scrolledToHash = false;
   if (window.location.hash) {
@@ -9876,3 +9891,17 @@ window.addEventListener("pageshow", (event) => {
     renderPage();
   }
 });
+
+// Global scroll-to-top button handler
+window.addEventListener("scroll", () => {
+  const btn = document.getElementById("scroll-to-top-btn");
+  if (btn) {
+    if (window.scrollY > 400) {
+      btn.classList.remove("opacity-0", "pointer-events-none");
+      btn.classList.add("opacity-100", "pointer-events-auto");
+    } else {
+      btn.classList.add("opacity-0", "pointer-events-none");
+      btn.classList.remove("opacity-100", "pointer-events-auto");
+    }
+  }
+}, { passive: true });
