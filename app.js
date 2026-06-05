@@ -948,6 +948,13 @@ const MENU_ITEMS = [
     image: "https://olodev.azurewebsites.net/imagesmenu/D4-Guava-Fruit-Tea.jpg",
     category: "Fruit Tea",
   },
+  {
+    name: "J1 White Peach Oolong",
+    description: "Refreshing white peach flavor with premium oolong tea.",
+    price: 4.95,
+    image: "https://olodev.azurewebsites.net/imagesmenu/D2-Peach-Fruit-Tea.jpg",
+    category: "Fruit Tea",
+  },
   // Milk Tea (4 items)
   {
     name: "B1 Signature Boba Milk Tea",
@@ -1207,6 +1214,12 @@ function renderMenuPage(isAlternative) {
     mockupState.modalOpen === "categories" ? "flex" : "hidden";
 
   const categories = getActiveCategories();
+  
+  const allItems = getActiveMenuItems();
+  let featuredItems = [];
+  if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
+      featuredItems = allItems.filter(item => item.category === "New Items" || item.categoryKey === "New Items" || item.categoryId === "new-items-section");
+  }
 
   const mode = mockupState.fulfillmentMode || "In-store";
   let modeText = "IN-STORE PICKUP";
@@ -1544,86 +1557,59 @@ function renderMenuPage(isAlternative) {
             <div class="${isDesktop ? "p-8" : "p-3"} max-w-[1080px] mx-auto w-full">
             <div class="${isDesktop ? "p-8" : "p-3"} max-w-[1080px] mx-auto w-full overflow-hidden">
                 ${(() => {
-                  const grapefruitImg = MENU_ITEMS[5]
-                    ? MENU_ITEMS[5].image
-                    : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
-                  const superFruitImg = MENU_ITEMS[3]
-                    ? MENU_ITEMS[3].image
-                    : "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg";
+                  if (featuredItems.length === 0) return "";
                   return isDesktop
                     ? `
                         <div class="flex gap-[14px] overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-6 mb-2 pt-2 -mt-2 -mx-2 px-2">
-                            <!-- Boba Slide -->
-                            <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
-                                <!-- Absolute top-left badge -->
-                                <span class="absolute top-4 left-6 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                <div class="relative z-10 w-full pr-36">
-                                    <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">Brown Sugar<br>Boba Latte</h2>
-                                    <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Creamy, caramelized milk tea perfection.</p>
+                            ${featuredItems.map((fItem, index) => {
+                                const gradients = [
+                                    "from-violet-600/65 via-violet-600/30",
+                                    "from-orange-600/70 via-orange-600/35",
+                                    "from-[#f97316]/70 via-[#f97316]/35"
+                                ];
+                                const badgeColors = ["bg-violet-600", "bg-orange-600", "bg-[#f97316]"];
+                                const textColors = ["text-violet-600", "text-orange-600", "text-amber-600"];
+                                const styleIdx = index % 3;
+                                const fIndex = allItems.indexOf(fItem);
+                                return `
+                                <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
+                                    <img src="${fItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
+                                    <span class="absolute top-4 left-6 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    <div class="relative z-10 w-full pr-36">
+                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding line-clamp-2">${fItem.name}</h2>
+                                        <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px] line-clamp-2">${fItem.description || "A delicious new addition to our menu."}</p>
+                                    </div>
+                                    <button onclick="selectItemAndNavigate(${fIndex})" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 ${textColors[styleIdx]} px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
                                 </div>
-                                <!-- Hover reveal button -->
-                                <button onclick="selectItemAndNavigate(6)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 text-violet-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
-                            </div>
-                            <!-- Grapefruit Slide -->
-                            <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
-                                <!-- Absolute top-left badge -->
-                                <span class="absolute top-4 left-6 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                <div class="relative z-10 w-full pr-36">
-                                    <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P3 Super<br>Grapefruit</h2>
-                                    <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
-                                </div>
-                                <!-- Hover reveal button -->
-                                <button onclick="selectItemAndNavigate(5)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-orange-50 text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
-                            </div>
-                            <!-- P1 Super Fruit Tea Slide -->
-                            <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-r from-[#f97316]/70 via-[#f97316]/35 to-transparent"></div>
-                                <!-- Absolute top-left badge - tangerine/orange-amber -->
-                                <span class="absolute top-4 left-6 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
-                                <div class="relative z-10 w-full pr-36">
-                                    <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P1 Super<br>Fruit Tea</h2>
-                                    <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Pineapple, passion fruit, apple, lime &amp; orange in every sip.</p>
-                                </div>
-                                <!-- Hover reveal button -->
-                                <button onclick="selectItemAndNavigate(3)" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-amber-50 text-amber-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
-                            </div>
+                                `;
+                            }).join("")}
                         </div>
                     `
                     : `
-                        <!-- Mobile/Tablet hero promo row: horizontal scroll -->
                         <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 mb-4 -mx-1 px-1">
-                            <!-- Boba Card -->
-                            <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(6)">
-                                <img src="${assets.bobaHero}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
-                                <span class="absolute top-4 left-5 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                <div class="relative z-10">
-                                    <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">Brown Sugar<br>Boba Latte</h2>
+                            ${featuredItems.map((fItem, index) => {
+                                const gradients = [
+                                    "from-violet-600/65 via-violet-600/30",
+                                    "from-orange-600/70 via-orange-600/35",
+                                    "from-[#f97316]/70 via-[#f97316]/35",
+                                    "from-[#E61874]/70 via-[#E61874]/35",
+                                    "from-blue-600/70 via-blue-600/35"
+                                ];
+                                const badgeColors = ["bg-violet-600", "bg-orange-600", "bg-[#f97316]", "bg-[#E61874]", "bg-blue-600"];
+                                const styleIdx = index % 5;
+                                const fIndex = allItems.indexOf(fItem);
+                                return `
+                                <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${fIndex})">
+                                    <img src="${fItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
+                                    <span class="absolute top-4 left-5 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    <div class="relative z-10">
+                                        <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding line-clamp-2">${fItem.name}</h2>
+                                    </div>
                                 </div>
-                            </div>
-                            <!-- Grapefruit Card -->
-                            <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(5)">
-                                <img src="${grapefruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
-                                <span class="absolute top-4 left-5 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                <div class="relative z-10">
-                                    <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P3 Super<br>Grapefruit</h2>
-                                </div>
-                            </div>
-                            <!-- P1 Fruit Tea Card -->
-                            <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(3)">
-                                <img src="${superFruitImg}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-r from-[#f97316]/70 via-[#f97316]/35 to-transparent"></div>
-                                <span class="absolute top-4 left-5 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</span>
-                                <div class="relative z-10">
-                                    <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding">P1 Super<br>Fruit Tea</h2>
-                                </div>
-                            </div>
+                                `;
+                            }).join("")}
                         </div>
                     `;
                 })()}
@@ -1632,7 +1618,7 @@ function renderMenuPage(isAlternative) {
                 <div class="flex overflow-x-auto scrollbar-hide border-b border-gray-100 w-full gap-6 lg:gap-8 justify-start lg:mr-auto mb-6 mt-2 pb-2 pl-2 lg:pl-0">
                     ${[
                       { id: "menu", name: "All" },
-                      { id: "featured", name: "Featured" },
+                      ...(featuredItems.length > 0 ? [{ id: "featured", name: "Featured" }] : []),
                       { id: "favorites", name: "Favorites" },
                       { id: "history", name: "History" },
                     ]
@@ -1772,24 +1758,10 @@ function renderMenuPage(isAlternative) {
                             </div>
                         `;
                   } else if (mockupState.menuTab === "featured") {
-                    const superFruitItem = MENU_ITEMS[3];
-                    const featuredItems = [...MENU_ITEMS.slice(0, 6)];
-                    // Ensure P1 Super Fruit Tea (index 3) is included but mark it specially
-                    // Build the card for P1 with tangerine badge
-                    const p1Card = `
-                            <div class="bg-white rounded-2xl ${isDesktop ? "pt-2.5 px-2.5 pb-5" : "pt-1.5 px-1.5 pb-3"} shadow-sm border border-gray-100 flex flex-col ${isDesktop ? "h-full" : "w-[72vw] max-w-[260px] shrink-0 snap-center"} hover:shadow-md transition-shadow">
-                                <div class="w-full ${isDesktop ? "h-44" : "h-40"} rounded-xl overflow-hidden ${isDesktop ? "mb-5" : "mb-3"} relative cursor-pointer" onclick='selectItemAndNavigate(3)'>
-                                    <img src="${superFruitItem ? superFruitItem.image : "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg"}" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
-                                    <div class="absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm" style="background:linear-gradient(135deg,#f97316,#f59e0b);">Featured</div>
-                                </div>
-                                <div class="cursor-pointer" onclick='selectItemAndNavigate(3)'>
-                                    <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${superFruitItem ? superFruitItem.name : "P1 Super Fruit Tea"}</h4>
-                                    <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${superFruitItem ? superFruitItem.price.toFixed(2) : "5.95"}</div>
-                                </div>
-                                ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${superFruitItem ? superFruitItem.description : ""}</p>` : ""}
-                                <button onclick='selectItemAndNavigate(3)' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
-                            </div>
-                        `;
+                    if (featuredItems.length === 0) {
+                        return `<div class="py-12 text-center text-gray-500 font-bold uppercase tracking-widest text-sm">No featured items currently available.</div>`;
+                    }
+
                     return `
                             <!-- Featured View -->
                             <div class="space-y-12">
@@ -1803,11 +1775,9 @@ function renderMenuPage(isAlternative) {
                                         ? `
                                     <div class="grid grid-cols-4 gap-x-3 gap-y-5">
                                         ${featuredItems
-                                          .map((item) => {
-                                            const actualIndex =
-                                              MENU_ITEMS.indexOf(item);
-                                            // Use tangerine badge for P1 (index 3), violet for others
-                                            const isP1 = actualIndex === 3;
+                                          .map((item, index) => {
+                                            const actualIndex = allItems.indexOf(item);
+                                            const isP1 = index === 0;
                                             const badgeStyle = isP1
                                               ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"'
                                               : "";
@@ -1821,26 +1791,24 @@ function renderMenuPage(isAlternative) {
                                                         <div class="${badgeClass}" ${badgeStyle}>Featured</div>
                                                     </div>
                                                     <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <h4 class="font-black text-gray-900 text-lg leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                        <h4 class="font-black text-gray-900 text-lg leading-tight tracking-tight uppercase mb-1 line-clamp-2">${item.name}</h4>
                                                         <div class="font-black text-violet-600 text-base mb-2">$${item.price.toFixed(2)}</div>
                                                     </div>
-                                                    <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>
+                                                    <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description || "A delicious addition to our menu."}</p>
                                                     <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-3 text-sm rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                 </div>
                                             `;
                                           })
                                           .join("")}
-                                        ${p1Card}
                                     </div>
                                     `
                                         : `
                                     <!-- Mobile/Tablet: horizontal scrollable row -->
                                     <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-3 -mx-1 px-1">
                                         ${featuredItems
-                                          .map((item) => {
-                                            const actualIndex =
-                                              MENU_ITEMS.indexOf(item);
-                                            const isP1 = actualIndex === 3;
+                                          .map((item, index) => {
+                                            const actualIndex = allItems.indexOf(item);
+                                            const isP1 = index === 0;
                                             const badgeStyle = isP1
                                               ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"'
                                               : "";
@@ -1854,7 +1822,7 @@ function renderMenuPage(isAlternative) {
                                                         <div class="${badgeClass}" ${badgeStyle}>Featured</div>
                                                     </div>
                                                     <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <h4 class="font-black text-gray-900 text-[15px] leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                        <h4 class="font-black text-gray-900 text-[15px] leading-tight tracking-tight uppercase mb-1 line-clamp-2">${item.name}</h4>
                                                         <div class="font-black text-violet-600 text-sm mb-3">$${item.price.toFixed(2)}</div>
                                                     </div>
                                                     <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-2 text-[11px] rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
@@ -1862,7 +1830,6 @@ function renderMenuPage(isAlternative) {
                                             `;
                                           })
                                           .join("")}
-                                        ${p1Card}
                                     </div>
                                     `
                                     }
@@ -2532,12 +2499,10 @@ const routes = {
     }
 
     const items = getActiveMenuItems();
-    const bobaItem =
-      items.find((item) => item.name.includes("Brown Sugar Boba")) || items[6];
-    const grapefruitItem =
-      items.find((item) => item.name.includes("Super Grapefruit")) || items[5];
-    const bobaIndex = items.indexOf(bobaItem);
-    const grapefruitIndex = items.indexOf(grapefruitItem);
+    let featuredItems = [];
+    if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
+        featuredItems = items.filter(item => item.category === "New Items" || item.categoryKey === "New Items" || item.categoryId === "new-items-section");
+    }
 
     return `
             <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
@@ -2546,7 +2511,7 @@ const routes = {
                     ${
                       isDesktop
                         ? `
-                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
+                    <img src="images/iTea-hero3.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <div class="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-violet-950/30 to-transparent z-0"></div>
                     <div class="relative z-10 w-full max-w-[1080px] mx-auto px-12 text-left flex flex-col justify-center h-full">
                         <div class="max-w-[480px] pt-2">
@@ -2564,7 +2529,7 @@ const routes = {
                     </div>
                     `
                         : `
-                    <img src="images/hero2.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
+                    <img src="images/iTea-hero3.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <!-- Subtle gradient to ensure text readability -->
                     <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90 z-10"></div>
                     `
@@ -2609,42 +2574,46 @@ const routes = {
                     }
                     
                     <!-- Spacer so background image can be seen before the carousel (Desktop uses negative margin wrapper instead) -->
-                    ${!isDesktop ? '<div class="w-full flex-1 min-h-[140px]"></div>' : ""}
+                    ${!isDesktop && featuredItems.length > 0 ? '<div class="w-full flex-1 min-h-[140px]"></div>' : ""}
                     
                     <!-- Carousel Container -->
                     ${
-                      !isDesktop
+                      !isDesktop && featuredItems.length > 0
                         ? `
                     <div class="relative z-20 w-full mt-auto shrink-0 pb-2">
                         <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-6 ${carouselAlign}">
-                            <!-- Card 1: P4 Brown Sugar Boba Latte -->
-                            <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden border-4 border-white h-[250px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${bobaIndex})">
-                                <img src="${bobaItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
-                                <span class="absolute top-4 left-5 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                <div class="relative z-10 text-left w-full pr-12">
-                                    <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding mb-1">Brown Sugar<br>Boba Latte</h2>
-                                    <p class="text-gray-300 font-medium text-xs leading-tight mb-3">Creamy, caramelized milk tea perfection.</p>
-                                    <button onclick="event.stopPropagation(); selectItemAndNavigate(${bobaIndex})" class="bg-white text-violet-600 px-5 py-2 rounded-full font-black uppercase text-[10px] shadow-md hover:scale-105 active:scale-95 tracking-wider z-20 transition-transform">Add to Order</button>
+                            ${featuredItems.map((fItem, index) => {
+                                const gradients = [
+                                    "from-violet-600/65 via-violet-600/30",
+                                    "from-orange-600/70 via-orange-600/35",
+                                    "from-[#32CD32]/70 via-[#32CD32]/35",
+                                    "from-[#E61874]/70 via-[#E61874]/35",
+                                    "from-blue-600/70 via-blue-600/35"
+                                ];
+                                const badgeColors = ["bg-violet-600", "bg-orange-600", "bg-[#32CD32]", "bg-[#E61874]", "bg-blue-600"];
+                                const textColors = ["text-violet-600", "text-orange-600", "text-[#32CD32]", "text-[#E61874]", "text-blue-600"];
+                                const styleIdx = index % 5;
+                                const fIndex = items.indexOf(fItem);
+                                return `
+                                <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden border-4 border-white h-[250px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${fIndex})">
+                                    <img src="${fItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
+                                    <span class="absolute top-4 left-5 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    <div class="relative z-10 text-left w-full pr-12">
+                                        <h2 class="text-xl font-black text-white uppercase tracking-tighter leading-tight font-branding mb-1 line-clamp-2">${fItem.name}</h2>
+                                        <p class="text-white font-medium text-xs leading-tight mb-3 line-clamp-2">${fItem.description || "A delicious new addition to our menu."}</p>
+                                        <button onclick="event.stopPropagation(); selectItemAndNavigate(${fIndex})" class="bg-white ${textColors[styleIdx]} px-5 py-2 rounded-full font-black uppercase text-[10px] shadow-md hover:scale-105 active:scale-95 tracking-wider z-20 transition-transform">Add to Order</button>
+                                    </div>
                                 </div>
-                            </div>
-                            <!-- Card 2: P3 Super Grapefruit -->
-                            <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden border-4 border-white h-[250px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${grapefruitIndex})">
-                                <img src="${grapefruitItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
-                                <span class="absolute top-4 left-5 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                <div class="relative z-10 text-left w-full pr-12">
-                                    <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding mb-1">P3 Super<br>Grapefruit</h2>
-                                    <p class="text-gray-300 font-medium text-xs leading-tight mb-3">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
-                                    <button onclick="event.stopPropagation(); selectItemAndNavigate(${grapefruitIndex})" class="bg-white text-orange-600 px-5 py-2 rounded-full font-black uppercase text-[10px] shadow-md hover:scale-105 active:scale-95 tracking-wider z-20 transition-transform">Add to Order</button>
-                                </div>
-                            </div>
+                                `;
+                            }).join("")}
                         </div>
                         
                         <!-- Pagination Dots -->
                         <div class="flex justify-center items-center gap-2 mt-2 mb-4 lg:hidden" style="padding-right: 0;">
                             <div id="carousel-dot-0" class="w-2 h-2 rounded-full bg-violet-600 transition-colors duration-300"></div>
                             <div id="carousel-dot-1" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
+                            <div id="carousel-dot-2" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
                         </div>
                     </div>
                     `
@@ -2736,6 +2705,7 @@ const routes = {
                                 `;
                             })()}
 
+                            ${featuredItems.length > 0 ? `
                             <!-- Divider -->
                             <div class="h-px bg-gray-100 w-full mb-8"></div>
 
@@ -2744,29 +2714,30 @@ const routes = {
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Our handcrafted favorites</p>
  
                             <div class="grid grid-cols-2 gap-8 justify-items-center max-w-[1080px] mx-auto w-full">
-                                <!-- Card 1: P4 Brown Sugar Boba Latte -->
-                                <div class="relative shrink-0 w-full rounded-3xl overflow-hidden shadow-lg h-[300px] flex flex-col justify-end p-8 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group cursor-pointer text-left" onclick="selectItemAndNavigate(${bobaIndex})">
-                                    <img src="${bobaItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-violet-600/65 via-violet-600/30 to-transparent"></div>
-                                    <span class="absolute top-4 left-6 bg-violet-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                    <div class="relative z-10 w-full pr-36">
-                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">Brown Sugar<br>Boba Latte</h2>
-                                        <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Creamy, caramelized milk tea perfection.</p>
+                                ${featuredItems.slice(0, 2).map((fItem, index) => {
+                                    const gradients = [
+                                        "from-violet-600/65 via-violet-600/30",
+                                        "from-orange-600/70 via-orange-600/35"
+                                    ];
+                                    const badgeColors = ["bg-violet-600", "bg-orange-600"];
+                                    const textColors = ["text-violet-600", "text-orange-600"];
+                                    const styleIdx = index % 2;
+                                    const fIndex = items.indexOf(fItem);
+                                    return `
+                                    <div class="relative shrink-0 w-full rounded-3xl overflow-hidden shadow-lg h-[300px] flex flex-col justify-end p-8 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group cursor-pointer text-left" onclick="selectItemAndNavigate(${fIndex})">
+                                        <img src="${fItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                        <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
+                                        <span class="absolute top-4 left-6 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                        <div class="relative z-10 w-full pr-36">
+                                            <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding line-clamp-2">${fItem.name}</h2>
+                                            <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px] line-clamp-2">${fItem.description || "A delicious new addition to our menu."}</p>
+                                        </div>
+                                        <button class="absolute right-6 bottom-6 bg-white ${textColors[styleIdx]} px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg hover:scale-105 active:scale-95 tracking-wide z-20 transition-transform">Add to Order</button>
                                     </div>
-                                    <button class="absolute right-6 bottom-6 bg-white text-violet-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg hover:scale-105 active:scale-95 tracking-wide z-20 transition-transform">Add to Order</button>
-                                </div>
-                                <!-- Card 2: P3 Super Grapefruit -->
-                                <div class="relative shrink-0 w-full rounded-3xl overflow-hidden shadow-lg h-[300px] flex flex-col justify-end p-8 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group cursor-pointer text-left" onclick="selectItemAndNavigate(${grapefruitIndex})">
-                                    <img src="${grapefruitItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-600/70 via-orange-600/35 to-transparent"></div>
-                                    <span class="absolute top-4 left-6 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
-                                    <div class="relative z-10 w-full pr-36">
-                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding">P3 Super<br>Grapefruit</h2>
-                                        <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px]">Refreshing jasmine green tea infused with fresh grapefruit pulp.</p>
-                                    </div>
-                                    <button class="absolute right-6 bottom-6 bg-white text-orange-600 px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg hover:scale-105 active:scale-95 tracking-wide z-20 transition-transform">Add to Order</button>
-                                </div>
+                                    `;
+                                }).join("")}
                             </div>
+                            ` : ""}
 
                             <!-- Rewards Banner Section -->
                             <div class="mt-12 w-full">
@@ -3996,7 +3967,7 @@ const routes = {
                       isDesktop
                         ? `
                     <div class="w-[38%] relative h-full shrink-0 overflow-hidden">
-                        <img src="images/hero2.png" class="w-full h-full object-cover object-right" style="height: 100% !important; object-fit: cover !important;">
+                        <img src="images/iTea-hero3.png" class="w-full h-full object-cover object-right" style="height: 100% !important; object-fit: cover !important;">
                     </div>
                     `
                         : ""
