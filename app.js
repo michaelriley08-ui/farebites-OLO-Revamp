@@ -1017,6 +1017,8 @@ function toggleMenu(e, menuId) {
     "user-profile-dropdown",
     "location-dropdown-order-details",
     "location-dropdown-order-details-alt",
+    "location-dropdown-menu",
+    "location-dropdown-menu-alt",
   ];
   allMenus.forEach((id) => {
     const menu = document.getElementById(id);
@@ -1045,6 +1047,8 @@ document.addEventListener("click", () => {
     "user-profile-dropdown",
     "location-dropdown-order-details",
     "location-dropdown-order-details-alt",
+    "location-dropdown-menu",
+    "location-dropdown-menu-alt",
   ].forEach((id) => {
     const menu = document.getElementById(id);
     if (menu) {
@@ -1324,28 +1328,34 @@ function renderMenuPage(isAlternative) {
                         <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
                             <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
                             <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
-                            <div class="space-y-4 text-sm">
-                                <div class="flex gap-3 items-start">
-                                    <i class="fa-regular fa-clock text-violet-600 mt-1 w-5 text-center text-base"></i>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                    <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                        <i class="fa-regular fa-clock text-violet-600 text-sm"></i>
+                                    </div>
                                     <div>
-                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Hours</span>
-                                        <span class="text-gray-600 font-medium block">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
+                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Hours</span>
+                                        <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
                                         <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
-                                        <span class="text-red-500 font-medium block text-xs leading-tight mt-0.5">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
+                                        <span class="text-red-500 font-medium block text-xs leading-tight mt-1">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
                                     </div>
                                 </div>
-                                <div class="flex gap-3 items-start">
-                                    <i class="fa-solid fa-phone text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                    <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                        <i class="fa-solid fa-phone text-violet-600 text-sm"></i>
+                                    </div>
                                     <div>
-                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Phone</span>
-                                        <span class="text-gray-600 font-medium">${locationObj.phone || "(480) 968-3568"}</span>
+                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Phone</span>
+                                        <span class="text-gray-600 font-medium text-sm">${locationObj.phone || "(480) 968-3568"}</span>
                                     </div>
                                 </div>
-                                <div class="flex gap-3 items-start">
-                                    <i class="fa-solid fa-car text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                    <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                        <i class="fa-solid fa-car text-violet-600 text-sm"></i>
+                                    </div>
                                     <div>
-                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Drive-Thru / Curbside</span>
-                                        <span class="text-gray-600 font-medium leading-relaxed">Available during regular business hours. Pull up to the front for curbside.</span>
+                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Drive-Thru / Curbside</span>
+                                        <span class="text-gray-600 font-medium text-xs leading-relaxed block">Available during regular business hours. Pull up to the front for curbside.</span>
                                     </div>
                                 </div>
                             </div>
@@ -1366,9 +1376,9 @@ function renderMenuPage(isAlternative) {
                 ? `
             <div class="bg-white border-b border-gray-100 flex flex-col items-center justify-center text-center w-full shrink-0 animate-[fadeIn_0.3s_ease-out]">
                 <!-- Location details block -->
-                <div class="py-3.5 px-4 w-full">
+                <div class="py-3.5 px-4 w-full relative">
                     <h1 class="font-branding font-black text-[#1f0b35] text-[32px] tracking-tight leading-none uppercase mb-2">Menu</h1>
-                    <div onclick="navigateTo('order-details-alt')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
+                    <div onclick="toggleMenu(event, 'location-dropdown-menu-alt')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
                         <span class="text-[11px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">
                             ${modeText}
                         </span>
@@ -1377,7 +1387,48 @@ function renderMenuPage(isAlternative) {
                         </span>
                         <div class="flex items-center justify-center gap-1.5 text-sm text-[#1f0b35] font-black tracking-tight uppercase">
                             <span>${addressText}</span>
-                            <i class="fa-solid fa-chevron-right text-[10px] text-violet-600 transition-transform group-hover:translate-x-0.5"></i>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-violet-600 transition-transform group-hover:translate-y-0.5"></i>
+                        </div>
+                    </div>
+                    <!-- Dropdown Menu -->
+                    <div id="location-dropdown-menu-alt" class="hidden absolute left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-[320px] top-[calc(100%+0.5rem)] z-[100] animate-[slideUp_0.2s_ease-out]">
+                        <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
+                            <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
+                            <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                    <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                        <i class="fa-regular fa-clock text-violet-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Hours</span>
+                                        <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
+                                        <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
+                                        <span class="text-red-500 font-medium block text-xs leading-tight mt-1">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                    <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                        <i class="fa-solid fa-phone text-violet-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Phone</span>
+                                        <span class="text-gray-600 font-medium text-sm">${locationObj.phone || "(480) 968-3568"}</span>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                    <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                        <i class="fa-solid fa-car text-violet-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Drive-Thru / Curbside</span>
+                                        <span class="text-gray-600 font-medium text-xs leading-relaxed block">Available during regular business hours. Pull up to the front for curbside.</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-5 pt-4 border-t border-gray-100">
+                                <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3445,28 +3496,34 @@ const routes = {
                                 <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
                                     <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
                                     <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
-                                    <div class="space-y-4 text-sm">
-                                        <div class="flex gap-3 items-start">
-                                            <i class="fa-regular fa-clock text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                    <div class="space-y-3 text-sm">
+                                        <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                            <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                                <i class="fa-regular fa-clock text-violet-600 text-sm"></i>
+                                            </div>
                                             <div>
-                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Hours</span>
-                                                <span class="text-gray-600 font-medium block">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
+                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Hours</span>
+                                                <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
                                                 <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
-                                                <span class="text-red-500 font-medium block text-xs leading-tight mt-0.5">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
+                                                <span class="text-red-500 font-medium block text-xs leading-tight mt-1">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
                                             </div>
                                         </div>
-                                        <div class="flex gap-3 items-start">
-                                            <i class="fa-solid fa-phone text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                        <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                            <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                                <i class="fa-solid fa-phone text-violet-600 text-sm"></i>
+                                            </div>
                                             <div>
-                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Phone</span>
-                                                <span class="text-gray-600 font-medium">(480) 555-0123</span>
+                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Phone</span>
+                                                <span class="text-gray-600 font-medium text-sm">(480) 555-0123</span>
                                             </div>
                                         </div>
-                                        <div class="flex gap-3 items-start">
-                                            <i class="fa-solid fa-car text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                        <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                            <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                                <i class="fa-solid fa-car text-violet-600 text-sm"></i>
+                                            </div>
                                             <div>
-                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Drive-Thru / Curbside</span>
-                                                <span class="text-gray-600 font-medium leading-relaxed">Available during regular business hours. Pull up to the front for curbside.</span>
+                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Drive-Thru / Curbside</span>
+                                                <span class="text-gray-600 font-medium text-xs leading-relaxed block">Available during regular business hours. Pull up to the front for curbside.</span>
                                             </div>
                                         </div>
                                     </div>
@@ -3888,28 +3945,34 @@ const routes = {
                             <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
                                 <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
                                 <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
-                                <div class="space-y-4 text-sm">
-                                    <div class="flex gap-3 items-start">
-                                        <i class="fa-regular fa-clock text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                        <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                            <i class="fa-regular fa-clock text-violet-600 text-sm"></i>
+                                        </div>
                                         <div>
-                                            <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Hours</span>
-                                            <span class="text-gray-600 font-medium block">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
+                                            <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Hours</span>
+                                            <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
                                             <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
-                                            <span class="text-red-500 font-medium block text-xs leading-tight mt-0.5">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
+                                            <span class="text-red-500 font-medium block text-xs leading-tight mt-1">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
                                         </div>
                                     </div>
-                                    <div class="flex gap-3 items-start">
-                                        <i class="fa-solid fa-phone text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                    <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                        <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                            <i class="fa-solid fa-phone text-violet-600 text-sm"></i>
+                                        </div>
                                         <div>
-                                            <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Phone</span>
-                                            <span class="text-gray-600 font-medium">(480) 555-0123</span>
+                                            <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Phone</span>
+                                            <span class="text-gray-600 font-medium text-sm">(480) 555-0123</span>
                                         </div>
                                     </div>
-                                    <div class="flex gap-3 items-start">
-                                        <i class="fa-solid fa-car text-violet-600 mt-1 w-5 text-center text-base"></i>
+                                    <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                        <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                            <i class="fa-solid fa-car text-violet-600 text-sm"></i>
+                                        </div>
                                         <div>
-                                            <span class="font-black text-gray-700 block uppercase tracking-wider text-xs mb-0.5">Drive-Thru / Curbside</span>
-                                            <span class="text-gray-600 font-medium leading-relaxed">Available during regular business hours. Pull up to the front for curbside.</span>
+                                            <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Drive-Thru / Curbside</span>
+                                            <span class="text-gray-600 font-medium text-xs leading-relaxed block">Available during regular business hours. Pull up to the front for curbside.</span>
                                         </div>
                                     </div>
                                 </div>
