@@ -1140,7 +1140,7 @@ function hamburgerDrawerHTML() {
                           item.page === "logout"
                             ? "closeHamburger(); signOutUser();"
                             : `closeHamburger(); navigateTo('${item.page}');`;
-                            
+
                         if (item.label === "Rewards") {
                           return `
                             <div class="border-b border-gray-100 px-4 py-1.5">
@@ -1214,11 +1214,16 @@ function renderMenuPage(isAlternative) {
     mockupState.modalOpen === "categories" ? "flex" : "hidden";
 
   const categories = getActiveCategories();
-  
+
   const allItems = getActiveMenuItems();
   let featuredItems = [];
   if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
-      featuredItems = allItems.filter(item => item.category === "New Items" || item.categoryKey === "New Items" || item.categoryId === "new-items-section");
+    featuredItems = allItems.filter(
+      (item) =>
+        item.category === "New Items" ||
+        item.categoryKey === "New Items" ||
+        item.categoryId === "new-items-section",
+    );
   }
 
   const mode = mockupState.fulfillmentMode || "In-store";
@@ -1561,14 +1566,23 @@ function renderMenuPage(isAlternative) {
                   return isDesktop
                     ? `
                         <div class="flex gap-[14px] overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-6 mb-2 pt-2 -mt-2 -mx-2 px-2">
-                            ${featuredItems.map((fItem, index) => {
+                            ${featuredItems
+                              .map((fItem, index) => {
                                 const gradients = [
-                                    "from-violet-600/65 via-violet-600/30",
-                                    "from-orange-600/70 via-orange-600/35",
-                                    "from-[#f97316]/70 via-[#f97316]/35"
+                                  "from-violet-600/65 via-violet-600/30",
+                                  "from-orange-600/70 via-orange-600/35",
+                                  "from-[#f97316]/70 via-[#f97316]/35",
                                 ];
-                                const badgeColors = ["bg-violet-600", "bg-orange-600", "bg-[#f97316]"];
-                                const textColors = ["text-violet-600", "text-orange-600", "text-amber-600"];
+                                const badgeColors = [
+                                  "bg-violet-600",
+                                  "bg-orange-600",
+                                  "bg-[#f97316]",
+                                ];
+                                const textColors = [
+                                  "text-violet-600",
+                                  "text-orange-600",
+                                  "text-amber-600",
+                                ];
                                 const styleIdx = index % 3;
                                 const fIndex = allItems.indexOf(fItem);
                                 return `
@@ -1583,20 +1597,28 @@ function renderMenuPage(isAlternative) {
                                     <button onclick="selectItemAndNavigate(${fIndex})" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 ${textColors[styleIdx]} px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
                                 </div>
                                 `;
-                            }).join("")}
+                              })
+                              .join("")}
                         </div>
                     `
                     : `
                         <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 mb-4 -mx-1 px-1">
-                            ${featuredItems.map((fItem, index) => {
+                            ${featuredItems
+                              .map((fItem, index) => {
                                 const gradients = [
-                                    "from-violet-600/65 via-violet-600/30",
-                                    "from-orange-600/70 via-orange-600/35",
-                                    "from-[#f97316]/70 via-[#f97316]/35",
-                                    "from-[#E61874]/70 via-[#E61874]/35",
-                                    "from-blue-600/70 via-blue-600/35"
+                                  "from-violet-600/65 via-violet-600/30",
+                                  "from-orange-600/70 via-orange-600/35",
+                                  "from-[#f97316]/70 via-[#f97316]/35",
+                                  "from-[#E61874]/70 via-[#E61874]/35",
+                                  "from-blue-600/70 via-blue-600/35",
                                 ];
-                                const badgeColors = ["bg-violet-600", "bg-orange-600", "bg-[#f97316]", "bg-[#E61874]", "bg-blue-600"];
+                                const badgeColors = [
+                                  "bg-violet-600",
+                                  "bg-orange-600",
+                                  "bg-[#f97316]",
+                                  "bg-[#E61874]",
+                                  "bg-blue-600",
+                                ];
                                 const styleIdx = index % 5;
                                 const fIndex = allItems.indexOf(fItem);
                                 return `
@@ -1609,7 +1631,8 @@ function renderMenuPage(isAlternative) {
                                     </div>
                                 </div>
                                 `;
-                            }).join("")}
+                              })
+                              .join("")}
                         </div>
                     `;
                 })()}
@@ -1618,7 +1641,9 @@ function renderMenuPage(isAlternative) {
                 <div class="flex overflow-x-auto scrollbar-hide border-b border-gray-100 w-full gap-6 lg:gap-8 justify-start lg:mr-auto mb-6 mt-2 pb-2 pl-2 lg:pl-0">
                     ${[
                       { id: "menu", name: "All" },
-                      ...(featuredItems.length > 0 ? [{ id: "featured", name: "Featured" }] : []),
+                      ...(featuredItems.length > 0
+                        ? [{ id: "featured", name: "Featured" }]
+                        : []),
                       { id: "favorites", name: "Favorites" },
                       { id: "history", name: "History" },
                     ]
@@ -1759,7 +1784,7 @@ function renderMenuPage(isAlternative) {
                         `;
                   } else if (mockupState.menuTab === "featured") {
                     if (featuredItems.length === 0) {
-                        return `<div class="py-12 text-center text-gray-500 font-bold uppercase tracking-widest text-sm">No featured items currently available.</div>`;
+                      return `<div class="py-12 text-center text-gray-500 font-bold uppercase tracking-widest text-sm">No featured items currently available.</div>`;
                     }
 
                     return `
@@ -1776,7 +1801,8 @@ function renderMenuPage(isAlternative) {
                                     <div class="grid grid-cols-4 gap-x-3 gap-y-5">
                                         ${featuredItems
                                           .map((item, index) => {
-                                            const actualIndex = allItems.indexOf(item);
+                                            const actualIndex =
+                                              allItems.indexOf(item);
                                             const isP1 = index === 0;
                                             const badgeStyle = isP1
                                               ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"'
@@ -1807,7 +1833,8 @@ function renderMenuPage(isAlternative) {
                                     <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-3 -mx-1 px-1">
                                         ${featuredItems
                                           .map((item, index) => {
-                                            const actualIndex = allItems.indexOf(item);
+                                            const actualIndex =
+                                              allItems.indexOf(item);
                                             const isP1 = index === 0;
                                             const badgeStyle = isP1
                                               ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"'
@@ -2501,10 +2528,15 @@ const routes = {
     const items = getActiveMenuItems();
     let featuredItems = [];
     if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
-        featuredItems = items.filter(item => item.category === "New Items" || item.categoryKey === "New Items" || item.categoryId === "new-items-section");
+      featuredItems = items.filter(
+        (item) =>
+          item.category === "New Items" ||
+          item.categoryKey === "New Items" ||
+          item.categoryId === "new-items-section",
+      );
     }
     if (!featuredItems || featuredItems.length === 0) {
-        featuredItems = items.slice(0, 3);
+      featuredItems = items.slice(0, 3);
     }
 
     return `
@@ -2532,7 +2564,7 @@ const routes = {
                     </div>
                     `
                         : `
-                    <img src="images/iTea-hero3.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
+                    <img src="images/hero-mobile.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <!-- Subtle gradient to ensure text readability -->
                     <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90 z-10"></div>
                     `
@@ -2568,9 +2600,8 @@ const routes = {
                     ${
                       !isDesktop
                         ? `
-                    <div class="text-center pt-24 relative z-10 shrink-0">
-                        <div class="text-violet-600 text-[11px] font-black tracking-[0.2em] uppercase mb-1">Open 24 Hours</div>
-                        <h1 class="text-5xl font-black text-violet-600 tracking-tighter leading-[0.9] font-sans scale-y-110 mt-2 mb-2 drop-shadow-md">i-Tea</h1>
+                    <div class="text-center pt-24 pb-2 relative z-10 shrink-0 flex justify-center">
+                        <img src="images/i-Tea-logo-stroke.png" class="h-[175px] w-auto object-contain drop-shadow-md" alt="i-Tea">
                     </div>
                     `
                         : ""
@@ -2585,16 +2616,29 @@ const routes = {
                         ? `
                     <div class="relative z-20 w-full mt-auto shrink-0 pb-2">
                         <div id="home-carousel" class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-6 ${carouselAlign}">
-                            ${featuredItems.map((fItem, index) => {
+                            ${featuredItems
+                              .map((fItem, index) => {
                                 const gradients = [
-                                    "from-violet-600/65 via-violet-600/30",
-                                    "from-orange-600/70 via-orange-600/35",
-                                    "from-[#32CD32]/70 via-[#32CD32]/35",
-                                    "from-[#E61874]/70 via-[#E61874]/35",
-                                    "from-blue-600/70 via-blue-600/35"
+                                  "from-violet-600/65 via-violet-600/30",
+                                  "from-orange-600/70 via-orange-600/35",
+                                  "from-[#32CD32]/70 via-[#32CD32]/35",
+                                  "from-[#E61874]/70 via-[#E61874]/35",
+                                  "from-blue-600/70 via-blue-600/35",
                                 ];
-                                const badgeColors = ["bg-violet-600", "bg-orange-600", "bg-[#32CD32]", "bg-[#E61874]", "bg-blue-600"];
-                                const textColors = ["text-violet-600", "text-orange-600", "text-[#32CD32]", "text-[#E61874]", "text-blue-600"];
+                                const badgeColors = [
+                                  "bg-violet-600",
+                                  "bg-orange-600",
+                                  "bg-[#32CD32]",
+                                  "bg-[#E61874]",
+                                  "bg-blue-600",
+                                ];
+                                const textColors = [
+                                  "text-violet-600",
+                                  "text-orange-600",
+                                  "text-[#32CD32]",
+                                  "text-[#E61874]",
+                                  "text-blue-600",
+                                ];
                                 const styleIdx = index % 5;
                                 const fIndex = items.indexOf(fItem);
                                 return `
@@ -2609,7 +2653,8 @@ const routes = {
                                     </div>
                                 </div>
                                 `;
-                            }).join("")}
+                              })
+                              .join("")}
                         </div>
                         
                         <!-- Pagination Dots -->
@@ -2708,7 +2753,9 @@ const routes = {
                                 `;
                             })()}
 
-                            ${featuredItems.length > 0 ? `
+                            ${
+                              featuredItems.length > 0
+                                ? `
                             <!-- Divider -->
                             <div class="h-px bg-gray-100 w-full mb-8"></div>
 
@@ -2717,13 +2764,21 @@ const routes = {
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Our handcrafted favorites</p>
  
                             <div class="grid grid-cols-2 gap-8 justify-items-center max-w-[1080px] mx-auto w-full">
-                                ${featuredItems.slice(0, 2).map((fItem, index) => {
+                                ${featuredItems
+                                  .slice(0, 2)
+                                  .map((fItem, index) => {
                                     const gradients = [
-                                        "from-violet-600/65 via-violet-600/30",
-                                        "from-orange-600/70 via-orange-600/35"
+                                      "from-violet-600/65 via-violet-600/30",
+                                      "from-orange-600/70 via-orange-600/35",
                                     ];
-                                    const badgeColors = ["bg-violet-600", "bg-orange-600"];
-                                    const textColors = ["text-violet-600", "text-orange-600"];
+                                    const badgeColors = [
+                                      "bg-violet-600",
+                                      "bg-orange-600",
+                                    ];
+                                    const textColors = [
+                                      "text-violet-600",
+                                      "text-orange-600",
+                                    ];
                                     const styleIdx = index % 2;
                                     const fIndex = items.indexOf(fItem);
                                     return `
@@ -2738,9 +2793,12 @@ const routes = {
                                         <button class="absolute right-6 bottom-6 bg-white ${textColors[styleIdx]} px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg hover:scale-105 active:scale-95 tracking-wide z-20 transition-transform">Add to Order</button>
                                     </div>
                                     `;
-                                }).join("")}
+                                  })
+                                  .join("")}
                             </div>
-                            ` : ""}
+                            `
+                                : ""
+                            }
 
                             <!-- Rewards Banner Section -->
                             <div class="mt-12 w-full">
@@ -6633,47 +6691,47 @@ const routes = {
                     
                     <!-- Payment Methods -->
                     <div>
-                        <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Payment Method</h2>
+                        <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Payment Method</h2>
                         <div class="space-y-3">
                             <!-- Card -->
-                            <div onclick="updateMockupState('modalOpen', 'payment-card')" class="bg-white rounded-2xl ${isDesktop ? "p-4" : "p-3"} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400">
-                                        <i class="fa-solid fa-credit-card text-lg"></i>
+                            <div onclick="updateMockupState('modalOpen', 'payment-card')" class="bg-white rounded-[24px] ${isDesktop ? "p-4" : "p-3.5"} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-violet-50/50 hover:border-violet-200 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 group">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-[16px] bg-gray-50 group-hover:bg-white group-hover:shadow-sm transition-all flex items-center justify-center text-gray-400 group-hover:text-violet-500">
+                                        <i class="fa-solid fa-credit-card text-xl"></i>
                                     </div>
                                     <div>
-                                        <span class="font-black text-gray-900 uppercase text-xs block tracking-tight">Credit or Debit Card</span>
-                                        <span class="text-[10px] font-bold text-violet-600 uppercase">Ending in 442</span>
+                                        <span class="font-black text-gray-900 uppercase text-sm block tracking-tight">Credit or Debit Card</span>
+                                        <span class="text-xs font-bold text-violet-600 uppercase tracking-widest mt-0.5 block">Ending in 442</span>
                                     </div>
                                 </div>
-                                <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
+                                <div class="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-violet-100 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-400 group-hover:text-violet-600"></i>
+                                </div>
                             </div>
 
                             <!-- Gift Card & Loyalty (Two Column) -->
                             <div class="grid grid-cols-2 gap-3">
                                 <!-- Gift Card -->
-                                <div onclick="updateMockupState('modalOpen', 'payment-gift')" class="bg-white rounded-2xl ${isDesktop ? "p-4" : "p-3"} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                                <div onclick="updateMockupState('modalOpen', 'payment-gift')" class="bg-white rounded-[24px] ${isDesktop ? "p-4" : "p-3.5"} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-violet-50/50 hover:border-violet-200 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 group">
                                     <div class="flex items-center gap-3 min-w-0">
-                                        <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-400 shrink-0">
+                                        <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-500 shrink-0 group-hover:scale-110 transition-transform">
                                             <i class="fa-solid fa-gift text-lg"></i>
                                         </div>
-                                        <span class="font-black text-gray-900 uppercase text-xs tracking-tight truncate">Redeem Gift Card</span>
+                                        <span class="font-black text-gray-900 uppercase text-sm tracking-tight truncate">Gift Card</span>
                                     </div>
-                                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-300 shrink-0"></i>
                                 </div>
 
                                 <!-- Loyalty -->
-                                <div onclick="updateMockupState('modalOpen', 'payment-rewards')" class="bg-white rounded-2xl ${isDesktop ? "p-4" : "p-3"} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-all">
+                                <div onclick="updateMockupState('modalOpen', 'payment-rewards')" class="bg-white rounded-[24px] ${isDesktop ? "p-4" : "p-3.5"} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-amber-50/30 hover:border-amber-200 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 group">
                                     <div class="flex items-center gap-3 min-w-0">
-                                        <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-400 shrink-0">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 shrink-0 group-hover:scale-110 transition-transform">
                                             <i class="fa-solid fa-award text-lg"></i>
                                         </div>
                                         <div class="min-w-0">
-                                            <span class="font-black text-gray-900 uppercase text-xs block tracking-tight truncate">Loyalty Rewards</span>
-                                            <span class="text-[10px] font-bold text-violet-600 uppercase block truncate">Available: $12.50</span>
+                                            <span class="font-black text-gray-900 uppercase text-sm block tracking-tight truncate">Rewards</span>
+                                            <span class="text-[11px] font-black text-amber-500 uppercase block truncate tracking-widest mt-0.5">Avail: $12.50</span>
                                         </div>
                                     </div>
-                                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-300 shrink-0"></i>
                                 </div>
                             </div>
                         </div>
@@ -6681,35 +6739,52 @@ const routes = {
 
                     <!-- Tipping Section -->
                     <div>
-                        <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Add a Tip</h2>
+                        <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Add a Tip</h2>
                         <div class="grid grid-cols-4 gap-3">
                             ${[10, 15, 20, "other"]
                               .map((val) => {
                                 const isSelected =
                                   mockupState.tipPercentage === val;
-                                const label =
-                                  val === "other" ? "Other" : `${val}%`;
                                 const action =
                                   val === "other"
                                     ? "updateMockupState('modalOpen', 'tip-other')"
                                     : `updateMockupState('tipPercentage', ${val})`;
-                                return `
-                                    <button onclick="${action}" class="py-3.5 rounded-2xl border-2 font-black uppercase text-xs tracking-tighter transition-all ${isSelected ? "bg-violet-600 text-white border-violet-600 shadow-md" : "bg-white text-gray-400 border-gray-100 hover:border-violet-100"}">
-                                        ${label}
-                                    </button>
-                                `;
+
+                                if (val === "other") {
+                                  return `
+                                        <button onclick="${action}" class="flex flex-col items-center justify-center py-2.5 rounded-2xl border-2 transition-all duration-300 ${isSelected ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_16px_-6px_rgba(124,58,237,0.4)] scale-[1.02]" : "bg-white text-gray-500 border-gray-100 hover:border-violet-200 hover:bg-violet-50 hover:-translate-y-0.5"}">
+                                            <span class="font-black uppercase text-lg leading-tight tracking-tighter">Other</span>
+                                            <span class="text-[10px] font-bold opacity-80 uppercase tracking-widest mt-0.5">Custom</span>
+                                        </button>
+                                    `;
+                                } else {
+                                  const amount = (
+                                    subtotal *
+                                    (val / 100)
+                                  ).toFixed(2);
+                                  return `
+                                        <button onclick="${action}" class="flex flex-col items-center justify-center py-2.5 rounded-2xl border-2 transition-all duration-300 ${isSelected ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_16px_-6px_rgba(124,58,237,0.4)] scale-[1.02]" : "bg-white text-gray-500 border-gray-100 hover:border-violet-200 hover:bg-violet-50 hover:-translate-y-0.5"}">
+                                            <span class="font-black uppercase text-2xl leading-none tracking-tighter">${val}%</span>
+                                            <span class="text-[11px] font-black ${isSelected ? "text-violet-200" : "text-gray-400"} mt-1">$${amount}</span>
+                                        </button>
+                                    `;
+                                }
                               })
                               .join("")}
                         </div>
                     </div>
 
                     <!-- Pricing Summary -->
-                    <div class="bg-white rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-50 space-y-4">
-                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase tracking-widest"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
-                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase tracking-widest"><span>Tax & Service</span><span>$${taxes.toFixed(2)}</span></div>
-                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase tracking-widest"><span>Tip</span><span>$${tipAmount.toFixed(2)}</span></div>
-                        <div class="h-px bg-gray-50 w-full my-4"></div>
-                        <div class="flex justify-between text-xl font-black text-gray-900 uppercase"><span>Total</span><span class="text-violet-600">$${finalTotal}</span></div>
+                    <div class="bg-white rounded-[32px] p-7 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100 space-y-4 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 to-fuchsia-500"></div>
+                        <div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Subtotal</span><span class="text-gray-700">$${subtotal.toFixed(2)}</span></div>
+                        <div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Tax & Fees</span><span class="text-gray-700">$${taxes.toFixed(2)}</span></div>
+                        <div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Tip</span><span class="text-gray-700">$${tipAmount.toFixed(2)}</span></div>
+                        <div class="h-[2px] bg-gray-50 w-full my-5 rounded-full"></div>
+                        <div class="flex justify-between items-end">
+                            <span class="text-sm font-black text-gray-400 uppercase tracking-widest mb-1">Total</span>
+                            <span class="text-3xl font-black text-gray-900 tracking-tighter">$${finalTotal}</span>
+                        </div>
                     </div>
                     ${
                       isDesktop
@@ -6751,11 +6826,11 @@ const routes = {
                         </div>
                         <div class="space-y-4 mb-8">
                             <div class="space-y-1.5">
-                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Cardholder Name</label>
+                                <label class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Cardholder Name</label>
                                 <input type="text" value="Michaelangelo Smith" class="w-full bg-gray-50 border border-gray-100 px-4 py-3.5 rounded-2xl font-bold text-gray-900 outline-none focus:border-violet-600 transition-colors">
                             </div>
                             <div class="space-y-1.5">
-                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Card Number</label>
+                                <label class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Card Number</label>
                                 <div class="relative">
                                     <input type="text" value="•••• •••• •••• 4242" class="w-full bg-gray-50 border border-gray-100 px-4 py-3.5 rounded-2xl font-bold text-gray-900 outline-none focus:border-violet-600 transition-colors">
                                     <div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1.5 opacity-40">
@@ -6765,11 +6840,11 @@ const routes = {
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Expiry</label>
+                                    <label class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Expiry</label>
                                     <input type="text" value="12/26" class="w-full bg-gray-50 border border-gray-100 px-4 py-3.5 rounded-2xl font-bold text-gray-900 outline-none">
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">CVC</label>
+                                    <label class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">CVC</label>
                                     <input type="text" value="•••" class="w-full bg-gray-50 border border-gray-100 px-4 py-3.5 rounded-2xl font-bold text-gray-900 outline-none">
                                 </div>
                             </div>
@@ -6833,7 +6908,7 @@ const routes = {
                             </div>
                             <div class="text-center">
                                 <p class="text-sm font-black text-violet-600 uppercase tracking-widest mb-1">3 More Bobas Left!</p>
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-tight leading-tight">You've earned 7 stamps. Collect 10 to receive a free regular drink of your choice.</p>
+                                <p class="text-xs text-gray-500 font-bold uppercase tracking-tight leading-tight">You've earned 7 stamps. Collect 10 to receive a free regular drink of your choice.</p>
                             </div>
                         </div>
                         
@@ -8944,6 +9019,9 @@ async function handleRegistration() {
       email,
       password,
       phoneNumber,
+      WebsiteUrl: window.location.origin,
+      CallbackUrl: window.location.origin + "/index.html",
+      WebsiteShortName: "itea",
     };
 
     await window.ApiService.register(data);
@@ -8951,11 +9029,24 @@ async function handleRegistration() {
     // On success, redirect to login page
     navigateTo("sign-in");
   } catch (err) {
+    console.error("Registration Error details:", err);
     if (errorEl) {
-      errorEl.textContent =
-        err.data && err.data.message
-          ? err.data.message
-          : err.message || "Registration failed. Please try again.";
+      let friendlyMessage = "Registration failed. Please try again.";
+
+      if (err.data && err.data.message) {
+        if (
+          err.data.message.toLowerCase().includes("email already registered")
+        ) {
+          friendlyMessage =
+            "This email is already registered. Please try signing in instead.";
+        } else {
+          friendlyMessage = err.data.message;
+        }
+      } else if (err.message) {
+        friendlyMessage = err.message;
+      }
+
+      errorEl.textContent = friendlyMessage;
       errorEl.style.opacity = "1";
     }
   }
@@ -9893,15 +9984,19 @@ window.addEventListener("pageshow", (event) => {
 });
 
 // Global scroll-to-top button handler
-window.addEventListener("scroll", () => {
-  const btn = document.getElementById("scroll-to-top-btn");
-  if (btn) {
-    if (window.scrollY > 400) {
-      btn.classList.remove("opacity-0", "pointer-events-none");
-      btn.classList.add("opacity-100", "pointer-events-auto");
-    } else {
-      btn.classList.add("opacity-0", "pointer-events-none");
-      btn.classList.remove("opacity-100", "pointer-events-auto");
+window.addEventListener(
+  "scroll",
+  () => {
+    const btn = document.getElementById("scroll-to-top-btn");
+    if (btn) {
+      if (window.scrollY > 400) {
+        btn.classList.remove("opacity-0", "pointer-events-none");
+        btn.classList.add("opacity-100", "pointer-events-auto");
+      } else {
+        btn.classList.add("opacity-0", "pointer-events-none");
+        btn.classList.remove("opacity-100", "pointer-events-auto");
+      }
     }
-  }
-}, { passive: true });
+  },
+  { passive: true },
+);
