@@ -8265,20 +8265,14 @@ function renderPage() {
                         <a href="privacy.html" class="dropdown-item lowercase">privacy.html</a>
                         <a href="accessibility.html" class="dropdown-item lowercase">accessibility.html</a>
                         <a href="sections.html" class="dropdown-item lowercase">sections.html* (demos)</a>
-                        <a href="dev.html" class="dropdown-item lowercase text-violet-600 font-bold">dev.html</a>
-                        <a href="sitemap.html" class="dropdown-item lowercase flex items-center gap-2 !text-violet-600 font-black"><i class="fa-solid fa-diagram-project text-[11px]"></i> sitemap.html</a>
                     </div>
                     
                     <!-- Alt Versions Footer Card -->
                     <div class="col-span-3 mt-2 p-4 bg-violet-50 rounded-2xl border border-violet-100 flex flex-col gap-3">
                         <div class="text-[11px] font-black text-violet-700 uppercase tracking-widest">Alt Versions</div>
-                        <div class="grid grid-cols-3 gap-4">
+                        <div class="grid grid-cols-2 gap-4">
                             <a href="menu-alt.html?store=7" class="dropdown-item lowercase !py-2 bg-white/60 hover:bg-white border border-violet-100/50 shadow-sm flex items-center justify-between">
                                 <span>menu-alt.html</span>
-                                <i class="fa-solid fa-arrow-right text-[10px] text-violet-400"></i>
-                            </a>
-                            <a href="location-favorites.html" class="dropdown-item lowercase !py-2 bg-white/60 hover:bg-white border border-violet-100/50 shadow-sm flex items-center justify-between">
-                                <span>location-favorites.html</span>
                                 <i class="fa-solid fa-arrow-right text-[10px] text-violet-400"></i>
                             </a>
                             <a href="order-details-alt.html" class="dropdown-item lowercase !py-2 bg-white/60 hover:bg-white border border-violet-100/50 shadow-sm flex items-center justify-between">
