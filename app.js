@@ -2798,7 +2798,7 @@ const routes = {
                                 <i class="fa-regular fa-heart text-4xl text-[#da2377]"></i>
                             </h1>
                             <p class="text-base font-semibold text-white/90 mb-6 leading-relaxed">Refreshing flavors. Chewy boba. Made for every moment.</p>
-                            <button onclick="navigateTo('locations')" class="inline-flex items-center gap-3 bg-white text-[#da2377] hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
+                            <button onclick="navigateTo(mockupState.isLoggedIn ? 'locations' : 'sign-in')" class="inline-flex items-center gap-3 bg-white text-[#da2377] hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
                                 <span>Order Now</span>
                                 <i class="fa-solid fa-arrow-right"></i>
                             </button>
@@ -2818,7 +2818,7 @@ const routes = {
                         <button onclick="navigateTo(mockupState.isLoggedIn ? 'account' : 'sign-in')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
                         <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
-                    <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('locations')">
+                    <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo(mockupState.isLoggedIn ? 'locations' : 'sign-in')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
                         <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
                         ${
@@ -2922,7 +2922,7 @@ const routes = {
                                 ${getActiveCategories()
                                   .map(
                                     (cat) => `
-                                    <div onclick="navigateTo('locations');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
+                                    <div onclick="navigateTo(mockupState.isLoggedIn ? 'locations' : 'sign-in');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
                                         <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                         </div>
@@ -3079,7 +3079,7 @@ const routes = {
                     ? `
                 <!-- Order Now Button (Fixed above bottom nav on mobile/tablet) -->
                 <div class="px-6 pb-6 pt-2 relative z-20 shrink-0">
-                    <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
+                    <button onclick="navigateTo(mockupState.isLoggedIn ? 'locations' : 'sign-in')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
                 </div>`
                     : ""
                 }
@@ -4498,13 +4498,40 @@ const routes = {
   "menu-alt": () => renderMenuPage(true),
   customize: () => {
     const isDesktop = currentViewport === "desktop";
-    const item = mockupState.selectedItem || MENU_ITEMS[1]; // Fallback to Taro Latte
+    const mode = mockupState.fulfillmentMode || "In-store";
+    let modeText = "IN-STORE PICKUP";
+    if (mode === "In-store" || mode === "In-Store")
+      modeText = "IN-STORE PICKUP";
+    else if (mode === "Drive Through" || mode === "Drive-thru")
+      modeText = "DRIVE-THRU";
+    else if (mode === "Curbside") modeText = "CURBSIDE PICKUP";
+    else if (mode === "Dine In" || mode === "Dine-In") modeText = "DINE-IN";
+    else if (mode === "Delivery") modeText = "DELIVERY";
+    else modeText = mode.toUpperCase() + " PICKUP";
+
+    const timeText =
+      mockupState.orderTime === "Later"
+        ? `at ${mockupState.selectedTimeSlot}`
+        : "ASAP";
+
+    const selectedLoc =
+      mockupState.apiLocations.find(
+        (loc) => loc.locationId === mockupState.selectedLocationId,
+      ) ||
+      LOCATIONS.find(
+        (loc) => loc.locationId === mockupState.selectedLocationId,
+      ) ||
+      LOCATIONS[0];
+    const addressText =
+      mockupState.selectedAddress ||
+      (selectedLoc ? selectedLoc.address : "825 W UNIVERSITY, TEMPE, AZ");
+
+    const item = mockupState.selectedItem || MENU_ITEMS[1];
     const basePrice = item.price;
     const detail = mockupState.selectedItemDetail;
     const sels = mockupState._customizeSubItems || {};
     const modSels = mockupState._customizeModifyTypes || {};
 
-    // --- Dynamic total calculation from selected sub-items ---
     let extrasTotal = 0;
     for (const gid in sels) {
       const groupItems = sels[gid]?.items || {};
@@ -4513,117 +4540,13 @@ const routes = {
           (groupItems[sid].price || 0) * (groupItems[sid].quantity || 1);
       }
     }
+    for (const sid in modSels) {
+      extrasTotal += modSels[sid]?.price || 0;
+    }
     const totalPrice = (
       (basePrice + extrasTotal) *
       mockupState.itemQuantity
     ).toFixed(2);
-
-    // --- Section header helper ---
-    const sectionHeader = (label, required) => `
-            <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
-                <span class="text-xs font-black text-violet-600 uppercase tracking-widest">${label}</span>
-                ${required ? '<span class="text-[9px] font-bold text-red-400 uppercase tracking-widest">Required</span>' : ""}
-            </div>`;
-
-    // --- Render a single-select group (radio pills) ---
-    const renderRadioGroup = (group) => {
-      const gid = group.menuSubItemGroupId;
-      const prices = group.groupPrices || [];
-      const selectedId = Object.keys(sels[gid]?.items || {})[0];
-      return prices
-        .map((p) => {
-          const sub = p.menuSubItem || {};
-          const name = (sub.name || "").toUpperCase();
-          const isSelected = String(p.menuSubItemId) === String(selectedId);
-          return `
-                <button onclick="window._selectSubItem(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${name.replace(/'/g, "\\'")}', ${p.price || 0}, true)" class="w-full flex justify-between items-center py-2 group">
-                    <span class="text-sm font-black text-gray-700 uppercase tracking-tight">${name}</span>
-                    <div class="w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${isSelected ? "border-violet-600 bg-violet-600" : "border-gray-200 group-hover:border-violet-300"}">
-                        ${isSelected ? '<i class="fa-solid fa-check text-white text-[9px]"></i>' : ""}
-                    </div>
-                </button>`;
-        })
-        .join("");
-    };
-
-    // --- Render a multi-select group (stepper rows) ---
-    const renderStepperGroup = (group) => {
-      const gid = group.menuSubItemGroupId;
-      const prices = group.groupPrices || [];
-      return prices
-        .map((p) => {
-          const sub = p.menuSubItem || {};
-          const name = (sub.name || "").toUpperCase();
-          const price = p.price || 0;
-          const fmtPrice = price === 0 ? "FREE" : `+$${price.toFixed(2)}`;
-          const qty = sels[gid]?.items?.[p.menuSubItemId]?.quantity || 0;
-          const safeName = name.replace(/'/g, "\\'");
-          return `
-                <div class="flex justify-between items-center py-2.5 border-b border-gray-50">
-                    <div class="flex flex-col">
-                        <span class="text-sm font-black text-gray-800 uppercase tracking-tight">${name}</span>
-                        <span class="text-[11px] font-bold text-gray-400">${fmtPrice}</span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, -1)" class="w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 transition-all active:scale-90 text-xs">
-                            <i class="fa-solid fa-minus"></i>
-                        </button>
-                        <span class="font-black text-gray-900 w-4 text-center text-sm">${qty}</span>
-                        <button onclick="window._adjustSubItemQty(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, 1)" class="w-7 h-7 rounded-full border border-violet-200 bg-violet-50 flex items-center justify-center text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all active:scale-90 text-xs">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
-                    </div>
-                </div>`;
-        })
-        .join("");
-    };
-
-    // --- Render modifier groups dynamically ---
-    const renderGroups = (colLayout) => {
-      if (!groups.length) {
-        return `<div class="text-center py-8 text-gray-400 text-sm font-bold uppercase tracking-widest">
-                    ${mockupState.isLoading ? '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading customizations...' : "No customization options available"}
-                </div>`;
-      }
-      // Separate single-select (radio) and multi-select (stepper) groups
-      const radioGroups = groups.filter((g) => (g.maxSelect || 1) === 1);
-      const stepperGroups = groups.filter((g) => (g.maxSelect || 1) > 1);
-
-      let html = "";
-      // Radio groups
-      for (const g of radioGroups) {
-        const isRequired = (g.minSelect || 0) >= 1;
-        html += `<div>
-                    ${sectionHeader(g.displayName || g.groupName || "Options", isRequired)}
-                    <div class="${colLayout === "grid" ? "grid grid-cols-3 gap-x-8 gap-y-1" : "space-y-1"}">
-                        ${renderRadioGroup(g)}
-                    </div>
-                </div>`;
-      }
-      // Stepper groups
-      if (stepperGroups.length > 0) {
-        if (colLayout === "grid") {
-          // Desktop: side-by-side columns
-          html += `<div class="grid grid-cols-2 gap-8">`;
-          for (const g of stepperGroups) {
-            html += `<div>
-                            ${sectionHeader(g.displayName || g.groupName || "Options", false)}
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">${renderStepperGroup(g)}</div>
-                        </div>`;
-          }
-          html += `</div>`;
-        } else {
-          // Mobile: stacked
-          for (const g of stepperGroups) {
-            html += `<div>
-                            ${sectionHeader(g.displayName || g.groupName || "Options", false)}
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">${renderStepperGroup(g)}</div>
-                        </div>`;
-          }
-        }
-      }
-      return html;
-    };
 
     // ---- DESKTOP LAYOUT ----
     if (isDesktop) {
@@ -4650,7 +4573,6 @@ const routes = {
                                     <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-2">${item.name}</h3>
                                     <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || detail?.description || ""}</p>
                                 </div>
-                                <!-- Quantity inline -->
                                 <div class="flex items-center gap-4">
                                     <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Quantity</span>
                                     <div class="flex items-center bg-gray-50 rounded-full border border-gray-100 px-4 py-2 gap-6 shadow-sm">
@@ -4662,9 +4584,8 @@ const routes = {
                             </div>
                         </div>
 
-                        <!-- Customization Options Card -->
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col gap-7">
-                            ${renderAllModifierSections(detail, sels, modSels, "grid")}
+                            ${renderAllModifierSectionsAlt2(detail, sels, modSels, "grid")}
 
                             <!-- Special Instructions -->
                             ${
@@ -4678,7 +4599,6 @@ const routes = {
                             }
                         </div>
 
-                        <!-- Add to Cart Card (bottom) -->
                         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-6">
                             <div class="flex flex-col gap-0.5">
                                 <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Options Total</span>
@@ -4695,28 +4615,50 @@ const routes = {
 
     // ---- MOBILE LAYOUT ----
     return `
-                <div class="flex flex-col h-full bg-white">
-                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
-                    <div class="w-full max-w-[1080px] flex items-center px-2">
-                        <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
-                            <i class="fa-solid fa-bars text-xl"></i>
-                        </button>
-                        <span class="text-lg font-black text-violet-600 flex-1 text-center">Customize</span>
-                        <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
+                <div class="flex flex-col h-full bg-white animate-[fadeIn_0.2s_ease-out]">
+                    <header class="bg-white px-3 py-2 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center shrink-0 border-b border-gray-100">
+                        <div class="w-full max-w-[1080px] flex items-center px-1">
+                            <!-- Left: Hamburger -->
+                            <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors shrink-0">
+                                <i class="fa-solid fa-bars text-xl"></i>
+                            </button>
+                            <!-- Center: i-Tea logo -->
+                            <div class="flex-1 flex items-center justify-center">
+                                <img src="images/i-tea-logo-new.png" class="h-9 w-auto object-contain" alt="i-Tea">
+                            </div>
+                            <!-- Right: Cart icon -->
+                            <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
+                                ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
+                            </button>
+                        </div>
+                    </header>
+
+                    <!-- Details subheader block mimicking menu-alt.html -->
+                    <div class="bg-white border-b border-gray-100 flex flex-col items-center justify-center text-center w-full shrink-0 animate-[fadeIn_0.3s_ease-out]">
+                        <div class="py-3.5 px-4 w-full relative">
+                            <!-- Back Button at the left -->
+                            <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                                <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                                <span>Back</span>
+                            </button>
+                            
+                            <h1 class="font-branding font-black text-[#1f0b35] text-[32px] tracking-tight leading-none uppercase mb-2">Customize</h1>
+                            
+                            <div onclick="navigateTo('order-details-alt')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
+                                <span class="text-[11px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">
+                                    ${modeText}
+                                </span>
+                                <span class="text-[10px] font-bold text-violet-600 uppercase tracking-wide leading-none mb-2">
+                                    ${timeText}
+                                </span>
+                                <div class="flex items-center justify-center gap-1.5 text-sm text-[#1f0b35] font-black tracking-tight uppercase">
+                                    <span>${addressText}</span>
+                                    <i class="fa-solid fa-chevron-right text-[10px] text-violet-600 transition-transform group-hover:translate-x-0.5"></i>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </header>
-                ${
-                  !isDesktop
-                    ? `
-                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
-                    <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
-                        <span>Back</span>
-                    </button>
-                </div>
-                `
-                    : ""
-                }
 
                     <div id="order-details-scroller" class="flex-1 overflow-y-auto scrollbar-hide">
                         <!-- Item Banner Image -->
@@ -4746,7 +4688,7 @@ const routes = {
                                 </div>
                             </div>
 
-                            ${renderAllModifierSections(detail, sels, modSels, "stacked")}
+                            ${renderAllModifierSectionsAlt2(detail, sels, modSels, "stacked")}
 
                             <!-- Special Instructions -->
                             ${
@@ -9166,7 +9108,8 @@ function selectItemAndNavigate(index) {
       .finally(() => {
         mockupState.isLoading = false;
         renderPage();
-        navigateTo("customize");
+        navigateTo(window._targetCustomizePage || "customize");
+        window._targetCustomizePage = null;
       });
   } else {
     const isDrink = isDrinkCategory(item.category);
@@ -9180,7 +9123,8 @@ function selectItemAndNavigate(index) {
     mockupState.selectedItemDetail = fallbackDetail;
     applyDefaultSelections(fallbackDetail);
     mockupState.isLoading = false;
-    navigateTo("customize");
+    navigateTo(window._targetCustomizePage || "customize");
+    window._targetCustomizePage = null;
   }
 }
 
@@ -9309,6 +9253,7 @@ window._addToCart = function () {
   for (const gid in sels) {
     const groupItems = sels[gid]?.items || {};
     for (const sid in groupItems) {
+      if (String(sid).startsWith("default_cup_")) continue;
       const s = groupItems[sid];
       selectedSubItems.push({
         menuSubItemId: s.menuSubItemId,
@@ -10525,6 +10470,21 @@ window.addEventListener("DOMContentLoaded", () => {
     fetchMenuAndItems(mockupState.selectedLocationId);
   }
 
+  // Auto-fetch item details if deep-linked into a customize page without data
+  if (
+    currentPage.startsWith("customize") &&
+    mockupState.selectedItem &&
+    !mockupState.selectedItemDetail &&
+    !mockupState.isLoading
+  ) {
+    const activeItems = getActiveMenuItems();
+    const idx = activeItems.findIndex((i) => i.id === mockupState.selectedItem.id);
+    if (idx !== -1) {
+      window._targetCustomizePage = currentPage;
+      setTimeout(() => selectItemAndNavigate(idx), 0);
+    }
+  }
+
   renderPage();
 });
 
@@ -10674,3 +10634,303 @@ window.addEventListener(
   },
   { passive: true },
 );
+
+// =============================================================================
+// SHARED MODIFIER RENDERING FUNCTIONS (ALT2)
+// =============================================================================
+
+function _alt2ModSectionHeader(label, subtitle, iconClass, onClickAction = "") {
+  return `
+    <div class="flex items-center gap-4 mb-2 ${onClickAction ? 'cursor-pointer group' : ''}" ${onClickAction ? `onclick="${onClickAction}"` : ''}>
+        <div class="w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
+            <i class="${iconClass} text-[#623696] text-xl"></i>
+        </div>
+        <div class="flex-1 flex flex-col justify-center">
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-black text-[#1f0b35] uppercase tracking-widest">${label}</span>
+                ${label === 'INCLUDED IN DRINK' ? '<i class="fa-solid fa-circle-info text-[10px] text-violet-400"></i>' : ''}
+            </div>
+            ${subtitle ? `<span class="text-xs font-bold text-violet-600">${subtitle}</span>` : ''}
+        </div>
+        ${onClickAction ? `<div class="flex items-center gap-2 pr-2"><span class="text-[10px] font-black text-violet-500/70 uppercase tracking-widest transition-colors group-hover:text-violet-600">${mockupState.alt2AccordionOpen ? 'CLOSE' : 'SELECT'}</span><i class="fa-solid fa-chevron-right text-gray-400 text-sm shrink-0 transition-transform group-hover:translate-x-1 ${mockupState.alt2AccordionOpen ? 'rotate-90' : ''}"></i></div>` : ''}
+    </div>
+  `;
+}
+
+function _alt2RenderSegmentedControl(group, sels) {
+  const gid = group.menuSubItemGroupId || group.subMenuChoiceId;
+  const isChoice = !!group.subMenuChoiceId;
+  const prices = isChoice ? (group.subItems || []) : (group.groupPrices || []).slice().sort((a, b) => (a.position || 0) - (b.position || 0));
+  
+  // Use a string 'choice_gid' for subMenuChoices
+  const queryGid = isChoice ? `choice_${gid}` : gid;
+  
+  const isCupOption = (group.displayName || group.groupName || "").toLowerCase().includes("cup");
+  if (isCupOption) {
+      const hasOneCup = prices.some(p => {
+          const sub = isChoice ? p : (p.menuSubItem || {});
+          return (sub.name || "").includes("1 Cup");
+      });
+      if (!hasOneCup) {
+          prices.unshift({
+             price: 0,
+             menuSubItemId: "default_cup_" + gid,
+             menuSubItem: {
+                 name: "1 Cup",
+                 menuSubItemId: "default_cup_" + gid
+             }
+          });
+      }
+  }
+  
+  let selectedId = Object.keys(sels[queryGid]?.items || {})[0];
+  
+  // If nothing is selected for a cup option, default to 1 Cup visually
+  if (isCupOption && !selectedId) {
+      selectedId = "default_cup_" + gid;
+  }
+  
+  const pills = prices.map(p => {
+    const sub = isChoice ? p : (p.menuSubItem || {});
+    const name = sub.name || "";
+    const isSelected = String(sub.menuSubItemId) === String(selectedId);
+    const safeName = name.replace(/'/g, "\\'");
+    const price = isChoice ? (sub.price || 0) : (p.price || 0);
+    const priceTag = price > 0 ? ` (+$${price.toFixed(2)})` : (name.includes('1 Cup') ? ' (Included)' : '');
+    
+    // Pass queryGid inside quotes for string keys
+    const selectArg = isChoice ? `'${queryGid}'` : gid;
+    
+    return `<button
+        onclick="window._selectSubItem(${selectArg}, ${sub.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, true)"
+        class="flex-1 py-2 text-[11px] md:text-xs font-bold transition-all border-r border-violet-100 last:border-r-0 whitespace-nowrap px-2
+               ${isSelected ? "bg-[#623696] text-white" : "bg-violet-50/50 text-[#623696] hover:bg-violet-100"}">
+        ${name}${priceTag}
+    </button>`;
+  }).join("");
+  
+  return `
+    <div class="ml-16 mb-3">
+        <div class="flex w-full rounded-xl overflow-hidden border border-violet-100 shadow-sm">
+            ${pills}
+        </div>
+    </div>
+  `;
+}
+
+function _alt2RenderIncluded(modifyPrices, modSels) {
+  if (!modifyPrices || modifyPrices.length === 0) return { count: 0, html: "" };
+  
+  const defaultItems = modifyPrices.filter(mp => mp.isDefaultItem === true);
+  if (defaultItems.length === 0) return { count: 0, html: "" };
+
+  let count = 0;
+  
+  const pills = defaultItems.map(mp => {
+    const sub = mp.menuSubItem || {};
+    const name = sub.name || `Item ${mp.menuSubItemId}`;
+    const currentType = modSels[mp.menuSubItemId]?.modifyType || "add"; // Default = Regular (add)
+    const isIncluded = currentType !== "no";
+    
+    if (isIncluded) count++;
+    
+    // Choose icon based on name
+    let iconHTML = `<i class="fa-solid fa-circle text-gray-800"></i>`;
+    if (name.toLowerCase().includes('jelly')) {
+       iconHTML = `<i class="fa-solid fa-square text-yellow-400"></i>`;
+    }
+    
+    if (isIncluded) {
+        return `
+        <div onclick="window._selectModifyType(${mp.menuSubItemId}, 'no', ${mp.noPrice || 0})" class="cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-xl border border-gray-200 bg-white shrink-0 shadow-sm hover:border-red-300 transition-colors group">
+            ${iconHTML}
+            <span class="text-xs font-bold text-gray-800 group-hover:line-through">${name}</span>
+            <div class="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center group-hover:bg-red-100"><i class="fa-solid fa-check text-[10px] text-emerald-600 group-hover:hidden"></i><i class="fa-solid fa-xmark text-[10px] text-red-600 hidden group-hover:block"></i></div>
+        </div>`;
+    } else {
+        return `
+        <div onclick="window._selectModifyType(${mp.menuSubItemId}, 'add', ${mp.addPrice || 0})" class="cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-xl border border-red-200 bg-red-50 shrink-0 shadow-sm hover:border-emerald-300 transition-colors group">
+            ${iconHTML}
+            <span class="text-xs font-bold text-gray-400 line-through group-hover:no-underline">${name}</span>
+            <div class="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-emerald-100"><i class="fa-solid fa-xmark text-[10px] text-red-600 group-hover:hidden"></i><i class="fa-solid fa-check text-[10px] text-emerald-600 hidden group-hover:block"></i></div>
+        </div>`;
+    }
+  }).join("");
+  
+  return {
+      count,
+      html: `
+        <div class="ml-16 mb-2 flex gap-3 overflow-x-auto scrollbar-hide py-1">
+            ${pills}
+        </div>
+        <div class="ml-16 mb-3 text-[11px] text-gray-500">
+            These come with the drink. Deselect any you don't want.
+        </div>
+      `
+  };
+}
+
+function _alt2RenderExtraToppings(stepperGroups, sels) {
+  let selectedCount = 0;
+  const selectedCircles = [];
+  
+  stepperGroups.forEach(group => {
+      const gid = group.menuSubItemGroupId;
+      const prices = group.groupPrices || [];
+      prices.forEach(p => {
+          const qty = sels[gid]?.items?.[p.menuSubItemId]?.quantity || 0;
+          if (qty > 0) {
+              selectedCount += qty;
+              const name = p.menuSubItem?.name || "?";
+              const initial = name.charAt(0).toUpperCase();
+              
+              // Give some varied colors based on initial
+              const colors = ['bg-gray-800 text-white', 'bg-yellow-400 text-white', 'bg-emerald-500 text-white', 'bg-rose-400 text-white', 'bg-blue-400 text-white'];
+              const colorClass = colors[initial.charCodeAt(0) % colors.length];
+              
+              for (let i = 0; i < qty; i++) {
+                 if (selectedCircles.length < 5) { // Cap at 5 circles visually
+                     selectedCircles.push(`<div class="w-8 h-8 rounded-full ${colorClass} flex items-center justify-center shrink-0 shadow-sm text-[10px] font-bold">${initial}</div>`);
+                 }
+              }
+          }
+      });
+  });
+  
+  let extraCountHTML = '';
+  if (selectedCount > 5) {
+      extraCountHTML = `<div class="w-8 h-8 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 font-bold text-xs border border-violet-100">+${selectedCount - 5}</div>`;
+  }
+  
+  let summaryRow = `<div class="ml-16 mb-3 flex gap-3 overflow-x-auto scrollbar-hide items-center">
+      ${selectedCircles.join("")}
+      ${extraCountHTML}
+      ${selectedCount === 0 ? '<span class="text-[11px] text-gray-400 italic">None selected</span>' : ''}
+  </div>`;
+  
+  let accordionHTML = '';
+  if (mockupState.alt2AccordionOpen) {
+      accordionHTML = `<div class="ml-16 mb-3 pl-4 border-l-2 border-violet-100 animate-[fadeIn_0.2s_ease-out]">
+        <div class="mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Select Toppings</div>`;
+      stepperGroups.forEach(g => {
+          accordionHTML += `
+            <div class="mb-2 last:mb-0">
+                ${_renderStepperGroup(g, sels)}
+            </div>
+          `;
+      });
+      accordionHTML += `</div>`;
+  }
+  
+  return {
+      count: selectedCount,
+      html: summaryRow + accordionHTML
+  };
+}
+
+function renderAllModifierSectionsAlt2(detail, sels, modSels, colLayout) {
+  if (!detail) return "";
+  let html = '<div class="space-y-0 divide-y divide-gray-100/50">';
+
+  if (detail._isFallback) {
+    html += `<div class="bg-pink-50 border border-pink-200 text-pink-500 text-[11px] font-black uppercase tracking-widest p-3 rounded-xl mb-4 text-center shadow-sm">
+            ⚠️ Generic Options Displayed
+        </div>`;
+  }
+
+  // Included Items
+  const modifyPrices = (detail?.menuSubItemModifyPrices || []).filter(m => m.isActive !== false);
+  if (modifyPrices.length > 0) {
+      const incData = _alt2RenderIncluded(modifyPrices, modSels);
+      html += `<div class="py-2">
+        ${_alt2ModSectionHeader('INCLUDED IN DRINK', `${incData.count} Selected`, 'fa-solid fa-cubes')}
+        ${incData.html}
+      </div>`;
+  }
+  
+  // Extra Toppings (Stepper Groups)
+  const groups = (detail?.menuSubItemGroups || []).filter(g => g.isActive !== false);
+  
+  const isSegmented = (g) => {
+      const name = (g.displayName || g.groupName || "").toLowerCase();
+      if (name.includes("ice") || name.includes("cup") || name.includes("sugar") || name.includes("sweet")) return true;
+      return (g.maxSelect || 1) === 1;
+  };
+  
+  const stepperGroups = groups.filter(g => !isSegmented(g));
+  const radioGroups = groups.filter(g => isSegmented(g));
+  
+  if (stepperGroups.length > 0) {
+      const toppingsData = _alt2RenderExtraToppings(stepperGroups, sels);
+      const toggleAction = "window.updateMockupState('alt2AccordionOpen', !mockupState.alt2AccordionOpen)";
+      html += `<div class="py-2">
+        ${_alt2ModSectionHeader('EXTRA TOPPINGS', `${toppingsData.count} Selected`, 'fa-solid fa-plus', toggleAction)}
+        ${toppingsData.html}
+      </div>`;
+  }
+
+  // Radio Groups (Segmented Controls)
+  const subMenuChoices = detail?.subMenuChoices || [];
+  
+  // Render subMenuChoices as segmented controls
+  for (const choice of subMenuChoices) {
+      const gid = `choice_${choice.subMenuChoiceId}`;
+      const selectedId = Object.keys(sels[gid]?.items || {})[0];
+      const selectedSub = choice.subItems?.find(s => String(s.menuSubItemId) === String(selectedId));
+      const subtitle = selectedSub ? selectedSub.name : '';
+      let icon = 'fa-solid fa-check-circle';
+      const nameMatch = _groupIcon(choice.displayName || choice.name || "").match(/fa-[a-z-]+/);
+      if (nameMatch) icon = nameMatch[0];
+      
+      html += `<div class="py-2">
+        ${_alt2ModSectionHeader(choice.displayName || choice.name || "Choose", subtitle, icon)}
+        ${_alt2RenderSegmentedControl(choice, sels)}
+      </div>`;
+  }
+  
+  // Render radioGroups as segmented controls
+  for (const g of radioGroups) {
+      const gid = g.menuSubItemGroupId;
+      const selectedId = Object.keys(sels[gid]?.items || {})[0];
+      const selectedPrice = g.groupPrices?.find(p => String(p.menuSubItemId) === String(selectedId));
+      const subtitle = selectedPrice?.menuSubItem?.name || '';
+      
+      let icon = 'fa-solid fa-check-circle';
+      const name = (g.displayName || g.groupName || "").toLowerCase();
+      if (name.includes('sugar') || name.includes('sweet')) icon = 'fa-solid fa-spoon';
+      else if (name.includes('ice')) icon = 'fa-solid fa-cube';
+      else if (name.includes('cup')) icon = 'fa-solid fa-mug-hot';
+      else if (name.includes('size')) icon = 'fa-solid fa-maximize';
+      
+      html += `<div class="py-2">
+        ${_alt2ModSectionHeader(g.displayName || g.groupName || "Options", subtitle, icon)}
+        ${_alt2RenderSegmentedControl(g, sels)}
+      </div>`;
+  }
+  
+  // Flat sub-items (Add-Ons)
+  const activeSubItems = (detail?.menuSubItems || []).filter(s => s.isActive !== false);
+  if (activeSubItems.length > 0) {
+      html += `<div class="py-2">
+        ${_alt2ModSectionHeader("Add-Ons", "", "fa-solid fa-sparkles")}
+        <div class="ml-16 mb-3 pl-4 border-l-2 border-violet-100">
+            ${_renderFlatSubItemSection(activeSubItems, sels)}
+        </div>
+      </div>`;
+  }
+
+  // Special Instructions
+  if (detail && !detail.disableSpecialInstruction) {
+      const hasInstructions = !!mockupState._specialInstruction;
+      const subtitle = hasInstructions ? "Instructions added" : "No special instructions";
+      html += `<div class="py-2">
+        ${_alt2ModSectionHeader('SPECIAL INSTRUCTIONS', subtitle, 'fa-solid fa-pen')}
+        <div class="ml-16 mb-2">
+            <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ""}</textarea>
+        </div>
+      </div>`;
+  }
+
+  html += '</div>';
+  return html;
+}
