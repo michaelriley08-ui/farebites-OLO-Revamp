@@ -119,7 +119,12 @@ const ApiService = {
 
     async forgotPassword(email) {
         try {
-            return await this.request('/api/Account/forgot-password', 'POST', { email });
+            return await this.request('/api/Account/forgot-password', 'POST', { 
+                Email: email,
+                ResetPasswordUrl: window.location.origin + "/reset-password.html",
+                WebsiteUrl: window.location.origin,
+                WebsiteShortName: "itea"
+            });
         } catch (error) {
             // If the endpoint is not implemented (404/405), simulate a successful request for frontend demo purposes
             if (error && (error.status === 404 || error.status === 405)) {

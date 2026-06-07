@@ -418,3 +418,37 @@
         .pb-bottom-safe {
             padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
         }
+
+        /* Speech bubble tail for 'Hi User!' pill */
+        .speech-bubble-tail {
+            position: relative;
+        }
+
+        .speech-bubble-tail::after {
+            content: '';
+            position: absolute;
+            bottom: -7px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 7px 0;
+            border-style: solid;
+            border-color: #fff transparent transparent transparent;
+            display: block;
+            width: 0;
+            z-index: 2;
+        }
+
+        .speech-bubble-tail::before {
+            content: '';
+            position: absolute;
+            bottom: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 9px 8px 0;
+            border-style: solid;
+            /* matches tailwind violet-100: #ede9fe */
+            border-color: #ede9fe transparent transparent transparent;
+            display: block;
+            width: 0;
+            z-index: 1;
+        }
