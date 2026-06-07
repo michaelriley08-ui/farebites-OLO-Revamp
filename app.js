@@ -1261,6 +1261,7 @@ function toggleMenu(e, menuId) {
     "location-dropdown-order-details-alt",
     "location-dropdown-menu",
     "location-dropdown-menu-alt",
+    "location-dropdown-order-confirm",
   ];
   allMenus.forEach((id) => {
     const menu = document.getElementById(id);
@@ -1291,6 +1292,7 @@ document.addEventListener("click", () => {
     "location-dropdown-order-details-alt",
     "location-dropdown-menu",
     "location-dropdown-menu-alt",
+    "location-dropdown-order-confirm",
   ].forEach((id) => {
     const menu = document.getElementById(id);
     if (menu) {
@@ -1934,16 +1936,18 @@ function renderMenuPage(isAlternative) {
                                                 item,
                                               );
                                             return `
-                                                <div class="bg-white rounded-2xl ${isDesktop ? "pt-2.5 px-2.5 pb-5" : "pt-1.5 px-1.5 pb-3"} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                                    <div class="w-full ${isDesktop ? "h-44" : "h-48"} rounded-xl overflow-hidden ${isDesktop ? "mb-5" : "mb-3"} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
+                                                    <div class="w-full ${isDesktop ? "h-44" : "h-48"} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                     </div>
-                                                    <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">${item.category}</p>
-                                                        <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
+                                                    <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
+                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                            <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">${item.category}</p>
+                                                            <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
+                                                        </div>
+                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                     </div>
-                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                 </div>
                                             `;
                                           })
@@ -2003,16 +2007,18 @@ function renderMenuPage(isAlternative) {
                                                     const actualIndex =
                                                       items.indexOf(item);
                                                     return `
-                                                        <div class="bg-white rounded-2xl ${isDesktop ? "pt-2.5 px-2.5 pb-5" : "pt-1.5 px-1.5 pb-3"} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                                            <div class="w-full ${isDesktop ? "h-44" : "h-48"} rounded-xl overflow-hidden ${isDesktop ? "mb-5" : "mb-3"} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
+                                                            <div class="w-full ${isDesktop ? "h-44" : "h-48"} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
                                                                 <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                             </div>
-                                                            <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                                <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
+                                                            <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
+                                                                <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                                    <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                                    <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
+                                                                </div>
+                                                                ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ""}
+                                                                <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                             </div>
-                                                            ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ""}
-                                                            <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                         </div>
                                                     `;
                                                   })
@@ -2053,17 +2059,19 @@ function renderMenuPage(isAlternative) {
                                               ? "absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm"
                                               : "absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm";
                                             return `
-                                                <div class="bg-white rounded-2xl pt-2.5 px-2.5 pb-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-                                                    <div class="w-full h-44 rounded-xl overflow-hidden mb-5 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
+                                                    <div class="w-full h-44 overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                         <div class="${badgeClass}" ${badgeStyle}>Featured</div>
                                                     </div>
-                                                    <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <h4 class="font-black text-gray-900 text-lg leading-tight tracking-tight uppercase mb-1 line-clamp-2">${item.name}</h4>
-                                                        <div class="font-black text-violet-600 text-base mb-2">$${item.price.toFixed(2)}</div>
+                                                    <div class="flex flex-col flex-1 px-2.5 pb-5 pt-5">
+                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                            <h4 class="font-black text-gray-900 text-lg leading-tight tracking-tight uppercase mb-1 line-clamp-2">${item.name}</h4>
+                                                            <div class="font-black text-violet-600 text-base mb-2">$${item.price.toFixed(2)}</div>
+                                                        </div>
+                                                        <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description || "A delicious addition to our menu."}</p>
+                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-3 text-sm rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                     </div>
-                                                    <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description || "A delicious addition to our menu."}</p>
-                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-3 text-sm rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                 </div>
                                             `;
                                           })
@@ -2085,16 +2093,18 @@ function renderMenuPage(isAlternative) {
                                               ? "absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm"
                                               : "absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm";
                                             return `
-                                                <div class="bg-white rounded-2xl pt-1.5 px-1.5 pb-3 shadow-sm border border-gray-100 flex flex-col w-[72vw] max-w-[260px] shrink-0 snap-center hover:shadow-md transition-shadow">
-                                                    <div class="w-full h-40 rounded-xl overflow-hidden mb-3 relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col w-[72vw] max-w-[260px] shrink-0 snap-center hover:shadow-md transition-shadow overflow-hidden">
+                                                    <div class="w-full h-40 overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                         <div class="${badgeClass}" ${badgeStyle}>Featured</div>
                                                     </div>
-                                                    <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <h4 class="font-black text-gray-900 text-[15px] leading-tight tracking-tight uppercase mb-1 line-clamp-2">${item.name}</h4>
-                                                        <div class="font-black text-violet-600 text-sm mb-3">$${item.price.toFixed(2)}</div>
+                                                    <div class="flex flex-col flex-1 px-1.5 pb-3 pt-3">
+                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                            <h4 class="font-black text-gray-900 text-[15px] leading-tight tracking-tight uppercase mb-1 line-clamp-2">${item.name}</h4>
+                                                            <div class="font-black text-violet-600 text-sm mb-3">$${item.price.toFixed(2)}</div>
+                                                        </div>
+                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-2 text-[11px] rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                     </div>
-                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-2 text-[11px] rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                 </div>
                                             `;
                                           })
@@ -2129,18 +2139,20 @@ function renderMenuPage(isAlternative) {
                                                 ? originalIndex
                                                 : 0;
                                             return `
-                                                <div class="bg-white rounded-2xl ${isDesktop ? "pt-2.5 px-2.5 pb-5" : "pt-1.5 px-1.5 pb-3"} shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card">
-                                                    <div class="w-full ${isDesktop ? "h-44" : "h-48"} rounded-xl overflow-hidden ${isDesktop ? "mb-5" : "mb-3"} relative cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card overflow-hidden">
+                                                    <div class="w-full ${isDesktop ? "h-44" : "h-48"} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <img src="${fav.image}" class="w-full h-full object-cover object-top group-hover/card:scale-105 transition-transform duration-500">
                                                         <button onclick="event.stopPropagation(); toggleFavorite(${fav.id})" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white text-red-500 shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-transform">
                                                             <i class="fa-solid fa-heart"></i>
                                                         </button>
                                                     </div>
-                                                    <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${fav.name}</h4>
-                                                        <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${fav.price.toFixed(2)}</div>
+                                                    <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
+                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                            <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${fav.name}</h4>
+                                                            <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${fav.price.toFixed(2)}</div>
+                                                        </div>
+                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors tracking-wide mt-auto">+ Reorder</button>
                                                     </div>
-                                                    <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors tracking-wide mt-auto">+ Reorder</button>
                                                 </div>
                                             `;
                                           })
@@ -5790,6 +5802,9 @@ const routes = {
     const isDesktop = currentViewport === "desktop";
     return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
+                <!-- Subtle top-aligned brand gradient overlay fading down -->
+                <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
+
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button>
                     <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center">Order Status</h1>
@@ -5798,7 +5813,7 @@ const routes = {
                 ${
                   !isDesktop
                     ? `
-                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2 relative z-10">
                     <button onclick="navigateTo('account')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
@@ -5808,7 +5823,7 @@ const routes = {
                     : ""
                 }
                 
-                <div class="${isDesktop ? "flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full space-y-6 scrollbar-hide" : "flex-1 overflow-y-auto space-y-6 scrollbar-hide"}">
+                <div class="${isDesktop ? "flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full space-y-6 scrollbar-hide relative z-10" : "flex-1 overflow-y-auto space-y-6 scrollbar-hide relative z-10"}">
                     <div class="flex gap-2 overflow-x-auto scrollbar-hide shrink-0 pb-2">
                         <button onclick="updateMockupState('orderDetailsExpanded', !mockupState.orderDetailsExpanded); navigateTo(currentPage);" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap active:scale-95 transition-all">
                             <i class="fa-solid ${mockupState.orderDetailsExpanded ? "fa-chevron-up" : "fa-chevron-down"} text-[10px] text-gray-500"></i>
@@ -6225,6 +6240,9 @@ const routes = {
     const isDesktop = currentViewport === "desktop";
     return `
             <div class="flex flex-col h-full ${isDesktop ? "bg-[#f6f6f6]" : "bg-white"} relative overflow-y-auto">
+                <!-- Subtle top-aligned brand gradient overlay fading down -->
+                <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
+
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
                         <i class="fa-solid fa-bars text-xl"></i>
@@ -6245,7 +6263,7 @@ const routes = {
                     : ""
                 }
                 
-                <div class="w-full max-w-3xl mx-auto p-6 md:p-8 flex flex-col gap-8 font-sans">
+                <div class="w-full max-w-3xl mx-auto p-6 md:p-8 flex flex-col gap-8 font-sans relative z-10">
                     <div class="text-center mb-2">
                         <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Register</h1>
                         <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mt-2">Create a new account</p>
@@ -6609,12 +6627,30 @@ const routes = {
 
   "order-confirm": () => {
     const isDesktop = currentViewport === "desktop";
+    
+    // Auto-fetch latest order if we don't have one loaded
+    if (!mockupState.lastOrder && window.ApiService && window.ApiService.getToken() && !window._fetchingLastOrder) {
+      window._fetchingLastOrder = true;
+      setTimeout(() => {
+        window.ApiService.getOrders(1, 1).then(res => {
+          window._fetchingLastOrder = false;
+          if (res && res.length > 0) {
+            mockupState.lastOrder = res[0];
+            persistAllState();
+            renderPage();
+          }
+        }).catch(() => {
+          window._fetchingLastOrder = false;
+        });
+      }, 100);
+    }
+
     const order = mockupState.lastOrder || {};
-    const orderItems = order.orderItems || [];
-    const orderNum =
-      order.orderId ||
-      order.orderNumber ||
-      "FB-" + Math.floor(1000 + Math.random() * 9000);
+    const orderItems = order.orderMenuItems || order.orderItems || [];
+    let orderNum = order.orderId || order.orderNumber || "Pending";
+    if (orderNum !== "Pending" && !String(orderNum).startsWith("FB-")) {
+      orderNum = "FB-" + orderNum;
+    }
     const locationName = mockupState.selectedLocation || "i-Tea";
     const selectedLoc =
       (mockupState.apiLocations || []).find(
@@ -6634,9 +6670,9 @@ const routes = {
       hour: "numeric",
       minute: "2-digit",
     });
-    const orderSubtotal = (order.subtotal || 0).toFixed(2);
-    const orderTaxes = (order.taxes || 0).toFixed(2);
-    const orderTip = (order.tipAmount || 0).toFixed(2);
+    const orderSubtotal = (order.subTotal || order.subtotal || 0).toFixed(2);
+    const orderTaxes = (order.salesTax || order.taxes || 0).toFixed(2);
+    const orderTip = (order.tipApplied || order.tipAmount || 0).toFixed(2);
     const orderTotal = (order.total || 0).toFixed(2);
     const itemCount = orderItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
 
@@ -6671,7 +6707,44 @@ const routes = {
                                 <i class="fa-solid fa-check text-5xl"></i>
                             </div>
                             <h1 class="text-4xl font-black text-gray-900 uppercase tracking-tighter mb-2">Order Confirmed!</h1>
-                            <p class="text-gray-500 font-medium mb-8">Your order <span class="text-violet-600 font-black">#${orderNum}</span> is being sent to the kitchen.</p>
+                            <p class="text-gray-500 font-medium mb-6">Your order <span class="text-violet-600 font-black">#${orderNum}</span> is being sent to the kitchen.</p>
+                            <div class="relative mb-8 mx-auto w-fit text-left">
+                                <div onclick="toggleMenu(event, 'location-dropdown-order-confirm')" class="inline-flex items-center gap-2 cursor-pointer group hover:opacity-85 transition-opacity px-2 text-left">
+                                    <i class="fa-solid fa-location-dot text-violet-600 text-xl"></i>
+                                    <div class="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
+                                        <span class="text-sm font-black text-gray-900 uppercase tracking-tight">${locationName}</span>
+                                        <span class="text-xs font-bold text-gray-500 uppercase tracking-tight">${locationAddress}</span>
+                                        <i class="fa-solid fa-chevron-down text-violet-600 text-[10px] transition-transform group-hover:translate-y-0.5 mt-0.5"></i>
+                                    </div>
+                                </div>
+                                <!-- Dropdown Menu -->
+                                <div id="location-dropdown-order-confirm" class="hidden absolute left-1/2 -translate-x-1/2 w-[320px] top-[calc(100%+0.5rem)] z-[100] animate-[slideUp_0.2s_ease-out]">
+                                    <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
+                                        <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationName}</h4>
+                                        <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
+                                        <div class="space-y-3 text-sm">
+                                            <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                                <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                                    <i class="fa-solid fa-phone text-violet-600 text-sm"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Phone</span>
+                                                    <span class="text-gray-600 font-medium text-sm">${selectedLoc.phone || "(480) 968-3568"}</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                                <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                                    <i class="fa-regular fa-clock text-violet-600 text-sm"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Hours</span>
+                                                    <span class="text-gray-600 font-medium block text-sm">${selectedLoc.hours || "11:30 AM to 9:30 PM"}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
@@ -6749,15 +6822,10 @@ const routes = {
                                     <span>Tax</span>
                                     <span>$${orderTaxes}</span>
                                 </div>
-                                ${
-                                  parseFloat(orderTip) > 0
-                                    ? `
                                 <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
                                     <span>Tip</span>
                                     <span>$${orderTip}</span>
-                                </div>`
-                                    : ""
-                                }
+                                </div>
                                 <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
                                     <span>Total</span>
                                     <span>$${orderTotal}</span>
@@ -7242,6 +7310,9 @@ const routes = {
 
     return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
+                <!-- Subtle top-aligned brand gradient overlay fading down -->
+                <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
+
                 <!-- Header Component -->
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
@@ -7253,7 +7324,7 @@ const routes = {
                 ${
                   !isDesktop
                     ? `
-                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
+                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2 relative z-10">
                     <button onclick="navigateTo('menu')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
@@ -7263,7 +7334,7 @@ const routes = {
                     : ""
                 }
 
-                <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 pb-16">
+                <div class="p-6 md:p-8 max-w-3xl mx-auto w-full flex flex-col gap-6 pb-16 relative z-10">
                     <div class="mb-8">
                         <h1 class="text-4xl font-black text-gray-900 tracking-tighter mb-1 uppercase">Your Favorites</h1>
                         <p class="text-gray-600 font-medium mb-4">Keep track of the items you love most.</p>
@@ -7287,14 +7358,14 @@ const routes = {
                         ${favorites
                           .map(
                             (item) => `
-                            <div class="bg-white rounded-2xl ${isDesktop ? "p-5" : "p-4"} shadow-sm border border-gray-100 flex ${isDesktop ? "gap-5" : "flex-col gap-4"} hover:shadow-md transition-shadow relative group">
-                                <div class="${isDesktop ? "w-24 h-24" : "w-full h-56"} rounded-xl overflow-hidden shrink-0 border border-gray-50">
-                                    <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                            <div class="bg-white rounded-2xl ${isDesktop ? "p-2.5" : "p-2"} shadow-sm border border-gray-100 flex ${isDesktop ? "gap-5 items-stretch" : "flex-col gap-4"} hover:shadow-md transition-shadow relative group">
+                                <div class="${isDesktop ? "w-32 min-h-[128px]" : "w-full h-64"} rounded-xl overflow-hidden shrink-0 border border-gray-50">
+                                    <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                 </div>
                                 <div class="flex-1 flex flex-col justify-between py-1 min-w-0">
                                     <div class="cursor-pointer">
                                         <div class="text-violet-600 text-[9px] font-black tracking-widest uppercase mb-1">${item.category}</div>
-                                        <h4 class="font-black text-gray-900 ${isDesktop ? "text-base" : "text-lg"} leading-tight tracking-tight mb-1 pr-8 truncate">${item.name}</h4>
+                                        <h4 class="font-black text-gray-900 ${isDesktop ? "text-base" : "text-lg"} leading-tight tracking-tight mb-1 pr-12">${item.name}</h4>
                                         <div class="font-black text-violet-600 text-sm">$${item.price.toFixed(2)}</div>
                                     </div>
                                     <div class="flex gap-2 mt-4">
@@ -8264,7 +8335,6 @@ function renderPage() {
                         <a href="directions.html" class="dropdown-item lowercase">directions.html</a>
                         <a href="privacy.html" class="dropdown-item lowercase">privacy.html</a>
                         <a href="accessibility.html" class="dropdown-item lowercase">accessibility.html</a>
-                        <a href="sections.html" class="dropdown-item lowercase">sections.html* (demos)</a>
                     </div>
                     
                     <!-- Alt Versions Footer Card -->
@@ -9423,16 +9493,16 @@ window._handlePlaceOrder = async function () {
 
     // Store order response
     mockupState.lastOrder = {
-      ...response,
-      orderId: response.data?.orderId || response.orderId,
+      ...(typeof response === "object" ? response : {}),
+      orderId: typeof response === "number" || typeof response === "string" ? response : (response?.data?.orderId || response?.orderId || response?.id),
       orderItems: cart.map((i) => ({ ...i })),
-      subtotal,
-      taxes,
-      tipAmount,
-      bagFee,
-      convenienceFee,
-      total: finalTotal,
-      placedAt: new Date().toISOString(),
+      subtotal: response?.data?.subTotal ?? response?.subTotal ?? subtotal,
+      taxes: response?.data?.salesTax ?? response?.salesTax ?? taxes,
+      tipAmount: response?.data?.tipApplied ?? response?.tipApplied ?? tipAmount,
+      bagFee: response?.data?.bagFeeCharged ?? response?.bagFeeCharged ?? bagFee,
+      convenienceFee: response?.data?.convenienceFeeCharged ?? response?.convenienceFeeCharged ?? convenienceFee,
+      total: response?.data?.total ?? response?.total ?? finalTotal,
+      placedAt: response?.data?.orderDate ?? response?.orderDate ?? new Date().toISOString(),
     };
 
     // Clear cart
@@ -9464,15 +9534,16 @@ window._handlePlaceOrder = async function () {
         console.log("Order placed successfully on retry:", retryResponse);
 
         mockupState.lastOrder = {
-          ...retryResponse,
+          ...(typeof retryResponse === "object" ? retryResponse : {}),
+          orderId: typeof retryResponse === "number" || typeof retryResponse === "string" ? retryResponse : (retryResponse?.data?.orderId || retryResponse?.orderId || retryResponse?.id),
           orderItems: cart.map((i) => ({ ...i })),
-          subtotal,
-          taxes,
-          tipAmount,
-          bagFee,
-          convenienceFee,
-          total: finalTotal,
-          placedAt: new Date().toISOString(),
+          subtotal: retryResponse?.data?.subTotal ?? retryResponse?.subTotal ?? subtotal,
+          taxes: retryResponse?.data?.salesTax ?? retryResponse?.salesTax ?? taxes,
+          tipAmount: retryResponse?.data?.tipApplied ?? retryResponse?.tipApplied ?? tipAmount,
+          bagFee: retryResponse?.data?.bagFeeCharged ?? retryResponse?.bagFeeCharged ?? bagFee,
+          convenienceFee: retryResponse?.data?.convenienceFeeCharged ?? retryResponse?.convenienceFeeCharged ?? convenienceFee,
+          total: retryResponse?.data?.total ?? retryResponse?.total ?? finalTotal,
+          placedAt: retryResponse?.data?.orderDate ?? retryResponse?.orderDate ?? new Date().toISOString(),
         };
 
         mockupState.cart = [];
