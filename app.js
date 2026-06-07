@@ -3157,12 +3157,12 @@ const routes = {
                             </div>
                             <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, TEMPE, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
                         </div>
-                        <div class="p-5 border-b border-gray-100 bg-white">
+                        <div class="pt-5 px-5 bg-white">
                             <div class="bg-gray-100 flex items-center gap-3 px-4 py-3.5 rounded-full shadow-inner mb-5 border border-gray-200/50">
                                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                                 <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
                             </div>
-                            <div class="flex border-b border-gray-100 w-full justify-start gap-8 mb-5 pb-2">
+                            <div class="flex border-b border-gray-100 w-full justify-start gap-8 pb-2">
                                 ${[
                                   { id: "Near Me", name: "Near Me" },
                                   { id: "My Locations", name: "My Locations" },
@@ -3265,7 +3265,7 @@ const routes = {
                     </div>
 
                     <div class="flex-1 overflow-y-auto bg-white z-10 -mt-6 rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.12)] flex flex-col relative pb-6">
-                        <div class="p-5 border-b border-gray-100 shrink-0 sticky top-0 bg-white/95 backdrop-blur-md z-20 rounded-t-3xl">
+                        <div class="pt-5 px-5 shrink-0 sticky top-0 bg-white/95 backdrop-blur-md z-20 rounded-t-3xl">
                             <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-5"></div>
                             <div class="bg-gray-100 flex items-center gap-3 px-4 py-3.5 rounded-full shadow-inner mb-4 border border-gray-200/50">
                                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
@@ -3398,12 +3398,12 @@ const routes = {
                             </div>
                             <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, TEMPE, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
                         </div>
-                        <div class="p-5 border-b border-gray-100 bg-white">
+                        <div class="pt-5 px-5 bg-white">
                             <div class="bg-gray-100 flex items-center gap-3 px-4 py-3.5 rounded-full shadow-inner mb-5 border border-gray-200/50">
                                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                                 <input type="text" placeholder="Search city, state, or zip" class="bg-transparent border-none outline-none w-full font-bold text-gray-800 text-sm placeholder-gray-400">
                             </div>
-                            <div class="flex border-b border-gray-100 w-full justify-start gap-8 mb-5 pb-2">
+                            <div class="flex border-b border-gray-100 w-full justify-start gap-8 pb-2">
                                 ${[
                                   { id: "Near Me", name: "Near Me" },
                                   { id: "My Locations", name: "My Locations" },
@@ -8292,7 +8292,7 @@ function renderPage() {
     const desktopNavHtml = `
             <nav class="hidden lg:flex md:flex justify-between items-center px-4 lg:px-8 h-[70px] bg-white sticky top-0 z-[9999] border-b border-gray-100 shadow-sm w-full shrink-0">
                 <div class="flex items-center gap-4 lg:gap-8">
-                    <div class="w-16 h-12 lg:w-20 lg:h-14 flex items-center justify-center cursor-pointer shrink-0" onclick="navigateTo('restaurant-home')">
+                    <div class="w-16 h-12 lg:w-[114px] lg:h-[70px] flex items-center justify-center cursor-pointer shrink-0" onclick="navigateTo('restaurant-home')">
                         <img src="images/nav-logo.png" class="w-full h-full object-contain">
                     </div>
                     <div class="flex items-center gap-3 lg:gap-6 text-[16px] lg:text-[1.3rem] font-black uppercase tracking-tight text-[#1f0b35] ml-2">
@@ -10341,8 +10341,8 @@ function initLocationsMap() {
                             <svg viewBox="0 0 384 512" class="absolute inset-0 w-full h-full fill-[#e61874] z-0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; fill: #e61874; z-index: 0;">
                                 <path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0z"/>
                             </svg>
-                            <div style="position: absolute; z-index: 10; top: 8px; left: 8px; width: 32px; height: 32px; background-color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
-                                <img src="images/i-tea-logo-new.png" alt="IT" style="width: 24px; height: 24px; object-fit: contain;">
+                            <div style="position: absolute; z-index: 10; top: 3px; left: 3px; width: 42px; height: 42px; background-color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                                <img src="images/i-tea-logo-new.png" alt="IT" style="width: 38px; height: 38px; object-fit: contain;">
                             </div>
                         </div>
                         <div class="bg-violet-950/90 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-sm whitespace-nowrap -mt-1 leading-none border border-violet-800/30">
