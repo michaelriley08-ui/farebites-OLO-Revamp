@@ -2836,7 +2836,7 @@ const routes = {
                         ${
                           mockupState.isLoggedIn
                             ? `
-                        <div onclick="event.stopPropagation(); navigateTo('account')" class="mt-1 px-2.5 py-0.5 bg-white text-violet-600 border border-violet-100 rounded-full shadow-sm text-[10px] font-black uppercase tracking-wider whitespace-nowrap active:scale-95 transition-transform">
+                        <div onclick="event.stopPropagation(); navigateTo('account')" class="speech-bubble-tail mt-1 px-2.5 py-0.5 bg-white text-violet-600 border border-violet-100 rounded-full shadow-sm text-[10px] font-black uppercase tracking-wider whitespace-nowrap active:scale-95 transition-transform">
                             Hi ${mockupState.userName || "User"}!
                         </div>
                         `
@@ -3104,11 +3104,18 @@ const routes = {
         mockupState.apiLocations && mockupState.apiLocations.length > 0
           ? mockupState.apiLocations
           : LOCATIONS;
+      if (mockupState.locationFilter === "All") {
+        return list;
+      }
       if (
         mockupState.locationFilter === "Near Me" ||
         mockupState.locationFilter === "Nearby"
-      )
+      ) {
+        if (mockupState.userLat && mockupState.userLng) {
+          return [...list].sort((a, b) => (a.realDistance || 9999) - (b.realDistance || 9999));
+        }
         return list;
+      }
       if (mockupState.locationFilter === "My Locations") {
         const favorites = list.filter((loc) => loc.fav);
         const previous =
@@ -3159,6 +3166,7 @@ const routes = {
                                 ${[
                                   { id: "Near Me", name: "Near Me" },
                                   { id: "My Locations", name: "My Locations" },
+                                  { id: "All", name: "All" },
                                 ]
                                   .map((tab) => {
                                     const isActive =
@@ -3267,6 +3275,7 @@ const routes = {
                                 ${[
                                   { id: "Near Me", name: "Near Me" },
                                   { id: "My Locations", name: "My Locations" },
+                                  { id: "All", name: "All" },
                                 ]
                                   .map((tab) => {
                                     const isActive =
@@ -3398,6 +3407,7 @@ const routes = {
                                 ${[
                                   { id: "Near Me", name: "Near Me" },
                                   { id: "My Locations", name: "My Locations" },
+                                  { id: "All", name: "All" },
                                 ]
                                   .map((tab) => {
                                     const isActive =
@@ -3552,6 +3562,7 @@ const routes = {
                                 ${[
                                   { id: "Near Me", name: "Near Me" },
                                   { id: "My Locations", name: "My Locations" },
+                                  { id: "All", name: "All" },
                                 ]
                                   .map((tab) => {
                                     const isActive =
@@ -6374,6 +6385,25 @@ const routes = {
   },
   directions: () => {
     const isDesktop = currentViewport === "desktop";
+    
+    let targetLoc = LOCATIONS[0];
+    if (mockupState.apiLocations && mockupState.apiLocations.length > 0) {
+      targetLoc = mockupState.apiLocations.find(l => l.name === mockupState.selectedLocation) || mockupState.apiLocations[0] || targetLoc;
+    } else {
+      targetLoc = LOCATIONS.find(l => l.name === mockupState.selectedLocation) || targetLoc;
+    }
+
+    let distMilesStr = targetLoc.dist ? targetLoc.dist.replace(" mi", "") : "2.4";
+    if (mockupState.userLat && mockupState.userLng && targetLoc.lat && targetLoc.lng) {
+      if (typeof calculateDistance === 'function') {
+        distMilesStr = calculateDistance(mockupState.userLat, mockupState.userLng, targetLoc.lat, targetLoc.lng).toFixed(1);
+      }
+    }
+    
+    const etaMins = Math.max(1, Math.round(parseFloat(distMilesStr) * 3.7));
+    const locName = targetLoc.name || "i-Tea Tempe";
+    const locAddress = targetLoc.address || "825 W University Dr, Tempe, AZ 85281";
+
     const mapSrc =
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.9880816825!2d-111.95254172421831!3d33.42224097339947!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08da35c246f9%3A0xe21289658ec91e!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1714088000000!5m2!1sen!2sus";
 
@@ -6399,8 +6429,8 @@ const routes = {
                                 <img src="images/itea_logo.png" class="w-10 h-10 object-contain">
                             </div>
                             <div class="min-w-0">
-                                <h1 class="text-xl font-black text-gray-900 uppercase tracking-tight leading-tight">i-Tea Tempe</h1>
-                                <p class="text-[11px] font-bold text-gray-500 mt-0.5 uppercase tracking-wider leading-relaxed truncate">825 W University Dr, Tempe, AZ 85281</p>
+                                <h1 class="text-xl font-black text-gray-900 uppercase tracking-tight leading-tight">${locName}</h1>
+                                <p class="text-[11px] font-bold text-gray-500 mt-0.5 uppercase tracking-wider leading-relaxed truncate">${locAddress}</p>
                             </div>
                         </div>
 
@@ -6426,12 +6456,12 @@ const routes = {
                         <div class="grid grid-cols-3 gap-3">
                             <div class="bg-violet-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-violet-100">
                                 <div class="text-violet-600 text-[10px] font-black uppercase tracking-widest mb-1">ETA</div>
-                                <div class="text-2xl font-black text-gray-900">9</div>
+                                <div class="text-2xl font-black text-gray-900">${etaMins}</div>
                                 <div class="text-[10px] font-bold text-gray-500 uppercase">mins</div>
                             </div>
                             <div class="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
                                 <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Distance</div>
-                                <div class="text-2xl font-black text-gray-900">2.4</div>
+                                <div class="text-2xl font-black text-gray-900">${distMilesStr}</div>
                                 <div class="text-[10px] font-bold text-gray-500 uppercase">miles</div>
                             </div>
                             <div class="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
@@ -6461,7 +6491,7 @@ const routes = {
                                 </div>
                                 <div class="min-w-0">
                                     <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">To</div>
-                                    <div class="text-sm font-black text-gray-900 truncate">i-Tea Tempe · 825 W University Dr</div>
+                                    <div class="text-sm font-black text-gray-900 truncate">${locName} · ${locAddress}</div>
                                 </div>
                             </div>
                         </div>
@@ -6553,8 +6583,8 @@ const routes = {
                             <i class="fa-solid fa-location-dot text-white text-sm"></i>
                         </div>
                         <div>
-                            <div class="text-xs font-black text-gray-900 uppercase tracking-tight">i-Tea Tempe</div>
-                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Open Now · 9 min away</div>
+                            <div class="text-xs font-black text-gray-900 uppercase tracking-tight">${locName}</div>
+                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Open Now · ${etaMins} min away</div>
                         </div>
                     </div>
                 </div>
@@ -6578,7 +6608,7 @@ const routes = {
                     <div class="absolute top-4 left-4 right-4 z-10">
                         <div class="bg-white rounded-full shadow-xl flex items-center px-5 py-4 border border-gray-100">
                             <i class="fa-solid fa-magnifying-glass text-gray-400 mr-4 text-sm"></i>
-                            <span class="text-xs font-black text-gray-900 flex-1 truncate uppercase tracking-widest leading-none">825 W University Dr, Tempe, AZ 85281</span>
+                            <span class="text-xs font-black text-gray-900 flex-1 truncate uppercase tracking-widest leading-none">${locAddress}</span>
                             <i class="fa-solid fa-microphone text-violet-600 ml-4 border-l pl-5 border-gray-100"></i>
                         </div>
                     </div>
@@ -6590,8 +6620,8 @@ const routes = {
                     
                     <div class="flex items-start justify-between gap-6 mb-8">
                         <div class="flex-1">
-                            <h2 class="text-3xl font-black text-gray-900 leading-none uppercase tracking-tighter">i-Tea Tempe</h2>
-                            <p class="text-xs font-black text-gray-500 mt-3 uppercase tracking-widest leading-relaxed">825 W University Dr, Tempe, AZ 85281</p>
+                            <h2 class="text-3xl font-black text-gray-900 leading-none uppercase tracking-tighter">${locName}</h2>
+                            <p class="text-xs font-black text-gray-500 mt-3 uppercase tracking-widest leading-relaxed">${locAddress}</p>
                         </div>
                         <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center border-2 border-violet-100 overflow-hidden shadow-sm shrink-0">
                             <img src="images/itea_logo.png" class="w-12 h-12 object-contain">
@@ -6613,7 +6643,7 @@ const routes = {
                         </div>
                         <div class="flex-1">
                             <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Estimated Arrival</div>
-                            <div class="text-lg font-black text-gray-900 uppercase tracking-tight">9 mins <span class="font-bold text-gray-500 lowercase ml-2 text-sm">(2.4 miles)</span></div>
+                            <div class="text-lg font-black text-gray-900 uppercase tracking-tight">${etaMins} mins <span class="font-bold text-gray-500 lowercase ml-2 text-sm">(${distMilesStr} miles)</span></div>
                         </div>
                     </div>
                     
@@ -8215,6 +8245,10 @@ function renderPage() {
   const viewport = document.getElementById("app-viewport");
   if (!viewport) return;
 
+  if (currentPage === "locations" || currentPage === "locations-alt" || currentPage === "directions") {
+    requestUserLocation();
+  }
+
   let loadingOverlayHtml = "";
   if (mockupState.isLoading) {
     loadingOverlayHtml = `
@@ -9811,10 +9845,25 @@ async function handleForgotPassword() {
     emailEl.value = "";
   } catch (err) {
     console.error("Forgot password error:", err);
-    errorEl.textContent =
-      err.data && err.data.message
-        ? err.data.message
-        : err.message || "Failed to send reset link.";
+    let errorMsg = "Failed to send reset link.";
+    
+    if (err.data) {
+      if (err.data.errors) {
+         errorMsg = Object.values(err.data.errors).map(e => e.join(", ")).join(" | ");
+      } else if (err.data.message) {
+         errorMsg = err.data.message;
+      } else if (err.data.title) {
+         errorMsg = err.data.title;
+      } else if (typeof err.data === 'string') {
+         errorMsg = err.data;
+      } else {
+         errorMsg = JSON.stringify(err.data);
+      }
+    } else if (err.message) {
+      errorMsg = err.message;
+    }
+    
+    errorEl.textContent = errorMsg;
     errorEl.style.opacity = "1";
   } finally {
     submitBtn.disabled = false;
@@ -10181,19 +10230,60 @@ function selectLocation(
 let leafletMap = null;
 let mapMarkers = {};
 
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return 3959 * c; // miles
+}
+
+let locationRequested = false;
+
+function requestUserLocation() {
+  if (locationRequested || !navigator.geolocation) return;
+  locationRequested = true;
+  
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      mockupState.userLat = latitude;
+      mockupState.userLng = longitude;
+      
+      const listToUpdate = mockupState.apiLocations && mockupState.apiLocations.length > 0 
+        ? mockupState.apiLocations 
+        : LOCATIONS;
+        
+      listToUpdate.forEach(loc => {
+        if (loc.lat && loc.lng) {
+          const distMiles = calculateDistance(latitude, longitude, loc.lat, loc.lng);
+          loc.realDistance = distMiles;
+          loc.dist = distMiles.toFixed(1) + " mi";
+        }
+      });
+      
+      if (currentPage === "locations" || currentPage === "locations-alt" || currentPage === "directions") {
+        renderPage();
+      }
+    },
+    (error) => {
+      console.warn("Geolocation denied or error:", error);
+      if (mockupState.locationFilter === "Near Me" || mockupState.locationFilter === "Nearby") {
+        updateMockupState("locationFilter", "All");
+      }
+    }
+  );
+}
+
 function getNearbyLocationsCount(targetLat, targetLng, radiusMiles = 15) {
   let count = 0;
   LOCATIONS.forEach((loc) => {
-    const dLat = ((loc.lat - targetLat) * Math.PI) / 180;
-    const dLng = ((loc.lng - targetLng) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((targetLat * Math.PI) / 180) *
-        Math.cos((loc.lat * Math.PI) / 180) *
-        Math.sin(dLng / 2) *
-        Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distanceMiles = 3959 * c;
+    const distanceMiles = calculateDistance(targetLat, targetLng, loc.lat, loc.lng);
     if (distanceMiles > 0.1 && distanceMiles <= radiusMiles) {
       count++;
     }
