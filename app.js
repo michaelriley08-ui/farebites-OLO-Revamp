@@ -1529,11 +1529,11 @@ function renderMenuPage(isAlternative) {
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors shrink-0">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
-                    <!-- Search icon -->
+                    <!-- Search icon (Desktop only) -->
                     ${
                       !isAlternative
                         ? `
-                    <button onclick="updateMockupState('menuSearchOpen', ${!mockupState.menuSearchOpen}); updateMockupState('menuSearchQuery', '');" class="w-10 h-10 flex items-center justify-center shrink-0 transition-colors ${mockupState.menuSearchOpen ? "text-violet-600" : "text-gray-700 hover:text-violet-600"}">
+                    <button onclick="updateMockupState('menuSearchOpen', ${!mockupState.menuSearchOpen}); updateMockupState('menuSearchQuery', '');" class="w-10 h-10 hidden lg:flex items-center justify-center shrink-0 transition-colors ${mockupState.menuSearchOpen ? "text-violet-600" : "text-gray-700 hover:text-violet-600"}">
                         <i class="fa-solid ${mockupState.menuSearchOpen ? "fa-xmark" : "fa-magnifying-glass"} text-xl"></i>
                     </button>
                     `
@@ -1550,9 +1550,9 @@ function renderMenuPage(isAlternative) {
                     </button>
                 </div>
 
-                <!-- Inline Search Bar (expands below header when open) -->
+                <!-- Inline Search Bar (expands below header when open on desktop) -->
                 ${
-                  mockupState.menuSearchOpen && !isAlternative
+                  mockupState.menuSearchOpen && !isAlternative && isDesktop
                     ? `
                 <div class="px-3 pb-2 w-full max-w-[1080px] mx-auto">
                     <div class="flex items-center bg-gray-100 rounded-full px-4 py-2 gap-3">
@@ -1881,8 +1881,48 @@ function renderMenuPage(isAlternative) {
                     `;
                 })()}
 
-                <!-- Unified Tab Selector -->
+                <!-- Unified Tab Selector and Mobile Search -->
+                ${
+                  mockupState.menuSearchOpen && !isAlternative
+                    ? `
+                    <div class="flex items-center w-full gap-3 mb-6 mt-2 px-2 lg:px-0 animate-[fadeIn_0.2s_ease-out]">
+                        <div class="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2 gap-2">
+                            <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                            <input
+                                type="text"
+                                id="menu-search-input"
+                                placeholder="Search menu..."
+                                value="${mockupState.menuSearchQuery || ""}"
+                                oninput="mockupState.menuSearchQuery = this.value; persistAllState(); renderPage();"
+                                class="flex-1 bg-transparent text-gray-900 text-sm font-bold outline-none placeholder:text-gray-400 placeholder:font-normal"
+                                autofocus
+                            >
+                            ${
+                              mockupState.menuSearchQuery
+                                ? `
+                                <button onclick="updateMockupState('menuSearchQuery', '');" class="text-gray-400 hover:text-gray-600">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                </button>
+                            `
+                                : ""
+                            }
+                        </div>
+                        <button onclick="updateMockupState('menuSearchOpen', false); updateMockupState('menuSearchQuery', '');" class="text-sm font-black text-violet-600 uppercase tracking-wide hover:opacity-85 transition-opacity">
+                            Cancel
+                        </button>
+                    </div>
+                    `
+                    : `
                 <div class="flex overflow-x-auto scrollbar-hide border-b border-gray-100 w-full gap-6 lg:gap-8 justify-start lg:mr-auto mb-6 mt-2 pb-2 pl-2 lg:pl-0">
+                    ${
+                      !isAlternative
+                        ? `
+                        <button onclick="updateMockupState('menuSearchOpen', true); updateMockupState('menuSearchQuery', '');" class="shrink-0 flex items-center justify-center transition-colors text-gray-500 hover:text-violet-600 pb-2 pr-2">
+                            <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                        </button>
+                        `
+                        : ""
+                    }
                     ${[
                       { id: "menu", name: "All" },
                       ...(featuredItems.length > 0
@@ -1900,6 +1940,8 @@ function renderMenuPage(isAlternative) {
                       })
                       .join("")}
                 </div>
+                `
+                }
 
                 <!-- Render Tab Content Subview -->
                 ${(() => {
@@ -2871,7 +2913,7 @@ const routes = {
 
                 <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
                     <div class="flex items-center gap-3">
-                        <button onclick="navigateTo(mockupState.isLoggedIn ? 'account' : 'sign-in')" class="w-10 h-10 flex items-center justify-center text-white"><i class="fa-regular fa-user text-2xl"></i></button>
+                        ${mockupState.isLoggedIn ? `<button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-white"><i class="fa-solid fa-bars text-2xl"></i></button>` : `<button onclick="navigateTo('sign-in')" class="w-10 h-10 flex items-center justify-center text-white"><i class="fa-regular fa-user text-2xl"></i></button>`}
                         <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-white hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
                     <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo(mockupState.isLoggedIn ? 'locations' : 'sign-in')">
@@ -10338,6 +10380,7 @@ function selectLocation(
 ) {
   mockupState.selectedLocation = locationName;
   mockupState.selectedLocationId = locationId || null;
+  mockupState.selectedRestaurantId = null; // Clear restaurant ID so it fetches the correct one for this location
   if (locationAddress) mockupState.selectedAddress = locationAddress;
   if (locationDistance) mockupState.selectedDistance = locationDistance;
   mockupState.orderTime = "ASAP";
@@ -10601,6 +10644,7 @@ function navigateTo(pageId) {
   ) {
     mockupState.selectedLocation = "i-Tea - CASTRO VALLEY";
     mockupState.selectedLocationId = 7;
+    mockupState.selectedRestaurantId = 7;
     mockupState.selectedAddress = "20666 REDWOOD RD, Castro Valley, CA";
     mockupState.selectedDistance = "15.1 mi";
     mockupState.orderTime = "ASAP";
@@ -10651,6 +10695,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (storeParam === "7") {
     mockupState.selectedLocation = "i-Tea - CASTRO VALLEY";
     mockupState.selectedLocationId = 7;
+    mockupState.selectedRestaurantId = 7;
     mockupState.selectedAddress = "20666 REDWOOD RD, Castro Valley, CA";
     mockupState.selectedDistance = "15.1 mi";
     mockupState.orderTime = "ASAP";
@@ -10664,6 +10709,7 @@ window.addEventListener("DOMContentLoaded", () => {
     // Fallback default for menu-alt page if no store is selected at all
     mockupState.selectedLocation = "i-Tea - CASTRO VALLEY";
     mockupState.selectedLocationId = 7;
+    mockupState.selectedRestaurantId = 7;
     mockupState.selectedAddress = "20666 REDWOOD RD, Castro Valley, CA";
     mockupState.selectedDistance = "15.1 mi";
     mockupState.orderTime = "ASAP";
