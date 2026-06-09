@@ -2851,7 +2851,7 @@ const routes = {
                             <h2 class="font-branding font-black text-5xl tracking-tight text-white italic leading-none">Taste The</h2>
                             <h1 class="font-branding font-extrabold text-7xl text-white tracking-tight mt-1 mb-4 flex items-center gap-3 leading-none">
                                 <span class="italic font-serif" style="font-family: 'Outfit', sans-serif;">Goodness</span>
-                                <i class="fa-regular fa-heart text-4xl text-[#da2377]"></i>
+                                <i class="fa-regular fa-heart text-4xl text-[#da2377] rotate-[20deg]"></i>
                             </h1>
                             <p class="text-base font-semibold text-white/90 mb-6 leading-relaxed">Refreshing flavors. Chewy boba. Made for every moment.</p>
                             <button onclick="navigateTo(mockupState.isLoggedIn ? 'locations' : 'sign-in')" class="inline-flex items-center gap-3 bg-white text-[#da2377] hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
@@ -2864,19 +2864,19 @@ const routes = {
                         : `
                     <img src="images/hero-mobile.png" class="w-full h-full absolute inset-0 object-cover z-0 object-center">
                     <!-- Subtle gradient to ensure text readability -->
-                    <div class="absolute inset-0 bg-gradient-to-b from-white/80 via-white/20 to-white/90 z-10"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-violet-600 via-violet-600/50 to-transparent via-[20%] to-[50%] z-10"></div>
                     `
                     }
                 </div>
 
                 <header class="absolute top-0 inset-x-0 bg-transparent px-6 pt-6 pb-2 flex justify-between items-center z-50 shrink-0">
                     <div class="flex items-center gap-3">
-                        <button onclick="navigateTo(mockupState.isLoggedIn ? 'account' : 'sign-in')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A]"><i class="fa-regular fa-user text-2xl"></i></button>
-                        <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
+                        <button onclick="navigateTo(mockupState.isLoggedIn ? 'account' : 'sign-in')" class="w-10 h-10 flex items-center justify-center text-white"><i class="fa-regular fa-user text-2xl"></i></button>
+                        <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-white hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
                     <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo(mockupState.isLoggedIn ? 'locations' : 'sign-in')">
-                        <div class="flex items-center gap-1"><span class="text-[11px] font-black text-[#1A1A1A] tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-[#1A1A1A]"></i></div>
-                        <span class="text-[13px] font-medium text-[#1A1A1A] mt-0.5">Home</span>
+                        <div class="flex items-center gap-1"><span class="text-[11px] font-black text-white tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-white"></i></div>
+                        <span class="text-[13px] font-medium text-white mt-0.5">Home</span>
                         ${
                           mockupState.isLoggedIn
                             ? `
@@ -2887,7 +2887,7 @@ const routes = {
                             : ""
                         }
                     </div>
-                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:opacity-80 transition-opacity cursor-pointer">
+                    <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-white hover:opacity-80 transition-opacity cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                         ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
                     </button>
@@ -2906,7 +2906,7 @@ const routes = {
                     }
                     
                     <!-- Spacer so background image can be seen before the carousel (Desktop uses negative margin wrapper instead) -->
-                    ${!isDesktop && featuredItems.length > 0 ? '<div class="w-full flex-1 min-h-[140px]"></div>' : ""}
+                    ${!isDesktop && featuredItems.length > 0 ? '<div class="w-full flex-1 min-h-[160px]"></div>' : ""}
                     
                     <!-- Carousel Container -->
                     ${
@@ -2940,7 +2940,7 @@ const routes = {
                                 const styleIdx = index % 5;
                                 const fIndex = items.indexOf(fItem);
                                 return `
-                                <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden border-4 border-white shadow-xl h-[250px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${fIndex})">
+                                <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden border-4 border-white shadow-xl h-[225px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${fIndex})">
                                     <img src="${fItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
                                     <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
                                     <span class="absolute top-4 left-5 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
@@ -2956,7 +2956,7 @@ const routes = {
                         </div>
                         
                         <!-- Pagination Dots -->
-                        <div class="flex justify-center items-center gap-2 mt-2 mb-4 lg:hidden" style="padding-right: 0;">
+                        <div class="flex justify-center items-center gap-2 mt-1 mb-4 lg:hidden" style="padding-right: 0;">
                             <div id="carousel-dot-0" class="w-2 h-2 rounded-full bg-violet-600 transition-colors duration-300"></div>
                             <div id="carousel-dot-1" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
                             <div id="carousel-dot-2" class="w-2 h-2 rounded-full bg-violet-200 transition-colors duration-300"></div>
@@ -9887,10 +9887,8 @@ async function handleForgotPassword() {
     successEl.textContent = result.message || "Reset link sent successfully!";
     successEl.classList.remove("hidden");
     emailEl.value = "";
-    alert("DEBUG SUCCESS: \n" + JSON.stringify(result, null, 2));
   } catch (err) {
     console.error("Forgot password error:", err);
-    alert("DEBUG ERROR: \n" + JSON.stringify(err, null, 2));
     
     let errorMsg = "Failed to send reset link.";
     
