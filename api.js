@@ -117,6 +117,10 @@ const ApiService = {
         return await this.request('/api/Account/change-password', 'POST', { oldPassword, newPassword });
     },
 
+    async deleteAccount(customerId) {
+        return await this.request(`/api/Account/account/${customerId}`, 'DELETE');
+    },
+
     async forgotPassword(email) {
         try {
             // Fix for testing via file:/// URLs which cause SendGrid to drop the email due to invalid link format
