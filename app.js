@@ -29,6 +29,7 @@ const PAGE_FILE_MAP = {
   "menu-favorites": "menu-favorites.html",
   directions: "directions.html",
   registration: "registration.html",
+  "registration-success": "registration-success.html",
   sections: "sections.html",
   accessibility: "accessibility.html",
 };
@@ -62,6 +63,7 @@ const PAGE_LABELS = {
   "menu-favorites": "Menu Favorites",
   directions: "Directions",
   registration: "Registration Form",
+  "registration-success": "Registration Success",
   sections: "Retired Sections",
   accessibility: "Web Accessibility",
 };
@@ -2425,6 +2427,32 @@ function renderMenuPage(isAlternative) {
 }
 
 const routes = {
+  "account-deleted": () => `
+    <div class="flex flex-col h-full bg-white relative">
+        <header class="bg-white px-6 py-4 flex justify-center items-center z-50 shrink-0 border-b-2 border-gray-100">
+            <div class="flex items-center gap-3">
+                <img src="${assets.logo}" class="w-8 h-8 rounded-full shadow-md object-cover border border-white/10">
+                <span class="font-black text-xl tracking-tighter text-gray-900 uppercase">FAREBITES</span>
+            </div>
+        </header>
+
+        <div class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-gray-50/50">
+            <div class="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-8 mx-auto shadow-sm">
+                <i class="fa-solid fa-user-xmark text-4xl"></i>
+            </div>
+            
+            <h1 class="text-2xl font-black text-gray-900 uppercase tracking-tight mb-4">Account Deleted</h1>
+            
+            <p class="text-gray-500 font-medium mb-10 max-w-sm mx-auto leading-relaxed text-sm">
+                We're sorry to see you go! Your account and all associated data have been permanently deleted.
+            </p>
+
+            <button onclick="navigateTo('restaurant-home')" class="w-full max-w-sm py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-xl shadow-gray-200 hover:bg-black transition-colors active:scale-95">
+                Return to Home
+            </button>
+        </div>
+    </div>
+  `,
   landing: () => `
             <div class="flex flex-col h-full relative overflow-hidden bg-black">
                 <div class="absolute inset-0 z-0">
@@ -5879,7 +5907,7 @@ const routes = {
                                 </div>
 
                                 <div class="flex flex-col gap-3">
-                                    <button onclick="const val = document.getElementById('delete-confirm-input').value.toLowerCase(); if(val === 'delete account'){ alert('Account successfully deleted.'); navigateTo('home'); } else { document.getElementById('delete-confirm-input').classList.add('border-red-500'); setTimeout(() => document.getElementById('delete-confirm-input').classList.remove('border-red-500'), 1000); }" class="w-full py-5 bg-red-600 text-white rounded-full font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-red-200 hover:bg-red-700 transition-all active:scale-95">
+                                    <button onclick="handleDeleteAccount()" id="delete-account-btn" class="w-full py-5 bg-red-600 text-white rounded-full font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-red-200 hover:bg-red-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                                         DELETE PERMANENTLY
                                     </button>
                                     <button onclick="mockupState.modalOpen=null;navigateTo(currentPage);" class="w-full py-3 text-gray-400 font-extrabold uppercase tracking-widest text-[10px] hover:text-gray-900 transition-colors">
@@ -6434,22 +6462,22 @@ const routes = {
 
                                 <div class="space-y-1.5">
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Street</label>
-                                    <input type="text" placeholder="Address" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                    <input type="text" id="reg-street" placeholder="Address" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-3">
                                     <div class="space-y-1.5 text-sm">
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">City</label>
-                                        <input type="text" placeholder="City" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all">
+                                        <input type="text" id="reg-city" placeholder="City" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all">
                                     </div>
                                     <div class="grid grid-cols-2 gap-2 text-sm">
                                         <div class="space-y-1.5">
                                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">State</label>
-                                            <input type="text" placeholder="AZ" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
+                                            <input type="text" id="reg-state" placeholder="AZ" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
                                         </div>
                                         <div class="space-y-1.5">
                                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Zip</label>
-                                            <input type="text" placeholder="85281" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
+                                            <input type="text" id="reg-zip" placeholder="85281" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
                                         </div>
                                     </div>
                                 </div>
@@ -6464,6 +6492,49 @@ const routes = {
                         <div class="text-center">
                             <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Already have an account? <button onclick="navigateTo('sign-in')" class="text-violet-600 ml-1 font-black underline underline-offset-4">Sign In</button></p>
                         </div>
+                    </div>
+                </div>
+            </div>
+        `;
+  },
+  "registration-success": () => {
+    const isDesktop = currentViewport === "desktop";
+    return `
+            <div class="flex flex-col h-full ${isDesktop ? "bg-[#f6f6f6]" : "bg-white"} relative overflow-y-auto">
+                <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
+                <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black">
+                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Account Created</span>
+                </header>
+                
+                <div class="w-full max-w-xl mx-auto p-6 md:p-12 flex flex-col items-center justify-center min-h-[60vh] gap-8 font-sans relative z-10 text-center">
+                    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-check text-4xl text-green-500"></i>
+                    </div>
+                    
+                    <div>
+                        <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-4">Success!</h1>
+                        <p class="text-gray-500 font-bold text-sm leading-relaxed mb-6">
+                            Your account has been created successfully. A verification email has been sent to your inbox.
+                        </p>
+                        
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left flex gap-4 items-start mb-8 shadow-sm">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1"></i>
+                            <div>
+                                <h4 class="text-xs font-black text-amber-800 uppercase tracking-widest mb-1">Check Your Spam Folder</h4>
+                                <p class="text-xs text-amber-700 font-bold leading-relaxed">
+                                    If you don't see the verification email in your inbox within a few minutes, please check your spam or junk folder.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full flex flex-col gap-4">
+                        <button onclick="navigateTo('sign-in')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase tracking-widest">
+                            Sign In to Account
+                        </button>
+                        <button onclick="navigateTo('restaurant-home')" class="w-full bg-white border-2 border-gray-200 text-gray-600 py-4 rounded-full font-black text-lg hover:bg-gray-50 active:scale-95 transition-all uppercase tracking-widest">
+                            Back to Homepage
+                        </button>
                     </div>
                 </div>
             </div>
@@ -9788,6 +9859,12 @@ async function handleRegistration() {
   const firstName = document.getElementById("reg-first-name")?.value;
   const lastName = document.getElementById("reg-last-name")?.value;
   const phoneNumber = document.getElementById("reg-phone")?.value;
+  
+  const street = document.getElementById("reg-street")?.value;
+  const city = document.getElementById("reg-city")?.value;
+  const state = document.getElementById("reg-state")?.value;
+  const zipCode = document.getElementById("reg-zip")?.value;
+
   const errorEl = document.getElementById("reg-error");
 
   if (errorEl) {
@@ -9821,15 +9898,19 @@ async function handleRegistration() {
       email,
       password,
       phoneNumber,
-      WebsiteUrl: window.location.origin,
-      CallbackUrl: window.location.origin + "/index.html",
-      WebsiteShortName: "itea",
+      street,
+      city,
+      state,
+      zipCode,
+      websiteUrl: window.location.origin,
+      callbackUrl: window.location.origin + "/index.html",
+      websiteShortName: "itea",
     };
 
     await window.ApiService.register(data);
 
-    // On success, redirect to login page
-    navigateTo("sign-in");
+    // On success, redirect to success page
+    navigateTo("registration-success");
   } catch (err) {
     console.error("Registration Error details:", err);
     if (errorEl) {
@@ -10195,6 +10276,63 @@ async function handleChangePassword() {
           ? err.data.message
           : err.message || "Password update failed.";
       errorEl.style.opacity = "1";
+    }
+  }
+}
+
+async function handleDeleteAccount() {
+  const val = document.getElementById('delete-confirm-input')?.value.toLowerCase();
+  const inputEl = document.getElementById('delete-confirm-input');
+  const btnEl = document.getElementById('delete-account-btn');
+
+  if (val !== 'delete account') {
+    if (inputEl) {
+      inputEl.classList.add('border-red-500');
+      setTimeout(() => inputEl.classList.remove('border-red-500'), 1000);
+    }
+    return;
+  }
+
+  const customerId = mockupState.userProfile?.customerId || mockupState.userProfile?.id;
+  if (!customerId) {
+    alert("Error: Missing customer profile ID.");
+    return;
+  }
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.textContent = "DELETING...";
+  }
+
+  try {
+    if (!window.ApiService) throw new Error("API Service not loaded");
+    await window.ApiService.deleteAccount(customerId);
+
+    // Clear local session data directly without navigating to sign-in yet
+    mockupState.isLoggedIn = false;
+    mockupState.userName = "Guest";
+    mockupState.userEmail = "";
+    mockupState.userProfile = {};
+    mockupState.cart = [];
+    mockupState.cartItemCount = 0;
+    mockupState.bagQuantity = 0;
+    mockupState.noBagsSelected = false;
+    
+    sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
+    if (window.ApiService) {
+      window.ApiService.setToken(null);
+    }
+
+    mockupState.modalOpen = null;
+    persistAllState();
+    navigateTo("account-deleted");
+
+  } catch (err) {
+    console.error("Account deletion failed:", err);
+    alert(err?.data?.message || err.message || "Failed to delete account. Please try again.");
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.textContent = "DELETE PERMANENTLY";
     }
   }
 }
