@@ -9548,6 +9548,59 @@ window._handlePlaceOrder = async function () {
     return;
   }
 
+  // Show loading state early
+  const btns = document.querySelectorAll("button");
+  btns.forEach((b) => {
+    if (b.textContent.includes("Purchase Order")) {
+      b.textContent = "Placing Order...";
+      b.disabled = true;
+    }
+  });
+
+  // Ensure restaurantId is correct for the selected location to prevent OLO validation errors.
+  // This also catches edge cases where the cart was restored from localStorage with items from a different location.
+  try {
+    const locId = mockupState.selectedLocationId || 7;
+    const detail = await window.ApiService.getMenuItemDetail(locId, cart[0].menuItemId);
+    let foundRestId = null;
+    if (detail && detail.menuSubItemGroups) {
+      for (const g of detail.menuSubItemGroups) {
+        for (const p of g.groupPrices || []) {
+          const sub = p.menuSubItem || {};
+          if (sub.restaurantId) {
+            foundRestId = sub.restaurantId;
+            break;
+          }
+        }
+        if (foundRestId) break;
+      }
+    }
+    if (!foundRestId && detail && detail.menuItemModifyPrices) {
+       for (const m of detail.menuItemModifyPrices) {
+         if (m.menuSubItem && m.menuSubItem.restaurantId) {
+            foundRestId = m.menuSubItem.restaurantId;
+            break;
+         }
+       }
+    }
+    if (foundRestId) {
+      mockupState.selectedRestaurantId = foundRestId;
+      persistAllState();
+    }
+  } catch (err) {
+    console.error("Failed to validate cart item for current location", err);
+    alert("Some items in your cart are not available at this location. Please clear your cart and try again.");
+    
+    // Reset buttons
+    btns.forEach((b) => {
+      if (b.textContent.includes("Placing")) {
+        b.textContent = "Purchase Order";
+        b.disabled = false;
+      }
+    });
+    return;
+  }
+
   // Calculate pricing
   const subtotal = cart.reduce(
     (sum, item) => sum + item.unitPrice * item.quantity,
@@ -9597,15 +9650,6 @@ window._handlePlaceOrder = async function () {
   };
 
   console.log("Placing order:", JSON.stringify(orderData, null, 2));
-
-  // Show loading state
-  const btns = document.querySelectorAll("button");
-  btns.forEach((b) => {
-    if (b.textContent.includes("Purchase Order")) {
-      b.textContent = "Placing Order...";
-      b.disabled = true;
-    }
-  });
 
   try {
     const response = await window.ApiService.placeOrder(orderData);
@@ -10378,6 +10422,17 @@ function selectLocation(
   locationAddress,
   locationDistance,
 ) {
+  if (mockupState.selectedLocationId && mockupState.selectedLocationId !== locationId && mockupState.cart && mockupState.cart.length > 0) {
+    if (!confirm("Changing your location will clear your current cart. Do you want to continue?")) {
+      return;
+    }
+  }
+
+  if (mockupState.selectedLocationId !== locationId) {
+    mockupState.cart = [];
+    mockupState.cartItemCount = 0;
+  }
+
   mockupState.selectedLocation = locationName;
   mockupState.selectedLocationId = locationId || null;
   mockupState.selectedRestaurantId = null; // Clear restaurant ID so it fetches the correct one for this location
