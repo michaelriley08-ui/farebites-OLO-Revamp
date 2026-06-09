@@ -119,11 +119,17 @@ const ApiService = {
 
     async forgotPassword(email) {
         try {
+            // Fix for testing via file:/// URLs which cause SendGrid to drop the email due to invalid link format
+            let origin = window.location.origin;
+            if (origin === "null" || origin.includes("file://")) {
+                origin = "http://localhost:8000";
+            }
+            
             return await this.request('/api/Account/forgot-password', 'POST', { 
                 Email: email,
-                ResetPasswordUrl: window.location.origin + "/reset-password.html",
-                WebsiteUrl: window.location.origin,
-                WebsiteShortName: "itea"
+                ResetPasswordUrl: origin + "/reset-password.html",
+                WebsiteUrl: "support@farebites.com",
+                WebsiteShortName: "Farebites"
             });
         } catch (error) {
             // If the endpoint is not implemented (404/405), simulate a successful request for frontend demo purposes
@@ -135,6 +141,15 @@ const ApiService = {
             }
             throw error;
         }
+    },
+
+    async resetPassword(email, code, newPassword, confirmPassword) {
+        return await this.request('/api/Account/reset-password', 'POST', {
+            email: email,
+            code: code,
+            password: newPassword,
+            confirmPassword: confirmPassword
+        });
     },
 
     async getOrders(page = 1, pageSize = 10) {

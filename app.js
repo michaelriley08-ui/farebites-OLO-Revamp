@@ -2662,6 +2662,50 @@ const routes = {
             </div>
         `;
   },
+  "reset-password": () => {
+    const isDesktop = currentViewport === "desktop";
+    return `
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
+            <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
+            <div class="modal-overlay" onclick="navigateTo('sign-in')">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <button class="absolute ${isDesktop ? "top-4 left-4" : "top-6 left-6"} text-gray-500 hover:text-violet-600 transition-colors" onclick="navigateTo('sign-in')">
+                        <i class="fa-solid fa-chevron-left text-2xl"></i>
+                    </button>
+                    <div class="w-full ${isDesktop ? "max-h-[36px] mb-2 mt-2" : "max-h-[52px] mb-1 mt-4"} flex items-center justify-center">
+                         <img src="images/i-tea-logo-new.png" class="h-full ${isDesktop ? "max-h-[36px]" : "max-h-[52px]"} w-auto object-contain">
+                    </div>
+                    <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? "mb-2" : "mb-4"} uppercase tracking-tight text-gray-900 leading-tight">Reset Password</h2>
+                    <p class="text-xs text-gray-500 font-bold text-center mb-6 uppercase tracking-wider px-2 leading-relaxed">Enter your new password below to securely access your account.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="relative group">
+                            <input type="password" id="reset-password-input" placeholder="New Password" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300 pr-12">
+                            <button type="button" onclick="togglePasswordVisibility('reset-password-input', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600 transition-colors">
+                                <i class="fa-solid fa-eye text-lg"></i>
+                            </button>
+                            <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
+                        </div>
+
+                        <div class="relative group">
+                            <input type="password" id="reset-confirm-input" placeholder="Confirm Password" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300 pr-12">
+                            <button type="button" onclick="togglePasswordVisibility('reset-confirm-input', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600 transition-colors">
+                                <i class="fa-solid fa-eye text-lg"></i>
+                            </button>
+                            <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
+                        </div>
+                        
+                        <div id="reset-error" class="text-xs font-bold text-red-500 px-6 min-h-[16px] transition-all opacity-0"></div>
+                        <div id="reset-success" class="text-sm font-bold text-green-600 px-6 text-center leading-relaxed transition-all hidden"></div>
+                        
+                        <div class="space-y-2">
+                            <button id="reset-submit-btn" onclick="handleResetPassword()" class="w-full bg-violet-600 text-white ${isDesktop ? "py-3" : "py-4"} rounded-full font-black text-lg hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase">Save New Password</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+  },
   rewards: () => {
     const isDesktop = currentViewport === "desktop";
     return `
@@ -9843,8 +9887,11 @@ async function handleForgotPassword() {
     successEl.textContent = result.message || "Reset link sent successfully!";
     successEl.classList.remove("hidden");
     emailEl.value = "";
+    alert("DEBUG SUCCESS: \n" + JSON.stringify(result, null, 2));
   } catch (err) {
     console.error("Forgot password error:", err);
+    alert("DEBUG ERROR: \n" + JSON.stringify(err, null, 2));
+    
     let errorMsg = "Failed to send reset link.";
     
     if (err.data) {
@@ -9868,6 +9915,87 @@ async function handleForgotPassword() {
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = "Send Reset Link";
+  }
+}
+
+async function handleResetPassword() {
+  const passwordEl = document.getElementById("reset-password-input");
+  const confirmEl = document.getElementById("reset-confirm-input");
+  const errorEl = document.getElementById("reset-error");
+  const successEl = document.getElementById("reset-success");
+  const submitBtn = document.getElementById("reset-submit-btn");
+
+  if (!passwordEl || !confirmEl || !errorEl || !successEl || !submitBtn) return;
+
+  const password = passwordEl.value;
+  const confirmPassword = confirmEl.value;
+
+  errorEl.style.opacity = "0";
+  errorEl.textContent = "";
+  successEl.classList.add("hidden");
+  successEl.textContent = "";
+
+  if (!password || !confirmPassword) {
+    errorEl.textContent = "Please fill out all fields.";
+    errorEl.style.opacity = "1";
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    errorEl.textContent = "Passwords do not match.";
+    errorEl.style.opacity = "1";
+    return;
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const email = urlParams.get('email');
+  const code = urlParams.get('code');
+
+  if (!email || !code) {
+    errorEl.textContent = "Invalid reset link. Missing email or code.";
+    errorEl.style.opacity = "1";
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Saving...";
+
+  try {
+    if (!window.ApiService) throw new Error("API Service not loaded");
+    
+    await window.ApiService.resetPassword(email, code, password, confirmPassword);
+    
+    successEl.textContent = "Password successfully reset!";
+    successEl.classList.remove("hidden");
+    
+    setTimeout(() => {
+        navigateTo('sign-in');
+    }, 2000);
+  } catch (err) {
+    console.error("Reset password error:", err);
+    let errorMsg = "Failed to reset password.";
+    
+    if (err.data) {
+      if (err.data.errors) {
+         errorMsg = Object.values(err.data.errors).map(e => e.join(", ")).join(" | ");
+      } else if (err.data.message) {
+         errorMsg = err.data.message;
+      } else if (err.data.title) {
+         errorMsg = err.data.title;
+      } else if (typeof err.data === 'string') {
+         errorMsg = err.data;
+      } else {
+         errorMsg = JSON.stringify(err.data);
+      }
+    } else if (err.message) {
+      errorMsg = err.message;
+    }
+    
+    errorEl.textContent = errorMsg;
+    errorEl.style.opacity = "1";
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Save New Password";
   }
 }
 
