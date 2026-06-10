@@ -2924,7 +2924,7 @@ const routes = {
                                 <i class="fa-regular fa-heart text-4xl text-[#da2377] rotate-[20deg]"></i>
                             </h1>
                             <p class="text-base font-semibold text-white/90 mb-6 leading-relaxed">Refreshing flavors. Chewy boba. Made for every moment.</p>
-                            <button onclick="navigateTo(mockupState.isLoggedIn ? 'locations' : 'sign-in')" class="inline-flex items-center gap-3 bg-white text-[#da2377] hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
+                            <button onclick="navigateTo('locations')" class="inline-flex items-center gap-3 bg-white text-[#da2377] hover:bg-violet-50 px-8 py-3.5 rounded-full font-black text-sm shadow-lg active:scale-95 transition-transform uppercase tracking-wider">
                                 <span>Order Now</span>
                                 <i class="fa-solid fa-arrow-right"></i>
                             </button>
@@ -2944,7 +2944,7 @@ const routes = {
                         ${mockupState.isLoggedIn ? `<button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-white"><i class="fa-solid fa-bars text-2xl"></i></button>` : `<button onclick="navigateTo('sign-in')" class="w-10 h-10 flex items-center justify-center text-white"><i class="fa-regular fa-user text-2xl"></i></button>`}
                         <button onclick="navigateTo('menu-scan')" class="w-10 h-10 flex items-center justify-center text-white hover:opacity-80 transition-opacity"><i class="fa-solid fa-qrcode text-2xl"></i></button>
                     </div>
-                    <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo(mockupState.isLoggedIn ? 'locations' : 'sign-in')">
+                    <div class="flex flex-col items-center cursor-pointer mr-6" onclick="navigateTo('locations')">
                         <div class="flex items-center gap-1"><span class="text-[11px] font-black text-white tracking-[0.15em] uppercase">PICKUP</span><i class="fa-solid fa-chevron-down text-[9px] text-white"></i></div>
                         <span class="text-[13px] font-medium text-white mt-0.5">Home</span>
                         ${
@@ -3048,7 +3048,7 @@ const routes = {
                                 ${getActiveCategories()
                                   .map(
                                     (cat) => `
-                                    <div onclick="navigateTo(mockupState.isLoggedIn ? 'locations' : 'sign-in');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
+                                    <div onclick="navigateTo('locations');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
                                         <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
                                             <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
                                         </div>
@@ -3205,7 +3205,7 @@ const routes = {
                     ? `
                 <!-- Order Now Button (Fixed above bottom nav on mobile/tablet) -->
                 <div class="px-6 pb-6 pt-2 relative z-20 shrink-0">
-                    <button onclick="navigateTo(mockupState.isLoggedIn ? 'locations' : 'sign-in')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
+                    <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
                 </div>`
                     : ""
                 }
@@ -10352,11 +10352,27 @@ async function signOutUser() {
   mockupState.userName = "Guest";
   mockupState.userEmail = "";
   mockupState.userProfile = {};
+  
+  // Clear sensitive order data
+  mockupState.apiOrders = [];
+  mockupState.lastOrder = null;
+  mockupState.selectedItemDetail = null;
 
+  // Clear cart
   mockupState.cart = [];
   mockupState.cartItemCount = 0;
   mockupState.bagQuantity = 0;
   mockupState.noBagsSelected = false;
+
+  // Remove any locally stored profile addresses
+  const keysToRemove = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith("farebites_profile_address_")) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach((key) => localStorage.removeItem(key));
 
   // Persist to session storage manually to avoid syncCartToStorage overwriting with empty
   sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
@@ -10861,6 +10877,24 @@ function navigateTo(pageId) {
     hash = "";
   }
 
+  const protectedPages = [
+    "profile",
+    "account",
+    "order-details",
+    "order-details-alt",
+    "menu-favorites",
+    "location-favorites",
+    "checkout",
+    "rewards"
+  ];
+  if (protectedPages.includes(basePageId)) {
+    const token = window.ApiService && window.ApiService.getToken();
+    if (!token) {
+      window.location.href = PAGE_FILE_MAP["sign-in"] || "sign-in.html";
+      return;
+    }
+  }
+
   if (basePageId === currentPage) {
     if (hash) {
       const element = document.getElementById(hash);
@@ -10927,7 +10961,24 @@ window.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  if (window.ApiService && window.ApiService.getToken()) {
+  const protectedPages = [
+    "profile",
+    "account",
+    "order-details",
+    "order-details-alt",
+    "menu-favorites",
+    "location-favorites",
+    "checkout",
+    "rewards"
+  ];
+  const token = window.ApiService && window.ApiService.getToken();
+
+  if (protectedPages.includes(currentPage) && !token) {
+    window.location.href = "sign-in.html";
+    return;
+  }
+
+  if (token) {
     mockupState.isLoggedIn = true;
 
     // Fetch profile

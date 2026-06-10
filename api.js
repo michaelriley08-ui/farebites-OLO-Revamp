@@ -34,7 +34,8 @@ const ApiService = {
 
         const config = {
             method,
-            headers
+            headers,
+            cache: 'no-store'
         };
 
         if (body) {
