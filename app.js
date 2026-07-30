@@ -592,15 +592,10 @@ let isUpdatingMockupState = false;
 
 function loadMockupState() {
   try {
-    // If the user did a browser refresh, clear the session storage to reset the mockup state
-    if (
-      performance.navigation &&
-      performance.navigation.type === performance.navigation.TYPE_RELOAD
-    ) {
-      sessionStorage.removeItem(STORAGE_KEYS.state);
-    }
     const saved = JSON.parse(
-      sessionStorage.getItem(STORAGE_KEYS.state) || "null",
+      sessionStorage.getItem(STORAGE_KEYS.state) ||
+        localStorage.getItem(STORAGE_KEYS.state) ||
+        "null",
     );
     const state = saved ? { ...DEFAULT_STATE, ...saved } : { ...DEFAULT_STATE };
 
@@ -650,41 +645,56 @@ function loadMockupState() {
   }
 }
 
+window.toggleCartEditSection = function (section) {
+  if (mockupState.cartEditSection === section) {
+    mockupState.cartEditSection = null;
+  } else {
+    mockupState.cartEditSection = section;
+  }
+  navigateTo("cart");
+};
+
 function syncCartToStorage() {
   const email = mockupState.userEmail || mockupState.userProfile?.email;
-  if (mockupState.isLoggedIn && email) {
-    const cartKey = `farebites_cart_${email.toLowerCase()}`;
-    const cartData = {
-      cart: mockupState.cart || [],
-      cartItemCount: mockupState.cartItemCount || 0,
-      bagQuantity: mockupState.bagQuantity || 0,
-      noBagsSelected: mockupState.noBagsSelected || false,
-    };
-    localStorage.setItem(cartKey, JSON.stringify(cartData));
-  }
+  const cartKey = mockupState.isLoggedIn && email ? `farebites_cart_${email.toLowerCase()}` : "farebites_guest_cart";
+  const cartData = {
+    cart: mockupState.cart || [],
+    cartItemCount: mockupState.cartItemCount || 0,
+    bagQuantity: mockupState.bagQuantity || 0,
+    noBagsSelected: mockupState.noBagsSelected || false,
+  };
+  localStorage.setItem(cartKey, JSON.stringify(cartData));
 }
 
 function loadCartFromStorage() {
   const email = mockupState.userEmail || mockupState.userProfile?.email;
-  if (mockupState.isLoggedIn && email) {
-    const cartKey = `farebites_cart_${email.toLowerCase()}`;
-    const saved = localStorage.getItem(cartKey);
-    if (saved) {
-      try {
-        const cartData = JSON.parse(saved);
-        mockupState.cart = cartData.cart || [];
-        mockupState.cartItemCount = cartData.cartItemCount || 0;
+  const cartKey = mockupState.isLoggedIn && email ? `farebites_cart_${email.toLowerCase()}` : "farebites_guest_cart";
+  const saved = localStorage.getItem(cartKey);
+  if (saved) {
+    try {
+      const cartData = JSON.parse(saved);
+      mockupState.cart = cartData.cart || [];
+      mockupState.cartItemCount = cartData.cartItemCount || 0;
+      if (mockupState.cart.length === 0) {
+        mockupState.bagQuantity = 0;
+        mockupState.noBagsSelected = false;
+      } else {
         mockupState.bagQuantity = cartData.bagQuantity || 0;
         mockupState.noBagsSelected = cartData.noBagsSelected || false;
-      } catch (e) {
-        console.error("Failed to parse saved cart", e);
       }
+    } catch (e) {
+      console.error("Failed to parse saved cart", e);
     }
+  } else if (mockupState.cart.length === 0) {
+    mockupState.bagQuantity = 0;
+    mockupState.noBagsSelected = false;
   }
 }
 
 function persistAllState() {
-  sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
+  const stateJson = JSON.stringify(mockupState);
+  sessionStorage.setItem(STORAGE_KEYS.state, stateJson);
+  localStorage.setItem(STORAGE_KEYS.state, stateJson);
   syncCartToStorage();
 
   // Also persist location favorites and labels to localStorage
@@ -3760,10 +3770,10 @@ const routes = {
       const isActive = mockupState.fulfillmentMode === label;
       const clickHandler =
         label === "Dine In"
-          ? `navigateTo('menu-scan')`
-          : `updateMockupState('fulfillmentMode', '${label}')`;
+          ? `mockupState.fulfillmentMode = '${label}'; mockupState.orderTypeRequiredError = false; navigateTo('menu-scan');`
+          : `updateMockupState('fulfillmentMode', '${label}'); mockupState.orderTypeRequiredError = false;`;
       return `
-                    <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-1 py-3 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-800 border-gray-100"}">
+                    <button onclick="${clickHandler}" class="flex flex-col items-center justify-center gap-1 py-3 border-2 rounded-xl font-bold transition-all shadow-sm ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? "bg-white text-gray-800 border-red-400 hover:border-violet-600" : "bg-white text-gray-800 border-gray-100 hover:border-violet-300"}">
                         <i class="fa-solid ${icon} text-xl ${isActive ? "text-white" : "text-violet-600"}"></i>
                         <span class="text-[11px] font-black uppercase">${label}</span>
                     </button>`;
@@ -3930,7 +3940,13 @@ const routes = {
                         </div>
 
                         <h1 class="text-2xl font-black text-gray-900 leading-tight mb-4 tracking-tighter uppercase font-black">Order Details</h1>
-                        <div class="grid grid-cols-2 gap-3">
+                        ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? `
+                        <div class="mb-4 p-3.5 bg-red-50 border-2 border-red-200 text-red-700 rounded-2xl text-xs font-bold flex items-center gap-2.5 animate-pulse shadow-sm">
+                            <i class="fa-solid fa-circle-exclamation text-red-500 text-lg shrink-0"></i>
+                            <span>Please select an order type (In-store, Drive Through, Curbside, or Dine In) to continue.</span>
+                        </div>
+                        ` : ''}
+                        <div class="grid grid-cols-2 gap-3 ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? 'ring-2 ring-red-400 p-1.5 rounded-2xl bg-red-50/20' : ''}">
                             ${btn("fa-shop", "In-store")}
                             ${btn("fa-car", "Drive Through")}
                             ${btn("fa-square-parking", "Curbside")}
@@ -3971,7 +3987,7 @@ const routes = {
                               currentViewport === "desktop"
                                 ? `
                             <div class="mt-8">
-                                <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black">Start Order</button>
+                                <button onclick="handleStartOrder()" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black ${!mockupState.fulfillmentMode ? "opacity-90 hover:opacity-100" : ""}">${mockupState.cart && mockupState.cart.length > 0 ? "Save & Return to Cart" : "Start Order"}</button>
                             </div>
                             `
                                 : ""
@@ -3981,7 +3997,7 @@ const routes = {
                     ${
                       currentViewport !== "desktop"
                         ? `
-                    <div class="p-6 bg-white border-t border-gray-100 absolute bottom-0 left-0 right-0 z-50 shadow-lg"><button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black">Start Order</button></div>
+                    <div class="p-6 bg-white border-t border-gray-100 absolute bottom-0 left-0 right-0 z-50 shadow-lg"><button onclick="handleStartOrder()" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black ${!mockupState.fulfillmentMode ? "opacity-90 hover:opacity-100" : ""}">${mockupState.cart && mockupState.cart.length > 0 ? "Save & Return to Cart" : "Start Order"}</button></div>
                     `
                         : ""
                     }
@@ -4212,11 +4228,11 @@ const routes = {
       const isActive = mockupState.fulfillmentMode === opt.id;
       const clickHandler =
         opt.id === "Dine In"
-          ? `navigateTo('menu-scan')`
-          : `updateMockupState('fulfillmentMode', '${opt.id}'); updateMockupState('modalOpen', 'schedule-pickup'); navigateTo(currentPage);`;
+          ? `mockupState.fulfillmentMode = '${opt.id}'; mockupState.orderTypeRequiredError = false; navigateTo('menu-scan')`
+          : `updateMockupState('fulfillmentMode', '${opt.id}'); mockupState.orderTypeRequiredError = false; updateMockupState('modalOpen', 'schedule-pickup'); navigateTo(currentPage);`;
 
       return `
-                <div onclick="${clickHandler}" class="flex flex-col p-4 bg-white rounded-2xl shadow-sm border-2 cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md ${isActive ? "border-violet-600 ring-2 ring-violet-100 bg-violet-50/10" : "border-gray-100 hover:border-violet-300"}">
+                <div onclick="${clickHandler}" class="flex flex-col p-4 bg-white rounded-2xl shadow-sm border-2 cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md ${isActive ? "border-violet-600 ring-2 ring-violet-100 bg-violet-50/10" : mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? "border-red-400 hover:border-violet-300" : "border-gray-100 hover:border-violet-300"}">
                     <div class="flex items-center gap-5 w-full">
                         <div class="w-14 h-14 bg-violet-50 rounded-xl flex items-center justify-center shrink-0">
                             <i class="fa-solid ${opt.icon} text-2xl text-violet-600"></i>
@@ -4237,7 +4253,13 @@ const routes = {
                     <p class="text-sm md:text-base font-bold text-gray-400 uppercase tracking-widest leading-relaxed">Order ahead for pickup or dine in</p>
                 </div>
 
-                <div class="${isDesktop ? "grid grid-cols-2 gap-4" : "flex flex-col gap-4"} mb-6">
+                ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? `
+                <div class="mb-4 p-3.5 bg-red-50 border-2 border-red-200 text-red-700 rounded-2xl text-xs font-bold flex items-center gap-2.5 animate-pulse shadow-sm">
+                    <i class="fa-solid fa-circle-exclamation text-red-500 text-lg shrink-0"></i>
+                    <span>Please select an order type (In-Store, Drive-Thru, Curbside, or Dine In) to continue.</span>
+                </div>
+                ` : ''}
+                <div class="${isDesktop ? "grid grid-cols-2 gap-4" : "flex flex-col gap-4"} mb-6 ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? 'ring-2 ring-red-400 p-1.5 rounded-2xl bg-red-50/20' : ''}">
                     ${options.map(renderOptionCard).join("")}
                 </div>
 
@@ -4264,7 +4286,7 @@ const routes = {
                 }
 
                 <div>
-                    <button onclick="navigateTo('menu')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black">Start Order</button>
+                    <button onclick="handleStartOrder()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black ${!mockupState.fulfillmentMode ? "opacity-90 hover:opacity-100" : ""}">${mockupState.cart && mockupState.cart.length > 0 ? "Save & Return to Cart" : "Start Order"}</button>
                 </div>
             </div>
         `;
@@ -4729,7 +4751,7 @@ const routes = {
                                 <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Options Total</span>
                                 <span class="text-lg font-black text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                             </div>
-                            <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">Add to Cart — $${totalPrice}</button>
+                            <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} — $${totalPrice}</button>
                             <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
                         </div>
 
@@ -4770,7 +4792,7 @@ const routes = {
                             
                             <h1 class="font-branding font-black text-[#1f0b35] text-[32px] tracking-tight leading-none uppercase mb-2">Customize</h1>
                             
-                            <div onclick="navigateTo('order-details-alt')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
+                            <div onclick="navigateTo(mockupState.cart && mockupState.cart.length > 0 ? 'cart' : 'order-details-alt')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
                                 <span class="text-[11px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">
                                     ${modeText}
                                 </span>
@@ -4826,7 +4848,7 @@ const routes = {
                             <span>Options Total</span>
                             <span class="text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                         </div>
-                        <button onclick="window._addToCart()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Add to Cart - $${totalPrice}</button>
+                        <button onclick="window._addToCart()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} - $${totalPrice}</button>
                     </div>
                 </div>
             `;
@@ -4939,7 +4961,7 @@ const routes = {
                                 <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Options Total</span>
                                 <span class="text-lg font-black text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                             </div>
-                            <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">Add to Cart — $${totalPrice}</button>
+                            <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} — $${totalPrice}</button>
                             <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
                         </div>
 
@@ -4980,7 +5002,7 @@ const routes = {
                             
                             <h1 class="font-branding font-black text-[#1f0b35] text-[32px] tracking-tight leading-none uppercase mb-2">Customize</h1>
                             
-                            <div onclick="navigateTo('order-details-alt')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
+                            <div onclick="navigateTo(mockupState.cart && mockupState.cart.length > 0 ? 'cart' : 'order-details-alt')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
                                 <span class="text-[11px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">
                                     ${modeText}
                                 </span>
@@ -5045,7 +5067,7 @@ const routes = {
                             <span>Options Total</span>
                             <span class="text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                         </div>
-                        <button onclick="window._addToCart()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Add to Cart - $${totalPrice}</button>
+                        <button onclick="window._addToCart()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} - $${totalPrice}</button>
                     </div>
                 </div>
             `;
@@ -5074,6 +5096,46 @@ const routes = {
     const taxes = subtotal * taxRate;
     const convenienceFee = mockupState.locationConvenienceFee || 0;
     const finalTotal = (subtotal + taxes + bagFee + convenienceFee).toFixed(2);
+
+    const monthOffset = mockupState.monthOffset || 0;
+    const currentMonth = getCalendarData(monthOffset);
+
+    let calendarCells = "";
+    for (let i = 0; i < currentMonth.startDay; i++) {
+      calendarCells += `<div></div>`;
+    }
+    for (let i = 1; i <= currentMonth.days; i++) {
+      let isPast = isPastDate(
+        currentMonth.targetYear,
+        currentMonth.targetMonthIdx,
+        i,
+      );
+      if (isPast) {
+        calendarCells += `<div class="py-2 text-gray-300 font-bold text-sm text-center">${i}</div>`;
+      } else {
+        let label = getDayLabel(
+          currentMonth.targetYear,
+          currentMonth.targetMonthIdx,
+          i,
+        );
+        let isSelected = mockupState.selectedDay === label;
+        calendarCells += `<button onclick="updateMockupState('selectedDay', '${label}'); mockupState.modalOpen = 'time'; navigateTo('cart');" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? "bg-violet-600 text-white shadow-md flex items-center justify-center shrink-0 w-8 h-8 mx-auto" : "text-gray-800 hover:bg-violet-100 transition-colors flex items-center justify-center shrink-0 w-8 h-8 mx-auto"}">${i}</button>`;
+      }
+    }
+    const totalCells = currentMonth.startDay + currentMonth.days;
+    const paddingCells = 42 - totalCells;
+    for (let i = 0; i < paddingCells; i++) {
+      calendarCells += `<div></div>`;
+    }
+
+    const dateModalClass = mockupState.modalOpen === "date" ? "flex" : "hidden";
+    const timeModalClass = mockupState.modalOpen === "time" ? "flex" : "hidden";
+    const warningModalClass = mockupState.modalOpen === "warning" ? "flex" : "hidden";
+
+    const times15 = getDynamicTimes(mockupState.selectedDay || "Today");
+    const isNearClose =
+      mockupState.selectedTimeSlot.includes("8:") ||
+      mockupState.selectedTimeSlot.includes("9:");
 
     const selectionNotMade =
       mockupState.bagQuantity === 0 && !mockupState.noBagsSelected;
@@ -5199,25 +5261,139 @@ const routes = {
 
                         <!-- Pickup Details (Compact Grid) -->
                         <div class="grid grid-cols-2 gap-4">
-                            <div onclick="navigateTo('order-details')" class="flex gap-3 items-center cursor-pointer group">
-                                <div class="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
+                            <div onclick="window.toggleCartEditSection('method')" class="flex gap-3 items-center cursor-pointer group p-2 -m-2 rounded-xl hover:bg-gray-50/80 transition-colors">
+                                <div class="w-8 h-8 rounded-lg ${mockupState.cartEditSection === "method" ? "bg-violet-700 ring-2 ring-violet-300" : "bg-violet-600"} flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
                                     <i class="fa-solid ${mockupState.fulfillmentMode === "Delivery" ? "fa-truck" : mockupState.fulfillmentMode === "Curbside" ? "fa-car" : mockupState.fulfillmentMode === "DriveUp" ? "fa-car-side" : "fa-shop"} text-white text-sm"></i>
                                 </div>
-                                <div class="flex flex-col">
-                                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup method</span>
-                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight">${mockupState.fulfillmentMode || "Pickup"}</span>
+                                <div class="flex flex-col min-w-0 flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup method</span>
+                                        <i class="fa-solid fa-chevron-down text-[8px] text-gray-400 transition-transform ${mockupState.cartEditSection === "method" ? "rotate-180 text-violet-600" : ""}"></i>
+                                    </div>
+                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight mt-0.5 truncate">${mockupState.fulfillmentMode || "Pickup"}</span>
                                 </div>
                             </div>
-                            <div onclick="navigateTo('order-details')" class="flex gap-3 items-center cursor-pointer group border-l border-gray-50 pl-2">
-                                <div class="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
+                            <div onclick="window.toggleCartEditSection('time')" class="flex gap-3 items-center cursor-pointer group border-l border-gray-100 pl-4 p-2 -my-2 rounded-xl hover:bg-gray-50/80 transition-colors">
+                                <div class="w-8 h-8 rounded-lg ${mockupState.cartEditSection === "time" ? "bg-violet-700 ring-2 ring-violet-300" : "bg-violet-600"} flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
                                     <i class="fa-regular fa-clock text-white text-sm"></i>
                                 </div>
-                                <div class="flex flex-col">
-                                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup time</span>
-                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight">${mockupState.orderTime === "Later" ? mockupState.selectedTimeSlot : "ASAP"} (4-7m)</span>
+                                <div class="flex flex-col min-w-0 flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup time</span>
+                                        <i class="fa-solid fa-chevron-down text-[8px] text-gray-400 transition-transform ${mockupState.cartEditSection === "time" ? "rotate-180 text-violet-600" : ""}"></i>
+                                    </div>
+                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight mt-0.5 truncate">${
+                                      mockupState.orderTime === "Later"
+                                        ? `${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay || "Today"}, ${mockupState.selectedTimeSlot || getEstimatedPickupTime(20)}`
+                                        : `ASAP (${getEstimatedPickupTime(20)})`
+                                    }</span>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Inline Method Selector Drawer -->
+                        ${
+                          mockupState.cartEditSection === "method"
+                            ? `
+                            <div class="pt-3 border-t border-gray-100 flex flex-col gap-2.5 animate-[fadeIn_0.2s_ease-out]">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Select Pickup Method</span>
+                                    <button onclick="window.toggleCartEditSection('method')" class="text-[11px] font-black text-violet-600 hover:text-violet-700 uppercase tracking-wider flex items-center gap-1">
+                                        Done <i class="fa-solid fa-check text-[9px]"></i>
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    ${[
+                                      { label: "Pickup", icon: "fa-shop" },
+                                      { label: "Curbside", icon: "fa-car" },
+                                      { label: "Delivery", icon: "fa-truck" },
+                                    ]
+                                      .map((m) => {
+                                        const isActive =
+                                          (mockupState.fulfillmentMode ||
+                                            "Pickup") === m.label;
+                                        return `
+                                            <button onclick="updateMockupState('fulfillmentMode', '${m.label}'); mockupState.cartEditSection = null; navigateTo('cart');" class="flex flex-col items-center justify-center gap-1 py-2.5 px-2 border-2 rounded-xl font-bold transition-all ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/50"}">
+                                                <i class="fa-solid ${m.icon} text-sm ${isActive ? "text-white" : "text-violet-600"}"></i>
+                                                <span class="text-[10px] font-black uppercase tracking-tight">${m.label}</span>
+                                            </button>
+                                        `;
+                                      })
+                                      .join("")}
+                                </div>
+                            </div>
+                        `
+                            : ""
+                        }
+
+                        <!-- Inline Time Selector Drawer -->
+                        ${
+                          mockupState.cartEditSection === "time"
+                            ? `
+                            <div class="pt-3 border-t border-gray-100 flex flex-col gap-2.5 animate-[fadeIn_0.2s_ease-out]">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Select Pickup Time</span>
+                                    <button onclick="window.toggleCartEditSection('time')" class="text-[11px] font-black text-violet-600 hover:text-violet-700 uppercase tracking-wider flex items-center gap-1">
+                                        Done <i class="fa-solid fa-check text-[9px]"></i>
+                                    </button>
+                                </div>
+                                <!-- ASAP vs Schedule Later pills -->
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="updateMockupState('orderTime', 'ASAP'); mockupState.cartEditSection = null; navigateTo('cart');" class="py-2.5 px-3 rounded-xl border-2 font-black text-xs uppercase flex items-center justify-center gap-2 transition-all ${mockupState.orderTime !== "Later" ? "bg-violet-600 text-white border-violet-600 shadow-sm" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600"}">
+                                        <i class="fa-solid fa-bolt text-xs ${mockupState.orderTime !== "Later" ? "text-amber-300" : "text-violet-600"}"></i>
+                                        <span>ASAP (${getEstimatedPickupTime(20)})</span>
+                                    </button>
+                                    <button onclick="updateMockupState('orderTime', 'Later'); navigateTo('cart');" class="py-2.5 px-3 rounded-xl border-2 font-black text-xs uppercase flex items-center justify-center gap-2 transition-all ${mockupState.orderTime === "Later" ? "bg-violet-600 text-white border-violet-600 shadow-sm" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600"}">
+                                        <i class="fa-regular fa-clock text-xs ${mockupState.orderTime === "Later" ? "text-white" : "text-violet-600"}"></i>
+                                        <span>Schedule Later</span>
+                                    </button>
+                                </div>
+
+                                ${
+                                  mockupState.orderTime === "Later"
+                                    ? `
+                                    <div class="bg-gray-50/80 rounded-xl p-3 border border-gray-100 flex flex-col gap-2.5 mt-1">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Date & Time</span>
+                                            <button onclick="updateMockupState('modalOpen', 'date'); navigateTo('cart');" class="text-[11px] font-black text-violet-600 hover:underline flex items-center gap-1">
+                                                <i class="fa-regular fa-calendar"></i>
+                                                <span>${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay || "Today"}</span>
+                                                <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Multi-Row Wrap Time Slot Chips -->
+                                        <div class="flex flex-wrap gap-2 py-1">
+                                            ${(() => {
+                                              const times = getDynamicTimes(
+                                                mockupState.selectedDay ||
+                                                  "Today",
+                                              );
+                                              if (!times || times.length === 0) {
+                                                return `<span class="text-xs font-bold text-gray-400">Closed for selected date</span>`;
+                                              }
+                                              return times
+                                                .map((t) => {
+                                                  const isSelected =
+                                                    mockupState.selectedTimeSlot ===
+                                                    t;
+                                                  return `
+                                                        <button onclick="updateMockupState('selectedTimeSlot', '${t}'); updateMockupState('orderTime', 'Later'); mockupState.cartEditSection = null; navigateTo('cart');" class="px-3 py-1.5 rounded-full border-2 font-black text-[11px] shrink-0 transition-all ${isSelected ? "bg-violet-600 text-white border-violet-600 shadow-sm" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/40"}">
+                                                            ${t}
+                                                        </button>
+                                                    `;
+                                                })
+                                                .join("");
+                                            })()}
+                                        </div>
+                                    </div>
+                                `
+                                    : ""
+                                }
+                            </div>
+                        `
+                            : ""
+                        }
                     </div>
 
                     <!-- Cart Items -->
@@ -5280,79 +5456,81 @@ const routes = {
                                   ),
                               );
 
-                              const numSells = isDesktop ? 4 : 5;
-                              if (finalCrossSells.length < numSells) {
-                                const fallbackItems =
-                                  getActiveMenuItems().filter(
-                                    (item) =>
-                                      !cartItemNames.includes(
-                                        item.name.toLowerCase(),
-                                      ) &&
-                                      !finalCrossSells.find(
-                                        (s) => s.name === item.name,
-                                      ),
-                                  );
+                              if (finalCrossSells.length < 3) {
+                                const popularDefaults = MENU_ITEMS.filter(
+                                  (item) =>
+                                    !cartItemNames.includes(
+                                      item.name.toLowerCase(),
+                                    ) &&
+                                    !finalCrossSells.some(
+                                      (f) => f.name === item.name,
+                                    ),
+                                );
                                 finalCrossSells = [
                                   ...finalCrossSells,
-                                  ...fallbackItems,
-                                ].slice(0, numSells);
-                              } else {
-                                finalCrossSells = finalCrossSells.slice(
-                                  0,
-                                  numSells,
-                                );
+                                  ...popularDefaults,
+                                ].slice(0, 5);
+                              }
+
+                              if (finalCrossSells.length === 0) {
+                                return `<p class="text-xs text-gray-400 italic">No additional suggestions</p>`;
                               }
 
                               return finalCrossSells
-                                .map((item) => {
-                                  return `
-                                        <div class="snap-center shrink-0 ${isDesktop ? "w-auto flex-1" : "w-[140px]"} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-all hover:shadow-md group cursor-pointer" onclick="mockupState.menuTab = 'menu'; selectItemAndNavigate(${getActiveMenuItems().findIndex((m) => m.name === item.name)})">
-                                            <div class="${isDesktop ? "h-36" : "h-24"} relative overflow-hidden">
-                                                <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
-                                            </div>
-                                            <div class="p-3 md:p-4 text-left flex flex-col flex-1">
-                                                <h4 class="text-xs md:text-sm font-black text-gray-900 uppercase tracking-tight h-8 md:h-10 overflow-hidden line-clamp-2">${item.name}</h4>
-                                                <div class="flex justify-between items-center mt-auto pt-2">
-                                                    <span class="text-sm md:text-base font-black text-violet-600">$${item.price.toFixed(2)}</span>
-                                                    <button class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center group-hover:bg-violet-600 group-hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-plus text-[10px] md:text-xs"></i></button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    `;
-                                })
+                                .map(
+                                  (item) => `
+                                <div class="snap-start shrink-0 w-36 bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex flex-col justify-between group hover:border-violet-200 transition-all">
+                                    <div class="relative w-full h-24 rounded-xl overflow-hidden mb-2">
+                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    </div>
+                                    <div>
+                                        <h4 class="font-black text-gray-900 text-xs leading-tight line-clamp-1 uppercase">${item.name}</h4>
+                                        <span class="font-bold text-violet-600 text-xs">$${item.price.toFixed(2)}</span>
+                                    </div>
+                                    <button onclick="window.quickAddSuggestedItem(${item.id})" class="mt-2 w-full py-1.5 rounded-full bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white font-black text-[10px] uppercase tracking-wider transition-colors">
+                                        + Add
+                                    </button>
+                                </div>
+                            `,
+                                )
                                 .join("");
                             })()}
                         </div>
                     </div>
-                    
+
                     </div> <!-- End Left Column -->
 
                     <!-- Right Column (1/3 width on desktop) -->
-                    <div class="${isDesktop ? "flex flex-col gap-6 w-1/3 shrink sticky top-0" : "contents"}">
+                    <div class="${isDesktop ? "w-1/3 flex flex-col gap-6 shrink-0 sticky top-24" : "contents"}">
 
-                    <!-- Bag Selection (California Compliance) -->
-                    <div class="shrink-0 bg-violet-50 rounded-2xl p-4 border border-violet-100 flex flex-col gap-4">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1 pr-4">
-                                <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight leading-tight">
-                                    Do you need plastic bag(s)?
-                                </h3>
-                                <div class="${mockupState.bagQuantity > 0 || mockupState.noBagsSelected ? "text-green-600" : "text-violet-600"} text-[10px] font-bold flex items-center gap-1 normal-case tracking-normal mt-1">
-                                    <i class="fa-solid ${mockupState.bagQuantity > 0 || mockupState.noBagsSelected ? "fa-circle-check" : "fa-triangle-exclamation"}"></i>
-                                    Required • Select 1
-                                </div>
-                                <p class="text-[10px] font-bold text-gray-500 mt-0.5">10 cents for each bag</p>
+                    <!-- Bag Option Selector -->
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border space-y-4 shrink-0 transition-all ${selectionNotMade ? "border-amber-300 ring-2 ring-amber-400/30" : "border-gray-100"}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
+                                <i class="fa-solid fa-bag-shopping text-lg"></i>
                             </div>
-                            <div class="flex items-center bg-white rounded-full shadow-sm border border-gray-50 px-3 py-1.5 gap-4">
-                                <button onclick="mockupState.noBagsSelected = false; updateMockupState('bagQuantity', Math.max(0, mockupState.bagQuantity - 1))" class="text-gray-900 hover:text-red-500 transition-colors"><i class="fa-solid fa-minus text-xs"></i></button>
-                                <span class="font-black text-sm text-gray-900 min-w-[12px] text-center">${mockupState.bagQuantity}</span>
-                                <button onclick="mockupState.noBagsSelected = false; updateMockupState('bagQuantity', mockupState.bagQuantity + 1)" class="text-gray-900 hover:text-violet-600 transition-colors"><i class="fa-solid fa-plus text-xs"></i></button>
+                            <div>
+                                <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm">Bag Options</h3>
+                                <p class="text-[11px] text-gray-400 font-medium leading-tight">State law requires bag fee declaration</p>
+                            </div>
+                        </div>
+
+                        <!-- Bags Quantity Selector -->
+                        <div class="flex items-center justify-between bg-gray-50 rounded-xl p-3 border border-gray-100">
+                            <div>
+                                <span class="font-bold text-gray-800 text-xs block">Need Plastic Bags?</span>
+                                <span class="text-[10px] text-gray-400 font-semibold">10¢ per bag</span>
+                            </div>
+                            <div class="flex items-center bg-white rounded-full border border-gray-200 px-3 py-1 gap-4 shadow-sm">
+                                <button onclick="adjustBagQuantity(-1)" class="text-gray-600 hover:text-red-500 transition-colors p-1 cursor-pointer"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                                <span class="font-black text-sm text-gray-900 min-w-[16px] text-center">${mockupState.bagQuantity}</span>
+                                <button onclick="adjustBagQuantity(1)" class="text-gray-600 hover:text-violet-600 transition-colors p-1 cursor-pointer"><i class="fa-solid fa-plus text-[10px]"></i></button>
                             </div>
                         </div>
                         
                         <div class="flex gap-2">
-                            <button onclick="mockupState.bagQuantity = 0; updateMockupState('noBagsSelected', true);" 
-                                    class="flex-1 py-2 px-3 rounded-lg border-2 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${mockupState.noBagsSelected ? "bg-violet-600 text-white border-violet-600 shadow-md" : "bg-white text-gray-400 border-gray-100 hover:border-violet-200"}">
+                            <button onclick="if(mockupState.noBagsSelected){ mockupState.noBagsSelected = false; updateMockupState('bagQuantity', 0); } else { mockupState.bagQuantity = 0; updateMockupState('noBagsSelected', true); }" 
+                                    class="flex-1 py-2 px-3 rounded-xl border-2 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${mockupState.noBagsSelected ? "bg-violet-600 text-white border-violet-600 shadow-md" : "bg-white text-gray-400 border-gray-100 hover:border-violet-200"}">
                                 <i class="fa-solid ${mockupState.noBagsSelected ? "fa-circle-check" : "fa-circle-dot"}"></i>
                                 No plastic bags needed
                             </button>
@@ -5383,6 +5561,110 @@ const routes = {
                         <button onclick="${paymentAction}" class="pointer-events-auto bg-violet-600 text-white px-8 py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">
                             Checkout $${finalTotal}
                         </button>
+                    </div>
+                </div>
+
+                <!-- Date Modal -->
+                <div id="date-modal" class="fixed inset-0 bg-black/60 z-[99999] ${dateModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                    <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[85vh]">
+                        <div class="flex justify-between items-center mb-5 shrink-0">
+                            <h3 class="font-black text-xl uppercase text-gray-900">Choose Day</h3>
+                            <button onclick="mockupState.modalOpen = null; navigateTo('cart');" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div class="bg-white rounded-2xl p-4 border border-violet-100 shadow-sm overflow-y-auto scrollbar-hide">
+                            <div class="flex justify-between items-center mb-3 px-1">
+                                <button onclick="mockupState.monthOffset = Math.max(0, (mockupState.monthOffset||0) - 1); navigateTo('cart');" class="${monthOffset === 0 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:text-violet-600 transition-colors"} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-left text-sm"></i></button>
+                                <span class="font-black text-sm uppercase tracking-widest text-gray-800">${currentMonth.name}</span>
+                                <button onclick="mockupState.monthOffset = Math.min(2, (mockupState.monthOffset||0) + 1); navigateTo('cart');" class="${monthOffset === 2 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:text-violet-600 transition-colors"} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-right text-sm"></i></button>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                                ${["S", "M", "T", "W", "T", "F", "S"].map((d) => `<div class="text-[10px] font-black text-gray-400">${d}</div>`).join("")}
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 text-center">
+                                ${calendarCells}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Modal -->
+                <div id="time-modal" class="fixed inset-0 bg-black/60 z-[99999] ${timeModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                    <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[90vh]">
+                        <div class="flex justify-between items-center mb-5 shrink-0">
+                            <h3 class="font-black text-xl uppercase text-gray-900">Choose Time</h3>
+                            <button onclick="mockupState.modalOpen = null; navigateTo('cart');" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        
+                        <div class="flex-1 flex flex-col min-h-0 bg-gray-50/50 rounded-2xl p-4 border border-gray-100 mb-5">
+                            <div class="overflow-y-auto scrollbar-hide h-[230px] pr-1">
+                                <div class="grid grid-cols-3 gap-2">
+                                    ${
+                                      times15.length > 0
+                                        ? times15
+                                            .map((time, idx) => {
+                                              const isThisTimeNearClose =
+                                                time.includes("8:") ||
+                                                time.includes("9:");
+                                              const clickAction =
+                                                isThisTimeNearClose &&
+                                                !mockupState.acknowledgedClose
+                                                  ? `updateMockupState('selectedTimeSlot', '${time}'); mockupState.modalOpen = 'warning'; navigateTo('cart');`
+                                                  : `updateMockupState('selectedTimeSlot', '${time}'); navigateTo('cart');`;
+
+                                              return `
+                                        <button id="time-slot-${idx}" onclick="${clickAction}" class="py-3 rounded-full border-2 ${mockupState.selectedTimeSlot === time ? "border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200" : "border-gray-100 text-gray-700 hover:border-violet-300 bg-white"} font-black text-[11px] transition-all tracking-tight whitespace-nowrap">${time}</button>
+                                        `;
+                                            })
+                                            .join("")
+                                        : `<div class="col-span-3 py-10 text-center flex flex-col items-center"><i class="fa-solid fa-store-slash text-2xl text-gray-300 mb-2"></i><p class="text-gray-500 font-bold text-sm">Closed for this date</p></div>`
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-4 border-t border-gray-100 shrink-0">
+                                <label class="block text-[10px] font-black text-violet-600 uppercase tracking-widest mb-3">Or enter a custom pickup time</label>
+                                <div class="flex items-center gap-3">
+                                    <div class="relative flex-1">
+                                        <i class="fa-regular fa-clock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <input type="time" class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-violet-600 focus:ring-0 font-bold text-gray-800 outline-none transition-colors" onchange="let val = this.value; let parts = val.split(':'); let h = parseInt(parts[0]); let ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12; h = h || 12; let formatted = h + ':' + parts[1] + ' ' + ampm; updateMockupState('selectedTimeSlot', formatted); updateMockupState('orderTime', 'Later'); if(h >= 8 && ampm === 'PM') { mockupState.modalOpen = 'warning'; mockupState.acknowledgedClose = false; } navigateTo('cart');" />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        
+                        <div class="shrink-0 pb-2">
+                            <button onclick="
+                                if(${isNearClose} && !mockupState.acknowledgedClose) {
+                                    mockupState.modalOpen = 'warning';
+                                    navigateTo('cart');
+                                } else {
+                                    mockupState.modalOpen = null;
+                                    navigateTo('cart');
+                                }
+                            " class="w-full py-4 rounded-full bg-violet-600 text-white font-black uppercase text-sm tracking-widest shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] transition-all active:scale-95">Confirm Time</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Warning Modal -->
+                <div id="warning-modal" class="fixed inset-0 bg-black/60 z-[99999] ${warningModalClass} flex-col justify-center items-center backdrop-blur-sm p-4">
+                    <div class="bg-red-600 w-full sm:w-[380px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
+                            <i class="fa-solid fa-clock text-red-600 text-3xl"></i>
+                        </div>
+                        
+                        <h3 class="font-black text-2xl uppercase text-white mb-2 leading-tight">Store Closes<br>at 9:00 PM</h3>
+                        
+                        <p class="text-red-100 font-bold mb-8 px-2">
+                            ${isNearClose ? "You have selected a pickup time within an hour of close. Please ensure you pick up your order before our doors close." : "Please ensure you pick up your order before our doors close."}
+                        </p>
+                        
+                        <button onclick="updateMockupState('acknowledgedClose', true); mockupState.modalOpen = null; navigateTo('cart');" class="w-full py-4 rounded-full bg-white text-red-600 font-black uppercase text-sm tracking-widest shadow-xl hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-check text-lg"></i> I Understand
+                        </button>
+                        
+                        <button onclick="mockupState.modalOpen = 'time'; navigateTo('cart');" class="mt-4 text-red-200 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">Go Back</button>
                     </div>
                 </div>
 
@@ -8683,11 +8965,13 @@ function renderPage() {
 }
 
 function adjustBagQuantity(delta) {
-  mockupState.bagQuantity = Math.max(0, mockupState.bagQuantity + delta);
-  mockupState.noBagsSelected = false;
+  mockupState.bagQuantity = Math.max(0, (mockupState.bagQuantity || 0) + delta);
+  if (mockupState.bagQuantity > 0) {
+    mockupState.noBagsSelected = false;
+  }
   persistAllState();
 
-  // Update DOM directly to avoid flicker
+  // Update DOM directly for modal elements if present
   const display = document.getElementById("bag-count-display");
   if (display) display.innerText = mockupState.bagQuantity;
 
@@ -8706,6 +8990,11 @@ function adjustBagQuantity(delta) {
         "mockupState.modalOpen = null; mockupState.noBagsSelected = true; navigateTo('checkout');",
       );
     }
+  }
+
+  // Trigger full UI refresh so cart page pill, bag fee line item, and totals update
+  if (typeof updateMockupState === "function") {
+    updateMockupState("bagQuantity", mockupState.bagQuantity);
   }
 }
 
@@ -9234,6 +9523,7 @@ function isDrinkCategory(categoryName) {
 function selectItemAndNavigate(index) {
   const item = getActiveMenuItems()[index];
   mockupState.selectedItem = item;
+  mockupState.editingCartIndex = null;
   // Reset quantity and customization defaults for new item
   mockupState.itemQuantity = 1;
   mockupState.sugarLevel = "50%";
@@ -9575,8 +9865,17 @@ window._addToCart = function () {
     specialInstruction: specialInstruction,
   };
 
-  // Add to cart
-  mockupState.cart.push(cartItem);
+  // Add or update cart item
+  if (
+    typeof mockupState.editingCartIndex === "number" &&
+    mockupState.editingCartIndex >= 0 &&
+    mockupState.editingCartIndex < mockupState.cart.length
+  ) {
+    mockupState.cart[mockupState.editingCartIndex] = cartItem;
+    mockupState.editingCartIndex = null;
+  } else {
+    mockupState.cart.push(cartItem);
+  }
   mockupState.cartItemCount = mockupState.cart.reduce(
     (sum, i) => sum + i.quantity,
     0,
@@ -9589,6 +9888,15 @@ window._addToCart = function () {
   mockupState.itemQuantity = 1;
 
   persistAllState();
+  navigateTo("cart");
+};
+
+window.toggleCartEditSection = function (section) {
+  if (mockupState.cartEditSection === section) {
+    mockupState.cartEditSection = null;
+  } else {
+    mockupState.cartEditSection = section;
+  }
   navigateTo("cart");
 };
 
@@ -9637,10 +9945,7 @@ window.editCartItemAndNavigate = function (index) {
   mockupState._customizeSubItems = sels;
   mockupState._customizeModifyTypes = modSels;
   mockupState.selectedItemDetail = null;
-
-  // Remove the item from cart so adding it back doesn't duplicate
-  mockupState.cart.splice(index, 1);
-  mockupState.cartItemCount = mockupState.cart.reduce((sum, i) => sum + i.quantity, 0);
+  mockupState.editingCartIndex = index;
   persistAllState();
 
   if (item.id && mockupState.selectedLocationId && window.ApiService) {
@@ -9831,9 +10136,11 @@ window._handlePlaceOrder = async function () {
       placedAt: response?.data?.orderDate ?? response?.orderDate ?? new Date().toISOString(),
     };
 
-    // Clear cart
+    // Clear cart & reset bag quantity
     mockupState.cart = [];
     mockupState.cartItemCount = 0;
+    mockupState.bagQuantity = 0;
+    mockupState.noBagsSelected = false;
 
     persistAllState();
     navigateTo("order-confirm");
@@ -10947,6 +11254,19 @@ function focusLocation(name, openPopup = true) {
     }
   });
 }
+
+function handleStartOrder() {
+  if (!mockupState.fulfillmentMode) {
+    mockupState.orderTypeRequiredError = true;
+    alert("Please select an order type (In-store, Drive Through, Curbside, or Dine In) to continue.");
+    navigateTo(currentPage);
+    return false;
+  }
+  mockupState.orderTypeRequiredError = false;
+  navigateTo(mockupState.cart && mockupState.cart.length > 0 ? "cart" : "menu");
+  return true;
+}
+window.handleStartOrder = handleStartOrder;
 
 function navigateTo(pageId) {
   persistAllState();
