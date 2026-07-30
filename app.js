@@ -16,7 +16,6 @@ const PAGE_FILE_MAP = {
   "order-details-alt": "order-details-alt.html",
   "menu-scan": "menu-scan.html",
   menu: "menu.html",
-  "menu-alt": "menu-alt.html",
   locations: "locations.html",
   "locations-alt": "locations-alt.html",
   "location-favorites": "location-favorites.html",
@@ -51,7 +50,6 @@ const PAGE_LABELS = {
   "order-details-alt": "Order Details (Alternative)",
   "menu-scan": "Scan",
   menu: "Menu",
-  "menu-alt": "Menu (Alternative)",
   locations: "Pick a Location",
   "locations-alt": "Pick a Location (Alternative)",
   "location-favorites": "Saved Locations",
@@ -876,8 +874,7 @@ async function fetchLocations() {
 
 async function fetchMenuAndItems(locationId) {
   if (!locationId) return;
-  mockupState.isLoading = true;
-  renderPage();
+  // Intentionally omitting blocking loading overlay for smoother UX
   try {
     const menuResponse = await fetch(
       `${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/menu`,
@@ -940,7 +937,7 @@ async function fetchMenuAndItems(locationId) {
   } catch (error) {
     console.error("Failed to fetch menu and items from API:", error);
   } finally {
-    mockupState.isLoading = false;
+    // Menu loaded silently in background
     renderPage();
   }
 }
@@ -1262,7 +1259,7 @@ function toggleMenu(e, menuId) {
     "location-dropdown-order-details",
     "location-dropdown-order-details-alt",
     "location-dropdown-menu",
-    "location-dropdown-menu-alt",
+    "location-dropdown-menu",
     "location-dropdown-order-confirm",
   ];
   allMenus.forEach((id) => {
@@ -1293,7 +1290,7 @@ document.addEventListener("click", () => {
     "location-dropdown-order-details",
     "location-dropdown-order-details-alt",
     "location-dropdown-menu",
-    "location-dropdown-menu-alt",
+    "location-dropdown-menu",
     "location-dropdown-order-confirm",
   ].forEach((id) => {
     const menu = document.getElementById(id);
@@ -1321,7 +1318,7 @@ function hamburgerDrawerHTML() {
   const userName = mockupState.userName || "Guest";
 
   const navItems = [
-    { label: "Rewards", icon: "fa-award", page: "rewards" },
+
     { label: "Home", icon: "fa-house", page: "restaurant-home" },
     { label: "Menu", icon: "fa-utensils", page: "menu" },
     { label: "Locations", icon: "fa-location-dot", page: "locations" },
@@ -1439,7 +1436,7 @@ function hamburgerDrawerHTML() {
                         <div class="mt-5 p-4 bg-violet-50 rounded-2xl border border-violet-100 shadow-sm">
                             <div class="font-black text-xs text-violet-700 uppercase tracking-widest mb-3">Alt Versions</div>
                             <div class="flex flex-col gap-2.5">
-                                <a href="menu-alt.html?store=7" class="text-base font-bold text-violet-900 hover:text-violet-600 transition-colors">menu-alt.html</a>
+                                <a href="menu.html?store=7" class="text-base font-bold text-violet-900 hover:text-violet-600 transition-colors">menu.html</a>
                                 <a href="location-favorites.html" class="text-base font-bold text-violet-900 hover:text-violet-600 transition-colors">location-favorites.html</a>
                                 <a href="menu-favorites.html" class="text-base font-bold text-violet-900 hover:text-violet-600 transition-colors">menu-favorites.html</a>
                                 <a href="order-details-alt.html" class="text-base font-bold text-violet-900 hover:text-violet-600 transition-colors">order-details-alt.html</a>
@@ -1454,7 +1451,8 @@ function hamburgerDrawerHTML() {
     `;
 }
 
-function renderMenuPage(isAlternative) {
+function renderMenuPage() {
+  const isAlternative = true;
   const isDesktop = currentViewport === "desktop";
   const categoryModalClass =
     mockupState.modalOpen === "categories" ? "flex" : "hidden";
@@ -1646,7 +1644,7 @@ function renderMenuPage(isAlternative) {
                 <!-- Location details block -->
                 <div class="py-3.5 px-4 w-full relative">
                     <h1 class="font-branding font-black text-[#1f0b35] text-[32px] tracking-tight leading-none uppercase mb-2">Menu</h1>
-                    <div onclick="toggleMenu(event, 'location-dropdown-menu-alt')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
+                    <div onclick="toggleMenu(event, 'location-dropdown-menu')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
                         <span class="text-[11px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">
                             ${modeText}
                         </span>
@@ -1659,7 +1657,7 @@ function renderMenuPage(isAlternative) {
                         </div>
                     </div>
                     <!-- Dropdown Menu -->
-                    <div id="location-dropdown-menu-alt" class="hidden absolute left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-[320px] top-[calc(100%+0.5rem)] z-[100] animate-[slideUp_0.2s_ease-out]">
+                    <div id="location-dropdown-menu" class="hidden absolute left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-[320px] top-[calc(100%+0.5rem)] z-[100] animate-[slideUp_0.2s_ease-out]">
                         <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
                             <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
                             <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
@@ -4631,8 +4629,7 @@ const routes = {
                 </div>
             </div>`;
   },
-  menu: () => renderMenuPage(false),
-  "menu-alt": () => renderMenuPage(true),
+  menu: () => renderMenuPage(),
   customize: () => {
     const isDesktop = currentViewport === "desktop";
     const mode = mockupState.fulfillmentMode || "In-store";
@@ -4724,16 +4721,7 @@ const routes = {
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col gap-7">
                             ${renderAllModifierSectionsAlt2(detail, sels, modSels, "grid")}
 
-                            <!-- Special Instructions -->
-                            ${
-                              detail && !detail.disableSpecialInstruction
-                                ? `
-                            <div>
-                                <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions <span class="text-gray-300">(Max 250 Characters)</span></div>
-                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ""}</textarea>
-                            </div>`
-                                : ""
-                            }
+
                         </div>
 
                         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-6">
@@ -4771,7 +4759,7 @@ const routes = {
                         </div>
                     </header>
 
-                    <!-- Details subheader block mimicking menu-alt.html -->
+                    <!-- Details subheader block mimicking menu.html -->
                     <div class="bg-white border-b border-gray-100 flex flex-col items-center justify-center text-center w-full shrink-0 animate-[fadeIn_0.3s_ease-out]">
                         <div class="py-3.5 px-4 w-full relative">
                             <!-- Back Button at the left -->
@@ -4827,16 +4815,7 @@ const routes = {
 
                             ${renderAllModifierSectionsAlt2(detail, sels, modSels, "stacked")}
 
-                            <!-- Special Instructions -->
-                            ${
-                              detail && !detail.disableSpecialInstruction
-                                ? `
-                            <div>
-                                <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Special Order Instructions <span class="text-gray-300">(Max 250 Characters)</span></div>
-                                <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ""}</textarea>
-                            </div>`
-                                : ""
-                            }
+
 
                         </div>
                     </div>
@@ -4961,7 +4940,7 @@ const routes = {
                                 <span class="text-lg font-black text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                             </div>
                             <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">Add to Cart — $${totalPrice}</button>
-                            <button onclick="navigateTo(mockupState.lastMenuPage || 'menu-alt')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
+                            <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
                         </div>
 
                     </div>
@@ -4990,11 +4969,11 @@ const routes = {
                         </div>
                     </header>
 
-                    <!-- Details subheader block mimicking menu-alt.html -->
+                    <!-- Details subheader block mimicking menu.html -->
                     <div class="bg-white border-b border-gray-100 flex flex-col items-center justify-center text-center w-full shrink-0 animate-[fadeIn_0.3s_ease-out]">
                         <div class="py-3.5 px-4 w-full relative">
                             <!-- Back Button at the left -->
-                            <button onclick="navigateTo(mockupState.lastMenuPage || 'menu-alt')" class="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                            <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                                 <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                                 <span>Back</span>
                             </button>
@@ -5118,7 +5097,7 @@ const routes = {
                 </div>`;
       }
       return `
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 divide-y divide-gray-100">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-100 overflow-hidden">
                 ${cart
                   .map((item, idx) => {
                     // Build customization summary text
@@ -5133,18 +5112,18 @@ const routes = {
                     );
 
                     return `
-                    <div class="flex justify-between items-start ${idx > 0 ? "pt-5" : ""} ${idx < cart.length - 1 ? "pb-5" : ""}">
+                    <div class="flex justify-between items-start p-5 cursor-pointer hover:bg-gray-50 transition-colors group" onclick="window.editCartItemAndNavigate(${idx})">
                         <div class="flex gap-4 items-start">
                             <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0">
                                 <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
                             </div>
                             <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight">${item.name}</h3>
+                                <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight group-hover:text-violet-600">${item.name}</h3>
                                 <div class="flex items-start gap-2 mb-3">
-                                    <p class="text-[11px] text-gray-500 font-medium line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed flex-1" id="desc-${idx}" onclick="this.classList.toggle('line-clamp-2')">${customSummary}${item.specialInstruction ? " • " + item.specialInstruction : ""}</p>
+                                    <p class="text-[11px] text-gray-500 font-medium line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed flex-1" id="desc-${idx}" onclick="event.stopPropagation(); this.classList.toggle('line-clamp-2')">${customSummary}${item.specialInstruction ? " • " + item.specialInstruction : ""}</p>
                                 </div>
                                 <!-- Quantity Controls -->
-                                <div class="flex items-center bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-50 px-3 py-1.5 gap-5 w-fit">
+                                <div class="flex items-center bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-50 px-3 py-1.5 gap-5 w-fit" onclick="event.stopPropagation()">
                                     <button onclick="window._updateCartQty(${idx}, ${item.quantity === 1 ? 0 : item.quantity - 1})" class="text-gray-900 hover:text-red-500 transition-colors active:scale-90">
                                         <i class="fa-${item.quantity === 1 ? "regular fa-trash-can" : "solid fa-minus"} text-[13px]"></i>
                                     </button>
@@ -5248,9 +5227,9 @@ const routes = {
                         <i class="fa-solid fa-plus"></i> Add another menu item
                     </button>
 
-                    <!-- You May Also Like Carousel -->
+                    <!-- Suggested Items Carousel -->
                     <div class="shrink-0">
-                        <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-3 px-1">You May Also Like</h3>
+                        <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-3 px-1">Suggested Items</h3>
                         <div class="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2">
                             ${(() => {
                               let crossSellItems = [];
@@ -5640,6 +5619,7 @@ const routes = {
                                 <button onclick="handleChangePassword()" class="w-full mt-2 py-4 bg-violet-600 text-white rounded-full font-black uppercase tracking-widest text-sm shadow-lg hover:bg-violet-700 transition-colors active:scale-95">
                                     Update Password
                                 </button>
+                                <div id="pwd-error-log" class="mt-4 p-3 bg-gray-100 text-xs text-red-700 font-mono rounded-lg hidden whitespace-pre-wrap break-all border border-red-200 shadow-inner overflow-y-auto max-h-48"></div>
                             </div>
                         </div>
                     </div>`
@@ -7599,7 +7579,7 @@ window.systemPagesData = [
     { group: "ordering-flow", id: "locations", name: "Pick a Location", file: "locations.html", icon: "fa-location-dot", color: "#0ea5e9", auth: false, description: "Displays all i-Tea locations with live hours.", endpoints: [ { method: "GET", path: "/api/Locations", note: "Fetch all restaurant locations" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/hours", note: "Standard weekly hours per location" } ], connects: ["menu", "directions"] },
     { group: "ordering-flow", id: "directions", name: "Directions", file: "directions.html", icon: "fa-map-location-dot", color: "#0ea5e9", auth: false, description: "Map view and directions to a specific location.", endpoints: [], connects: [] },
     { group: "ordering-flow", id: "menu", name: "Menu", file: "menu.html", icon: "fa-utensils", color: "#0ea5e9", auth: false, description: "Full menu browser with tabs: Menu, Featured, Favorites, and Order History.", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/location/{id}/menu", note: "Fetch categories + tax rate + convenience fee" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/menuitems", note: "Fetch items for a specific category" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/featured", note: "Fetch featured items" } ], connects: ["customize", "cart"] },
-    { group: "ordering-flow", id: "menu-alt", name: "Menu Alt", file: "menu-alt.html", icon: "fa-utensils", color: "#0ea5e9", auth: false, description: "Alternative menu layout with distinct category styling.", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/location/{id}/menu", note: "Fetch categories" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/menuitems", note: "Fetch items for a specific category" } ], connects: ["customize", "cart"] },
+    { group: "ordering-flow", id: "menu", name: "Menu Alt", file: "menu.html", icon: "fa-utensils", color: "#0ea5e9", auth: false, description: "Alternative menu layout with distinct category styling.", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/location/{id}/menu", note: "Fetch categories" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/menuitems", note: "Fetch items for a specific category" } ], connects: ["customize", "cart"] },
     { group: "ordering-flow", id: "menu-favorites", name: "Menu Favorites", file: "menu-favorites.html", icon: "fa-heart", color: "#ec4899", auth: true, description: "User's favorited items.", endpoints: [ { method: "GET", path: "/api/User/favorites", note: "Fetch favorited menu items" } ], connects: ["customize"] },
     { group: "ordering-flow", id: "menu-scan", name: "Menu Scan", file: "menu-scan.html", icon: "fa-qrcode", color: "#0ea5e9", auth: false, description: "Scan QR code to access menu.", endpoints: [], connects: ["menu"] },
     { group: "ordering-flow", id: "customize", name: "Customize Item", file: "order-customize.html", icon: "fa-sliders", color: "#0ea5e9", auth: false, description: "Deep customization of a menu item (size, ice, sugar, toppings).", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/item/{id}/modifiers", note: "Fetch all modifier groups and options for item" } ], connects: ["cart"] },
@@ -7629,7 +7609,6 @@ window.systemTreeStructure = {
             {
               id: "menu",
               children: [
-                { id: "menu-alt" },
                 { id: "menu-scan" },
                 { id: "customize" },
                 {
@@ -8399,6 +8378,7 @@ routes["accessibility"] = () => {
 };
 
 function renderPage() {
+  if (window.isNavigatingAway) return;
   const viewport = document.getElementById("app-viewport");
   if (!viewport) return;
 
@@ -8456,7 +8436,7 @@ function renderPage() {
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('restaurant-home')">Home</span>
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('menu')">Menu</span>
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('locations')">Order</span>
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('account')">Rewards</span>
+
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap flex items-center gap-1" onclick="toggleMenu(event, 'all-pages-dropdown')">
                             Pages <i class="fa-solid fa-chevron-down text-[10px] text-gray-400"></i>
                         </span>
@@ -8479,7 +8459,7 @@ function renderPage() {
                             <div id="user-profile-dropdown" class="dropdown-menu">
                                 <div class="dropdown-column-title">My Profile</div>
                                 <div class="dropdown-item" onclick="navigateTo('account')">Account Details</div>
-                                <div class="dropdown-item" onclick="navigateTo('account')">Rewards</div>
+
                                 <div class="h-px bg-violet-100/50 my-2"></div>
                                 <div class="dropdown-item text-red-500 hover:text-red-600" onclick="signOutUser()">Sign Out</div>
                             </div>
@@ -8532,8 +8512,8 @@ function renderPage() {
                     <div class="col-span-3 mt-2 p-4 bg-violet-50 rounded-2xl border border-violet-100 flex flex-col gap-3">
                         <div class="text-[11px] font-black text-violet-700 uppercase tracking-widest">Alt Versions</div>
                         <div class="grid grid-cols-2 gap-4">
-                            <a href="menu-alt.html?store=7" class="dropdown-item lowercase !py-2 bg-white/60 hover:bg-white border border-violet-100/50 shadow-sm flex items-center justify-between">
-                                <span>menu-alt.html</span>
+                            <a href="menu.html?store=7" class="dropdown-item lowercase !py-2 bg-white/60 hover:bg-white border border-violet-100/50 shadow-sm flex items-center justify-between">
+                                <span>menu.html</span>
                                 <i class="fa-solid fa-arrow-right text-[10px] text-violet-400"></i>
                             </a>
                             <a href="order-details-alt.html" class="dropdown-item lowercase !py-2 bg-white/60 hover:bg-white border border-violet-100/50 shadow-sm flex items-center justify-between">
@@ -8666,7 +8646,7 @@ function renderPage() {
 
   // Re-focus menu search input after render (keeps cursor active while typing)
   if (
-    (currentPage === "menu" || currentPage === "menu-alt") &&
+    (currentPage === "menu") &&
     mockupState.menuSearchOpen
   ) {
     const searchInput = document.getElementById("menu-search-input");
@@ -8765,7 +8745,7 @@ function _renderPillGroup(group, sels) {
       const safeName = name.replace(/'/g, "\\'");
       const priceTag = p.price > 0 ? ` +$${p.price.toFixed(2)}` : "";
       return `<button
-            onclick="window._selectSubItem(${gid}, ${p.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${p.price || 0}, true)"
+            onclick="window._selectSubItem('${gid}', '${p.menuSubItemId}', ${sub.itemTypeId || 2}, '${safeName}', ${p.price || 0}, true)"
             class="shrink-0 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wide transition-all active:scale-95 whitespace-nowrap
                    ${
                      isSelected
@@ -8932,7 +8912,7 @@ function _renderSubMenuChoiceSection(choices, sels) {
           const safeName = name.replace(/'/g, "\\'");
           const priceTag = price > 0 ? ` +$${price.toFixed(2)}` : "";
           return `<button
-                onclick="window._selectSubItem('${gid}', ${sub.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, true)"
+                onclick="window._selectSubItem('${gid}', '${sub.menuSubItemId}', ${sub.itemTypeId || 2}, '${safeName}', ${price}, true)"
                 class="shrink-0 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wide transition-all active:scale-95 whitespace-nowrap
                        ${
                          isSelected
@@ -9274,12 +9254,17 @@ function selectItemAndNavigate(index) {
       for (const g of detail.menuSubItemGroups) {
         const groupId = g.menuSubItemGroupId;
         const maxSel = g.maxSelect || 1;
+        const groupNameStr = (g.displayName || g.groupName || "").toLowerCase();
+        const isIceOrSugar = groupNameStr.includes("ice") || groupNameStr.includes("sugar") || groupNameStr.includes("sweet");
+        
         selections[groupId] = {
           groupName: g.displayName || g.groupName || "",
           maxSelect: maxSel,
           minSelect: g.minSelect || 0,
           items: {},
         };
+        
+        let foundDefault = false;
         for (const p of g.groupPrices || []) {
           if (p.isDefault) {
             selections[groupId].items[p.menuSubItemId] = {
@@ -9290,6 +9275,26 @@ function selectItemAndNavigate(index) {
               name: (p.menuSubItem || {}).name || "",
               price: p.price || 0,
             };
+            foundDefault = true;
+          }
+        }
+        
+        // Fallback: If it's Ice/Sugar and no default was set, auto-select "100" or "Regular"
+        if (!foundDefault && isIceOrSugar) {
+          const fallbackMatch = (g.groupPrices || []).find(p => {
+             const subName = ((p.menuSubItem || {}).name || "").toLowerCase();
+             return subName.includes("100") || subName.includes("regular");
+          });
+          
+          if (fallbackMatch) {
+            selections[groupId].items[fallbackMatch.menuSubItemId] = {
+              menuSubItemId: fallbackMatch.menuSubItemId,
+              itemTypeId: (fallbackMatch.menuSubItem || {}).itemTypeId || 2,
+              itemGroupPriceId: parseInt(groupId),
+              quantity: 1,
+              name: (fallbackMatch.menuSubItem || {}).name || "",
+              price: fallbackMatch.price || 0,
+            };
           }
         }
       }
@@ -9299,8 +9304,7 @@ function selectItemAndNavigate(index) {
 
   // Fetch full item detail (with sub-item groups) from API
   if (item.id && mockupState.selectedLocationId && window.ApiService) {
-    mockupState.isLoading = true;
-    renderPage();
+    // Menu item details load silently in background
     window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
       .then((detail) => {
         // If the detail is empty or has no customization groups, use default mock groups
@@ -9361,7 +9365,6 @@ function selectItemAndNavigate(index) {
         persistAllState();
       })
       .finally(() => {
-        mockupState.isLoading = false;
         renderPage();
         navigateTo(window._targetCustomizePage || "customize");
         window._targetCustomizePage = null;
@@ -9404,6 +9407,9 @@ window._selectSubItem = function (
   price,
   isSingleSelect,
 ) {
+  if (typeof subItemId === 'string' && /^\d+$/.test(subItemId)) {
+    subItemId = parseInt(subItemId, 10);
+  }
   if (!mockupState._customizeSubItems) mockupState._customizeSubItems = {};
   if (!mockupState._customizeSubItems[groupId]) {
     mockupState._customizeSubItems[groupId] = { items: {} };
@@ -9586,6 +9592,90 @@ window._addToCart = function () {
   navigateTo("cart");
 };
 
+window.editCartItemAndNavigate = function (index) {
+  const cartItem = mockupState.cart[index];
+  if (!cartItem) return;
+
+  const item = {
+    id: cartItem.menuItemId,
+    name: cartItem.name,
+    price: cartItem.basePrice,
+    image: cartItem.image,
+  };
+  mockupState.selectedItem = item;
+  mockupState.itemQuantity = cartItem.quantity || 1;
+  
+  // Need to set special instruction directly to DOM if customize page is active,
+  // but it's easier to store it in state and have customize page read it on load.
+  // Actually, customize page reads from mockupState.selectedItemDetail, but special instruction
+  // is just a textarea. So we'll store it on mockupState and customize can load it.
+  mockupState._specialInstruction = cartItem.specialInstruction || "";
+  mockupState.lastMenuPage = currentPage;
+
+  // Convert selectedSubItems back into _customizeSubItems and _customizeModifyTypes
+  const sels = {};
+  const modSels = {};
+  for (const s of cartItem.selectedSubItems || []) {
+    if (s.modifyType) {
+      modSels[s.menuSubItemId] = { modifyType: s.modifyType, price: s.price };
+    } else {
+      const groupId = s.itemGroupPriceId;
+      if (!sels[groupId]) {
+        sels[groupId] = { groupName: s.groupName || "", items: {} };
+      }
+      sels[groupId].items[s.menuSubItemId] = {
+        menuSubItemId: s.menuSubItemId,
+        itemTypeId: s.itemTypeId,
+        itemGroupPriceId: s.itemGroupPriceId,
+        quantity: s.quantity,
+        name: s.name,
+        price: s.price,
+      };
+    }
+  }
+
+  mockupState._customizeSubItems = sels;
+  mockupState._customizeModifyTypes = modSels;
+  mockupState.selectedItemDetail = null;
+
+  // Remove the item from cart so adding it back doesn't duplicate
+  mockupState.cart.splice(index, 1);
+  mockupState.cartItemCount = mockupState.cart.reduce((sum, i) => sum + i.quantity, 0);
+  persistAllState();
+
+  if (item.id && mockupState.selectedLocationId && window.ApiService) {
+    window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
+      .then((detail) => {
+        if (!detail || !detail.menuSubItemGroups || detail.menuSubItemGroups.length === 0) {
+          detail = {
+            menuItemId: item.id,
+            name: item.name,
+            price: item.price,
+            menuSubItemGroups: [],
+            _isFallback: true,
+          };
+        } else {
+          detail.menuSubItemGroups.forEach((g) => {
+            if (g.groupPrices) {
+              g.groupPrices = g.groupPrices.filter(
+                (p) => !p.menuSubItem || p.menuSubItem.isActive !== false,
+              );
+            }
+          });
+        }
+        mockupState.selectedItemDetail = detail;
+        persistAllState();
+        navigateTo("customize");
+      })
+      .catch((err) => {
+        persistAllState();
+        navigateTo("customize");
+      });
+  } else {
+    navigateTo("customize");
+  }
+};
+
 // Update cart item quantity (0 = remove)
 window._updateCartQty = function (index, newQty) {
   if (!mockupState.cart) return;
@@ -9694,6 +9784,7 @@ window._handlePlaceOrder = async function () {
     orderType: mockupState.fulfillmentMode || "In-store",
     locationId: mockupState.selectedLocationId || 7,
     restaurantId: mockupState.selectedRestaurantId || 7,
+    platformId: 1,
     tipAmount: parseFloat(tipAmount.toFixed(2)),
     pickUpTime:
       mockupState.orderTime === "Later" ? new Date().toISOString() : null,
@@ -10263,7 +10354,7 @@ async function handleChangePassword() {
   try {
     if (!window.ApiService) throw new Error("API Service not loaded");
 
-    await window.ApiService.changePassword(currentPwd, newPwd);
+    await window.ApiService.changePassword(currentPwd, newPwd, confirmPwd);
 
     mockupState.modalOpen = null;
     persistAllState();
@@ -10276,6 +10367,21 @@ async function handleChangePassword() {
           ? err.data.message
           : err.message || "Password update failed.";
       errorEl.style.opacity = "1";
+    }
+    const logEl = document.getElementById("pwd-error-log");
+    if (logEl) {
+      logEl.style.display = "block";
+      try {
+        const errorDetails = {
+          message: err.message,
+          data: err.data,
+          status: err.status || (err.response && err.response.status),
+          stack: err.stack
+        };
+        logEl.textContent = "Error Details:\n" + JSON.stringify(errorDetails, null, 2);
+      } catch (e) {
+        logEl.textContent = "Error Details:\n" + String(err);
+      }
     }
   }
 }
@@ -10570,7 +10676,7 @@ function removeFavorite(id) {
   renderPage();
 }
 
-function selectLocation(
+async function selectLocation(
   locationId,
   locationName,
   locationAddress,
@@ -10585,22 +10691,22 @@ function selectLocation(
   if (mockupState.selectedLocationId !== locationId) {
     mockupState.cart = [];
     mockupState.cartItemCount = 0;
+    mockupState.selectedRestaurantId = null; // Clear restaurant ID so it fetches the correct one for this location
+    mockupState.apiCategories = [];
+    mockupState.apiMenuItems = [];
+    
+    if (locationId) {
+      await fetchMenuAndItems(locationId);
+    }
   }
 
   mockupState.selectedLocation = locationName;
   mockupState.selectedLocationId = locationId || null;
-  mockupState.selectedRestaurantId = null; // Clear restaurant ID so it fetches the correct one for this location
   if (locationAddress) mockupState.selectedAddress = locationAddress;
   if (locationDistance) mockupState.selectedDistance = locationDistance;
   mockupState.orderTime = "ASAP";
 
-  mockupState.apiCategories = [];
-  mockupState.apiMenuItems = [];
   persistAllState();
-
-  if (locationId) {
-    fetchMenuAndItems(locationId);
-  }
 
   navigateTo("order-details");
 }
@@ -10846,9 +10952,9 @@ function navigateTo(pageId) {
   persistAllState();
   let [basePageId, hash] = pageId.split("#");
 
-  // Automatically select Castro Valley store for menu-alt if no location is selected
+  // Automatically select Castro Valley store for menu if no location is selected
   if (
-    (basePageId === "menu-alt" || basePageId === "customize-alt") &&
+    (basePageId === "menu" || basePageId === "customize-alt") &&
     !mockupState.selectedLocationId
   ) {
     mockupState.selectedLocation = "i-Tea - CASTRO VALLEY";
@@ -10865,13 +10971,13 @@ function navigateTo(pageId) {
   // Redirect to location selector if accessing menu or customization without a selected store
   if (
     (basePageId === "menu" ||
-      basePageId === "menu-alt" ||
+      basePageId === "menu" ||
       basePageId === "customize" ||
       basePageId === "customize-alt") &&
     !mockupState.selectedLocationId
   ) {
     basePageId =
-      basePageId === "menu-alt" || basePageId === "customize-alt"
+      basePageId === "menu" || basePageId === "customize-alt"
         ? "locations-alt"
         : "locations";
     hash = "";
@@ -10890,7 +10996,18 @@ function navigateTo(pageId) {
   if (protectedPages.includes(basePageId)) {
     const token = window.ApiService && window.ApiService.getToken();
     if (!token) {
+      window.isNavigatingAway = true;
       window.location.href = PAGE_FILE_MAP["sign-in"] || "sign-in.html";
+      return;
+    }
+  }
+
+  const authRedirectPages = ["registration", "sign-in"];
+  if (authRedirectPages.includes(basePageId)) {
+    const token = window.ApiService && window.ApiService.getToken();
+    if (token) {
+      window.isNavigatingAway = true;
+      window.location.href = PAGE_FILE_MAP["profile"] || "profile.html";
       return;
     }
   }
@@ -10909,9 +11026,10 @@ function navigateTo(pageId) {
   }
   const nextFile = PAGE_FILE_MAP[basePageId] || `${basePageId}.html`;
   let targetUrl = hash ? `${nextFile}#${hash}` : nextFile;
-  if (basePageId === "menu-alt") {
-    targetUrl = `menu-alt.html?store=7${hash ? `#${hash}` : ""}`;
+  if (basePageId === "menu") {
+    targetUrl = `menu.html?store=7${hash ? `#${hash}` : ""}`;
   }
+  window.isNavigatingAway = true;
   window.location.href = targetUrl;
 }
 
@@ -10930,10 +11048,10 @@ window.addEventListener("DOMContentLoaded", () => {
     mockupState.apiMenuItems = [];
     persistAllState();
   } else if (
-    (currentPage === "menu-alt" || currentPage === "customize-alt") &&
+    (currentPage === "menu" || currentPage === "customize-alt") &&
     !mockupState.selectedLocationId
   ) {
-    // Fallback default for menu-alt page if no store is selected at all
+    // Fallback default for menu page if no store is selected at all
     mockupState.selectedLocation = "i-Tea - CASTRO VALLEY";
     mockupState.selectedLocationId = 7;
     mockupState.selectedRestaurantId = 7;
@@ -10948,13 +11066,13 @@ window.addEventListener("DOMContentLoaded", () => {
   // Redirect to location selector if landing directly on menu or customization without a selected store
   if (
     (currentPage === "menu" ||
-      currentPage === "menu-alt" ||
+      currentPage === "menu" ||
       currentPage === "customize" ||
       currentPage === "customize-alt") &&
     !mockupState.selectedLocationId
   ) {
     const targetLocationsPage =
-      currentPage === "menu-alt" || currentPage === "customize-alt"
+      currentPage === "menu" || currentPage === "customize-alt"
         ? "locations-alt.html"
         : "locations.html";
     window.location.href = targetLocationsPage;
@@ -10975,6 +11093,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (protectedPages.includes(currentPage) && !token) {
     window.location.href = "sign-in.html";
+    return;
+  }
+
+  const authRedirectPages = ["registration", "sign-in"];
+  if (authRedirectPages.includes(currentPage) && token) {
+    window.location.href = "profile.html";
     return;
   }
 
@@ -11211,10 +11335,11 @@ window.addEventListener(
 // =============================================================================
 
 function _alt2ModSectionHeader(label, subtitle, iconClass, onClickAction = "") {
+  const iconHtml = iconClass.startsWith('<') ? iconClass : `<i class="${iconClass} text-[#623696] text-xl"></i>`;
   return `
     <div class="flex items-center gap-4 mb-2 ${onClickAction ? 'cursor-pointer group' : ''}" ${onClickAction ? `onclick="${onClickAction}"` : ''}>
         <div class="w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
-            <i class="${iconClass} text-[#623696] text-xl"></i>
+            ${iconHtml}
         </div>
         <div class="flex-1 flex flex-col justify-center">
             <div class="flex items-center gap-2">
@@ -11273,7 +11398,7 @@ function _alt2RenderSegmentedControl(group, sels) {
     const selectArg = isChoice ? `'${queryGid}'` : gid;
     
     return `<button
-        onclick="window._selectSubItem(${selectArg}, ${sub.menuSubItemId}, ${sub.itemTypeId || 2}, '${safeName}', ${price}, true)"
+        onclick="window._selectSubItem(${selectArg}, '${sub.menuSubItemId}', ${sub.itemTypeId || 2}, '${safeName}', ${price}, true)"
         class="flex-1 py-2 text-[11px] md:text-xs font-bold transition-all border-r border-violet-100 last:border-r-0 whitespace-nowrap px-2
                ${isSelected ? "bg-[#623696] text-white" : "bg-violet-50/50 text-[#623696] hover:bg-violet-100"}">
         ${name}${priceTag}
@@ -11470,7 +11595,7 @@ function renderAllModifierSectionsAlt2(detail, sels, modSels, colLayout) {
       const name = (g.displayName || g.groupName || "").toLowerCase();
       if (name.includes('sugar') || name.includes('sweet')) icon = 'fa-solid fa-spoon';
       else if (name.includes('ice')) icon = 'fa-solid fa-cube';
-      else if (name.includes('cup')) icon = 'fa-solid fa-mug-hot';
+      else if (name.includes('cup')) icon = _groupIcon('cup').replace('w-4 h-4', 'text-[#623696] w-6 h-6');
       else if (name.includes('size')) icon = 'fa-solid fa-maximize';
       
       html += `<div class="py-2">
@@ -11495,7 +11620,7 @@ function renderAllModifierSectionsAlt2(detail, sels, modSels, colLayout) {
       const hasInstructions = !!mockupState._specialInstruction;
       const subtitle = hasInstructions ? "Instructions added" : "No special instructions";
       html += `<div class="py-2">
-        ${_alt2ModSectionHeader('SPECIAL INSTRUCTIONS', subtitle, 'fa-solid fa-pen')}
+        ${_alt2ModSectionHeader('SPECIAL INSTRUCTIONS <span class="text-[9px] text-gray-400 ml-2 font-medium normal-case tracking-normal">(Max 250 characters)</span>', subtitle, 'fa-solid fa-pen')}
         <div class="ml-16 mb-2">
             <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ""}</textarea>
         </div>

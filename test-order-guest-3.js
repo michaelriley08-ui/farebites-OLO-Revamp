@@ -3,12 +3,11 @@ async function test() {
         orderType: "In-store",
         locationId: 7,
         restaurantId: 7,
-        platformId: 1,
         tipAmount: 0,
         pickUpTime: null,
         isCustomTime: false,
         tableNum: null,
-        isGuestUser: false,
+        isGuestUser: true,
         guestFirstName: "Guest",
         guestLastName: "User",
         guestPhoneNumber: "0000000000",
@@ -16,12 +15,11 @@ async function test() {
         items: []
     };
     
-    const res = await fetch('https://olowebapidev2.azurewebsites.net/api/CustomerOrder?PlatformId=1', {
+    const res = await fetch('https://olowebapidev2.azurewebsites.net/api/CustomerOrder/guest', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'PlatformId': '1'
+            'Accept': 'application/json'
         },
         body: JSON.stringify(body)
     });
