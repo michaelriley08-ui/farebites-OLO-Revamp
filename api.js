@@ -114,8 +114,8 @@ const ApiService = {
         return await this.request('/api/Account/profile', 'PUT', profileData);
     },
 
-    async changePassword(oldPassword, newPassword) {
-        return await this.request('/api/Account/change-password', 'POST', { oldPassword, newPassword });
+    async changePassword(currentPassword, newPassword, confirmPassword) {
+        return await this.request('/api/Account/change-password', 'POST', { currentPassword, newPassword, confirmPassword });
     },
 
     async deleteAccount(customerId) {

@@ -8,20 +8,25 @@ async function test() {
         pickUpTime: null,
         isCustomTime: false,
         tableNum: null,
-        isGuestUser: false,
+        isGuestUser: true,
         guestFirstName: "Guest",
         guestLastName: "User",
         guestPhoneNumber: "0000000000",
         guestEmailAddress: "guest@farebites.com",
-        items: []
+        items: [{
+            menuItemId: 1,
+            quantity: 1,
+            specialInstruction: null,
+            subItems: [],
+            subMenuChoices: []
+        }]
     };
     
-    const res = await fetch('https://olowebapidev2.azurewebsites.net/api/CustomerOrder?PlatformId=1', {
+    const res = await fetch('https://olowebapidev2.azurewebsites.net/api/CustomerOrder/guest', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'PlatformId': '1'
+            'Accept': 'application/json'
         },
         body: JSON.stringify(body)
     });
