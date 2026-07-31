@@ -5122,9 +5122,7 @@ const routes = {
           (groupItems[sid].price || 0) * (groupItems[sid].quantity || 1);
       }
     }
-    for (const sid in modSels) {
-      extrasTotal += modSels[sid]?.price || 0;
-    }
+    extrasTotal += _calculateModifyPricesTotal(detail, modSels);
     const totalPrice = (
       (basePrice + extrasTotal) *
       mockupState.itemQuantity
@@ -5323,9 +5321,7 @@ const routes = {
           (groupItems[sid].price || 0) * (groupItems[sid].quantity || 1);
       }
     }
-    for (const sid in modSels) {
-      extrasTotal += modSels[sid]?.price || 0;
-    }
+    extrasTotal += _calculateModifyPricesTotal(detail, modSels);
     const totalPrice = (
       (basePrice + extrasTotal) *
       mockupState.itemQuantity
@@ -9613,55 +9609,426 @@ function _renderStepperGroup(group, sels) {
 }
 
 /**
- * Four-button modify-type row: None | Less | Regular | Extra.
- * Used for included ingredients that can be adjusted (milk, syrup, etc.).
- * NOTE: modifyType string values ('add','extra','less','no') — confirm with API developer if order fails.
+ * Helper: returns comma-separated string of default ingredients (isDefaultItem === true).
  */
-function _renderModifyTypeSection(modifyPrices, modSels) {
+function _getDefaultItemList(modifyPrices) {
   if (!modifyPrices || modifyPrices.length === 0) return "";
-  const rows = modifyPrices
+  const defaults = modifyPrices
+    .filter((m) => m.isDefaultItem)
+    .map((m) => m.menuSubItem?.name || m.name || `Item ${m.menuSubItemId}`);
+  return defaults.length > 0 ? defaults.join(", ") : "None";
+}
+
+/**
+ * Helper: calculates price delta for MenuSubItemModifyPrices selections,
+ * factoring in free allowances (includedSubItemsBeforeCharges).
+ */
+function _calculateModifyPricesTotal(detail, modSels) {
+  if (!detail || !modSels) return 0;
+  const freeAllowance = detail.includedSubItemsBeforeCharges ?? 0;
+  let remFree = freeAllowance;
+  let total = 0;
+
+  const removeId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "no",
+  );
+  const subId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "sub",
+  );
+
+  if (removeId && modSels[removeId]) {
+    total += modSels[removeId].price || 0;
+  }
+
+  if (subId && modSels[subId]) {
+    const subObj = modSels[subId];
+    if (remFree > 0) {
+      remFree--;
+    } else {
+      total += subObj.price || 0;
+    }
+  }
+
+  return total;
+}
+
+/**
+ * Helper: generates summary HTML for the Modify Options tile.
+ */
+function _getModifySummaryHTML(detail, modSels) {
+  const modifyPrices = detail?.menuSubItemModifyPrices || [];
+  const defaultText = _getDefaultItemList(modifyPrices);
+
+  const removeId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "no",
+  );
+  const subId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "sub",
+  );
+
+  if (!removeId) {
+    return `<span class="text-gray-700 font-bold text-sm leading-relaxed">${defaultText}</span>`;
+  }
+
+  const removeObj = modSels[removeId];
+  const subObj = subId ? modSels[subId] : null;
+
+  let modTag = `<span class="text-rose-600 font-black">${removeObj.name}</span>`;
+  if (subObj) {
+    modTag += `, <span class="text-violet-600 font-black">${subObj.name}</span>`;
+  }
+
+  return `<div class="flex flex-col gap-0.5">
+    <span class="text-gray-400 text-xs line-through font-semibold">${defaultText}</span>
+    <span class="text-sm font-bold">${modTag}</span>
+  </div>`;
+}
+
+// Global modal open/close functions
+window._openModifyModal = function () {
+  mockupState._isModifyModalOpen = true;
+  const modal = document.getElementById("modifyOptionsModal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+};
+
+window._closeModifyModal = function () {
+  mockupState._isModifyModalOpen = false;
+  const modal = document.getElementById("modifyOptionsModal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+  document.body.style.overflow = "";
+  updateMockupState("_lastUpdated", Date.now());
+};
+
+window._toggleModifyRemove = function (menuSubItemId) {
+  if (!mockupState._customizeModifyTypes)
+    mockupState._customizeModifyTypes = {};
+  const modSels = mockupState._customizeModifyTypes;
+
+  const currentRemoveId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "no",
+  );
+
+  if (String(currentRemoveId) === String(menuSubItemId)) {
+    delete modSels[menuSubItemId];
+    const currentSubId = Object.keys(modSels).find(
+      (id) => modSels[id]?.modifyType === "sub",
+    );
+    if (currentSubId) delete modSels[currentSubId];
+  } else {
+    if (currentRemoveId) delete modSels[currentRemoveId];
+    const currentSubId = Object.keys(modSels).find(
+      (id) => modSels[id]?.modifyType === "sub",
+    );
+    if (currentSubId) delete modSels[currentSubId];
+
+    const detail = mockupState.selectedItemDetail;
+    const mp = (detail?.menuSubItemModifyPrices || []).find(
+      (m) => String(m.menuSubItemId) === String(menuSubItemId),
+    );
+    const name = mp?.menuSubItem?.name || mp?.name || `Item ${menuSubItemId}`;
+    modSels[menuSubItemId] = {
+      modifyType: "no",
+      price: mp?.noPrice || 0,
+      name: `No ${name}`,
+    };
+  }
+
+  _updateModifyModalDOM();
+};
+
+window._toggleModifySub = function (menuSubItemId) {
+  if (!mockupState._customizeModifyTypes)
+    mockupState._customizeModifyTypes = {};
+  const modSels = mockupState._customizeModifyTypes;
+
+  const currentRemoveId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "no",
+  );
+  if (!currentRemoveId) return;
+
+  const currentSubId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "sub",
+  );
+
+  if (String(currentSubId) === String(menuSubItemId)) {
+    delete modSels[menuSubItemId];
+  } else {
+    if (currentSubId) delete modSels[currentSubId];
+
+    const detail = mockupState.selectedItemDetail;
+    const mp = (detail?.menuSubItemModifyPrices || []).find(
+      (m) => String(m.menuSubItemId) === String(menuSubItemId),
+    );
+    const name = mp?.menuSubItem?.name || mp?.name || `Item ${menuSubItemId}`;
+    modSels[menuSubItemId] = {
+      modifyType: "sub",
+      price: mp?.addPrice || 0,
+      name: `Sub ${name}`,
+    };
+  }
+
+  _updateModifyModalDOM();
+};
+
+function _updateModifyModalDOM() {
+  const detail = mockupState.selectedItemDetail;
+  if (!detail || !detail.menuSubItemModifyPrices) return;
+  const modSels = mockupState._customizeModifyTypes || {};
+
+  const removeId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "no",
+  );
+  const subId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "sub",
+  );
+
+  (detail.menuSubItemModifyPrices || []).forEach((mp) => {
+    if (!mp.isDefaultItem) return;
+    const isChecked = String(mp.menuSubItemId) === String(removeId);
+    const el = document.getElementById(
+      `modify-remove-chk-${mp.menuSubItemId}`,
+    );
+    const box = document.getElementById(
+      `modify-remove-box-${mp.menuSubItemId}`,
+    );
+    if (el) el.checked = isChecked;
+    if (box) {
+      if (isChecked) {
+        box.classList.add("border-violet-600", "bg-violet-50/50");
+        box.classList.remove("border-gray-200", "bg-white");
+      } else {
+        box.classList.remove("border-violet-600", "bg-violet-50/50");
+        box.classList.add("border-gray-200", "bg-white");
+      }
+    }
+  });
+
+  const subDiv = document.getElementById("modifySubDiv");
+  if (subDiv) {
+    if (removeId) {
+      subDiv.style.display = "block";
+      subDiv.setAttribute("data-maxselect", "1");
+    } else {
+      subDiv.style.display = "none";
+      subDiv.setAttribute("data-maxselect", "0");
+    }
+  }
+
+  (detail.menuSubItemModifyPrices || []).forEach((mp) => {
+    const isChecked = String(mp.menuSubItemId) === String(subId);
+    const el = document.getElementById(`modify-sub-chk-${mp.menuSubItemId}`);
+    const box = document.getElementById(`modify-sub-box-${mp.menuSubItemId}`);
+    if (el) el.checked = isChecked;
+    if (box) {
+      if (isChecked) {
+        box.classList.add("border-violet-600", "bg-violet-50/50");
+        box.classList.remove("border-gray-200", "bg-white");
+      } else {
+        box.classList.remove("border-violet-600", "bg-violet-50/50");
+        box.classList.add("border-gray-200", "bg-white");
+      }
+    }
+  });
+
+  const freeAllowance = detail.includedSubItemsBeforeCharges ?? 0;
+  let remFree = freeAllowance;
+  let chargeCount = 0;
+
+  if (subId) {
+    if (remFree > 0) remFree--;
+    else chargeCount++;
+  }
+
+  const hdfNoChrge = document.querySelector('input[name="hdfNoChrge"]');
+  const hdfRemNoChrge = document.querySelector('input[name="hdfRemNoChrge"]');
+  const hdfChrgeCount = document.querySelector('input[name="hdfChrgeCount"]');
+  if (hdfNoChrge) hdfNoChrge.value = freeAllowance;
+  if (hdfRemNoChrge) hdfRemNoChrge.value = remFree;
+  if (hdfChrgeCount) hdfChrgeCount.value = chargeCount;
+
+  const tileSummaryEl = document.getElementById("modifyTileSummary");
+  if (tileSummaryEl) {
+    tileSummaryEl.innerHTML = _getModifySummaryHTML(detail, modSels);
+  }
+}
+
+/**
+ * MenuSubItemModifyPrices Tile & Modal renderer according to API spec:
+ * Step 1: Tile with DefaultItemList() and Choose button
+ * Step 2: Modal with Section 1 (Remove default) and Section 2 (Substitute item)
+ */
+function _renderModifyTypeSection(modifyPrices, modSels, detail) {
+  if (!modifyPrices || modifyPrices.length === 0) return "";
+
+  const removeList = modifyPrices.filter((m) => m.isDefaultItem);
+  const subList = [...modifyPrices].sort((a, b) => {
+    const nameA = (a.menuSubItem?.name || a.name || "").toLowerCase();
+    const nameB = (b.menuSubItem?.name || b.name || "").toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+
+  const removeId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "no",
+  );
+  const subId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "sub",
+  );
+
+  const freeAllowance = detail?.includedSubItemsBeforeCharges ?? 0;
+  let remFree = freeAllowance;
+  let chargeCount = 0;
+  if (subId) {
+    if (remFree > 0) remFree--;
+    else chargeCount++;
+  }
+
+  const summaryHTML = _getModifySummaryHTML(detail, modSels);
+
+  const tileHTML = `
+    <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 modifyParent0" id="modifyParent0">
+        <div class="flex flex-col gap-1 min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Modify Options</span>
+                <span class="text-[10px] font-extrabold bg-violet-50 text-violet-600 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Defaults & Subs</span>
+            </div>
+            <div class="modify0" id="modify0">
+                <div id="modifyTileSummary">${summaryHTML}</div>
+            </div>
+        </div>
+        <button type="button" onclick="window._openModifyModal()" 
+            class="px-6 py-2.5 rounded-full border border-violet-200 bg-violet-50 text-violet-600 font-black text-xs uppercase tracking-wider hover:bg-violet-600 hover:text-white active:scale-95 transition-all shadow-sm shrink-0">
+            Choose
+        </button>
+    </div>
+  `;
+
+  const removeItemsHTML = removeList
+    .map((mp, idx) => {
+      const sub = mp.menuSubItem || {};
+      const name = sub.name || mp.name || `Item ${mp.menuSubItemId}`;
+      const itemName = `No ${name}`;
+      const price = mp.noPrice || 0;
+      const isChecked = String(mp.menuSubItemId) === String(removeId);
+      const priceTag =
+        price > 0
+          ? ` (+$${price.toFixed(2)})`
+          : price < 0
+            ? ` (-$${Math.abs(price).toFixed(2)})`
+            : "";
+
+      return `
+      <label id="modify-remove-box-${mp.menuSubItemId}" 
+             class="modifyItem modifyRemove flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? "border-violet-600 bg-violet-50/50 shadow-sm" : "border-gray-200 bg-white hover:border-violet-300"}"
+             data-name="${itemName}" data-price="${price}" data-modify="No" data-index="${idx}">
+          <div class="flex items-center gap-3">
+              <input type="checkbox" id="modify-remove-chk-${mp.menuSubItemId}" 
+                     class="w-4 h-4 text-violet-600 rounded border-gray-300 focus:ring-violet-500" 
+                     ${isChecked ? "checked" : ""} 
+                     onchange="window._toggleModifyRemove(${mp.menuSubItemId})">
+              <span class="text-sm font-bold text-gray-800">${itemName}${priceTag}</span>
+          </div>
+          <span class="text-[10px] font-extrabold uppercase text-gray-400">Default Ingredient</span>
+      </label>
+    `;
+    })
+    .join("");
+
+  const subItemsHTML = subList
     .map((mp) => {
       const sub = mp.menuSubItem || {};
-      const name = sub.name || `Item ${mp.menuSubItemId}`;
-      const currentType = modSels[mp.menuSubItemId]?.modifyType || "add"; // Default = Regular (add)
-      const options = [
-        { key: "no", label: "None", price: mp.noPrice || 0 },
-        { key: "less", label: "Less", price: mp.lessPrice || 0 },
-        { key: "add", label: "Regular", price: mp.addPrice || 0 },
-        { key: "extra", label: "Extra", price: mp.extraPrice || 0 },
-      ];
-      const btns = options
-        .map((opt) => {
-          const isActive = currentType === opt.key;
-          const priceTag =
-            opt.price > 0
-              ? ` +$${opt.price.toFixed(2)}`
-              : opt.price < 0
-                ? ` -$${Math.abs(opt.price).toFixed(2)}`
-                : "";
-          return `<button
-                onclick="window._selectModifyType(${mp.menuSubItemId}, '${opt.key}', ${opt.price})"
-                class="flex-1 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wide transition-all active:scale-95
-                       ${
-                         isActive
-                           ? "bg-white text-violet-600 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
-                           : "text-gray-500 hover:text-gray-900"
-                       }">
-                ${opt.label}${priceTag}
-            </button>`;
-        })
-        .join("");
+      const name = sub.name || mp.name || `Item ${mp.menuSubItemId}`;
+      const itemName = `Sub ${name}`;
+      const price = mp.addPrice || 0;
+      const isChecked = String(mp.menuSubItemId) === String(subId);
+      const priceTag = price > 0 ? ` (+$${price.toFixed(2)})` : " (Free)";
+
       return `
-        <div class="flex flex-col gap-2">
-            <div class="flex justify-between items-baseline">
-                <span class="text-sm font-black text-gray-800 uppercase tracking-tight">${name}</span>
-                <span class="text-[10px] font-bold text-gray-400 uppercase">Included</span>
-            </div>
-            <div class="flex bg-gray-100 p-1 rounded-full w-full">${btns}</div>
-        </div>`;
+      <label id="modify-sub-box-${mp.menuSubItemId}" 
+             class="modifyItem modifySub flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? "border-violet-600 bg-violet-50/50 shadow-sm" : "border-gray-200 bg-white hover:border-violet-300"}"
+             data-name="${itemName}" data-price="${price}" data-modify="Sub">
+          <div class="flex items-center gap-3">
+              <input type="checkbox" id="modify-sub-chk-${mp.menuSubItemId}" 
+                     class="w-4 h-4 text-violet-600 rounded border-gray-300 focus:ring-violet-500" 
+                     ${isChecked ? "checked" : ""} 
+                     onchange="window._toggleModifySub(${mp.menuSubItemId})">
+              <span class="text-sm font-bold text-gray-800">${itemName}${priceTag}</span>
+          </div>
+          <span class="text-[10px] font-extrabold uppercase ${mp.isDefaultItem ? "text-gray-400" : "text-violet-500"}">${mp.isDefaultItem ? "Default" : "Option"}</span>
+      </label>
+    `;
     })
-    .join('<div class="border-b border-gray-50 my-3"></div>');
-  return rows;
+    .join("");
+
+  const hasRemove = !!removeId;
+  const isModalOpen = !!mockupState._isModifyModalOpen;
+
+  const modalHTML = `
+    <div id="modifyOptionsModal" class="modifyModal0 fixed inset-0 z-[10000] ${isModalOpen ? "" : "hidden"} flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]" onclick="if (event.target === this) window._closeModifyModal();">
+        <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-gray-100">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
+                <div>
+                    <h3 class="text-lg font-black text-gray-900 uppercase tracking-tight">Modify Options</h3>
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mt-0.5">Remove default ingredients or select substitutes</p>
+                </div>
+                <button type="button" onclick="window._closeModifyModal()" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900 flex items-center justify-center transition-all active:scale-95">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content (Scrollable) -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-6">
+                
+                <!-- Section 1: Remove (Always Visible) -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Section 1 — Remove Ingredients</span>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Max 1 Removal</span>
+                    </div>
+                    <div class="space-y-2.5">
+                        ${removeItemsHTML || '<div class="text-xs text-gray-400 italic p-3">No default items to remove</div>'}
+                    </div>
+                </div>
+
+                <!-- Section 2: Substitute (Hidden by default) -->
+                <div id="modifySubDiv" data-maxselect="${hasRemove ? 1 : 0}" style="display: ${hasRemove ? "block" : "none"};" class="border-t border-gray-100 pt-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-black text-violet-600 uppercase tracking-widest">Section 2 — Choose Substitute</span>
+                        <span class="text-[10px] font-bold text-violet-500 uppercase">1 Substitute Allowed</span>
+                    </div>
+                    <div class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                        ${subItemsHTML}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between shrink-0">
+                <input type="hidden" name="hdfNoChrge" value="${freeAllowance}" />
+                <input type="hidden" name="hdfRemNoChrge" value="${remFree}" />
+                <input type="hidden" name="hdfChrgeCount" value="${chargeCount}" />
+
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Selected Modifications</span>
+                    <span class="text-xs font-bold text-gray-700">${hasRemove ? "Substitution Active" : "No changes"}</span>
+                </div>
+
+                <button type="button" data-dismiss="modal" onclick="window._closeModifyModal()" 
+                    class="px-8 py-3 bg-violet-600 text-white font-black text-xs uppercase tracking-wider rounded-full shadow-lg hover:bg-violet-700 active:scale-95 transition-all">
+                    DONE
+                </button>
+        </div>
+    </div>
+  `;
+
+  return tileHTML + modalHTML;
 }
 
 /**
@@ -9823,8 +10190,7 @@ function renderAllModifierSections(detail, sels, modSels, colLayout) {
   );
   if (modifyPrices.length > 0) {
     html += `<div>
-            ${_modSectionHeader("Included Options", false, "⚙️")}
-            <div class="space-y-4">${_renderModifyTypeSection(modifyPrices, modSels)}</div>
+            ${_renderModifyTypeSection(modifyPrices, modSels, detail)}
         </div>`;
   }
 
@@ -9915,6 +10281,55 @@ function _groupIcon(name) {
     svgBase +
     `<path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg>`
   );
+}
+
+function getDefaultModifyPrices() {
+  return [
+    {
+      menuSubItemModifyPriceId: 101,
+      menuSubItemId: 7001,
+      isDefaultItem: true,
+      addPrice: 0,
+      extraPrice: 0.5,
+      lessPrice: 0,
+      noPrice: 0,
+      isActive: true,
+      menuSubItem: { menuSubItemId: 7001, name: "Boba" },
+    },
+    {
+      menuSubItemModifyPriceId: 102,
+      menuSubItemId: 7002,
+      isDefaultItem: true,
+      addPrice: 0,
+      extraPrice: 0.5,
+      lessPrice: 0,
+      noPrice: 0,
+      isActive: true,
+      menuSubItem: { menuSubItemId: 7002, name: "Pudding" },
+    },
+    {
+      menuSubItemModifyPriceId: 103,
+      menuSubItemId: 7003,
+      isDefaultItem: false,
+      addPrice: 0.5,
+      extraPrice: 0.75,
+      lessPrice: 0,
+      noPrice: 0,
+      isActive: true,
+      menuSubItem: { menuSubItemId: 7003, name: "Lychee Jelly" },
+    },
+    {
+      menuSubItemModifyPriceId: 104,
+      menuSubItemId: 7004,
+      isDefaultItem: false,
+      addPrice: 0.5,
+      extraPrice: 0.75,
+      lessPrice: 0,
+      noPrice: 0,
+      isActive: true,
+      menuSubItem: { menuSubItemId: 7004, name: "Grass Jelly" },
+    },
+  ];
 }
 
 function getDefaultCustomizeGroups() {
@@ -10131,6 +10546,8 @@ function selectItemAndNavigate(index) {
             name: item.name,
             price: item.price,
             menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
+            menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [],
+            includedSubItemsBeforeCharges: 1,
             _isFallback: isDrink,
           };
         } else {
@@ -10170,6 +10587,8 @@ function selectItemAndNavigate(index) {
           name: item.name,
           price: item.price,
           menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
+          menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [],
+          includedSubItemsBeforeCharges: 1,
           _isFallback: isDrink,
         };
         mockupState.selectedItemDetail = fallbackDetail;
@@ -10188,6 +10607,8 @@ function selectItemAndNavigate(index) {
       name: item.name,
       price: item.price,
       menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
+      menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [],
+      includedSubItemsBeforeCharges: 1,
       _isFallback: isDrink,
     };
     mockupState.selectedItemDetail = fallbackDetail;
@@ -10341,23 +10762,42 @@ window._addToCart = function () {
     }
   }
 
-  // --- Collect modify-type items (None/Less/Regular/Extra) ---
-  for (const sid in modSels) {
-    const m = modSels[sid];
-    if (m.modifyType && m.modifyType !== "add") {
-      // Only send non-default modify types to keep payload clean
-      // 'add' (Regular) is the default — omitting it reduces noise
-      selectedSubItems.push({
-        menuSubItemId: parseInt(sid),
-        itemTypeId: 2,
-        itemGroupPriceId: 0,
-        quantity: 1,
-        name: "",
-        price: m.price || 0,
-        groupName: "Included Options",
-        modifyType: m.modifyType,
-      });
-    }
+  // --- Collect modify-type items (Remove/Substitute options) ---
+  const removeId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "no",
+  );
+  const subId = Object.keys(modSels).find(
+    (id) => modSels[id]?.modifyType === "sub",
+  );
+
+  if (removeId && modSels[removeId]) {
+    const mNo = modSels[removeId];
+    selectedSubItems.push({
+      menuSubItemId: parseInt(removeId),
+      itemTypeId: 2,
+      itemGroupPriceId: 0,
+      quantity: 1,
+      name: mNo.name,
+      price: mNo.price || 0,
+      groupName: "Modify Options",
+      modifyType: "no",
+    });
+  }
+
+  if (subId && modSels[subId]) {
+    const mSub = modSels[subId];
+    const freeAllowance = detail?.includedSubItemsBeforeCharges ?? 0;
+    const effectivePrice = freeAllowance > 0 ? 0 : mSub.price || 0;
+    selectedSubItems.push({
+      menuSubItemId: parseInt(subId),
+      itemTypeId: 2,
+      itemGroupPriceId: 0,
+      quantity: 1,
+      name: mSub.name,
+      price: effectivePrice,
+      groupName: "Modify Options",
+      modifyType: "add",
+    });
   }
 
   // Get special instruction from textarea
@@ -10369,10 +10809,6 @@ window._addToCart = function () {
   selectedSubItems.forEach((s) => {
     extrasTotal += (s.price || 0) * (s.quantity || 1);
   });
-  for (const sid in modSels) {
-    if (modSels[sid]?.modifyType !== "add")
-      extrasTotal += modSels[sid]?.price || 0;
-  }
 
   // Build cart item
   const cartItem = {
@@ -10446,8 +10882,28 @@ window.editCartItemAndNavigate = function (index) {
   const sels = {};
   const modSels = {};
   for (const s of cartItem.selectedSubItems || []) {
-    if (s.modifyType) {
-      modSels[s.menuSubItemId] = { modifyType: s.modifyType, price: s.price };
+    if (s.modifyType === "no") {
+      modSels[s.menuSubItemId] = {
+        modifyType: "no",
+        price: s.price,
+        name: s.name,
+      };
+    } else if (
+      s.modifyType === "add" &&
+      (s.groupName === "Modify Options" ||
+        String(s.name).startsWith("Sub "))
+    ) {
+      modSels[s.menuSubItemId] = {
+        modifyType: "sub",
+        price: s.price,
+        name: s.name,
+      };
+    } else if (s.modifyType) {
+      modSels[s.menuSubItemId] = {
+        modifyType: s.modifyType,
+        price: s.price,
+        name: s.name,
+      };
     } else {
       const groupId = s.itemGroupPriceId;
       if (!sels[groupId]) {
@@ -12351,55 +12807,12 @@ function _alt2RenderSegmentedControl(group, sels) {
   `;
 }
 
-function _alt2RenderIncluded(modifyPrices, modSels) {
+function _alt2RenderIncluded(modifyPrices, modSels, detail) {
   if (!modifyPrices || modifyPrices.length === 0) return { count: 0, html: "" };
-  
-  const defaultItems = modifyPrices.filter(mp => mp.isDefaultItem === true);
-  if (defaultItems.length === 0) return { count: 0, html: "" };
-
-  let count = 0;
-  
-  const pills = defaultItems.map(mp => {
-    const sub = mp.menuSubItem || {};
-    const name = sub.name || `Item ${mp.menuSubItemId}`;
-    const currentType = modSels[mp.menuSubItemId]?.modifyType || "add"; // Default = Regular (add)
-    const isIncluded = currentType !== "no";
-    
-    if (isIncluded) count++;
-    
-    // Choose icon based on name
-    let iconHTML = `<i class="fa-solid fa-circle text-gray-800"></i>`;
-    if (name.toLowerCase().includes('jelly')) {
-       iconHTML = `<i class="fa-solid fa-square text-yellow-400"></i>`;
-    }
-    
-    if (isIncluded) {
-        return `
-        <div onclick="window._selectModifyType(${mp.menuSubItemId}, 'no', ${mp.noPrice || 0})" class="cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-xl border border-gray-200 bg-white shrink-0 shadow-sm hover:border-red-300 transition-colors group">
-            ${iconHTML}
-            <span class="text-xs font-bold text-gray-800 group-hover:line-through">${name}</span>
-            <div class="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center group-hover:bg-red-100"><i class="fa-solid fa-check text-[10px] text-emerald-600 group-hover:hidden"></i><i class="fa-solid fa-xmark text-[10px] text-red-600 hidden group-hover:block"></i></div>
-        </div>`;
-    } else {
-        return `
-        <div onclick="window._selectModifyType(${mp.menuSubItemId}, 'add', ${mp.addPrice || 0})" class="cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-xl border border-red-200 bg-red-50 shrink-0 shadow-sm hover:border-emerald-300 transition-colors group">
-            ${iconHTML}
-            <span class="text-xs font-bold text-gray-400 line-through group-hover:no-underline">${name}</span>
-            <div class="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-emerald-100"><i class="fa-solid fa-xmark text-[10px] text-red-600 group-hover:hidden"></i><i class="fa-solid fa-check text-[10px] text-emerald-600 hidden group-hover:block"></i></div>
-        </div>`;
-    }
-  }).join("");
-  
+  const removeId = Object.keys(modSels).find((id) => modSels[id]?.modifyType === "no");
   return {
-      count,
-      html: `
-        <div class="ml-16 mb-2 flex gap-3 overflow-x-auto scrollbar-hide py-1">
-            ${pills}
-        </div>
-        <div class="ml-16 mb-3 text-[11px] text-gray-500">
-            These come with the drink. Deselect any you don't want.
-        </div>
-      `
+    count: removeId ? 1 : 0,
+    html: _renderModifyTypeSection(modifyPrices, modSels, detail)
   };
 }
 
@@ -12474,9 +12887,8 @@ function renderAllModifierSectionsAlt2(detail, sels, modSels, colLayout) {
   // Included Items
   const modifyPrices = (detail?.menuSubItemModifyPrices || []).filter(m => m.isActive !== false);
   if (modifyPrices.length > 0) {
-      const incData = _alt2RenderIncluded(modifyPrices, modSels);
+      const incData = _alt2RenderIncluded(modifyPrices, modSels, detail);
       html += `<div class="py-2">
-        ${_alt2ModSectionHeader('INCLUDED IN DRINK', `${incData.count} Selected`, 'fa-solid fa-cubes')}
         ${incData.html}
       </div>`;
   }
