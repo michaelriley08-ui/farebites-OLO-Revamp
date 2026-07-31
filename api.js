@@ -185,6 +185,29 @@ const ApiService = {
 
     async getOrderDetails(orderId) {
         return await this.request(`/api/CustomerOrder/${orderId}`, 'GET');
+    },
+
+    // --- Favorites Endpoints ---
+
+    async getFavorites() {
+        return await this.request('/api/Account/favorites', 'GET');
+    },
+
+    async addFavorite(menuItemId, locationId = null, restaurantId = null, userRating = null) {
+        return await this.request('/api/Account/favorites', 'POST', {
+            menuItemId,
+            locationId,
+            restaurantId,
+            userRating
+        });
+    },
+
+    async deleteFavorite(userFavoriteId) {
+        return await this.request(`/api/Account/favorites/${userFavoriteId}`, 'DELETE');
+    },
+
+    async updateFavoriteRating(userFavoriteId, userRating) {
+        return await this.request(`/api/Account/favorites/${userFavoriteId}`, 'PUT', { userRating });
     }
 };
 

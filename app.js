@@ -16,6 +16,7 @@ const PAGE_FILE_MAP = {
   "order-details-alt": "order-details-alt.html",
   "menu-scan": "menu-scan.html",
   menu: "menu.html",
+  "menu-single": "menu-single.html",
   locations: "locations.html",
   "locations-alt": "locations-alt.html",
   "location-favorites": "location-favorites.html",
@@ -50,6 +51,7 @@ const PAGE_LABELS = {
   "order-details-alt": "Order Details (Alternative)",
   "menu-scan": "Scan",
   menu: "Menu",
+  "menu-single": "Menu Single Column",
   locations: "Pick a Location",
   "locations-alt": "Pick a Location (Alternative)",
   "location-favorites": "Saved Locations",
@@ -347,6 +349,17 @@ function getDayLabel(targetYear, targetMonthIdx, dayOfMonth) {
   return `${dayName}, ${monthNameShort} ${dayOfMonth}`;
 }
 
+function getAvailableDays(numDays = 14) {
+  const days = [];
+  const now = new Date();
+  for (let i = 0; i < numDays; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    const label = getDayLabel(d.getFullYear(), d.getMonth(), d.getDate());
+    days.push(label);
+  }
+  return days;
+}
+
 function isPastDate(targetYear, targetMonthIdx, dayOfMonth) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -598,6 +611,19 @@ function loadMockupState() {
         "null",
     );
     const state = saved ? { ...DEFAULT_STATE, ...saved } : { ...DEFAULT_STATE };
+
+    // Load menu favorites from localStorage
+    const savedMenuFavs = JSON.parse(
+      localStorage.getItem("farebites_menu_favorites") || "null"
+    );
+    if (savedMenuFavs) {
+      state.favorites = savedMenuFavs;
+    } else if (state.favorites && state.favorites.length > 0) {
+      localStorage.setItem(
+        "farebites_menu_favorites",
+        JSON.stringify(state.favorites)
+      );
+    }
 
     // Load favorites map and labels from localStorage
     const favsMap = JSON.parse(
@@ -1710,7 +1736,7 @@ function renderMenuPage() {
                 </div>
 
                 <!-- Tabs & Search Row -->
-                <div class="border-t border-gray-100 px-4 py-2 w-full max-w-[1080px] mx-auto min-h-[48px] flex items-center justify-center">
+                <div class="bg-white border-t border-gray-100 px-4 py-2 w-full max-w-[1080px] mx-auto min-h-[48px] flex items-center justify-center">
                     ${
                       mockupState.menuSearchOpen
                         ? `
@@ -1813,13 +1839,13 @@ function renderMenuPage() {
                 : ""
             }
 
-            <div class="${isDesktop ? "p-8" : "p-3"} max-w-[1080px] mx-auto w-full">
-            <div class="${isDesktop ? "p-8" : "p-3"} max-w-[1080px] mx-auto w-full overflow-hidden">
+            <div class="max-w-[1080px] mx-auto w-full">
+            <div class="${isDesktop ? "px-8 pb-8 pt-2" : "px-3 pb-3 pt-1"} max-w-[1080px] mx-auto w-full overflow-hidden">
                 ${(() => {
                   if (featuredItems.length === 0) return "";
                   return isDesktop
                     ? `
-                        <div class="flex gap-[14px] overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-6 mb-2 pt-2 -mt-2 -mx-2 px-2">
+                        <div id="menu-featured-carousel" class="flex gap-[14px] overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-6 mb-2 pt-2 -mt-2 -mx-2 px-2">
                             ${featuredItems
                               .map((fItem, index) => {
                                 const gradients = [
@@ -1856,7 +1882,7 @@ function renderMenuPage() {
                         </div>
                     `
                     : `
-                        <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 mb-4 -mx-1 px-1">
+                        <div id="menu-featured-carousel" class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 mb-4 -mx-1 px-1">
                             ${featuredItems
                               .map((fItem, index) => {
                                 const gradients = [
@@ -1980,7 +2006,7 @@ function renderMenuPage() {
                       return `
                                 <div class="space-y-0">
                                     <p class="text-[11px] font-black text-gray-400 uppercase tracking-widest px-1 mb-4">${filtered.length} result${filtered.length !== 1 ? "s" : ""}</p>
-                                    <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : "grid grid-cols-1 gap-[10px]"}">
+                                    <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : (currentPage === "menu-single" ? "grid grid-cols-1 gap-[10px]" : "grid grid-cols-2 gap-[10px]")}">
                                         ${filtered
                                           .map((item) => {
                                             const actualIndex =
@@ -1989,8 +2015,11 @@ function renderMenuPage() {
                                               );
                                             return `
                                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
-                                                    <div class="w-full ${isDesktop ? "h-44" : "h-48"} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                        <button onclick="event.stopPropagation(); toggleMenuFavorite(getActiveMenuItems()[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
+                                                            <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
+                                                        </button>
                                                     </div>
                                                     <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
                                                         <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -2053,15 +2082,18 @@ function renderMenuPage() {
                                                 <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
                                                 <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
                                             </div>
-                                            <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : "grid grid-cols-1 md:grid-cols-2 gap-[10px]"}">
+                                            <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : (currentPage === "menu-single" ? "grid grid-cols-1 md:grid-cols-2 gap-[10px]" : "grid grid-cols-2 gap-[10px]")}">
                                                 ${sectionItems
                                                   .map((item) => {
                                                     const actualIndex =
                                                       items.indexOf(item);
                                                     return `
                                                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
-                                                            <div class="w-full ${isDesktop ? "h-44" : "h-48"} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                            <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
                                                                 <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                                <button onclick="event.stopPropagation(); toggleMenuFavorite(getActiveMenuItems()[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
+                                                                    <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
+                                                                </button>
                                                             </div>
                                                             <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
                                                                 <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -2112,9 +2144,12 @@ function renderMenuPage() {
                                               : "absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm";
                                             return `
                                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
-                                                    <div class="w-full h-44 overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                    <div class="w-full h-60 overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                         <div class="${badgeClass}" ${badgeStyle}>Featured</div>
+                                                        <button onclick="event.stopPropagation(); toggleMenuFavorite(allItems[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
+                                                            <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
+                                                        </button>
                                                     </div>
                                                     <div class="flex flex-col flex-1 px-2.5 pb-5 pt-5">
                                                         <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -2146,9 +2181,12 @@ function renderMenuPage() {
                                               : "absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm";
                                             return `
                                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col w-[72vw] max-w-[260px] shrink-0 snap-center hover:shadow-md transition-shadow overflow-hidden">
-                                                    <div class="w-full h-40 overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                    <div class="w-full h-56 overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
                                                         <div class="${badgeClass}" ${badgeStyle}>Featured</div>
+                                                        <button onclick="event.stopPropagation(); toggleMenuFavorite(allItems[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
+                                                            <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
+                                                        </button>
                                                     </div>
                                                     <div class="flex flex-col flex-1 px-1.5 pb-3 pt-3">
                                                         <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -2178,7 +2216,7 @@ function renderMenuPage() {
                                 ${
                                   hasFavorites
                                     ? `
-                                    <div class="${isDesktop ? "grid grid-cols-4 gap-5" : "grid grid-cols-1 md:grid-cols-2 gap-[10px]"}">
+                                    <div class="${isDesktop ? "grid grid-cols-4 gap-5" : (currentPage === "menu-single" ? "grid grid-cols-1 md:grid-cols-2 gap-[10px]" : "grid grid-cols-2 gap-[10px]")}">
                                         ${mockupState.favorites
                                           .map((fav) => {
                                             const originalIndex =
@@ -2192,10 +2230,10 @@ function renderMenuPage() {
                                                 : 0;
                                             return `
                                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card overflow-hidden">
-                                                    <div class="w-full ${isDesktop ? "h-44" : "h-48"} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <img src="${fav.image}" class="w-full h-full object-cover object-top group-hover/card:scale-105 transition-transform duration-500">
-                                                        <button onclick="event.stopPropagation(); toggleFavorite(${fav.id})" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white text-red-500 shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-transform">
-                                                            <i class="fa-solid fa-heart"></i>
+                                                        <button onclick="event.stopPropagation(); removeFavorite(${fav.id})" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
+                                                            <i class="fa-solid fa-heart text-violet-600 text-lg"></i>
                                                         </button>
                                                     </div>
                                                     <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
@@ -3239,18 +3277,7 @@ const routes = {
         return list;
       }
       if (mockupState.locationFilter === "My Locations") {
-        const favorites = list.filter((loc) => loc.fav);
-        const previous =
-          list.length >= 3
-            ? [list[2 % list.length], list[0], list[1 % list.length]]
-            : list;
-        const combined = [...favorites];
-        previous.forEach((loc) => {
-          if (!combined.some((c) => c.name === loc.name)) {
-            combined.push(loc);
-          }
-        });
-        return combined;
+        return list.filter((loc) => loc.fav);
       }
 
       return list;
@@ -3480,18 +3507,7 @@ const routes = {
       )
         return list;
       if (mockupState.locationFilter === "My Locations") {
-        const favorites = list.filter((loc) => loc.fav);
-        const previous =
-          list.length >= 3
-            ? [list[2 % list.length], list[0], list[1 % list.length]]
-            : list;
-        const combined = [...favorites];
-        previous.forEach((loc) => {
-          if (!combined.some((c) => c.name === loc.name)) {
-            combined.push(loc);
-          }
-        });
-        return combined;
+        return list.filter((loc) => loc.fav);
       }
 
       return list;
@@ -3764,7 +3780,7 @@ const routes = {
     }
   },
   // Duplicate location-favorites route handler removed (actual implementation below)
-  "order-details": () => {
+  "order-details-alt": () => {
     const isDesktop = currentViewport === "desktop";
     const btn = (icon, label) => {
       const isActive = mockupState.fulfillmentMode === label;
@@ -3870,7 +3886,7 @@ const routes = {
                       !isDesktop
                         ? `
                     <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2 flex items-center justify-between relative z-50">
-                        <button onclick="navigateTo('locations')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                        <button onclick="navigateTo('locations-alt')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                             <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                             <span>Back</span>
                         </button>
@@ -3916,7 +3932,7 @@ const routes = {
                                         </div>
                                     </div>
                                     <div class="mt-5 pt-4 border-t border-gray-100">
-                                        <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
+                                        <button onclick="navigateTo('locations-alt')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
                                     </div>
                                 </div>
                             </div>
@@ -3927,7 +3943,7 @@ const routes = {
                     }
                     <div class="flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full ${currentViewport === "desktop" ? "pb-12" : "pb-32"}">
                         <!-- Location Info Card -->
-                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('locations')">
+                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('locations-alt')">
                             <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
                                 <i class="fa-solid fa-location-dot text-xl"></i>
                             </div>
@@ -3940,13 +3956,8 @@ const routes = {
                         </div>
 
                         <h1 class="text-2xl font-black text-gray-900 leading-tight mb-4 tracking-tighter uppercase font-black">Order Details</h1>
-                        ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? `
-                        <div class="mb-4 p-3.5 bg-red-50 border-2 border-red-200 text-red-700 rounded-2xl text-xs font-bold flex items-center gap-2.5 animate-pulse shadow-sm">
-                            <i class="fa-solid fa-circle-exclamation text-red-500 text-lg shrink-0"></i>
-                            <span>Please select an order type (In-store, Drive Through, Curbside, or Dine In) to continue.</span>
-                        </div>
-                        ` : ''}
-                        <div class="grid grid-cols-2 gap-3 ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? 'ring-2 ring-red-400 p-1.5 rounded-2xl bg-red-50/20' : ''}">
+
+                        <div class="grid grid-cols-2 gap-3">
                             ${btn("fa-shop", "In-store")}
                             ${btn("fa-car", "Drive Through")}
                             ${btn("fa-square-parking", "Curbside")}
@@ -3966,13 +3977,15 @@ const routes = {
                                     </p>
                                 </div>
                                 <div class="flex gap-3">
-                                    <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full">
-                                            <i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> 
-                                            <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay}</span>
-                                        </span>
-                                        <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
-                                    </button>
+                                     <div class="relative flex-1">
+                                         <select onchange="updateMockupState('orderTime', 'Later'); updateMockupState('selectedDay', this.value); const newTimes = getDynamicTimes(this.value); if (newTimes && newTimes.length > 0 && !newTimes.includes(mockupState.selectedTimeSlot)) { updateMockupState('selectedTimeSlot', newTimes[0]); } navigateTo(currentPage);" class="w-full py-3 pl-10 pr-8 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 appearance-none outline-none transition-colors min-w-0 bg-white cursor-pointer truncate">
+                                             ${getAvailableDays(14).map(day => `
+                                                 <option value="${day}" ${mockupState.selectedDay === day ? 'selected' : ''}>${day}</option>
+                                             `).join('')}
+                                         </select>
+                                         <i class="fa-regular fa-calendar text-violet-600 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                                         <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
+                                     </div>
                                     <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
                                         <span class="flex items-center gap-2 overflow-hidden w-full">
                                             <i class="fa-regular fa-clock text-violet-600 shrink-0"></i> 
@@ -3986,7 +3999,12 @@ const routes = {
                             ${
                               currentViewport === "desktop"
                                 ? `
-                            <div class="mt-8">
+                            <div class="mt-8 flex flex-col items-center">
+                                ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? `
+                                <p class="text-red-500 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5 animate-pulse">
+                                    <i class="fa-solid fa-circle-exclamation text-sm"></i> Please select an order type to continue
+                                </p>
+                                ` : ""}
                                 <button onclick="handleStartOrder()" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black ${!mockupState.fulfillmentMode ? "opacity-90 hover:opacity-100" : ""}">${mockupState.cart && mockupState.cart.length > 0 ? "Save & Return to Cart" : "Start Order"}</button>
                             </div>
                             `
@@ -3997,7 +4015,14 @@ const routes = {
                     ${
                       currentViewport !== "desktop"
                         ? `
-                    <div class="p-6 bg-white border-t border-gray-100 absolute bottom-0 left-0 right-0 z-50 shadow-lg"><button onclick="handleStartOrder()" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black ${!mockupState.fulfillmentMode ? "opacity-90 hover:opacity-100" : ""}">${mockupState.cart && mockupState.cart.length > 0 ? "Save & Return to Cart" : "Start Order"}</button></div>
+                    <div class="p-6 bg-white border-t border-gray-100 absolute bottom-0 left-0 right-0 z-50 shadow-lg flex flex-col items-center gap-3">
+                        ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? `
+                        <p class="text-red-500 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 animate-pulse">
+                            <i class="fa-solid fa-circle-exclamation text-sm"></i> Please select an order type to continue
+                        </p>
+                        ` : ""}
+                        <button onclick="handleStartOrder()" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black ${!mockupState.fulfillmentMode ? "opacity-90 hover:opacity-100" : ""}">${mockupState.cart && mockupState.cart.length > 0 ? "Save & Return to Cart" : "Start Order"}</button>
+                    </div>
                     `
                         : ""
                     }
@@ -4111,7 +4136,7 @@ const routes = {
 
                 </div>`;
   },
-  "order-details-alt": () => {
+  "order-details": () => {
     const isDesktop = currentViewport === "desktop";
 
     const options = [
@@ -4165,6 +4190,377 @@ const routes = {
         let isSelected = mockupState.selectedDay === label;
         let setOrderTimeAction =
           currentPage === "order-details-alt"
+            ? `updateMockupState('orderTime', '${label === "Today" && mockupState.selectedTimeSlot === (getDynamicTimes(label)[0] || "") ? "ASAP" : "Later"}'); `
+            : "";
+        calendarCells += `<button onclick="${setOrderTimeAction}updateMockupState('selectedDay', '${label}'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? "bg-violet-600 text-white shadow-md flex items-center justify-center shrink-0 w-8 h-8 mx-auto" : "text-gray-800 hover:bg-violet-100 transition-colors flex items-center justify-center shrink-0 w-8 h-8 mx-auto"}">${i}</button>`;
+      }
+    }
+    // Pad the end to ensure exactly 42 cells (6 rows of 7 days) to prevent modal height jumping
+    const totalCells = currentMonth.startDay + currentMonth.days;
+    const paddingCells = 42 - totalCells;
+    for (let i = 0; i < paddingCells; i++) {
+      calendarCells += `<div></div>`;
+    }
+
+    const dateModalClass = mockupState.modalOpen === "date" ? "flex" : "hidden";
+    const timeModalClass = mockupState.modalOpen === "time" ? "flex" : "hidden";
+    const warningModalClass =
+      mockupState.modalOpen === "warning" ? "flex" : "hidden";
+
+    const times15 = getDynamicTimes(mockupState.selectedDay);
+
+    // Proximity to close check
+    const isNearClose =
+      mockupState.selectedTimeSlot.includes("8:") ||
+      mockupState.selectedTimeSlot.includes("9:");
+
+    const locationTitle = mockupState.selectedLocation || "i-Tea - Tempe";
+    const locList =
+      mockupState.apiLocations && mockupState.apiLocations.length > 0
+        ? mockupState.apiLocations
+        : LOCATIONS;
+    const locationObj =
+      locList.find((l) => l.name === locationTitle) ||
+      locList.find((l) => l.name === "i-Tea - Tempe") ||
+      locList[0];
+    const rawLocationAddress =
+      locationObj?.address || "825 W UNIVERSITY, TEMPE, AZ";
+    const locationAddress = rawLocationAddress
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .replace(/,\s*[A-Z]{2}\b/i, (match) => match.toUpperCase());
+    const closeTime =
+      (locationObj?.hours || "11:30 AM to 9:30 PM").split("to")[1]?.trim() ||
+      "9:30 PM";
+    const getOrderCutoffTime = (timeStr, minutes) => {
+      const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!match) return timeStr;
+      let h = parseInt(match[1]),
+        m = parseInt(match[2]),
+        p = match[3].toUpperCase();
+      if (p === "PM" && h !== 12) h += 12;
+      if (p === "AM" && h === 12) h = 0;
+      let total = h * 60 + m - minutes;
+      if (total < 0) total += 24 * 60;
+      let nh = Math.floor(total / 60),
+        nm = total % 60;
+      let np = nh >= 12 ? "PM" : "AM";
+      let dh = nh % 12 || 12;
+      return `${dh}:${nm.toString().padStart(2, "0")} ${np}`;
+    };
+    const orderCutoffTime = getOrderCutoffTime(closeTime, 20);
+
+    return `
+                <div class="flex flex-col h-full bg-[#FAF9F6] relative overflow-hidden">
+                    <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black"><button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4"><i class="fa-solid fa-bars text-xl"></i></button><span class="text-lg font-black text-violet-600 flex-1 text-center">Order Details</span><button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button></header>
+                    ${
+                      !isDesktop
+                        ? `
+                    <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2 flex items-center justify-between relative z-50">
+                        <button onclick="navigateTo('locations-alt')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                            <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
+                            <span>Back</span>
+                        </button>
+                        <div>
+                            <button onclick="toggleMenu(event, 'location-dropdown-order-details')" class="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-600 font-bold hover:text-violet-600 hover:bg-violet-100 px-2 py-1.5 rounded-lg transition-colors text-right cursor-pointer">
+                                <i class="fa-solid fa-location-dot text-violet-600"></i>
+                                <span class="truncate max-w-[140px] sm:max-w-[200px] tracking-wider font-medium">${locationAddress.replace(/, [A-Z]{2}(\s\d{5})?$/, "")}</span>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div id="location-dropdown-order-details" class="hidden absolute left-4 right-4 sm:left-auto sm:right-4 sm:w-[320px] top-[calc(100%+0.5rem)] z-[100] animate-[slideUp_0.2s_ease-out]">
+                                <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
+                                    <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
+                                    <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
+                                    <div class="space-y-3 text-sm">
+                                        <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                            <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                                <i class="fa-regular fa-clock text-violet-600 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Hours</span>
+                                                <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
+                                                <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
+                                                <span class="text-red-500 font-medium block text-xs leading-tight mt-1">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                            <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                                <i class="fa-solid fa-phone text-violet-600 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Phone</span>
+                                                <span class="text-gray-600 font-medium text-sm">(480) 555-0123</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
+                                            <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                                <i class="fa-solid fa-car text-violet-600 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Drive-Thru / Curbside</span>
+                                                <span class="text-gray-600 font-medium text-xs leading-relaxed block">Available during regular business hours. Pull up to the front for curbside.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-5 pt-4 border-t border-gray-100">
+                                        <button onclick="navigateTo('locations-alt')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `
+                        : ""
+                    }
+                    <div class="flex-1 overflow-y-auto p-6 md:p-8 max-w-3xl mx-auto w-full ${currentViewport === "desktop" ? "pb-12" : "pb-32"}">
+                        <!-- Location Info Card -->
+                        <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50" onclick="navigateTo('locations-alt')">
+                            <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
+                                <i class="fa-solid fa-location-dot text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-black text-[#33424A] uppercase tracking-tight text-sm leading-tight">${locationTitle}</h3>
+                                <p class="text-xs text-gray-500 font-semibold mt-0.5">${locationAddress}</p>
+                                <p class="text-[10px] font-bold text-violet-600 mt-1 uppercase tracking-widest">Change Location</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-300 text-sm"></i>
+                        </div>
+
+                        <h1 class="text-2xl font-black text-gray-900 leading-tight mb-4 tracking-tighter uppercase font-black">Order Details</h1>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            ${btn("fa-shop", "In-store")}
+                            ${btn("fa-car", "Drive Through")}
+                            ${btn("fa-square-parking", "Curbside")}
+                            ${btn("fa-mobile-screen-button", "Dine In")}
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 font-black">Ordering For</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="updateMockupState('orderTime', 'ASAP')" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === "ASAP" ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-400 border-gray-100"} font-black uppercase"><i class="fa-solid fa-bolt text-lg mb-0.5"></i>ASAP</button>
+                                <button onclick="updateMockupState('orderTime', 'Later'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === "Later" ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-400 border-gray-100"} font-black uppercase"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i>Later</button>
+                            </div>
+                            
+                            <div class="mt-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm transition-all">
+                                <div class="flex justify-between items-center mb-3">
+                                    <p class="text-[10px] font-black text-violet-600 uppercase tracking-widest">
+                                        ${mockupState.orderTime === "ASAP" ? "Estimated Pickup Time" : "Scheduled Pickup"}
+                                    </p>
+                                </div>
+                                <div class="flex gap-3">
+                                     <div class="relative flex-1">
+                                         <select onchange="updateMockupState('orderTime', 'Later'); updateMockupState('selectedDay', this.value); const newTimes = getDynamicTimes(this.value); if (newTimes && newTimes.length > 0 && !newTimes.includes(mockupState.selectedTimeSlot)) { updateMockupState('selectedTimeSlot', newTimes[0]); } navigateTo(currentPage);" class="w-full py-3 pl-10 pr-8 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 appearance-none outline-none transition-colors min-w-0 bg-white cursor-pointer truncate">
+                                             ${getAvailableDays(14).map(day => `
+                                                 <option value="${day}" ${mockupState.selectedDay === day ? 'selected' : ''}>${day}</option>
+                                             `).join('')}
+                                         </select>
+                                         <i class="fa-regular fa-calendar text-violet-600 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                                         <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
+                                     </div>
+                                    <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="flex-1 py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
+                                        <span class="flex items-center gap-2 overflow-hidden w-full">
+                                            <i class="fa-regular fa-clock text-violet-600 shrink-0"></i> 
+                                            <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === "ASAP" ? getEstimatedPickupTime(20) : mockupState.selectedTimeSlot}</span>
+                                        </span>
+                                        <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            ${
+                              currentViewport === "desktop"
+                                ? `
+                            <div class="mt-8 flex flex-col items-center">
+                                ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? `
+                                <p class="text-red-500 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5 animate-pulse">
+                                    <i class="fa-solid fa-circle-exclamation text-sm"></i> Please select an order type to continue
+                                </p>
+                                ` : ""}
+                                <button onclick="handleStartOrder()" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black ${!mockupState.fulfillmentMode ? "opacity-90 hover:opacity-100" : ""}">${mockupState.cart && mockupState.cart.length > 0 ? "Save & Return to Cart" : "Start Order"}</button>
+                            </div>
+                            `
+                                : ""
+                            }
+                        </div>
+                    </div>
+                    ${
+                      currentViewport !== "desktop"
+                        ? `
+                    <div class="p-6 bg-white border-t border-gray-100 absolute bottom-0 left-0 right-0 z-50 shadow-lg flex flex-col items-center gap-3">
+                        ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? `
+                        <p class="text-red-500 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 animate-pulse">
+                            <i class="fa-solid fa-circle-exclamation text-sm"></i> Please select an order type to continue
+                        </p>
+                        ` : ""}
+                        <button onclick="handleStartOrder()" class="w-full bg-violet-600 text-white py-5 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black ${!mockupState.fulfillmentMode ? "opacity-90 hover:opacity-100" : ""}">${mockupState.cart && mockupState.cart.length > 0 ? "Save & Return to Cart" : "Start Order"}</button>
+                    </div>
+                    `
+                        : ""
+                    }
+
+                    <!-- Date Modal -->
+                    <div id="date-modal" class="absolute inset-0 bg-black/60 z-[100] ${dateModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                        <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[85vh]">
+                            <div class="flex justify-between items-center mb-5 shrink-0">
+                                <h3 class="font-black text-xl uppercase text-gray-900">Choose Day</h3>
+                                <button onclick="mockupState.modalOpen = null; navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <!-- Stylized Calendar -->
+                            <div class="bg-white rounded-2xl p-4 border border-violet-100 shadow-sm overflow-y-auto scrollbar-hide">
+                                <div class="flex justify-between items-center mb-3 px-1">
+                                    <button onclick="mockupState.monthOffset = Math.max(0, (mockupState.monthOffset||0) - 1); navigateTo(currentPage);" class="${monthOffset === 0 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:text-violet-600 transition-colors"} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-left text-sm"></i></button>
+                                    <span class="font-black text-sm uppercase tracking-widest text-gray-800">${currentMonth.name}</span>
+                                    <button onclick="mockupState.monthOffset = Math.min(2, (mockupState.monthOffset||0) + 1); navigateTo(currentPage);" class="${monthOffset === 2 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:text-violet-600 transition-colors"} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-right text-sm"></i></button>
+                                </div>
+                                <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                                    ${["S", "M", "T", "W", "T", "F", "S"].map((d) => `<div class="text-[10px] font-black text-gray-400">${d}</div>`).join("")}
+                                </div>
+                                <div class="grid grid-cols-7 gap-1 text-center">
+                                    ${calendarCells}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Modal -->
+                    <div id="time-modal" class="absolute inset-0 bg-black/60 z-[100] ${timeModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                        <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[90vh]">
+                            <div class="flex justify-between items-center mb-5 shrink-0">
+                                <h3 class="font-black text-xl uppercase text-gray-900">Choose Time</h3>
+                                <button onclick="mockupState.modalOpen = null; navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            
+                            <div class="flex-1 flex flex-col min-h-0 bg-gray-50/50 rounded-2xl p-4 border border-gray-100 mb-5">
+                                <div class="overflow-y-auto scrollbar-hide h-[230px] pr-1">
+                                    <div class="grid grid-cols-3 gap-2">
+                                        ${
+                                          times15.length > 0
+                                            ? times15
+                                                .map((time, idx) => {
+                                                  const isThisTimeNearClose =
+                                                    time.includes("8:") ||
+                                                    time.includes("9:");
+                                                  const clickAction =
+                                                    isThisTimeNearClose &&
+                                                    !mockupState.acknowledgedClose
+                                                      ? `updateMockupState('selectedTimeSlot', '${time}'); mockupState.modalOpen = 'warning'; navigateTo(currentPage);`
+                                                      : `updateMockupState('selectedTimeSlot', '${time}'); navigateTo(currentPage);`;
+
+                                                  return `
+                                            <button id="time-slot-${idx}" onclick="${clickAction}" class="py-3 rounded-full border-2 ${mockupState.selectedTimeSlot === time ? "border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200" : "border-gray-100 text-gray-700 hover:border-violet-300 bg-white"} font-black text-[11px] transition-all tracking-tight whitespace-nowrap">${time}</button>
+                                            `;
+                                                })
+                                                .join("")
+                                            : `<div class="col-span-3 py-10 text-center flex flex-col items-center"><i class="fa-solid fa-store-slash text-2xl text-gray-300 mb-2"></i><p class="text-gray-500 font-bold text-sm">Closed for this date</p></div>`
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 pt-4 border-t border-gray-100 shrink-0">
+                                    <label class="block text-[10px] font-black text-violet-600 uppercase tracking-widest mb-3">Or enter a custom pickup time</label>
+                                    <div class="flex items-center gap-3">
+                                        <div class="relative flex-1">
+                                            <i class="fa-regular fa-clock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                            <input type="time" class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-violet-600 focus:ring-0 font-bold text-gray-800 outline-none transition-colors" onchange="let val = this.value; let parts = val.split(':'); let h = parseInt(parts[0]); let ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12; h = h || 12; let formatted = h + ':' + parts[1] + ' ' + ampm; updateMockupState('selectedTimeSlot', formatted); if(h >= 8 && ampm === 'PM') { mockupState.modalOpen = 'warning'; mockupState.acknowledgedClose = false; } navigateTo(currentPage);" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            
+                            <div class="shrink-0 pb-2">
+                                <button onclick="
+                                    if(${isNearClose} && !mockupState.acknowledgedClose) {
+                                        mockupState.modalOpen = 'warning';
+                                        navigateTo(currentPage);
+                                    } else {
+                                        mockupState.modalOpen = null;
+                                        navigateTo('menu');
+                                    }
+                                " class="w-full py-4 rounded-full bg-violet-600 text-white font-black uppercase text-sm tracking-widest shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] transition-all active:scale-95">Confirm Time</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Warning Modal -->
+                    <div id="warning-modal" class="absolute inset-0 bg-black/60 z-[110] ${warningModalClass} flex-col justify-center items-center backdrop-blur-sm p-4">
+                        <div class="bg-red-600 w-full sm:w-[380px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col items-center text-center">
+                            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
+                                <i class="fa-solid fa-clock text-red-600 text-3xl"></i>
+                            </div>
+                            
+                            <h3 class="font-black text-2xl uppercase text-white mb-2 leading-tight">Store Closes<br>at 9:00 PM</h3>
+                            
+                            <p class="text-red-100 font-bold mb-8 px-2">
+                                ${isNearClose ? "You have selected a pickup time within an hour of close. Please ensure you pick up your order before our doors close." : "Please ensure you pick up your order before our doors close."}
+                            </p>
+                            
+                            <button onclick="updateMockupState('acknowledgedClose', true); mockupState.modalOpen = null; navigateTo('menu');" class="w-full py-4 rounded-full bg-white text-red-600 font-black uppercase text-sm tracking-widest shadow-xl hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-check text-lg"></i> I Understand
+                            </button>
+                            
+                            <button onclick="mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="mt-4 text-red-200 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">Go Back</button>
+                        </div>
+                    </div>
+                        </div>
+                    </div>
+
+                </div>`;
+  },
+  "order-details": () => {
+    const isDesktop = currentViewport === "desktop";
+
+    const options = [
+      {
+        id: "In-store",
+        label: "In-Store",
+        icon: "fa-shop",
+        desc: "Carry-out, walk-in, or pickup inside the restaurant",
+      },
+      {
+        id: "Drive Through",
+        label: "Drive-Thru",
+        icon: "fa-car",
+        desc: "Stay in your car and get your order from the window",
+      },
+      {
+        id: "Curbside",
+        label: "Curbside",
+        icon: "fa-square-parking",
+        desc: "Park in a designated spot and we'll bring it to you",
+      },
+      {
+        id: "Dine In",
+        label: "Dine In",
+        icon: "fa-mobile-screen-button",
+        desc: "Order at your table and dine inside the restaurant",
+      },
+    ];
+
+    const monthOffset = mockupState.monthOffset || 0;
+    const currentMonth = getCalendarData(monthOffset);
+
+    let calendarCells = "";
+    for (let i = 0; i < currentMonth.startDay; i++) {
+      calendarCells += `<div></div>`;
+    }
+    for (let i = 1; i <= currentMonth.days; i++) {
+      let isPast = isPastDate(
+        currentMonth.targetYear,
+        currentMonth.targetMonthIdx,
+        i,
+      );
+      if (isPast) {
+        calendarCells += `<div class="py-2 text-gray-300 font-bold text-sm text-center">${i}</div>`;
+      } else {
+        let label = getDayLabel(
+          currentMonth.targetYear,
+          currentMonth.targetMonthIdx,
+          i,
+        );
+        let isSelected = mockupState.selectedDay === label;
+        let setOrderTimeAction =
+          currentPage === "order-details"
             ? `updateMockupState('orderTime', '${label === "Today" && mockupState.selectedTimeSlot === (getDynamicTimes(label)[0] || "") ? "ASAP" : "Later"}'); `
             : "";
         calendarCells += `<button onclick="${setOrderTimeAction}updateMockupState('selectedDay', '${label}'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? "bg-violet-600 text-white shadow-md flex items-center justify-center shrink-0 w-8 h-8 mx-auto" : "text-gray-800 hover:bg-violet-100 transition-colors flex items-center justify-center shrink-0 w-8 h-8 mx-auto"}">${i}</button>`;
@@ -4248,18 +4644,26 @@ const routes = {
 
     const mainContent = `
             <div class="flex-1 flex flex-col py-6 px-6 md:px-12 max-w-2xl mx-auto w-full">
+                <!-- Location Info Card -->
+                <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50 text-left" onclick="navigateTo('locations')">
+                    <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
+                        <i class="fa-solid fa-location-dot text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-black text-[#33424A] uppercase tracking-tight text-sm leading-tight">${locationTitle}</h3>
+                        <p class="text-xs text-gray-500 font-semibold mt-0.5">${locationAddress}</p>
+                        <p class="text-[10px] font-bold text-violet-600 mt-1 uppercase tracking-widest">Change Location</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-gray-300 text-sm"></i>
+                </div>
+
                 <div class="text-center mb-5 shrink-0">
                     <h2 class="text-3xl md:text-4xl font-branding font-black text-[#1A1A1A] uppercase tracking-tight leading-tight mb-3">What type of order can we get started for you?</h2>
                     <p class="text-sm md:text-base font-bold text-gray-400 uppercase tracking-widest leading-relaxed">Order ahead for pickup or dine in</p>
                 </div>
 
-                ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? `
-                <div class="mb-4 p-3.5 bg-red-50 border-2 border-red-200 text-red-700 rounded-2xl text-xs font-bold flex items-center gap-2.5 animate-pulse shadow-sm">
-                    <i class="fa-solid fa-circle-exclamation text-red-500 text-lg shrink-0"></i>
-                    <span>Please select an order type (In-Store, Drive-Thru, Curbside, or Dine In) to continue.</span>
-                </div>
-                ` : ''}
-                <div class="${isDesktop ? "grid grid-cols-2 gap-4" : "flex flex-col gap-4"} mb-6 ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? 'ring-2 ring-red-400 p-1.5 rounded-2xl bg-red-50/20' : ''}">
+
+                <div class="${isDesktop ? "grid grid-cols-2 gap-4" : "flex flex-col gap-4"} mb-6">
                     ${options.map(renderOptionCard).join("")}
                 </div>
 
@@ -4285,7 +4689,12 @@ const routes = {
                     : ""
                 }
 
-                <div>
+                <div class="flex flex-col items-center">
+                    ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? `
+                    <p class="text-red-500 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5 animate-pulse">
+                        <i class="fa-solid fa-circle-exclamation text-sm"></i> Please select an order type to continue
+                    </p>
+                    ` : ""}
                     <button onclick="handleStartOrder()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black ${!mockupState.fulfillmentMode ? "opacity-90 hover:opacity-100" : ""}">${mockupState.cart && mockupState.cart.length > 0 ? "Save & Return to Cart" : "Start Order"}</button>
                 </div>
             </div>
@@ -4305,7 +4714,7 @@ const routes = {
                   !isDesktop
                     ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2 flex items-center justify-between relative z-50">
-                    <button onclick="navigateTo('locations-alt')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                    <button onclick="navigateTo('locations')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back</span>
                     </button>
@@ -4351,7 +4760,7 @@ const routes = {
                                     </div>
                                 </div>
                                 <div class="mt-5 pt-4 border-t border-gray-100">
-                                    <button onclick="navigateTo('locations-alt')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
+                                    <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
                                 </div>
                             </div>
                         </div>
@@ -4387,7 +4796,7 @@ const routes = {
                         
                         <div class="flex-1 overflow-y-auto scrollbar-hide space-y-4 pr-1">
                             ${
-                              currentPage === "order-details-alt"
+                              currentPage === "order-details"
                                 ? `
                                 <!-- New Unified Alt Picker -->
                                 <div class="text-center py-6">
@@ -4400,10 +4809,15 @@ const routes = {
                                 <div>
                                     <p class="text-[11px] font-black text-gray-400 uppercase tracking-widest text-center mb-3">Select different date and/or time</p>
                                     <div class="space-y-3">
-                                        <button onclick="mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
-                                            <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay}</span></span>
-                                            <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
-                                        </button>
+                                        <div class="relative w-full">
+                                            <select onchange="updateMockupState('selectedDay', this.value); const newTimes = getDynamicTimes(this.value); if (newTimes && newTimes.length > 0 && !newTimes.includes(mockupState.selectedTimeSlot)) { updateMockupState('selectedTimeSlot', newTimes[0]); } navigateTo(currentPage);" class="w-full py-3 pl-10 pr-8 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 appearance-none outline-none transition-colors min-w-0 bg-white cursor-pointer truncate">
+                                                ${getAvailableDays(14).map(day => `
+                                                    <option value="${day}" ${mockupState.selectedDay === day ? 'selected' : ''}>${day}</option>
+                                                `).join('')}
+                                            </select>
+                                            <i class="fa-regular fa-calendar text-violet-600 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                                            <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
+                                        </div>
                                         <button onclick="mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
                                             <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === "ASAP" ? getEstimatedPickupTime(20) : mockupState.selectedTimeSlot}</span></span>
                                             <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
@@ -4431,10 +4845,15 @@ const routes = {
                                 </div>
 
                                 <div class="space-y-3">
-                                    <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'date'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay}</span></span>
-                                        <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
-                                    </button>
+                                    <div class="relative w-full">
+                                        <select onchange="updateMockupState('orderTime', 'Later'); updateMockupState('selectedDay', this.value); const newTimes = getDynamicTimes(this.value); if (newTimes && newTimes.length > 0 && !newTimes.includes(mockupState.selectedTimeSlot)) { updateMockupState('selectedTimeSlot', newTimes[0]); } navigateTo(currentPage);" class="w-full py-3 pl-10 pr-8 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 appearance-none outline-none transition-colors min-w-0 bg-white cursor-pointer truncate">
+                                            ${getAvailableDays(14).map(day => `
+                                                <option value="${day}" ${mockupState.selectedDay === day ? 'selected' : ''}>${day}</option>
+                                            `).join('')}
+                                        </select>
+                                        <i class="fa-regular fa-calendar text-violet-600 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                                        <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
+                                    </div>
                                     <button onclick="updateMockupState('orderTime', 'Later'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
                                         <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === "ASAP" ? getEstimatedPickupTime(20) : mockupState.selectedTimeSlot}</span></span>
                                         <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
@@ -4498,7 +4917,7 @@ const routes = {
                                                   "Today";
                                               const orderTimeUpdate =
                                                 currentPage ===
-                                                "order-details-alt"
+                                                "order-details"
                                                   ? `updateMockupState('orderTime', '${isAsap ? "ASAP" : "Later"}'); `
                                                   : ``;
                                               const clickAction =
@@ -4614,6 +5033,12 @@ const routes = {
                         <span>SCAN QR CODE</span>
                     </button>
                 </div>
+                <div class="mb-4">
+                    <button onclick="navigateTo('order-details')" class="inline-flex items-center gap-2 text-violet-600 hover:text-violet-800 font-bold uppercase text-xs tracking-widest transition-colors">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Back to Order Details</span>
+                    </button>
+                </div>
 
                 ${!isDesktop ? imageHtml : ""}
             </div>
@@ -4652,6 +5077,7 @@ const routes = {
             </div>`;
   },
   menu: () => renderMenuPage(),
+  "menu-single": () => renderMenuPage(),
   customize: () => {
     const isDesktop = currentViewport === "desktop";
     const mode = mockupState.fulfillmentMode || "In-store";
@@ -5240,7 +5666,7 @@ const routes = {
                 <div id="cart-scroller" class="flex-1 overflow-y-auto p-6 flex ${isDesktop ? "flex-row items-start pb-6 gap-8" : "flex-col gap-6 pb-32"} scrollbar-hide w-full max-w-[1080px] mx-auto">
                     
                     <!-- Left Column (2/3 width on desktop) -->
-                    <div class="${isDesktop ? "flex flex-col gap-6 w-2/3 shrink" : "contents"}">
+                    <div class="${isDesktop ? "flex flex-col gap-6 flex-1 min-w-0" : "contents"}">
                         <!-- Consolidated Order Details Card -->
                     <div class="bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col gap-4 shrink-0 transition-all">
                         <!-- Store Info (Compact) -->
@@ -5353,14 +5779,17 @@ const routes = {
                                   mockupState.orderTime === "Later"
                                     ? `
                                     <div class="bg-gray-50/80 rounded-xl p-3 border border-gray-100 flex flex-col gap-2.5 mt-1">
-                                        <div class="flex items-center justify-between">
-                                            <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Date & Time</span>
-                                            <button onclick="updateMockupState('modalOpen', 'date'); navigateTo('cart');" class="text-[11px] font-black text-violet-600 hover:underline flex items-center gap-1">
-                                                <i class="fa-regular fa-calendar"></i>
-                                                <span>${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay || "Today"}</span>
-                                                <i class="fa-solid fa-chevron-down text-[9px]"></i>
-                                            </button>
-                                        </div>
+                                         <div class="flex items-center justify-between">
+                                             <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Date</span>
+                                             <div class="relative">
+                                                 <select onchange="updateMockupState('selectedDay', this.value); updateMockupState('orderTime', 'Later'); const newTimes = getDynamicTimes(this.value); if (newTimes && newTimes.length > 0 && !newTimes.includes(mockupState.selectedTimeSlot)) { updateMockupState('selectedTimeSlot', newTimes[0]); } navigateTo('cart');" class="appearance-none bg-white border-2 border-violet-100 hover:border-violet-300 rounded-xl px-3 py-1 pr-7 font-black text-xs text-violet-700 outline-none cursor-pointer transition-colors shadow-sm">
+                                                     ${getAvailableDays(14).map(day => `
+                                                         <option value="${day}" ${mockupState.selectedDay === day ? 'selected' : ''}>${day}</option>
+                                                     `).join('')}
+                                                 </select>
+                                                 <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-violet-600 pointer-events-none"></i>
+                                             </div>
+                                         </div>
                                         
                                         <!-- Multi-Row Wrap Time Slot Chips -->
                                         <div class="flex flex-wrap gap-2 py-1">
@@ -5501,10 +5930,10 @@ const routes = {
                     </div> <!-- End Left Column -->
 
                     <!-- Right Column (1/3 width on desktop) -->
-                    <div class="${isDesktop ? "w-1/3 flex flex-col gap-6 shrink-0 sticky top-24" : "contents"}">
+                    <div class="${isDesktop ? "w-1/3 flex flex-col gap-6 shrink-0 sticky top-6" : "contents"}">
 
                     <!-- Bag Option Selector -->
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border space-y-4 shrink-0 transition-all ${selectionNotMade ? "border-amber-300 ring-2 ring-amber-400/30" : "border-gray-100"}">
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border space-y-4 shrink-0 transition-all ${selectionNotMade ? "border-violet-600 ring-2 ring-violet-600/30" : "border-gray-100"}">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
                                 <i class="fa-solid fa-bag-shopping text-lg"></i>
@@ -5530,7 +5959,7 @@ const routes = {
                         
                         <div class="flex gap-2">
                             <button onclick="if(mockupState.noBagsSelected){ mockupState.noBagsSelected = false; updateMockupState('bagQuantity', 0); } else { mockupState.bagQuantity = 0; updateMockupState('noBagsSelected', true); }" 
-                                    class="flex-1 py-2 px-3 rounded-xl border-2 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${mockupState.noBagsSelected ? "bg-violet-600 text-white border-violet-600 shadow-md" : "bg-white text-gray-400 border-gray-100 hover:border-violet-200"}">
+                                    class="flex-1 py-2 px-3 rounded-xl border-2 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${mockupState.noBagsSelected ? "bg-violet-600 text-white border-violet-600 shadow-md" : "bg-white text-violet-600 border-violet-600 hover:bg-violet-50"}">
                                 <i class="fa-solid ${mockupState.noBagsSelected ? "fa-circle-check" : "fa-circle-dot"}"></i>
                                 No plastic bags needed
                             </button>
@@ -7460,6 +7889,8 @@ const routes = {
                         <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 to-fuchsia-500"></div>
                         <div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Subtotal</span><span class="text-gray-700">$${subtotal.toFixed(2)}</span></div>
                         <div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Tax & Fees</span><span class="text-gray-700">$${taxes.toFixed(2)}</span></div>
+                        ${convenienceFee > 0 ? `<div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Convenience Fee</span><span class="text-gray-700">$${convenienceFee.toFixed(2)}</span></div>` : ""}
+                        ${bagFee > 0 ? `<div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Plastic Bag(s)</span><span class="text-gray-700">$${bagFee.toFixed(2)}</span></div>` : ""}
                         <div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Tip</span><span class="text-gray-700">$${tipAmount.toFixed(2)}</span></div>
                         <div class="h-[2px] bg-gray-50 w-full my-5 rounded-full"></div>
                         <div class="flex justify-between items-end">
@@ -8661,6 +9092,10 @@ routes["accessibility"] = () => {
 
 function renderPage() {
   if (window.isNavigatingAway) return;
+  if (window.carouselAutoplayInterval) {
+    clearInterval(window.carouselAutoplayInterval);
+    window.carouselAutoplayInterval = null;
+  }
   const viewport = document.getElementById("app-viewport");
   if (!viewport) return;
 
@@ -8928,7 +9363,7 @@ function renderPage() {
 
   // Re-focus menu search input after render (keeps cursor active while typing)
   if (
-    (currentPage === "menu") &&
+    (currentPage === "menu" || currentPage === "menu-single") &&
     mockupState.menuSearchOpen
   ) {
     const searchInput = document.getElementById("menu-search-input");
@@ -8944,10 +9379,10 @@ function renderPage() {
     const carousel = document.getElementById("home-carousel");
     if (carousel) {
       carousel.addEventListener("scroll", () => {
-        const index = Math.round(
-          carousel.scrollLeft / (carousel.offsetWidth + 16),
-        );
-        for (let i = 0; i < 2; i++) {
+        const cardWidth = carousel.children[0] ? (carousel.children[0].offsetWidth + 16) : (carousel.offsetWidth + 16);
+        const index = Math.round(carousel.scrollLeft / cardWidth);
+        const dotsCount = carousel.children.length;
+        for (let i = 0; i < dotsCount; i++) {
           const dot = document.getElementById(`carousel-dot-${i}`);
           if (dot) {
             if (i === index) {
@@ -8960,6 +9395,93 @@ function renderPage() {
           }
         }
       });
+
+      // Start Autoplay for mobile/tablet featured items carousel (4-second interval)
+      if (currentViewport !== "desktop") {
+        const startAutoplay = () => {
+          if (window.carouselAutoplayInterval) {
+            clearInterval(window.carouselAutoplayInterval);
+          }
+          window.carouselAutoplayInterval = setInterval(() => {
+            const currentCarousel = document.getElementById("home-carousel");
+            if (!currentCarousel) {
+              clearInterval(window.carouselAutoplayInterval);
+              window.carouselAutoplayInterval = null;
+              return;
+            }
+            if (currentCarousel.children.length === 0) return;
+            
+            const maxScrollLeft = currentCarousel.scrollWidth - currentCarousel.clientWidth;
+            if (currentCarousel.scrollLeft >= maxScrollLeft - 5) {
+              // Cycle back to start
+              currentCarousel.scrollTo({
+                left: 0,
+                behavior: "smooth"
+              });
+            } else {
+              const cardWidth = currentCarousel.children[0].offsetWidth + 16;
+              const currentIndex = Math.round(currentCarousel.scrollLeft / cardWidth);
+              const nextIndex = currentIndex + 1;
+              currentCarousel.scrollTo({
+                left: nextIndex * cardWidth,
+                behavior: "smooth"
+              });
+            }
+          }, 4000);
+        };
+
+        startAutoplay();
+
+        // Reset timer on manual interaction
+        carousel.addEventListener("touchstart", startAutoplay, { passive: true });
+        carousel.addEventListener("mousedown", startAutoplay, { passive: true });
+      }
+    }
+  }
+
+  // Start Autoplay for menu featured items carousel (4-second interval)
+  if (currentPage === "menu" || currentPage === "menu-single") {
+    const carousel = document.getElementById("menu-featured-carousel");
+    if (carousel) {
+      const startAutoplay = () => {
+        if (window.carouselAutoplayInterval) {
+          clearInterval(window.carouselAutoplayInterval);
+        }
+        window.carouselAutoplayInterval = setInterval(() => {
+          const currentCarousel = document.getElementById("menu-featured-carousel");
+          if (!currentCarousel) {
+            clearInterval(window.carouselAutoplayInterval);
+            window.carouselAutoplayInterval = null;
+            return;
+          }
+          if (currentCarousel.children.length === 0) return;
+          
+          const maxScrollLeft = currentCarousel.scrollWidth - currentCarousel.clientWidth;
+          if (currentCarousel.scrollLeft >= maxScrollLeft - 5) {
+            // Cycle back to start
+            currentCarousel.scrollTo({
+              left: 0,
+              behavior: "smooth"
+            });
+          } else {
+            const firstChild = currentCarousel.children[0];
+            const gap = currentViewport === "desktop" ? 14 : 12;
+            const cardWidth = firstChild.offsetWidth + gap;
+            const currentIndex = Math.round(currentCarousel.scrollLeft / cardWidth);
+            const nextIndex = currentIndex + 1;
+            currentCarousel.scrollTo({
+              left: nextIndex * cardWidth,
+              behavior: "smooth"
+            });
+          }
+        }, 4000);
+      };
+
+      startAutoplay();
+
+      // Reset timer on manual interaction
+      carousel.addEventListener("touchstart", startAutoplay, { passive: true });
+      carousel.addEventListener("mousedown", startAutoplay, { passive: true });
     }
   }
 }
@@ -10815,6 +11337,11 @@ window.toggleLocationFavorite = function (name, event) {
     }
   }
 
+  // Clean up label if unfavorited
+  if (!isFavNow && mockupState.locationLabels) {
+    delete mockupState.locationLabels[name];
+  }
+
   // Animate the heart
   const heartBtn = event ? event.currentTarget : null;
   if (heartBtn) {
@@ -10836,6 +11363,96 @@ window.toggleLocationFavorite = function (name, event) {
     }, 600);
   } else {
     updateMockupState("lastAction", "favorite_" + name);
+  }
+};
+
+window.isMenuItemFavorite = function (item) {
+  if (!item || !mockupState.favorites || !Array.isArray(mockupState.favorites)) return false;
+  return mockupState.favorites.some(
+    (f) => (item.id && f.id === item.id) || (f.name && item.name && f.name.toLowerCase() === item.name.toLowerCase())
+  );
+};
+
+window.toggleMenuFavorite = async function (item, event) {
+  if (event) {
+    event.stopPropagation();
+  }
+
+  if (!mockupState.favorites) {
+    mockupState.favorites = [];
+  }
+
+  const favIndex = mockupState.favorites.findIndex(
+    (f) => (item.id && f.id === item.id) || (f.name && item.name && f.name.toLowerCase() === item.name.toLowerCase())
+  );
+  const isFavNow = favIndex === -1;
+
+  if (isFavNow) {
+    const newFav = {
+      id: item.id || Date.now(),
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      category: item.category || item.categoryName || "",
+    };
+    mockupState.favorites.push(newFav);
+
+    if (window.ApiService && typeof ApiService.getToken === "function" && ApiService.getToken()) {
+      try {
+        const res = await ApiService.addFavorite(item.id || 0, mockupState.selectedLocationId || null);
+        if (res && (res.id || res.userFavoriteId)) {
+          newFav.userFavoriteId = res.id || res.userFavoriteId;
+        }
+      } catch (err) {
+        console.warn("API error adding favorite:", err);
+      }
+    }
+  } else {
+    const existingFav = mockupState.favorites[favIndex];
+    const userFavId = existingFav ? existingFav.userFavoriteId || existingFav.id : item.id;
+    mockupState.favorites.splice(favIndex, 1);
+
+    if (window.ApiService && typeof ApiService.getToken === "function" && ApiService.getToken()) {
+      try {
+        if (userFavId) {
+          await ApiService.deleteFavorite(userFavId);
+        }
+      } catch (err) {
+        console.warn("API error deleting favorite:", err);
+      }
+    }
+  }
+
+  localStorage.setItem("farebites_menu_favorites", JSON.stringify(mockupState.favorites));
+
+  const heartBtn = event ? event.currentTarget : null;
+  if (heartBtn) {
+    const iconEl = heartBtn.querySelector("i");
+    if (iconEl) {
+      if (isFavNow) {
+        iconEl.className = "fa-solid fa-heart text-violet-600 text-lg";
+      } else {
+        iconEl.className = "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg";
+      }
+    }
+    heartBtn.classList.add("animate-heart-burst");
+    setTimeout(() => {
+      heartBtn.classList.remove("animate-heart-burst");
+      updateMockupState("lastAction", "menu_favorite_" + item.name);
+    }, 600);
+  } else {
+    updateMockupState("lastAction", "menu_favorite_" + item.name);
+  }
+};
+
+window.removeFavorite = function (id) {
+  const item = (mockupState.favorites || []).find((f) => f.id === id);
+  if (item) {
+    window.toggleMenuFavorite(item);
+  } else {
+    mockupState.favorites = (mockupState.favorites || []).filter((f) => f.id !== id);
+    localStorage.setItem("farebites_menu_favorites", JSON.stringify(mockupState.favorites));
+    renderPage();
   }
 };
 
@@ -11012,6 +11629,7 @@ async function selectLocation(
   if (locationAddress) mockupState.selectedAddress = locationAddress;
   if (locationDistance) mockupState.selectedDistance = locationDistance;
   mockupState.orderTime = "ASAP";
+  mockupState.fulfillmentMode = null;
 
   persistAllState();
 
@@ -11150,11 +11768,7 @@ function initLocationsMap() {
         leafletMap,
       );
 
-      if (
-        currentViewport === "desktop" &&
-        currentLoc &&
-        s.name === currentLoc.name
-      ) {
+      if (currentViewport === "desktop") {
         const popupContent = `
                     <div class="p-3 font-sans min-w-[200px]">
                         ${s.name === "i-Tea - Tempe" ? '<div class="text-[9px] font-black text-gray-900 uppercase tracking-widest mb-1.5">Previous Order</div>' : ""}
@@ -11165,6 +11779,10 @@ function initLocationsMap() {
                     </div>
                 `;
         marker.bindPopup(popupContent);
+
+        marker.on("mouseover", () => {
+          marker.openPopup();
+        });
       }
 
       marker.on("click", () => {
@@ -11258,7 +11876,6 @@ function focusLocation(name, openPopup = true) {
 function handleStartOrder() {
   if (!mockupState.fulfillmentMode) {
     mockupState.orderTypeRequiredError = true;
-    alert("Please select an order type (In-store, Drive Through, Curbside, or Dine In) to continue.");
     navigateTo(currentPage);
     return false;
   }
@@ -11274,7 +11891,7 @@ function navigateTo(pageId) {
 
   // Automatically select Castro Valley store for menu if no location is selected
   if (
-    (basePageId === "menu" || basePageId === "customize-alt") &&
+    (basePageId === "menu" || basePageId === "menu-single" || basePageId === "customize-alt") &&
     !mockupState.selectedLocationId
   ) {
     mockupState.selectedLocation = "i-Tea - CASTRO VALLEY";
@@ -11291,13 +11908,13 @@ function navigateTo(pageId) {
   // Redirect to location selector if accessing menu or customization without a selected store
   if (
     (basePageId === "menu" ||
-      basePageId === "menu" ||
+      basePageId === "menu-single" ||
       basePageId === "customize" ||
       basePageId === "customize-alt") &&
     !mockupState.selectedLocationId
   ) {
     basePageId =
-      basePageId === "menu" || basePageId === "customize-alt"
+      basePageId === "menu" || basePageId === "menu-single" || basePageId === "customize-alt"
         ? "locations-alt"
         : "locations";
     hash = "";
@@ -11346,8 +11963,8 @@ function navigateTo(pageId) {
   }
   const nextFile = PAGE_FILE_MAP[basePageId] || `${basePageId}.html`;
   let targetUrl = hash ? `${nextFile}#${hash}` : nextFile;
-  if (basePageId === "menu") {
-    targetUrl = `menu.html?store=7${hash ? `#${hash}` : ""}`;
+  if (basePageId === "menu" || basePageId === "menu-single") {
+    targetUrl = `${basePageId}.html?store=7${hash ? `#${hash}` : ""}`;
   }
   window.isNavigatingAway = true;
   window.location.href = targetUrl;
@@ -11368,7 +11985,7 @@ window.addEventListener("DOMContentLoaded", () => {
     mockupState.apiMenuItems = [];
     persistAllState();
   } else if (
-    (currentPage === "menu" || currentPage === "customize-alt") &&
+    (currentPage === "menu" || currentPage === "menu-single" || currentPage === "customize-alt") &&
     !mockupState.selectedLocationId
   ) {
     // Fallback default for menu page if no store is selected at all
@@ -11386,13 +12003,13 @@ window.addEventListener("DOMContentLoaded", () => {
   // Redirect to location selector if landing directly on menu or customization without a selected store
   if (
     (currentPage === "menu" ||
-      currentPage === "menu" ||
+      currentPage === "menu-single" ||
       currentPage === "customize" ||
       currentPage === "customize-alt") &&
     !mockupState.selectedLocationId
   ) {
     const targetLocationsPage =
-      currentPage === "menu" || currentPage === "customize-alt"
+      currentPage === "menu" || currentPage === "menu-single" || currentPage === "customize-alt"
         ? "locations-alt.html"
         : "locations.html";
     window.location.href = targetLocationsPage;
