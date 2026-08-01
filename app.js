@@ -1496,14 +1496,14 @@ function renderMenuPage() {
   const categories = getActiveCategories();
 
   const allItems = getActiveMenuItems();
-  let featuredItems = [];
-  if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
-    featuredItems = allItems.filter(
-      (item) =>
-        item.category === "New Items" ||
-        item.categoryKey === "New Items" ||
-        item.categoryId === "new-items-section",
-    );
+  let featuredItems = allItems.filter(
+    (item) =>
+      item.category === "New Items" ||
+      item.categoryKey === "New Items" ||
+      item.categoryId === "new-items-section",
+  );
+  if (!featuredItems || featuredItems.length === 0) {
+    featuredItems = allItems.slice(0, 4);
   }
 
   const mode = mockupState.fulfillmentMode || "In-store";
@@ -2940,15 +2940,12 @@ const routes = {
     }
 
     const items = getActiveMenuItems();
-    let featuredItems = [];
-    if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
-      featuredItems = items.filter(
-        (item) =>
-          item.category === "New Items" ||
-          item.categoryKey === "New Items" ||
-          item.categoryId === "new-items-section",
-      );
-    }
+    let featuredItems = items.filter(
+      (item) =>
+        item.category === "New Items" ||
+        item.categoryKey === "New Items" ||
+        item.categoryId === "new-items-section",
+    );
     if (!featuredItems || featuredItems.length === 0) {
       featuredItems = items.slice(0, 3);
     }
