@@ -10672,16 +10672,15 @@ function selectItemAndNavigate(index) {
 }
 
 // Called by the "+ Add" button on suggested items cards in the cart page.
-// Looks item up directly by id in MENU_ITEMS to avoid the index mismatch
-// with getActiveMenuItems() that selectItemAndNavigate() relies on.
+// Sets selectedItem directly by id, clears detail, persists, then navigates.
+// The customize page's DOMContentLoaded auto-fetch guard handles loading the
+// correct item detail on arrival (searches MENU_ITEMS by id, not index).
 window.quickAddSuggestedItem = function(itemId) {
   const item = MENU_ITEMS.find((i) => i.id === itemId);
   if (!item) {
     console.warn('quickAddSuggestedItem: item not found, id=', itemId);
     return;
   }
-
-  // Set item + reset all customize state (mirrors selectItemAndNavigate)
   mockupState.selectedItem = item;
   mockupState.editingCartIndex = null;
   mockupState.itemQuantity = 1;
@@ -10693,62 +10692,9 @@ window.quickAddSuggestedItem = function(itemId) {
   mockupState._customizeSubItems = {};
   mockupState._customizeModifyTypes = {};
   mockupState.selectedItemDetail = null;
-  mockupState.lastMenuPage = 'cart'; // back button returns to cart
+  mockupState.lastMenuPage = 'cart';
   persistAllState();
-
-  const isDrink = isDrinkCategory(item.category);
-
-  const applyDefaults = (detail) => {
-    if (!detail.menuSubItemGroups) return;
-    const selections = {};
-    for (const g of detail.menuSubItemGroups) {
-      const groupId = g.menuSubItemGroupId;
-      const groupNameStr = (g.displayName || g.groupName || '').toLowerCase();
-      const isIceOrSugar = groupNameStr.includes('ice') || groupNameStr.includes('sugar') || groupNameStr.includes('sweet');
-      selections[groupId] = { groupName: g.displayName || g.groupName || '', maxSelect: g.maxSelect || 1, minSelect: g.minSelect || 0, items: {} };
-      let foundDefault = false;
-      for (const p of g.groupPrices || []) {
-        if (p.isDefault) {
-          selections[groupId].items[p.menuSubItemId] = { menuSubItemId: p.menuSubItemId, itemTypeId: (p.menuSubItem || {}).itemTypeId || 2, itemGroupPriceId: parseInt(groupId), quantity: 1, name: (p.menuSubItem || {}).name || '', price: p.price || 0 };
-          foundDefault = true;
-        }
-      }
-      if (!foundDefault && isIceOrSugar) {
-        const fb = (g.groupPrices || []).find(p => { const n = ((p.menuSubItem || {}).name || '').toLowerCase(); return n.includes('100') || n.includes('regular'); });
-        if (fb) selections[groupId].items[fb.menuSubItemId] = { menuSubItemId: fb.menuSubItemId, itemTypeId: (fb.menuSubItem || {}).itemTypeId || 2, itemGroupPriceId: parseInt(groupId), quantity: 1, name: (fb.menuSubItem || {}).name || '', price: fb.price || 0 };
-      }
-    }
-    mockupState._customizeSubItems = selections;
-  };
-
-  if (item.id && mockupState.selectedLocationId && window.ApiService) {
-    window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
-      .then((detail) => {
-        if (!detail || !detail.menuSubItemGroups || detail.menuSubItemGroups.length === 0) {
-          detail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
-        } else {
-          detail.menuSubItemGroups.forEach(g => { if (g.groupPrices) g.groupPrices = g.groupPrices.filter(p => !p.menuSubItem || p.menuSubItem.isActive !== false); });
-        }
-        mockupState.selectedItemDetail = detail;
-        applyDefaults(detail);
-        persistAllState();
-      })
-      .catch(() => {
-        const fb = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
-        mockupState.selectedItemDetail = fb;
-        applyDefaults(fb);
-        persistAllState();
-      })
-      .finally(() => {
-        renderPage();
-        navigateTo('customize');
-      });
-  } else {
-    const fb = { menuItemId: item.id || 0, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
-    mockupState.selectedItemDetail = fb;
-    applyDefaults(fb);
-    navigateTo('customize');
-  }
+  navigateTo('customize');
 };
 
 function selectFavoriteAndNavigate(name) {
@@ -13726,18 +13672,50 @@ window.addEventListener("DOMContentLoaded", () => {
     fetchMenuAndItems(mockupState.selectedLocationId);
   }
 
-  // Auto-fetch item details if deep-linked into a customize page without data
+  // Auto-fetch item details if landing on a customize page without detail data.
+  // Searches ALL MENU_ITEMS by id (not getActiveMenuItems() by index) to avoid
+  // the category-filter mismatch that caused the wrong item to load.
   if (
     currentPage.startsWith("customize") &&
     mockupState.selectedItem &&
     !mockupState.selectedItemDetail &&
     !mockupState.isLoading
   ) {
+    const targetId = mockupState.selectedItem.id;
+    const allIdx = MENU_ITEMS.findIndex((i) => i.id === targetId);
+    // Also try getActiveMenuItems() as a fallback for items in the active category
     const activeItems = getActiveMenuItems();
-    const idx = activeItems.findIndex((i) => i.id === mockupState.selectedItem.id);
-    if (idx !== -1) {
+    const activeIdx = activeItems.findIndex((i) => i.id === targetId);
+    if (activeIdx !== -1) {
+      // Item is in the active category — use selectItemAndNavigate (loads detail + re-navigates)
       window._targetCustomizePage = currentPage;
-      setTimeout(() => selectItemAndNavigate(idx), 0);
+      setTimeout(() => selectItemAndNavigate(activeIdx), 0);
+    } else if (allIdx !== -1) {
+      // Item is from a different category (e.g. suggested item from cart).
+      // Fetch detail directly without going through selectItemAndNavigate's index lookup.
+      const item = MENU_ITEMS[allIdx];
+      const isDrink = isDrinkCategory(item.category);
+      window._targetCustomizePage = currentPage;
+      if (item.id && mockupState.selectedLocationId && window.ApiService) {
+        window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
+          .then((detail) => {
+            if (!detail || !detail.menuSubItemGroups || detail.menuSubItemGroups.length === 0) {
+              detail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+            } else {
+              detail.menuSubItemGroups.forEach(g => { if (g.groupPrices) g.groupPrices = g.groupPrices.filter(p => !p.menuSubItem || p.menuSubItem.isActive !== false); });
+            }
+            mockupState.selectedItemDetail = detail;
+            persistAllState();
+          })
+          .catch(() => {
+            mockupState.selectedItemDetail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+            persistAllState();
+          })
+          .finally(() => { renderPage(); });
+      } else {
+        mockupState.selectedItemDetail = { menuItemId: item.id || 0, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+        persistAllState();
+      }
     }
   }
 
