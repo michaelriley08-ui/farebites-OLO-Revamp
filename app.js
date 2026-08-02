@@ -5732,9 +5732,9 @@ const routes = {
                                 return `<p class="text-xs text-gray-400 italic">No additional suggestions</p>`;
                               }
 
-                              return finalCrossSells
+                              return (window._cartSuggestedItems = finalCrossSells)
                                 .map(
-                                  (item) => `
+                                  (item, idx) => `
                                 <div class="snap-start shrink-0 w-36 bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex flex-col justify-between group hover:border-violet-200 transition-all">
                                     <div class="relative w-full h-24 rounded-xl overflow-hidden mb-2">
                                         <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -5743,7 +5743,7 @@ const routes = {
                                         <h4 class="font-black text-gray-900 text-xs leading-tight line-clamp-1 uppercase">${item.name}</h4>
                                         <span class="font-bold text-violet-600 text-xs">$${item.price.toFixed(2)}</span>
                                     </div>
-                                    <button onclick="window.quickAddSuggestedItem(${item.id})" class="mt-2 w-full py-1.5 rounded-full bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white font-black text-[10px] uppercase tracking-wider transition-colors">
+                                    <button onclick="window.quickAddSuggestedItem(${idx})" class="mt-2 w-full py-1.5 rounded-full bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white font-black text-[10px] uppercase tracking-wider transition-colors">
                                         + Add
                                     </button>
                                 </div>
@@ -9205,10 +9205,6 @@ function renderPage() {
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('menu')">Menu</span>
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('locations')">Order</span>
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="mockupState.modalOpen='reorder'; renderPage();">Reorder</span>
-
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap flex items-center gap-1" onclick="toggleMenu(event, 'all-pages-dropdown')">
-                            Pages <i class="fa-solid fa-chevron-down text-[10px] text-gray-400"></i>
-                        </span>
                     </div>
                 </div>
                 <div class="flex items-center gap-4 lg:gap-8 text-[14px] lg:text-[16px] font-black uppercase tracking-tight text-[#1f0b35]">
@@ -9248,52 +9244,6 @@ function renderPage() {
                     <div class="cursor-pointer relative hover:text-violet-600 transition-colors shrink-0 w-10 h-10 lg:w-11 lg:h-11 flex items-center justify-center -mr-2" onclick="navigateTo('cart')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                         ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
-                    </div>
-                </div>
-                
-                <!-- Centered pages dropdown -->
-                <div id="all-pages-dropdown" class="dropdown-menu hidden normal-case">
-                    <div class="flex flex-col gap-2">
-                        <div class="dropdown-column-title">Core Pages</div>
-                        <a href="index.html" class="dropdown-item lowercase">index.html</a>
-                        <a href="menu.html" class="dropdown-item lowercase">menu.html</a>
-                        <a href="locations.html" class="dropdown-item lowercase">locations.html</a>
-                        <a href="cart.html" class="dropdown-item lowercase">cart.html</a>
-                        <a href="checkout.html" class="dropdown-item lowercase">checkout.html</a>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <div class="dropdown-column-title">Ordering & Account</div>
-                        <a href="order-customize.html" class="dropdown-item lowercase">order-customize.html</a>
-                        <a href="order-confirm.html" class="dropdown-item lowercase">order-confirm.html</a>
-                        <a href="order-status.html" class="dropdown-item lowercase">order-status.html</a>
-                        <a href="order-details.html" class="dropdown-item lowercase">order-details.html</a>
-                        <a href="track-order.html" class="dropdown-item lowercase">track-order.html</a>
-                        <a href="profile.html" class="dropdown-item lowercase">profile.html</a>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <div class="dropdown-column-title">Other Pages</div>
-                        <a href="registration.html" class="dropdown-item lowercase">registration.html</a>
-                        <a href="sign-in.html" class="dropdown-item lowercase">sign-in.html</a>
-                        <a href="menu-favorites.html" class="dropdown-item lowercase">menu-favorites.html</a>
-                        <a href="menu-scan.html" class="dropdown-item lowercase">menu-scan.html</a>
-                        <a href="directions.html" class="dropdown-item lowercase">directions.html</a>
-                        <a href="privacy.html" class="dropdown-item lowercase">privacy.html</a>
-                        <a href="accessibility.html" class="dropdown-item lowercase">accessibility.html</a>
-                    </div>
-                    
-                    <!-- Alt Versions Footer Card -->
-                    <div class="col-span-3 mt-2 p-4 bg-violet-50 rounded-2xl border border-violet-100 flex flex-col gap-3">
-                        <div class="text-[11px] font-black text-violet-700 uppercase tracking-widest">Alt Versions</div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <a href="menu.html?store=7" class="dropdown-item lowercase !py-2 bg-white/60 hover:bg-white border border-violet-100/50 shadow-sm flex items-center justify-between">
-                                <span>menu.html</span>
-                                <i class="fa-solid fa-arrow-right text-[10px] text-violet-400"></i>
-                            </a>
-                            <a href="order-details-alt.html" class="dropdown-item lowercase !py-2 bg-white/60 hover:bg-white border border-violet-100/50 shadow-sm flex items-center justify-between">
-                                <span>order-details-alt.html</span>
-                                <i class="fa-solid fa-arrow-right text-[10px] text-violet-400"></i>
-                            </a>
-                        </div>
                     </div>
                 </div>
             </nav>
@@ -10720,6 +10670,45 @@ function selectItemAndNavigate(index) {
     window._targetCustomizePage = null;
   }
 }
+
+// Called by the "+ Add" button on suggested items cards in the cart page.
+// Uses a simple integer index into window._cartSuggestedItems — no id or
+// quoting issues. Finds the matching item in getActiveMenuItems() (API items)
+// or falls back to the stored item object, then navigates to customize.
+window.quickAddSuggestedItem = function(idx) {
+  const stored = window._cartSuggestedItems;
+  if (!stored || !stored[idx]) {
+    console.warn('quickAddSuggestedItem: no item at index', idx);
+    return;
+  }
+  const storedItem = stored[idx];
+  // Prefer the API version of this item (has id + full detail) if available
+  const activeItems = getActiveMenuItems();
+  const activeIdx = activeItems.findIndex(
+    (i) => (i.name || '').toLowerCase() === (storedItem.name || '').toLowerCase()
+  );
+  if (activeIdx !== -1) {
+    // Item found in active list — use the standard navigate path (sets selectedItem correctly)
+    mockupState.lastMenuPage = 'cart';
+    selectItemAndNavigate(activeIdx);
+  } else {
+    // Item not in active category — set directly and navigate
+    mockupState.selectedItem = storedItem;
+    mockupState.editingCartIndex = null;
+    mockupState.itemQuantity = 1;
+    mockupState.sugarLevel = '50%';
+    mockupState.toppingQty = {};
+    mockupState.cupQty = {};
+    mockupState.freeToppings = [];
+    mockupState.iceLevel = 'ICE';
+    mockupState._customizeSubItems = {};
+    mockupState._customizeModifyTypes = {};
+    mockupState.selectedItemDetail = null;
+    mockupState.lastMenuPage = 'cart';
+    persistAllState();
+    navigateTo('customize');
+  }
+};
 
 function selectFavoriteAndNavigate(name) {
   const list = getActiveMenuItems();
@@ -13696,18 +13685,52 @@ window.addEventListener("DOMContentLoaded", () => {
     fetchMenuAndItems(mockupState.selectedLocationId);
   }
 
-  // Auto-fetch item details if deep-linked into a customize page without data
+  // Auto-fetch item details if landing on a customize page without detail data.
+  // Searches API items then MENU_ITEMS by name (not by id/index which may be absent).
   if (
     currentPage.startsWith("customize") &&
     mockupState.selectedItem &&
     !mockupState.selectedItemDetail &&
     !mockupState.isLoading
   ) {
+    const targetName = (mockupState.selectedItem.name || "").toLowerCase();
+    // First try getActiveMenuItems() which selectItemAndNavigate uses internally
     const activeItems = getActiveMenuItems();
-    const idx = activeItems.findIndex((i) => i.id === mockupState.selectedItem.id);
-    if (idx !== -1) {
+    const activeIdx = activeItems.findIndex((i) => (i.name || "").toLowerCase() === targetName);
+    if (activeIdx !== -1) {
       window._targetCustomizePage = currentPage;
-      setTimeout(() => selectItemAndNavigate(idx), 0);
+      setTimeout(() => selectItemAndNavigate(activeIdx), 0);
+    } else {
+      // Item is from a different category (e.g. suggested item from cart).
+      // Find in all items and fetch detail directly.
+      const allItems = (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0)
+        ? mockupState.apiMenuItems
+        : MENU_ITEMS;
+      const item = allItems.find((i) => (i.name || "").toLowerCase() === targetName);
+      if (item) {
+        const isDrink = isDrinkCategory(item.category);
+        if (item.id && mockupState.selectedLocationId && window.ApiService) {
+          window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
+            .then((detail) => {
+              if (!detail || !detail.menuSubItemGroups || detail.menuSubItemGroups.length === 0) {
+                detail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+              } else {
+                detail.menuSubItemGroups.forEach(g => { if (g.groupPrices) g.groupPrices = g.groupPrices.filter(p => !p.menuSubItem || p.menuSubItem.isActive !== false); });
+              }
+              mockupState.selectedItemDetail = detail;
+              persistAllState();
+            })
+            .catch(() => {
+              mockupState.selectedItemDetail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+              persistAllState();
+            })
+            .finally(() => { renderPage(); });
+        } else {
+          // No API id — use defaults and re-render
+          mockupState.selectedItemDetail = { menuItemId: 0, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+          persistAllState();
+        }
+      }
     }
   }
 
