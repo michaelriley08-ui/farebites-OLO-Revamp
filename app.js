@@ -5743,7 +5743,7 @@ const routes = {
                                         <h4 class="font-black text-gray-900 text-xs leading-tight line-clamp-1 uppercase">${item.name}</h4>
                                         <span class="font-bold text-violet-600 text-xs">$${item.price.toFixed(2)}</span>
                                     </div>
-                                    <button onclick="window.quickAddSuggestedItem(${item.id})" class="mt-2 w-full py-1.5 rounded-full bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white font-black text-[10px] uppercase tracking-wider transition-colors">
+                                    <button onclick="window.quickAddSuggestedItem(${JSON.stringify(item.name)})" class="mt-2 w-full py-1.5 rounded-full bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white font-black text-[10px] uppercase tracking-wider transition-colors">
                                         + Add
                                     </button>
                                 </div>
@@ -10672,13 +10672,15 @@ function selectItemAndNavigate(index) {
 }
 
 // Called by the "+ Add" button on suggested items cards in the cart page.
-// Sets selectedItem directly by id, clears detail, persists, then navigates.
-// The customize page's DOMContentLoaded auto-fetch guard handles loading the
-// correct item detail on arrival (searches MENU_ITEMS by id, not index).
-window.quickAddSuggestedItem = function(itemId) {
-  const item = MENU_ITEMS.find((i) => i.id === itemId);
+// Looks up by name (since static MENU_ITEMS has no id field).
+window.quickAddSuggestedItem = function(itemName) {
+  // Look in API items first, then fall back to static MENU_ITEMS
+  const allItems = (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0)
+    ? mockupState.apiMenuItems
+    : MENU_ITEMS;
+  const item = allItems.find((i) => i.name === itemName);
   if (!item) {
-    console.warn('quickAddSuggestedItem: item not found, id=', itemId);
+    console.warn('quickAddSuggestedItem: item not found, name=', itemName);
     return;
   }
   mockupState.selectedItem = item;
@@ -13673,48 +13675,50 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // Auto-fetch item details if landing on a customize page without detail data.
-  // Searches ALL MENU_ITEMS by id (not getActiveMenuItems() by index) to avoid
-  // the category-filter mismatch that caused the wrong item to load.
+  // Searches API items then MENU_ITEMS by name (not by id/index which may be absent).
   if (
     currentPage.startsWith("customize") &&
     mockupState.selectedItem &&
     !mockupState.selectedItemDetail &&
     !mockupState.isLoading
   ) {
-    const targetId = mockupState.selectedItem.id;
-    const allIdx = MENU_ITEMS.findIndex((i) => i.id === targetId);
-    // Also try getActiveMenuItems() as a fallback for items in the active category
+    const targetName = (mockupState.selectedItem.name || "").toLowerCase();
+    // First try getActiveMenuItems() which selectItemAndNavigate uses internally
     const activeItems = getActiveMenuItems();
-    const activeIdx = activeItems.findIndex((i) => i.id === targetId);
+    const activeIdx = activeItems.findIndex((i) => (i.name || "").toLowerCase() === targetName);
     if (activeIdx !== -1) {
-      // Item is in the active category — use selectItemAndNavigate (loads detail + re-navigates)
       window._targetCustomizePage = currentPage;
       setTimeout(() => selectItemAndNavigate(activeIdx), 0);
-    } else if (allIdx !== -1) {
+    } else {
       // Item is from a different category (e.g. suggested item from cart).
-      // Fetch detail directly without going through selectItemAndNavigate's index lookup.
-      const item = MENU_ITEMS[allIdx];
-      const isDrink = isDrinkCategory(item.category);
-      window._targetCustomizePage = currentPage;
-      if (item.id && mockupState.selectedLocationId && window.ApiService) {
-        window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
-          .then((detail) => {
-            if (!detail || !detail.menuSubItemGroups || detail.menuSubItemGroups.length === 0) {
-              detail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
-            } else {
-              detail.menuSubItemGroups.forEach(g => { if (g.groupPrices) g.groupPrices = g.groupPrices.filter(p => !p.menuSubItem || p.menuSubItem.isActive !== false); });
-            }
-            mockupState.selectedItemDetail = detail;
-            persistAllState();
-          })
-          .catch(() => {
-            mockupState.selectedItemDetail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
-            persistAllState();
-          })
-          .finally(() => { renderPage(); });
-      } else {
-        mockupState.selectedItemDetail = { menuItemId: item.id || 0, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
-        persistAllState();
+      // Find in all items and fetch detail directly.
+      const allItems = (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0)
+        ? mockupState.apiMenuItems
+        : MENU_ITEMS;
+      const item = allItems.find((i) => (i.name || "").toLowerCase() === targetName);
+      if (item) {
+        const isDrink = isDrinkCategory(item.category);
+        if (item.id && mockupState.selectedLocationId && window.ApiService) {
+          window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
+            .then((detail) => {
+              if (!detail || !detail.menuSubItemGroups || detail.menuSubItemGroups.length === 0) {
+                detail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+              } else {
+                detail.menuSubItemGroups.forEach(g => { if (g.groupPrices) g.groupPrices = g.groupPrices.filter(p => !p.menuSubItem || p.menuSubItem.isActive !== false); });
+              }
+              mockupState.selectedItemDetail = detail;
+              persistAllState();
+            })
+            .catch(() => {
+              mockupState.selectedItemDetail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+              persistAllState();
+            })
+            .finally(() => { renderPage(); });
+        } else {
+          // No API id — use defaults and re-render
+          mockupState.selectedItemDetail = { menuItemId: 0, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+          persistAllState();
+        }
       }
     }
   }
