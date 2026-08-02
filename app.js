@@ -9205,10 +9205,7 @@ function renderPage() {
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('menu')">Menu</span>
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('locations')">Order</span>
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="mockupState.modalOpen='reorder'; renderPage();">Reorder</span>
-
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap flex items-center gap-1" onclick="toggleMenu(event, 'all-pages-dropdown')">
-                            Pages <i class="fa-solid fa-chevron-down text-[10px] text-gray-400"></i>
-                        </span>
+                        <a href="pages.html" class="cursor-pointer nav-link-animated whitespace-nowrap no-underline text-[#1f0b35]">Pages</a>
                     </div>
                 </div>
                 <div class="flex items-center gap-4 lg:gap-8 text-[14px] lg:text-[16px] font-black uppercase tracking-tight text-[#1f0b35]">
@@ -9248,52 +9245,6 @@ function renderPage() {
                     <div class="cursor-pointer relative hover:text-violet-600 transition-colors shrink-0 w-10 h-10 lg:w-11 lg:h-11 flex items-center justify-center -mr-2" onclick="navigateTo('cart')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
                         ${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}
-                    </div>
-                </div>
-                
-                <!-- Centered pages dropdown -->
-                <div id="all-pages-dropdown" class="dropdown-menu hidden normal-case">
-                    <div class="flex flex-col gap-2">
-                        <div class="dropdown-column-title">Core Pages</div>
-                        <a href="index.html" class="dropdown-item lowercase">index.html</a>
-                        <a href="menu.html" class="dropdown-item lowercase">menu.html</a>
-                        <a href="locations.html" class="dropdown-item lowercase">locations.html</a>
-                        <a href="cart.html" class="dropdown-item lowercase">cart.html</a>
-                        <a href="checkout.html" class="dropdown-item lowercase">checkout.html</a>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <div class="dropdown-column-title">Ordering & Account</div>
-                        <a href="order-customize.html" class="dropdown-item lowercase">order-customize.html</a>
-                        <a href="order-confirm.html" class="dropdown-item lowercase">order-confirm.html</a>
-                        <a href="order-status.html" class="dropdown-item lowercase">order-status.html</a>
-                        <a href="order-details.html" class="dropdown-item lowercase">order-details.html</a>
-                        <a href="track-order.html" class="dropdown-item lowercase">track-order.html</a>
-                        <a href="profile.html" class="dropdown-item lowercase">profile.html</a>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <div class="dropdown-column-title">Other Pages</div>
-                        <a href="registration.html" class="dropdown-item lowercase">registration.html</a>
-                        <a href="sign-in.html" class="dropdown-item lowercase">sign-in.html</a>
-                        <a href="menu-favorites.html" class="dropdown-item lowercase">menu-favorites.html</a>
-                        <a href="menu-scan.html" class="dropdown-item lowercase">menu-scan.html</a>
-                        <a href="directions.html" class="dropdown-item lowercase">directions.html</a>
-                        <a href="privacy.html" class="dropdown-item lowercase">privacy.html</a>
-                        <a href="accessibility.html" class="dropdown-item lowercase">accessibility.html</a>
-                    </div>
-                    
-                    <!-- Alt Versions Footer Card -->
-                    <div class="col-span-3 mt-2 p-4 bg-violet-50 rounded-2xl border border-violet-100 flex flex-col gap-3">
-                        <div class="text-[11px] font-black text-violet-700 uppercase tracking-widest">Alt Versions</div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <a href="menu.html?store=7" class="dropdown-item lowercase !py-2 bg-white/60 hover:bg-white border border-violet-100/50 shadow-sm flex items-center justify-between">
-                                <span>menu.html</span>
-                                <i class="fa-solid fa-arrow-right text-[10px] text-violet-400"></i>
-                            </a>
-                            <a href="order-details-alt.html" class="dropdown-item lowercase !py-2 bg-white/60 hover:bg-white border border-violet-100/50 shadow-sm flex items-center justify-between">
-                                <span>order-details-alt.html</span>
-                                <i class="fa-solid fa-arrow-right text-[10px] text-violet-400"></i>
-                            </a>
-                        </div>
                     </div>
                 </div>
             </nav>
