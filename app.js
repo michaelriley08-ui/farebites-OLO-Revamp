@@ -9205,7 +9205,6 @@ function renderPage() {
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('menu')">Menu</span>
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('locations')">Order</span>
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="mockupState.modalOpen='reorder'; renderPage();">Reorder</span>
-                        <a href="pages.html" class="cursor-pointer nav-link-animated whitespace-nowrap no-underline text-[#1f0b35]">Pages</a>
                     </div>
                 </div>
                 <div class="flex items-center gap-4 lg:gap-8 text-[14px] lg:text-[16px] font-black uppercase tracking-tight text-[#1f0b35]">
