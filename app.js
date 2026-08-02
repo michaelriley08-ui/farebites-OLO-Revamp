@@ -5732,9 +5732,9 @@ const routes = {
                                 return `<p class="text-xs text-gray-400 italic">No additional suggestions</p>`;
                               }
 
-                              return finalCrossSells
+                              return (window._cartSuggestedItems = finalCrossSells)
                                 .map(
-                                  (item) => `
+                                  (item, idx) => `
                                 <div class="snap-start shrink-0 w-36 bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex flex-col justify-between group hover:border-violet-200 transition-all">
                                     <div class="relative w-full h-24 rounded-xl overflow-hidden mb-2">
                                         <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -5743,7 +5743,7 @@ const routes = {
                                         <h4 class="font-black text-gray-900 text-xs leading-tight line-clamp-1 uppercase">${item.name}</h4>
                                         <span class="font-bold text-violet-600 text-xs">$${item.price.toFixed(2)}</span>
                                     </div>
-                                    <button onclick="window.quickAddSuggestedItem(${JSON.stringify(item.name)})" class="mt-2 w-full py-1.5 rounded-full bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white font-black text-[10px] uppercase tracking-wider transition-colors">
+                                    <button onclick="window.quickAddSuggestedItem(${idx})" class="mt-2 w-full py-1.5 rounded-full bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white font-black text-[10px] uppercase tracking-wider transition-colors">
                                         + Add
                                     </button>
                                 </div>
@@ -10672,31 +10672,42 @@ function selectItemAndNavigate(index) {
 }
 
 // Called by the "+ Add" button on suggested items cards in the cart page.
-// Looks up by name (since static MENU_ITEMS has no id field).
-window.quickAddSuggestedItem = function(itemName) {
-  // Look in API items first, then fall back to static MENU_ITEMS
-  const allItems = (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0)
-    ? mockupState.apiMenuItems
-    : MENU_ITEMS;
-  const item = allItems.find((i) => i.name === itemName);
-  if (!item) {
-    console.warn('quickAddSuggestedItem: item not found, name=', itemName);
+// Uses a simple integer index into window._cartSuggestedItems — no id or
+// quoting issues. Finds the matching item in getActiveMenuItems() (API items)
+// or falls back to the stored item object, then navigates to customize.
+window.quickAddSuggestedItem = function(idx) {
+  const stored = window._cartSuggestedItems;
+  if (!stored || !stored[idx]) {
+    console.warn('quickAddSuggestedItem: no item at index', idx);
     return;
   }
-  mockupState.selectedItem = item;
-  mockupState.editingCartIndex = null;
-  mockupState.itemQuantity = 1;
-  mockupState.sugarLevel = '50%';
-  mockupState.toppingQty = {};
-  mockupState.cupQty = {};
-  mockupState.freeToppings = [];
-  mockupState.iceLevel = 'ICE';
-  mockupState._customizeSubItems = {};
-  mockupState._customizeModifyTypes = {};
-  mockupState.selectedItemDetail = null;
-  mockupState.lastMenuPage = 'cart';
-  persistAllState();
-  navigateTo('customize');
+  const storedItem = stored[idx];
+  // Prefer the API version of this item (has id + full detail) if available
+  const activeItems = getActiveMenuItems();
+  const activeIdx = activeItems.findIndex(
+    (i) => (i.name || '').toLowerCase() === (storedItem.name || '').toLowerCase()
+  );
+  if (activeIdx !== -1) {
+    // Item found in active list — use the standard navigate path (sets selectedItem correctly)
+    mockupState.lastMenuPage = 'cart';
+    selectItemAndNavigate(activeIdx);
+  } else {
+    // Item not in active category — set directly and navigate
+    mockupState.selectedItem = storedItem;
+    mockupState.editingCartIndex = null;
+    mockupState.itemQuantity = 1;
+    mockupState.sugarLevel = '50%';
+    mockupState.toppingQty = {};
+    mockupState.cupQty = {};
+    mockupState.freeToppings = [];
+    mockupState.iceLevel = 'ICE';
+    mockupState._customizeSubItems = {};
+    mockupState._customizeModifyTypes = {};
+    mockupState.selectedItemDetail = null;
+    mockupState.lastMenuPage = 'cart';
+    persistAllState();
+    navigateTo('customize');
+  }
 };
 
 function selectFavoriteAndNavigate(name) {
