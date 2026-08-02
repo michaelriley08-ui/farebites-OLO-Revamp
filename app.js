@@ -10671,6 +10671,21 @@ function selectItemAndNavigate(index) {
   }
 }
 
+// Called by the "+ Add" button on suggested items cards in the cart page.
+// Sets the item as selected and navigates to the customize page, with
+// lastMenuPage = 'cart' so the back button returns to the cart.
+window.quickAddSuggestedItem = function(itemId) {
+  const allItems = MENU_ITEMS;
+  const idx = allItems.findIndex((i) => i.id === itemId);
+  if (idx === -1) {
+    console.warn('quickAddSuggestedItem: item not found, id=', itemId);
+    return;
+  }
+  // Temporarily set lastMenuPage so customize's back button goes back to cart
+  mockupState.lastMenuPage = 'cart';
+  selectItemAndNavigate(idx);
+};
+
 function selectFavoriteAndNavigate(name) {
   const list = getActiveMenuItems();
   const idx = list.findIndex((item) => item.name === name);
