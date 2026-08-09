@@ -117,7 +117,7 @@ const LOCATIONS = [
     dist: "0.8 mi",
     fav: true,
     hours: "11:30 AM to 9:30 PM",
-    locationId: 7,
+    locationId: 19,
     lat: 33.4223,
     lng: -111.9514,
   },
@@ -127,7 +127,7 @@ const LOCATIONS = [
     dist: "1.2 mi",
     fav: false,
     hours: "12:00 PM to 9:30 PM",
-    locationId: 5,
+    locationId: 47,
     lat: 37.7624,
     lng: -122.2435,
   },
@@ -147,7 +147,7 @@ const LOCATIONS = [
     dist: "45.0 mi",
     fav: false,
     hours: "11:00 AM to 8:00 PM",
-    locationId: 10,
+    locationId: 9001,
     lat: 38.5414,
     lng: -121.7482,
   },
@@ -157,7 +157,7 @@ const LOCATIONS = [
     dist: "18.2 mi",
     fav: false,
     hours: "11:30 AM to 9:00 PM",
-    locationId: 7,
+    locationId: 9002,
     lat: 37.5186,
     lng: -121.9702,
   },
@@ -167,7 +167,7 @@ const LOCATIONS = [
     dist: "120.5 mi",
     fav: false,
     hours: "1:00 PM to 6:45 PM",
-    locationId: 9,
+    locationId: 9003,
     lat: 36.8087,
     lng: -119.7801,
   },
@@ -177,7 +177,7 @@ const LOCATIONS = [
     dist: "25.3 mi",
     fav: false,
     hours: "11:30 AM to 9:20 PM",
-    locationId: 10,
+    locationId: 57,
     lat: 37.4332,
     lng: -121.8795,
   },
@@ -187,7 +187,7 @@ const LOCATIONS = [
     dist: "15.8 mi",
     fav: false,
     hours: "12:30 PM to 8:00 PM",
-    locationId: 7,
+    locationId: 58,
     lat: 37.8351,
     lng: -122.1297,
   },
@@ -197,7 +197,7 @@ const LOCATIONS = [
     dist: "20.1 mi",
     fav: false,
     hours: "11:30 AM to 9:20 PM",
-    locationId: 9,
+    locationId: 9004,
     lat: 37.5255,
     lng: -122.0463,
   },
@@ -217,7 +217,7 @@ const LOCATIONS = [
     dist: "32.4 mi",
     fav: false,
     hours: "11:00 AM to 7:00 PM",
-    locationId: 10,
+    locationId: 9005,
     lat: 38.0135,
     lng: -121.8767,
   },
@@ -227,7 +227,7 @@ const LOCATIONS = [
     dist: "28.0 mi",
     fav: false,
     hours: "11:30 AM to 7:30 PM",
-    locationId: 7,
+    locationId: 9006,
     lat: 37.6627,
     lng: -121.8744,
   },
@@ -237,7 +237,7 @@ const LOCATIONS = [
     dist: "85.2 mi",
     fav: false,
     hours: "10:20 AM to 8:00 PM",
-    locationId: 9,
+    locationId: 9007,
     lat: 38.487,
     lng: -121.432,
   },
@@ -247,7 +247,7 @@ const LOCATIONS = [
     dist: "2.1 mi",
     fav: true,
     hours: "12:00 PM to 6:00 PM",
-    locationId: 10,
+    locationId: 9008,
     lat: 37.7905,
     lng: -122.4042,
   },
@@ -257,7 +257,7 @@ const LOCATIONS = [
     dist: "35.6 mi",
     fav: false,
     hours: "11:30 AM to 9:30 PM",
-    locationId: 7,
+    locationId: 9009,
     lat: 37.3195,
     lng: -121.8157,
   },
@@ -369,9 +369,22 @@ function isPastDate(targetYear, targetMonthIdx, dayOfMonth) {
 
 function getEstimatedPickupTime(offsetMinutes = 20) {
   const now = new Date();
-  now.setMinutes(now.getMinutes() + offsetMinutes);
-  let h = now.getHours();
-  let m = now.getMinutes();
+  let target = new Date(now.getTime() + offsetMinutes * 60000);
+
+  try {
+    const { openTime, isClosed } = getStoreTimesForDay("Today");
+    if (!isClosed && openTime) {
+      const openTimeWithPrep = new Date(openTime.getTime() + offsetMinutes * 60000);
+      if (target < openTimeWithPrep) {
+        target = openTimeWithPrep;
+      }
+    }
+  } catch (e) {
+    console.warn("Could not adjust estimated pickup time with store hours:", e);
+  }
+
+  let h = target.getHours();
+  let m = target.getMinutes();
   const ampm = h >= 12 ? "PM" : "AM";
   h = h % 12;
   h = h || 12; // convert 0 to 12
@@ -379,7 +392,7 @@ function getEstimatedPickupTime(offsetMinutes = 20) {
   return `${h}:${m} ${ampm}`;
 }
 
-function getDynamicTimes(selectedDayLabel = "Today") {
+function getStoreTimesForDay(selectedDayLabel = "Today") {
   const now = new Date();
 
   let targetDate = new Date(now);
@@ -457,10 +470,6 @@ function getDynamicTimes(selectedDayLabel = "Today") {
     }
   }
 
-  if (isClosed) {
-    return [];
-  }
-
   const parseTime = (timeStr, baseDate) => {
     const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
     if (!match) return new Date(baseDate);
@@ -476,17 +485,29 @@ function getDynamicTimes(selectedDayLabel = "Today") {
 
   let openTime = parseTime(openTimeStr, targetDate);
   let closeTime = parseTime(closeTimeStr, targetDate);
-  closeTime = new Date(closeTime.getTime() - 20 * 60000);
+
+  return { openTime, closeTime, isClosed };
+}
+
+function getDynamicTimes(selectedDayLabel = "Today") {
+  const { openTime, closeTime, isClosed } = getStoreTimesForDay(selectedDayLabel);
+  if (isClosed) {
+    return [];
+  }
+
+  const now = new Date();
+  let adjustedCloseTime = new Date(closeTime.getTime() - 20 * 60000);
 
   let current;
   if (selectedDayLabel === "Today") {
     let asapTime = new Date(now.getTime() + 20 * 60000);
-    current = asapTime > openTime ? asapTime : openTime;
+    let openTimeWithPrep = new Date(openTime.getTime() + 20 * 60000);
+    current = asapTime > openTimeWithPrep ? asapTime : openTimeWithPrep;
   } else {
-    current = openTime;
+    current = new Date(openTime.getTime() + 20 * 60000);
   }
 
-  if (current > closeTime) {
+  if (current > adjustedCloseTime) {
     return [];
   }
 
@@ -497,7 +518,7 @@ function getDynamicTimes(selectedDayLabel = "Today") {
   }
 
   const times = [];
-  while (current <= closeTime && times.length < 50) {
+  while (current <= adjustedCloseTime && times.length < 50) {
     let h = current.getHours();
     let m = current.getMinutes();
     const ampm = h >= 12 ? "PM" : "AM";
@@ -605,6 +626,73 @@ let currentPage = document.body.dataset.page || "restaurant-home";
 let mockupState = loadMockupState();
 mockupState.isLoading = false;
 let isUpdatingMockupState = false;
+
+function getPreviousOrderLocation() {
+  let lastOrder = mockupState.lastOrder;
+  if (!lastOrder && mockupState.apiOrders && mockupState.apiOrders.length > 0) {
+    lastOrder = mockupState.apiOrders[0];
+  }
+  
+  if (lastOrder) {
+    let locId = lastOrder.locationId;
+    const locName = lastOrder.locationName || "";
+    
+    // Map backend database locationNames to mockup location IDs if locationId is missing from API order history
+    if (!locId && locName) {
+      const lowerName = locName.toLowerCase();
+      if (lowerName.includes("tom yum") || lowerName.includes("surprise")) {
+        locId = 5; // Alameda
+      } else if (lowerName.includes("castro valley")) {
+        locId = 7; // Castro Valley
+      } else if (lowerName.includes("oakland")) {
+        locId = 9; // Oakland/Fresno/Newark
+      } else if (lowerName.includes("san leandro")) {
+        locId = 10; // San Leandro/UC Davis/Milpitas
+      }
+    }
+    
+    // First, try to find matching location by ID in LOCATIONS (which maps database ID to our mockup store names/addresses)
+    let found = LOCATIONS.find(l => Number(l.locationId) === Number(locId));
+    
+    // Second, if not found in LOCATIONS, try apiLocations
+    if (!found && mockupState.apiLocations && mockupState.apiLocations.length > 0) {
+      found = mockupState.apiLocations.find(l => Number(l.locationId) === Number(locId));
+    }
+    
+    // Third, try finding by name matching
+    if (!found && lastOrder.locationName) {
+      const cleanName = lastOrder.locationName.toLowerCase().replace(/i-tea/gi, "").trim();
+      found = LOCATIONS.find(l => l.name.toLowerCase().includes(cleanName) || cleanName.includes(l.name.toLowerCase()));
+      if (!found && mockupState.apiLocations) {
+        found = mockupState.apiLocations.find(l => l.name.toLowerCase().includes(cleanName) || cleanName.includes(l.name.toLowerCase()));
+      }
+    }
+    
+    if (found) {
+      return {
+        locationId: found.locationId,
+        name: found.name,
+        address: found.address,
+        dist: found.dist || "0.0 mi"
+      };
+    }
+    
+    return {
+      locationId: lastOrder.locationId || 7,
+      name: lastOrder.locationName || "i-Tea - Tempe",
+      address: lastOrder.locationAddress || "825 W UNIVERSITY, TEMPE, AZ",
+      dist: lastOrder.locationDistance || "0.8 mi"
+    };
+  }
+  
+  return {
+    locationId: 7,
+    name: "i-Tea - Tempe",
+    address: "825 W UNIVERSITY, TEMPE, AZ",
+    dist: "0.8 mi"
+  };
+}
+window.getPreviousOrderLocation = getPreviousOrderLocation;
 
 function loadMockupState() {
   try {
@@ -870,15 +958,23 @@ function getEnabledLocations() {
   if (mockupState.locationsOrderingStatus) {
     list = list.filter(loc => mockupState.locationsOrderingStatus[loc.locationId] === true);
   } else {
-    // Only show locations with IDs 5 and 7 (which correspond to enabled locations on the API)
-    list = list.filter(loc => loc.locationId === 5 || loc.locationId === 7);
+    // Show active enabled locations on the API
+    const activeIds = [7, 9, 10, 19, 47, 57];
+    list = list.filter(loc => activeIds.includes(Number(loc.locationId)));
   }
   return list;
 }
 
 async function fetchLocations() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Locations`);
+    const headers = {};
+    if (window.ApiService && typeof window.ApiService.getToken === "function") {
+      const token = window.ApiService.getToken();
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+    const response = await fetch(`${API_BASE_URL}/api/Locations`, { headers });
     if (!response.ok) throw new Error("Network response was not ok");
     const data = await response.json();
     if (data && data.length > 0) {
@@ -1034,7 +1130,8 @@ async function fetchLocationsOrderingStatus() {
 
 async function fetchMenuAndItems(locationId) {
   if (!locationId) return;
-  // Intentionally omitting blocking loading overlay for smoother UX
+  mockupState.isLoading = true;
+  persistAllState();
   try {
     const menuResponse = await fetch(
       `${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/menu`,
@@ -1097,6 +1194,8 @@ async function fetchMenuAndItems(locationId) {
   } catch (error) {
     console.error("Failed to fetch menu and items from API:", error);
   } finally {
+    mockupState.isLoading = false;
+    persistAllState();
     // Menu loaded silently in background
     renderPage();
   }
@@ -1540,7 +1639,7 @@ function hamburgerDrawerHTML() {
                           item.page === "logout"
                             ? "closeHamburger(); signOutUser();"
                             : item.page === "reorder-modal"
-                            ? "closeHamburger(); mockupState.modalOpen='reorder'; renderPage();"
+                            ? "closeHamburger(); tryOpenReorderModal();"
                             : `closeHamburger(); navigateTo('${item.page}');`;
 
                         if (item.label === "Rewards") {
@@ -1652,10 +1751,10 @@ function renderMenuPage() {
 
   const selectedLoc =
     mockupState.apiLocations.find(
-      (loc) => loc.locationId === mockupState.selectedLocationId,
+      (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
     ) ||
     LOCATIONS.find(
-      (loc) => loc.locationId === mockupState.selectedLocationId,
+      (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
     ) ||
     LOCATIONS[0];
   const addressText =
@@ -2170,77 +2269,110 @@ function renderMenuPage() {
                     return `
                             <!-- Menu Feed (Categories) -->
                             <div class="space-y-12">
-                                
                                 ${
-                                  isAlternative
+                                  mockupState.isLoading
                                     ? `
-                                <!-- Category Navigation Pills -->
-                                <div class="flex overflow-x-auto lg:flex-wrap gap-2.5 py-0.5 px-1 scrollbar-hide whitespace-nowrap lg:whitespace-normal select-none !mt-3 !-mb-8">
-                                    ${getActiveCategories()
-                                      .map((section) => {
-                                        return `
-                                            <a href="#${section.id}" 
-                                               onclick="event.preventDefault(); document.getElementById('${section.id}')?.scrollIntoView({ behavior: 'smooth', block: 'start' });"
-                                               class="inline-flex items-center bg-[#D6D6D6] hover:bg-[#A8A8A8] text-[#1f0b35] px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 shrink-0 cursor-pointer">
-                                                ${section.name}
-                                            </a>
-                                        `;
-                                      })
-                                      .join("")}
+                                <!-- Loading Skeleton -->
+                                <div class="space-y-12 animate-pulse mt-4">
+                                    <!-- Category Pill Skeletons -->
+                                    <div class="flex gap-2.5 overflow-x-auto scrollbar-hide py-1">
+                                        ${[1, 2, 3, 4, 5].map(() => `
+                                            <div class="h-9 w-24 bg-gray-200 rounded-full shrink-0"></div>
+                                        `).join("")}
+                                    </div>
+                                    
+                                    <!-- Category Section Skeleton -->
+                                    <div>
+                                        <div class="h-6 w-48 bg-gray-200 rounded-md mb-6"></div>
+                                        <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : (currentPage === "menu-single" ? "grid grid-cols-1 md:grid-cols-2 gap-[10px]" : "grid grid-cols-2 gap-[10px]")}">
+                                            ${[1, 2, 3, 4].map(() => `
+                                                <div class="bg-white rounded-2xl border border-gray-100 flex flex-col h-full overflow-hidden shadow-sm">
+                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} bg-gray-200"></div>
+                                                    <div class="flex flex-col flex-1 p-4 space-y-3">
+                                                        <div class="h-4 w-3/4 bg-gray-200 rounded-md"></div>
+                                                        <div class="h-3 w-1/4 bg-gray-200 rounded-md"></div>
+                                                        ${isDesktop ? `<div class="h-2 w-full bg-gray-100 rounded-md"></div><div class="h-2 w-5/6 bg-gray-100 rounded-md"></div>` : ""}
+                                                        <div class="h-9 w-full bg-gray-200 rounded-full mt-auto"></div>
+                                                    </div>
+                                                </div>
+                                            `).join("")}
+                                        </div>
+                                    </div>
                                 </div>
                                 `
-                                    : ""
-                                }
-
-                                ${getActiveCategories()
-                                  .map((section) => {
-                                    const items = getActiveMenuItems();
-                                    const sectionItems = section.isFeatured
-                                      ? items.slice(0, 6)
-                                      : items.filter(
-                                          (item) =>
-                                            item.categoryId ===
-                                              section.categoryId ||
-                                            item.category ===
-                                              section.categoryKey,
-                                        );
-                                    if (sectionItems.length === 0) return "";
-                                    return `
-                                        <div id="${section.id}" class="scroll-mt-24 lg:scroll-mt-36">
-                                            <div class="flex justify-between items-end mb-6 px-1">
-                                                <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
-                                                <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
-                                            </div>
-                                            <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : (currentPage === "menu-single" ? "grid grid-cols-1 md:grid-cols-2 gap-[10px]" : "grid grid-cols-2 gap-[10px]")}">
-                                                ${sectionItems
-                                                  .map((item) => {
-                                                    const actualIndex =
-                                                      items.indexOf(item);
-                                                    return `
-                                                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
-                                                            <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
-                                                                <button onclick="event.stopPropagation(); toggleMenuFavorite(getActiveMenuItems()[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
-                                                                    <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
-                                                                </button>
-                                                            </div>
-                                                            <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
-                                                                <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                    <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                                    <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
-                                                                </div>
-                                                                ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ""}
-                                                                <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
-                                                            </div>
-                                                        </div>
-                                                    `;
-                                                  })
-                                                  .join("")}
-                                            </div>
+                                    : `
+                                        ${
+                                          isAlternative
+                                            ? `
+                                        <!-- Category Navigation Pills -->
+                                        <div class="flex overflow-x-auto lg:flex-wrap gap-2.5 py-0.5 px-1 scrollbar-hide whitespace-nowrap lg:whitespace-normal select-none !mt-3 !-mb-8">
+                                            ${getActiveCategories()
+                                              .map((section) => {
+                                                return `
+                                                    <a href="#${section.id}" 
+                                                       onclick="event.preventDefault(); document.getElementById('${section.id}')?.scrollIntoView({ behavior: 'smooth', block: 'start' });"
+                                                       class="inline-flex items-center bg-[#D6D6D6] hover:bg-[#A8A8A8] text-[#1f0b35] px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 shrink-0 cursor-pointer">
+                                                        ${section.name}
+                                                    </a>
+                                                `;
+                                              })
+                                              .join("")}
                                         </div>
-                                    `;
-                                  })
-                                  .join("")}
+                                        `
+                                            : ""
+                                        }
+
+                                        ${getActiveCategories()
+                                          .map((section) => {
+                                            const items = getActiveMenuItems();
+                                            const sectionItems = section.isFeatured
+                                              ? items.slice(0, 6)
+                                              : items.filter(
+                                                  (item) =>
+                                                    item.categoryId ===
+                                                      section.categoryId ||
+                                                    item.category ===
+                                                      section.categoryKey,
+                                                );
+                                            if (sectionItems.length === 0) return "";
+                                            return `
+                                                <div id="${section.id}" class="scroll-mt-24 lg:scroll-mt-36">
+                                                    <div class="flex justify-between items-end mb-6 px-1">
+                                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
+                                                        <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
+                                                    </div>
+                                                    <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : (currentPage === "menu-single" ? "grid grid-cols-1 md:grid-cols-2 gap-[10px]" : "grid grid-cols-2 gap-[10px]")}">
+                                                        ${sectionItems
+                                                          .map((item) => {
+                                                            const actualIndex =
+                                                              items.indexOf(item);
+                                                            return `
+                                                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
+                                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                                        <button onclick="event.stopPropagation(); toggleMenuFavorite(getActiveMenuItems()[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
+                                                                            <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                    <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
+                                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                                            <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                                            <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
+                                                                        </div>
+                                                                        ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ""}
+                                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                                    </div>
+                                                                </div>
+                                                            `;
+                                                          })
+                                                          .join("")}
+                                                    </div>
+                                                </div>
+                                            `;
+                                          })
+                                          .join("")}
+                                    `
+                                }
                             </div>
                         `;
                   } else if (mockupState.menuTab === "featured") {
@@ -3404,19 +3536,24 @@ const routes = {
                             <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
                         </header>
                         <!-- Default Location Quick-Select -->
-                        <div class="px-[36px] py-5 border-b border-[#1f0b35] bg-gradient-to-r from-violet-600 to-[#1f0b35] flex items-center justify-between gap-3 text-white">
-                            <div class="flex items-center gap-2.5 min-w-0">
-                                <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
-                                    <p class="text-base font-black text-white truncate">i-Tea - Tempe <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; 0.3 mi</span></p>
-                                    <p class="text-xs text-violet-200 mt-0.5 truncate">825 W UNIVERSITY, TEMPE, AZ</p>
-                                </div>
-                            </div>
-                            <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, TEMPE, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
-                        </div>
+                        ${(mockupState.isLoggedIn && (mockupState.lastOrder || (mockupState.apiOrders && mockupState.apiOrders.length > 0))) ? (() => {
+                          const prevLoc = getPreviousOrderLocation();
+                          return `
+                          <div class="px-[36px] py-5 border-b border-[#1f0b35] bg-gradient-to-r from-violet-600 to-[#1f0b35] flex items-center justify-between gap-3 text-white">
+                              <div class="flex items-center gap-2.5 min-w-0">
+                                  <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
+                                      <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
+                                  </div>
+                                  <div class="min-w-0">
+                                      <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
+                                      <p class="text-base font-black text-white truncate">${prevLoc.name} <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; ${prevLoc.dist}</span></p>
+                                      <p class="text-xs text-violet-200 mt-0.5 truncate">${prevLoc.address}</p>
+                                  </div>
+                              </div>
+                              <button onclick="selectLocation(${prevLoc.locationId}, '${prevLoc.name.replace(/'/g, "\\'")}', '${prevLoc.address.replace(/'/g, "\\'")}', '${prevLoc.dist}')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
+                          </div>
+                          `;
+                        })() : ""}
                         <div class="pt-5 px-5 bg-white">
                             <div class="bg-gray-100 flex items-center gap-3 px-4 py-3.5 rounded-full shadow-inner mb-5 border border-gray-200/50">
                                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
@@ -3522,18 +3659,23 @@ const routes = {
                     </header>
                     
                     <!-- Previous Order Location Quick-Select -->
-                    <div class="p-5 bg-gradient-to-r from-violet-600 to-[#1f0b35] border-b border-[#1f0b35] flex items-center justify-between gap-3 shrink-0 z-10 text-white">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
-                                <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
-                                <p class="text-base font-black text-white truncate">i-Tea - Tempe <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; 0.3 mi</span></p>
-                            </div>
-                        </div>
-                        <button onclick="selectLocation(7, 'i-Tea - Tempe', '825 W UNIVERSITY, TEMPE, AZ', '0.8 mi')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm transition-colors active:scale-95">Order Here</button>
-                    </div>
+                    ${(mockupState.isLoggedIn && (mockupState.lastOrder || (mockupState.apiOrders && mockupState.apiOrders.length > 0))) ? (() => {
+                      const prevLoc = getPreviousOrderLocation();
+                      return `
+                      <div class="p-5 bg-gradient-to-r from-violet-600 to-[#1f0b35] border-b border-[#1f0b35] flex items-center justify-between gap-3 shrink-0 z-10 text-white">
+                          <div class="flex items-center gap-2.5 min-w-0">
+                              <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
+                                  <i class="fa-solid fa-house text-violet-600 text-[10px]"></i>
+                              </div>
+                              <div class="min-w-0">
+                                  <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
+                                  <p class="text-base font-black text-white truncate">${prevLoc.name} <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; ${prevLoc.dist}</span></p>
+                              </div>
+                          </div>
+                          <button onclick="selectLocation(${prevLoc.locationId}, '${prevLoc.name.replace(/'/g, "\\'")}', '${prevLoc.address.replace(/'/g, "\\'")}', '${prevLoc.dist}')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm transition-colors active:scale-95">Order Here</button>
+                      </div>
+                      `;
+                    })() : ""}
 
                     <div class="w-full h-[35%] min-h-[220px] shrink-0 relative z-0">
                         <div id="locations-map" class="absolute inset-0 w-full h-full"></div>
@@ -4575,10 +4717,10 @@ const routes = {
 
     const selectedLoc =
       mockupState.apiLocations.find(
-        (loc) => loc.locationId === mockupState.selectedLocationId,
+        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
       ) ||
       LOCATIONS.find(
-        (loc) => loc.locationId === mockupState.selectedLocationId,
+        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
       ) ||
       LOCATIONS[0];
     const addressText =
@@ -4774,10 +4916,10 @@ const routes = {
 
     const selectedLoc =
       mockupState.apiLocations.find(
-        (loc) => loc.locationId === mockupState.selectedLocationId,
+        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
       ) ||
       LOCATIONS.find(
-        (loc) => loc.locationId === mockupState.selectedLocationId,
+        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
       ) ||
       LOCATIONS[0];
     const addressText =
@@ -4975,10 +5117,10 @@ const routes = {
     const isDesktop = currentViewport === "desktop";
     const selectedLoc =
       mockupState.apiLocations.find(
-        (loc) => loc.locationId === mockupState.selectedLocationId,
+        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
       ) ||
       LOCATIONS.find(
-        (loc) => loc.locationId === mockupState.selectedLocationId,
+        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
       ) ||
       LOCATIONS[0];
     const addressText =
@@ -5054,7 +5196,7 @@ const routes = {
                     <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-2">Your cart is empty</h3>
                     <p class="text-xs text-gray-400 font-medium mb-4">Add items from the menu to get started</p>
                     <button onclick="navigateTo('menu')" class="bg-violet-600 text-white px-6 py-3 rounded-full font-black text-sm uppercase tracking-wider hover:bg-violet-700 active:scale-95 transition-all">
-                        Browse Menu
+                        + Add Items
                     </button>
                 </div>`;
       }
@@ -5190,14 +5332,14 @@ const routes = {
                         <div class="grid grid-cols-2 gap-4">
                             <div onclick="window.toggleCartEditSection('method')" class="flex gap-3 items-center cursor-pointer group p-2 -m-2 rounded-xl hover:bg-gray-50/80 transition-colors">
                                 <div class="w-8 h-8 rounded-lg ${mockupState.cartEditSection === "method" ? "bg-violet-700 ring-2 ring-violet-300" : "bg-violet-600"} flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
-                                    <i class="fa-solid ${mockupState.fulfillmentMode === "Delivery" ? "fa-truck" : mockupState.fulfillmentMode === "Curbside" ? "fa-car" : mockupState.fulfillmentMode === "DriveUp" ? "fa-car-side" : "fa-shop"} text-white text-sm"></i>
+                                    <i class="fa-solid ${mockupState.fulfillmentMode === "Delivery" ? "fa-truck" : mockupState.fulfillmentMode === "Curbside" ? "fa-square-parking" : mockupState.fulfillmentMode === "Drive Through" || mockupState.fulfillmentMode === "Drive-thru" ? "fa-car" : "fa-shop"} text-white text-sm"></i>
                                 </div>
                                 <div class="flex flex-col min-w-0 flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup method</span>
                                         <i class="fa-solid fa-chevron-down text-[8px] text-gray-400 transition-transform ${mockupState.cartEditSection === "method" ? "rotate-180 text-violet-600" : ""}"></i>
                                     </div>
-                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight mt-0.5 truncate">${mockupState.fulfillmentMode || "Pickup"}</span>
+                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight mt-0.5 truncate">${mockupState.fulfillmentMode || "In-store"}</span>
                                 </div>
                             </div>
                             <div onclick="window.toggleCartEditSection('time')" class="flex gap-3 items-center cursor-pointer group border-l border-gray-100 pl-4 p-2 -my-2 rounded-xl hover:bg-gray-50/80 transition-colors">
@@ -5229,20 +5371,22 @@ const routes = {
                                         Done <i class="fa-solid fa-check text-[9px]"></i>
                                     </button>
                                 </div>
-                                <div class="grid grid-cols-3 gap-2">
+                                <div class="grid grid-cols-2 gap-2">
                                     ${[
-                                      { label: "Pickup", icon: "fa-shop" },
-                                      { label: "Curbside", icon: "fa-car" },
+                                      { label: "In-store", icon: "fa-shop" },
+                                      { label: "Drive Through", icon: "fa-car" },
+                                      { label: "Curbside", icon: "fa-square-parking" },
                                       { label: "Delivery", icon: "fa-truck" },
                                     ]
                                       .map((m) => {
+                                        const mode = mockupState.fulfillmentMode || "In-store";
                                         const isActive =
-                                          (mockupState.fulfillmentMode ||
-                                            "Pickup") === m.label;
+                                          (m.label === "In-store" && (mode === "In-store" || mode === "In-Store" || mode === "Pickup")) ||
+                                          (mode.toLowerCase() === m.label.toLowerCase());
                                         return `
-                                            <button onclick="updateMockupState('fulfillmentMode', '${m.label}'); mockupState.cartEditSection = null; navigateTo('cart');" class="flex flex-col items-center justify-center gap-1 py-2.5 px-2 border-2 rounded-xl font-bold transition-all ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/50"}">
+                                            <button onclick="updateMockupState('fulfillmentMode', '${m.label}'); mockupState.cartEditSection = null; navigateTo('cart');" class="flex flex-col items-center justify-center gap-1.5 py-2 px-2 border-2 rounded-xl font-bold transition-all ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/50"}">
                                                 <i class="fa-solid ${m.icon} text-sm ${isActive ? "text-white" : "text-violet-600"}"></i>
-                                                <span class="text-[10px] font-black uppercase tracking-tight">${m.label}</span>
+                                                <span class="text-[10px] font-black uppercase tracking-tight">${m.label === "In-store" ? "In-Store" : m.label}</span>
                                             </button>
                                         `;
                                       })
@@ -6999,10 +7143,10 @@ const routes = {
     const locationName = mockupState.selectedLocation || "i-Tea";
     const selectedLoc =
       (mockupState.apiLocations || []).find(
-        (loc) => loc.locationId === mockupState.selectedLocationId,
+        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
       ) ||
       LOCATIONS.find(
-        (loc) => loc.locationId === mockupState.selectedLocationId,
+        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
       ) ||
       LOCATIONS.find((loc) => loc.name === locationName) ||
       {};
@@ -8873,7 +9017,7 @@ function renderPage() {
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('restaurant-home')">Home</span>
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('menu')">Menu</span>
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('locations')">Order</span>
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="mockupState.modalOpen='reorder'; renderPage();">Reorder</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="tryOpenReorderModal();">Reorder</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-4 lg:gap-8 text-[14px] lg:text-[16px] font-black uppercase tracking-tight text-[#1f0b35]">
@@ -8893,7 +9037,7 @@ function renderPage() {
                             <div id="user-profile-dropdown" class="dropdown-menu">
                                 <div class="dropdown-column-title">My Profile</div>
                                 <div class="dropdown-item" onclick="navigateTo('account')">Account Details</div>
-                                <div class="dropdown-item flex items-center justify-between" onclick="mockupState.modalOpen='reorder'; renderPage();">
+                                <div class="dropdown-item flex items-center justify-between" onclick="tryOpenReorderModal();">
                                     <span>Reorder Past Orders</span>
                                     <i class="fa-solid fa-rotate-left text-xs text-violet-500"></i>
                                 </div>
@@ -10177,6 +10321,60 @@ function isDrinkCategory(categoryName) {
   return true;
 }
 
+const applyDefaultSelections = (detail) => {
+  if (detail.menuSubItemGroups) {
+    const selections = {};
+    for (const g of detail.menuSubItemGroups) {
+      const groupId = g.menuSubItemGroupId;
+      const maxSel = g.maxSelect || 1;
+      const groupNameStr = (g.displayName || g.groupName || "").toLowerCase();
+      const isIceOrSugar = groupNameStr.includes("ice") || groupNameStr.includes("sugar") || groupNameStr.includes("sweet");
+      
+      selections[groupId] = {
+        groupName: g.displayName || g.groupName || "",
+        maxSelect: maxSel,
+        minSelect: g.minSelect || 0,
+        items: {},
+      };
+      
+      let foundDefault = false;
+      for (const p of g.groupPrices || []) {
+        if (p.isDefault) {
+          selections[groupId].items[p.menuSubItemId] = {
+            menuSubItemId: p.menuSubItemId,
+            itemTypeId: (p.menuSubItem || {}).itemTypeId || 2,
+            itemGroupPriceId: parseInt(groupId),
+            quantity: 1,
+            name: (p.menuSubItem || {}).name || "",
+            price: p.price || 0,
+          };
+          foundDefault = true;
+        }
+      }
+      
+      // Fallback: If it's Ice/Sugar and no default was set, auto-select "100" or "Regular"
+      if (!foundDefault && isIceOrSugar) {
+        const fallbackMatch = (g.groupPrices || []).find(p => {
+           const subName = ((p.menuSubItem || {}).name || "").toLowerCase();
+           return subName.includes("100") || subName.includes("regular");
+        });
+        
+        if (fallbackMatch) {
+          selections[groupId].items[fallbackMatch.menuSubItemId] = {
+            menuSubItemId: fallbackMatch.menuSubItemId,
+            itemTypeId: (fallbackMatch.menuSubItem || {}).itemTypeId || 2,
+            itemGroupPriceId: parseInt(groupId),
+            quantity: 1,
+            name: (fallbackMatch.menuSubItem || {}).name || "",
+            price: fallbackMatch.price || 0,
+          };
+        }
+      }
+    }
+    mockupState._customizeSubItems = selections;
+  }
+};
+
 function selectItemAndNavigate(index) {
   const item = getActiveMenuItems()[index];
   mockupState.selectedItem = item;
@@ -10194,60 +10392,6 @@ function selectItemAndNavigate(index) {
   mockupState.selectedItemDetail = null;
   mockupState.lastMenuPage = currentPage;
   persistAllState();
-
-  const applyDefaultSelections = (detail) => {
-    if (detail.menuSubItemGroups) {
-      const selections = {};
-      for (const g of detail.menuSubItemGroups) {
-        const groupId = g.menuSubItemGroupId;
-        const maxSel = g.maxSelect || 1;
-        const groupNameStr = (g.displayName || g.groupName || "").toLowerCase();
-        const isIceOrSugar = groupNameStr.includes("ice") || groupNameStr.includes("sugar") || groupNameStr.includes("sweet");
-        
-        selections[groupId] = {
-          groupName: g.displayName || g.groupName || "",
-          maxSelect: maxSel,
-          minSelect: g.minSelect || 0,
-          items: {},
-        };
-        
-        let foundDefault = false;
-        for (const p of g.groupPrices || []) {
-          if (p.isDefault) {
-            selections[groupId].items[p.menuSubItemId] = {
-              menuSubItemId: p.menuSubItemId,
-              itemTypeId: (p.menuSubItem || {}).itemTypeId || 2,
-              itemGroupPriceId: parseInt(groupId),
-              quantity: 1,
-              name: (p.menuSubItem || {}).name || "",
-              price: p.price || 0,
-            };
-            foundDefault = true;
-          }
-        }
-        
-        // Fallback: If it's Ice/Sugar and no default was set, auto-select "100" or "Regular"
-        if (!foundDefault && isIceOrSugar) {
-          const fallbackMatch = (g.groupPrices || []).find(p => {
-             const subName = ((p.menuSubItem || {}).name || "").toLowerCase();
-             return subName.includes("100") || subName.includes("regular");
-          });
-          
-          if (fallbackMatch) {
-            selections[groupId].items[fallbackMatch.menuSubItemId] = {
-              menuSubItemId: fallbackMatch.menuSubItemId,
-              itemTypeId: (fallbackMatch.menuSubItem || {}).itemTypeId || 2,
-              itemGroupPriceId: parseInt(groupId),
-              quantity: 1,
-              name: (fallbackMatch.menuSubItem || {}).name || "",
-              price: fallbackMatch.price || 0,
-            };
-          }
-        }
-      }
-      mockupState._customizeSubItems = selections;
-    }
-  };
 
   // Fetch full item detail (with sub-item groups) from API
   if (item.id && mockupState.selectedLocationId && window.ApiService) {
@@ -10860,6 +11004,9 @@ window._handlePlaceOrder = async function () {
     const newOrderObj = {
       ...(typeof response === "object" ? response : {}),
       orderId: typeof response === "number" || typeof response === "string" ? response : (response?.data?.orderId || response?.orderId || response?.id || ("FB-" + Math.floor(1000 + Math.random() * 9000))),
+      locationId: mockupState.selectedLocationId || 7,
+      locationName: mockupState.selectedLocation || "i-Tea - Tempe",
+      locationAddress: mockupState.selectedAddress || "825 W UNIVERSITY, TEMPE, AZ",
       orderItems: cart.map((i) => ({ ...i })),
       subtotal: response?.data?.subTotal ?? response?.subTotal ?? subtotal,
       taxes: response?.data?.salesTax ?? response?.salesTax ?? taxes,
@@ -10904,6 +11051,9 @@ window._handlePlaceOrder = async function () {
         const retryOrderObj = {
           ...(typeof retryResponse === "object" ? retryResponse : {}),
           orderId: typeof retryResponse === "number" || typeof retryResponse === "string" ? retryResponse : (retryResponse?.data?.orderId || retryResponse?.orderId || retryResponse?.id || ("FB-" + Math.floor(1000 + Math.random() * 9000))),
+          locationId: mockupState.selectedLocationId || 7,
+          locationName: mockupState.selectedLocation || "i-Tea - Tempe",
+          locationAddress: mockupState.selectedAddress || "825 W UNIVERSITY, TEMPE, AZ",
           orderItems: cart.map((i) => ({ ...i })),
           subtotal: retryResponse?.data?.subTotal ?? retryResponse?.subTotal ?? subtotal,
           taxes: retryResponse?.data?.salesTax ?? retryResponse?.salesTax ?? taxes,
@@ -11060,6 +11210,13 @@ async function handleRegistration() {
     if (!window.ApiService) {
       throw new Error("API Service not loaded");
     }
+
+    // Fix for testing via file:/// URLs which cause SendGrid to drop the email due to invalid link format
+    let origin = window.location.origin;
+    if (origin === "null" || origin.includes("file://")) {
+      origin = "http://localhost:8000";
+    }
+
     const data = {
       firstName,
       lastName,
@@ -11070,9 +11227,9 @@ async function handleRegistration() {
       city,
       state,
       zipCode,
-      websiteUrl: window.location.origin,
-      callbackUrl: window.location.origin + "/index.html",
-      websiteShortName: "itea",
+      websiteUrl: "support@farebites.com",
+      callbackUrl: origin + "/index.html",
+      websiteShortName: "Farebites",
     };
 
     await window.ApiService.register(data);
@@ -11169,12 +11326,21 @@ async function handleLogin() {
 
     loadCartFromStorage();
     if (mockupState.isLoggedIn) {
-      mockupState.modalOpen = "reorder";
       try {
         const orders = await window.ApiService.getOrders(1, 20);
         console.log("Successfully fetched orders on login:", orders);
         mockupState.apiOrders = orders;
         preloadPastOrdersMenuItemDetails(orders);
+
+        // Check if the user has any past orders
+        const apiList = orders ? (Array.isArray(orders) ? orders : orders.items || orders.data || []) : [];
+        const userList = mockupState.userOrders || [];
+        const hasOrders = apiList.length > 0 || userList.length > 0 || !!mockupState.lastOrder;
+
+        // Auto-open reorder modal ONLY if they have orders and the cart is empty
+        if (hasOrders && (!mockupState.cart || mockupState.cart.length === 0)) {
+          mockupState.modalOpen = "reorder";
+        }
       } catch (ordersError) {
         console.error("Failed to fetch orders on login:", ordersError);
       }
@@ -11541,14 +11707,29 @@ async function signOutUser() {
     await window.ApiService.logout();
   }
 
+  // Capture email and last order BEFORE clearing state
+  const logoutEmail = mockupState.userEmail || mockupState.userProfile?.email || "";
+  const logoutLastOrder = mockupState.lastOrder;
+
   // Clear user state and screen cart
   mockupState.isLoggedIn = false;
   mockupState.userName = "Guest";
   mockupState.userEmail = "";
   mockupState.userProfile = {};
   
+  // Persist lastOrder to localStorage keyed by email so it survives logout/login
+  if (logoutEmail && logoutLastOrder) {
+    try {
+      localStorage.setItem(
+        `farebites_last_order_${logoutEmail.toLowerCase()}`,
+        JSON.stringify(logoutLastOrder)
+      );
+    } catch (e) { /* ignore storage errors */ }
+  }
+
   // Clear sensitive order data
   mockupState.apiOrders = [];
+  mockupState.userOrders = [];
   mockupState.lastOrder = null;
   mockupState.selectedItemDetail = null;
   mockupState.reorderDetailsCache = {};
@@ -11569,8 +11750,10 @@ async function signOutUser() {
   }
   keysToRemove.forEach((key) => localStorage.removeItem(key));
 
-  // Persist to session storage manually to avoid syncCartToStorage overwriting with empty
-  sessionStorage.setItem(STORAGE_KEYS.state, JSON.stringify(mockupState));
+  // Persist to session and local storage manually to avoid syncCartToStorage overwriting with empty
+  const stateJson = JSON.stringify(mockupState);
+  sessionStorage.setItem(STORAGE_KEYS.state, stateJson);
+  localStorage.setItem(STORAGE_KEYS.state, stateJson);
 
   navigateTo("sign-in");
 }
@@ -11784,10 +11967,12 @@ window.viewPastOrder = function (orderId) {
       placedAt: order.orderDate || order.placedAt || new Date().toISOString(),
     };
     if (order.locationId) {
-      mockupState.selectedLocationId = order.locationId;
-      const foundLoc = LOCATIONS.find((l) => l.locationId === order.locationId);
+      mockupState.selectedLocationId = Number(order.locationId);
+      const foundLoc = LOCATIONS.find((l) => Number(l.locationId) === Number(order.locationId));
       if (foundLoc) {
         mockupState.selectedLocation = foundLoc.name;
+        mockupState.selectedAddress = foundLoc.address;
+        mockupState.selectedRestaurantId = foundLoc.locationId;
       }
     }
     persistAllState();
@@ -11872,6 +12057,18 @@ function getSamplePastOrders() {
 }
 
 function recordPlacedOrder(orderObj) {
+  // Ensure location info is always stamped on the order
+  if (!orderObj.locationId) {
+    orderObj.locationId = mockupState.selectedLocationId || 7;
+  }
+  if (!orderObj.locationName) {
+    const loc = LOCATIONS.find(l => Number(l.locationId) === Number(orderObj.locationId));
+    orderObj.locationName = loc ? loc.name : (mockupState.selectedLocation || "i-Tea - Tempe");
+  }
+  if (!orderObj.locationAddress) {
+    const loc = LOCATIONS.find(l => Number(l.locationId) === Number(orderObj.locationId));
+    orderObj.locationAddress = loc ? loc.address : (mockupState.selectedAddress || "825 W UNIVERSITY, TEMPE, AZ");
+  }
   mockupState.lastOrder = orderObj;
   if (!mockupState.userOrders) {
     mockupState.userOrders = [];
@@ -11913,12 +12110,19 @@ function getAllUserOrders() {
     }
   });
 
-  if (allOrders.length === 0) {
-    allOrders = getSamplePastOrders();
-  }
-
   return allOrders;
 }
+
+function tryOpenReorderModal() {
+  const allOrders = getAllUserOrders();
+  if (allOrders.length > 0) {
+    mockupState.modalOpen = "reorder";
+    renderPage();
+  } else {
+    console.log("No orders found, not displaying reorder modal.");
+  }
+}
+window.tryOpenReorderModal = tryOpenReorderModal;
 
 function preloadPastOrdersMenuItemDetails(orders) {
   if (!orders) return;
@@ -12485,6 +12689,7 @@ function renderReorderModalHTML() {
   if (mockupState.modalOpen !== "reorder") return "";
 
   const allOrders = getAllUserOrders();
+  if (allOrders.length === 0) return "";
 
   // Sort by date descending
   const getOrderTime = (order) => {
@@ -12721,7 +12926,7 @@ async function selectLocation(
   if (mockupState.selectedLocationId !== locationId) {
     mockupState.cart = [];
     mockupState.cartItemCount = 0;
-    mockupState.selectedRestaurantId = null; // Clear restaurant ID so it fetches the correct one for this location
+    mockupState.selectedRestaurantId = locationId || null; // Default to the locationId so placing orders for non-i-Tea fallback stores succeeds
     mockupState.apiCategories = [];
     mockupState.apiMenuItems = [];
     
@@ -12737,8 +12942,12 @@ async function selectLocation(
   mockupState.orderTime = "ASAP";
   mockupState.fulfillmentMode = null;
 
-  // Auto-open Reorder Modal after location selection ONLY for logged in users with empty cart
-  if (mockupState.isLoggedIn && (!mockupState.cart || mockupState.cart.length === 0)) {
+  // Auto-open Reorder Modal after location selection ONLY for logged in users with empty cart and existing past orders
+  const apiOrders = mockupState.apiOrders || [];
+  const apiList = Array.isArray(apiOrders) ? apiOrders : apiOrders.items || apiOrders.data || [];
+  const userList = mockupState.userOrders || [];
+  const hasOrders = apiList.length > 0 || userList.length > 0 || !!mockupState.lastOrder;
+  if (mockupState.isLoggedIn && hasOrders && (!mockupState.cart || mockupState.cart.length === 0)) {
     mockupState.modalOpen = "reorder";
   }
 
@@ -12987,7 +13196,7 @@ function initLocationsMap() {
       if (currentViewport === "desktop") {
         const popupContent = `
                     <div class="p-3 font-sans min-w-[200px]">
-                        ${s.name === "i-Tea - Tempe" ? '<div class="text-[9px] font-black text-gray-900 uppercase tracking-widest mb-1.5">Previous Order</div>' : ""}
+                        ${s.name === getPreviousOrderLocation().name ? '<div class="text-[9px] font-black text-gray-900 uppercase tracking-widest mb-1.5">Previous Order</div>' : ""}
                         <h4 class="font-black text-sm uppercase tracking-tight text-violet-700 mb-1">${s.name}</h4>
                         <p class="text-xs text-gray-500 font-semibold mb-2">${s.address}</p>
                         <p class="text-[10px] font-black text-gray-400 uppercase mb-3"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
@@ -13191,7 +13400,8 @@ function navigateTo(pageId, options = {}) {
   const nextFile = PAGE_FILE_MAP[basePageId] || `${basePageId}.html`;
   let targetUrl = hash ? `${nextFile}#${hash}` : nextFile;
   if (basePageId === "menu" || basePageId === "menu-single") {
-    targetUrl = `${basePageId}.html?store=7${hash ? `#${hash}` : ""}`;
+    const storeId = mockupState.selectedLocationId || 7;
+    targetUrl = `${basePageId}.html?store=${storeId}${hash ? `#${hash}` : ""}`;
   }
   window.isNavigatingAway = true;
   if (options && options.replace) {
@@ -13202,19 +13412,37 @@ function navigateTo(pageId, options = {}) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  // Parse query parameters to auto-select Castro Valley store if requested
+  // Parse query parameters to auto-select correct store if requested
   const urlParams = new URLSearchParams(window.location.search);
   const storeParam = urlParams.get("store");
-  if (storeParam === "7") {
-    mockupState.selectedLocation = "i-Tea - CASTRO VALLEY";
-    mockupState.selectedLocationId = 7;
-    mockupState.selectedRestaurantId = 7;
-    mockupState.selectedAddress = "20666 REDWOOD RD, CASTRO VALLEY, CA";
-    mockupState.selectedDistance = "15.1 mi";
-    mockupState.orderTime = "ASAP";
-    mockupState.apiCategories = [];
-    mockupState.apiMenuItems = [];
-    persistAllState();
+  if (storeParam) {
+    const storeIdNum = parseInt(storeParam, 10);
+    // If the currently selected location ID already matches storeParam, keep existing state (prevents overriding specific sub-locations sharing the same ID, e.g. Fremont #1 vs Castro Valley)
+    if (Number(mockupState.selectedLocationId) === Number(storeIdNum) && mockupState.selectedLocation) {
+      // Keep existing location selection, but ensure restaurantId is set
+      if (!mockupState.selectedRestaurantId) {
+        mockupState.selectedRestaurantId = storeIdNum;
+        persistAllState();
+      }
+    } else {
+      const locationsToSearch = (mockupState.apiLocations && mockupState.apiLocations.length > 0)
+        ? mockupState.apiLocations
+        : LOCATIONS;
+      
+      const matchedLoc = locationsToSearch.find(loc => Number(loc.locationId) === Number(storeIdNum));
+
+      if (matchedLoc) {
+        mockupState.selectedLocation = matchedLoc.name;
+        mockupState.selectedLocationId = matchedLoc.locationId;
+        mockupState.selectedRestaurantId = matchedLoc.locationId;
+        mockupState.selectedAddress = matchedLoc.address;
+        mockupState.selectedDistance = matchedLoc.dist || "0.0 mi";
+        mockupState.orderTime = "ASAP";
+        mockupState.apiCategories = [];
+        mockupState.apiMenuItems = [];
+        persistAllState();
+      }
+    }
   } else if (
     (currentPage === "menu" || currentPage === "menu-single" || currentPage === "customize-alt") &&
     !mockupState.selectedLocationId
@@ -13272,10 +13500,10 @@ window.addEventListener("DOMContentLoaded", () => {
   // Empty cart guard for cart, checkout, and checkout-rewards: if landing on cart/checkout with an empty cart after submitting an order
   if ((currentPage === "checkout" || currentPage === "checkout-rewards" || currentPage === "cart") && (!mockupState.cart || mockupState.cart.length === 0)) {
     if (mockupState.lastOrder) {
-      window.location.replace("menu.html?store=7");
+      window.location.replace(`menu.html?store=${mockupState.selectedLocationId || 7}`);
       return;
     } else if (currentPage === "checkout" || currentPage === "checkout-rewards") {
-      window.location.replace("menu.html?store=7");
+      window.location.replace(`menu.html?store=${mockupState.selectedLocationId || 7}`);
       return;
     }
   }
@@ -13284,7 +13512,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (currentPage === "order-confirm") {
     window.history.pushState({ page: "order-confirm" }, "", window.location.href);
     window.addEventListener("popstate", () => {
-      window.location.replace("menu.html?store=7");
+      window.location.replace(`menu.html?store=${mockupState.selectedLocationId || 7}`);
     });
   }
 
@@ -13318,6 +13546,7 @@ window.addEventListener("DOMContentLoaded", () => {
           mergedProfile.email?.split("@")[0] ||
           "User";
         mockupState.userProfile = mergedProfile;
+        mockupState.userEmail = mergedProfile.email || mergedProfile.emailAddress || mockupState.userEmail || "";
         loadCartFromStorage();
         persistAllState();
         if (typeof resetInactivityTimer === "function") resetInactivityTimer();
@@ -13336,22 +13565,62 @@ window.addEventListener("DOMContentLoaded", () => {
         console.log("Successfully fetched orders on page load:", orders);
         mockupState.apiOrders = orders;
         preloadPastOrdersMenuItemDetails(orders);
+
+        // Sync lastOrder from API history if we don't have one in state
+        // Also try restoring from localStorage (persisted across logout/login)
+        const loginEmail = mockupState.userEmail || mockupState.userProfile?.email || "";
+        if (loginEmail) {
+          try {
+            const savedKey = `farebites_last_order_${loginEmail.toLowerCase()}`;
+            const savedLastOrder = localStorage.getItem(savedKey);
+            if (savedLastOrder) {
+              const parsedLastOrder = JSON.parse(savedLastOrder);
+              // Use the saved last order if it's more recent than what we have
+              if (!mockupState.lastOrder) {
+                mockupState.lastOrder = parsedLastOrder;
+              } else {
+                const savedDate = new Date(parsedLastOrder.placedAt || 0).getTime();
+                const currentDate = new Date(mockupState.lastOrder.placedAt || 0).getTime();
+                if (savedDate > currentDate) {
+                  mockupState.lastOrder = parsedLastOrder;
+                }
+              }
+            }
+          } catch (e) { /* ignore storage errors */ }
+        }
+
+        // If still no lastOrder, use most recent from apiOrders and map name → location
+        if (!mockupState.lastOrder && orders && orders.length > 0) {
+          const mostRecent = orders[0];
+          // Translate server locationName to our mockup location
+          const serverName = (mostRecent.locationName || "").toLowerCase();
+          const mappedLoc = LOCATIONS.find(l => {
+            const lName = l.name.toLowerCase();
+            // Strip the "i-tea - " prefix for comparison
+            const lShort = lName.replace(/^i-tea\s*-\s*/i, "");
+            return serverName.includes(lShort) || lShort.includes(serverName.replace(/^i-tea\s*-\s*/i, ""));
+          }) || (
+            // Also handle backend-specific names like "Tom Yum - Surprise" → Alameda
+            serverName.includes("tom yum") || serverName.includes("surprise") ? LOCATIONS.find(l => l.locationId === 5) :
+            serverName.includes("castro valley") ? LOCATIONS.find(l => l.name.toLowerCase().includes("castro valley")) :
+            serverName.includes("i-tea") ? LOCATIONS.find(l => l.locationId === 7) : null
+          );
+          mockupState.lastOrder = {
+            ...mostRecent,
+            locationId: mappedLoc ? mappedLoc.locationId : (mostRecent.locationId || 7),
+            locationName: mappedLoc ? mappedLoc.name : (mostRecent.locationName || "i-Tea - Tempe"),
+            locationAddress: mappedLoc ? mappedLoc.address : (mostRecent.locationAddress || "825 W UNIVERSITY, TEMPE, AZ"),
+            placedAt: mostRecent.orderDate || new Date().toISOString(),
+          };
+        }
+
         persistAllState();
         renderPage();
       })
       .catch((err) => console.error("Failed to auto-fetch orders:", err));
   }
 
-  // Reset selected location to Tempe if it is currently set to a disabled one (9 or 10)
-  const disabledIds = [9, 10];
-  if (disabledIds.includes(mockupState.selectedLocationId)) {
-    console.warn(`Selected location ID ${mockupState.selectedLocationId} is disabled for ordering. Resetting to Tempe.`);
-    mockupState.selectedLocation = "i-Tea - Tempe";
-    mockupState.selectedLocationId = 7;
-    mockupState.selectedAddress = "825 W UNIVERSITY, TEMPE, AZ";
-    mockupState.selectedDistance = "0.8 mi";
-    persistAllState();
-  }
+
 
   fetchLocations().then(() => {
     fetchLocationsOrderingStatus().then(() => {
@@ -13398,16 +13667,19 @@ window.addEventListener("DOMContentLoaded", () => {
                 detail.menuSubItemGroups.forEach(g => { if (g.groupPrices) g.groupPrices = g.groupPrices.filter(p => !p.menuSubItem || p.menuSubItem.isActive !== false); });
               }
               mockupState.selectedItemDetail = detail;
+              applyDefaultSelections(detail);
               persistAllState();
             })
             .catch(() => {
               mockupState.selectedItemDetail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+              applyDefaultSelections(mockupState.selectedItemDetail);
               persistAllState();
             })
             .finally(() => { renderPage(); });
         } else {
           // No API id — use defaults and re-render
           mockupState.selectedItemDetail = { menuItemId: 0, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+          applyDefaultSelections(mockupState.selectedItemDetail);
           persistAllState();
         }
       }
@@ -13544,7 +13816,7 @@ window.addEventListener("pageshow", (event) => {
     persistAllState();
     if ((currentPage === "checkout" || currentPage === "checkout-rewards" || currentPage === "cart") && (!mockupState.cart || mockupState.cart.length === 0)) {
       if (mockupState.lastOrder || currentPage === "checkout" || currentPage === "checkout-rewards") {
-        window.location.replace("menu.html?store=7");
+        window.location.replace(`menu.html?store=${mockupState.selectedLocationId || 7}`);
         return;
       }
     }
