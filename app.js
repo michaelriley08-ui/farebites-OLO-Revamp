@@ -117,7 +117,7 @@ const LOCATIONS = [
     dist: "0.8 mi",
     fav: true,
     hours: "11:30 AM to 9:30 PM",
-    locationId: 7,
+    locationId: 19,
     lat: 33.4223,
     lng: -111.9514,
   },
@@ -127,7 +127,7 @@ const LOCATIONS = [
     dist: "1.2 mi",
     fav: false,
     hours: "12:00 PM to 9:30 PM",
-    locationId: 5,
+    locationId: 47,
     lat: 37.7624,
     lng: -122.2435,
   },
@@ -147,7 +147,7 @@ const LOCATIONS = [
     dist: "45.0 mi",
     fav: false,
     hours: "11:00 AM to 8:00 PM",
-    locationId: 10,
+    locationId: 9001,
     lat: 38.5414,
     lng: -121.7482,
   },
@@ -157,7 +157,7 @@ const LOCATIONS = [
     dist: "18.2 mi",
     fav: false,
     hours: "11:30 AM to 9:00 PM",
-    locationId: 7,
+    locationId: 9002,
     lat: 37.5186,
     lng: -121.9702,
   },
@@ -167,7 +167,7 @@ const LOCATIONS = [
     dist: "120.5 mi",
     fav: false,
     hours: "1:00 PM to 6:45 PM",
-    locationId: 9,
+    locationId: 9003,
     lat: 36.8087,
     lng: -119.7801,
   },
@@ -177,7 +177,7 @@ const LOCATIONS = [
     dist: "25.3 mi",
     fav: false,
     hours: "11:30 AM to 9:20 PM",
-    locationId: 10,
+    locationId: 57,
     lat: 37.4332,
     lng: -121.8795,
   },
@@ -187,7 +187,7 @@ const LOCATIONS = [
     dist: "15.8 mi",
     fav: false,
     hours: "12:30 PM to 8:00 PM",
-    locationId: 7,
+    locationId: 58,
     lat: 37.8351,
     lng: -122.1297,
   },
@@ -197,7 +197,7 @@ const LOCATIONS = [
     dist: "20.1 mi",
     fav: false,
     hours: "11:30 AM to 9:20 PM",
-    locationId: 9,
+    locationId: 9004,
     lat: 37.5255,
     lng: -122.0463,
   },
@@ -217,7 +217,7 @@ const LOCATIONS = [
     dist: "32.4 mi",
     fav: false,
     hours: "11:00 AM to 7:00 PM",
-    locationId: 10,
+    locationId: 9005,
     lat: 38.0135,
     lng: -121.8767,
   },
@@ -227,7 +227,7 @@ const LOCATIONS = [
     dist: "28.0 mi",
     fav: false,
     hours: "11:30 AM to 7:30 PM",
-    locationId: 7,
+    locationId: 9006,
     lat: 37.6627,
     lng: -121.8744,
   },
@@ -237,7 +237,7 @@ const LOCATIONS = [
     dist: "85.2 mi",
     fav: false,
     hours: "10:20 AM to 8:00 PM",
-    locationId: 9,
+    locationId: 9007,
     lat: 38.487,
     lng: -121.432,
   },
@@ -247,7 +247,7 @@ const LOCATIONS = [
     dist: "2.1 mi",
     fav: true,
     hours: "12:00 PM to 6:00 PM",
-    locationId: 10,
+    locationId: 9008,
     lat: 37.7905,
     lng: -122.4042,
   },
@@ -257,7 +257,7 @@ const LOCATIONS = [
     dist: "35.6 mi",
     fav: false,
     hours: "11:30 AM to 9:30 PM",
-    locationId: 7,
+    locationId: 9009,
     lat: 37.3195,
     lng: -121.8157,
   },
@@ -369,9 +369,22 @@ function isPastDate(targetYear, targetMonthIdx, dayOfMonth) {
 
 function getEstimatedPickupTime(offsetMinutes = 20) {
   const now = new Date();
-  now.setMinutes(now.getMinutes() + offsetMinutes);
-  let h = now.getHours();
-  let m = now.getMinutes();
+  let target = new Date(now.getTime() + offsetMinutes * 60000);
+
+  try {
+    const { openTime, isClosed } = getStoreTimesForDay("Today");
+    if (!isClosed && openTime) {
+      const openTimeWithPrep = new Date(openTime.getTime() + offsetMinutes * 60000);
+      if (target < openTimeWithPrep) {
+        target = openTimeWithPrep;
+      }
+    }
+  } catch (e) {
+    console.warn("Could not adjust estimated pickup time with store hours:", e);
+  }
+
+  let h = target.getHours();
+  let m = target.getMinutes();
   const ampm = h >= 12 ? "PM" : "AM";
   h = h % 12;
   h = h || 12; // convert 0 to 12
@@ -379,7 +392,7 @@ function getEstimatedPickupTime(offsetMinutes = 20) {
   return `${h}:${m} ${ampm}`;
 }
 
-function getDynamicTimes(selectedDayLabel = "Today") {
+function getStoreTimesForDay(selectedDayLabel = "Today") {
   const now = new Date();
 
   let targetDate = new Date(now);
@@ -457,10 +470,6 @@ function getDynamicTimes(selectedDayLabel = "Today") {
     }
   }
 
-  if (isClosed) {
-    return [];
-  }
-
   const parseTime = (timeStr, baseDate) => {
     const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
     if (!match) return new Date(baseDate);
@@ -476,17 +485,29 @@ function getDynamicTimes(selectedDayLabel = "Today") {
 
   let openTime = parseTime(openTimeStr, targetDate);
   let closeTime = parseTime(closeTimeStr, targetDate);
-  closeTime = new Date(closeTime.getTime() - 20 * 60000);
+
+  return { openTime, closeTime, isClosed };
+}
+
+function getDynamicTimes(selectedDayLabel = "Today") {
+  const { openTime, closeTime, isClosed } = getStoreTimesForDay(selectedDayLabel);
+  if (isClosed) {
+    return [];
+  }
+
+  const now = new Date();
+  let adjustedCloseTime = new Date(closeTime.getTime() - 20 * 60000);
 
   let current;
   if (selectedDayLabel === "Today") {
     let asapTime = new Date(now.getTime() + 20 * 60000);
-    current = asapTime > openTime ? asapTime : openTime;
+    let openTimeWithPrep = new Date(openTime.getTime() + 20 * 60000);
+    current = asapTime > openTimeWithPrep ? asapTime : openTimeWithPrep;
   } else {
-    current = openTime;
+    current = new Date(openTime.getTime() + 20 * 60000);
   }
 
-  if (current > closeTime) {
+  if (current > adjustedCloseTime) {
     return [];
   }
 
@@ -497,7 +518,7 @@ function getDynamicTimes(selectedDayLabel = "Today") {
   }
 
   const times = [];
-  while (current <= closeTime && times.length < 50) {
+  while (current <= adjustedCloseTime && times.length < 50) {
     let h = current.getHours();
     let m = current.getMinutes();
     const ampm = h >= 12 ? "PM" : "AM";
@@ -937,15 +958,23 @@ function getEnabledLocations() {
   if (mockupState.locationsOrderingStatus) {
     list = list.filter(loc => mockupState.locationsOrderingStatus[loc.locationId] === true);
   } else {
-    // Only show locations with IDs 5 and 7 (which correspond to enabled locations on the API)
-    list = list.filter(loc => loc.locationId === 5 || loc.locationId === 7);
+    // Show active enabled locations on the API
+    const activeIds = [7, 9, 10, 19, 47, 57];
+    list = list.filter(loc => activeIds.includes(Number(loc.locationId)));
   }
   return list;
 }
 
 async function fetchLocations() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Locations`);
+    const headers = {};
+    if (window.ApiService && typeof window.ApiService.getToken === "function") {
+      const token = window.ApiService.getToken();
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+    const response = await fetch(`${API_BASE_URL}/api/Locations`, { headers });
     if (!response.ok) throw new Error("Network response was not ok");
     const data = await response.json();
     if (data && data.length > 0) {
@@ -1101,7 +1130,8 @@ async function fetchLocationsOrderingStatus() {
 
 async function fetchMenuAndItems(locationId) {
   if (!locationId) return;
-  // Intentionally omitting blocking loading overlay for smoother UX
+  mockupState.isLoading = true;
+  persistAllState();
   try {
     const menuResponse = await fetch(
       `${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/menu`,
@@ -1164,6 +1194,8 @@ async function fetchMenuAndItems(locationId) {
   } catch (error) {
     console.error("Failed to fetch menu and items from API:", error);
   } finally {
+    mockupState.isLoading = false;
+    persistAllState();
     // Menu loaded silently in background
     renderPage();
   }
@@ -2237,77 +2269,110 @@ function renderMenuPage() {
                     return `
                             <!-- Menu Feed (Categories) -->
                             <div class="space-y-12">
-                                
                                 ${
-                                  isAlternative
+                                  mockupState.isLoading
                                     ? `
-                                <!-- Category Navigation Pills -->
-                                <div class="flex overflow-x-auto lg:flex-wrap gap-2.5 py-0.5 px-1 scrollbar-hide whitespace-nowrap lg:whitespace-normal select-none !mt-3 !-mb-8">
-                                    ${getActiveCategories()
-                                      .map((section) => {
-                                        return `
-                                            <a href="#${section.id}" 
-                                               onclick="event.preventDefault(); document.getElementById('${section.id}')?.scrollIntoView({ behavior: 'smooth', block: 'start' });"
-                                               class="inline-flex items-center bg-[#D6D6D6] hover:bg-[#A8A8A8] text-[#1f0b35] px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 shrink-0 cursor-pointer">
-                                                ${section.name}
-                                            </a>
-                                        `;
-                                      })
-                                      .join("")}
+                                <!-- Loading Skeleton -->
+                                <div class="space-y-12 animate-pulse mt-4">
+                                    <!-- Category Pill Skeletons -->
+                                    <div class="flex gap-2.5 overflow-x-auto scrollbar-hide py-1">
+                                        ${[1, 2, 3, 4, 5].map(() => `
+                                            <div class="h-9 w-24 bg-gray-200 rounded-full shrink-0"></div>
+                                        `).join("")}
+                                    </div>
+                                    
+                                    <!-- Category Section Skeleton -->
+                                    <div>
+                                        <div class="h-6 w-48 bg-gray-200 rounded-md mb-6"></div>
+                                        <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : (currentPage === "menu-single" ? "grid grid-cols-1 md:grid-cols-2 gap-[10px]" : "grid grid-cols-2 gap-[10px]")}">
+                                            ${[1, 2, 3, 4].map(() => `
+                                                <div class="bg-white rounded-2xl border border-gray-100 flex flex-col h-full overflow-hidden shadow-sm">
+                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} bg-gray-200"></div>
+                                                    <div class="flex flex-col flex-1 p-4 space-y-3">
+                                                        <div class="h-4 w-3/4 bg-gray-200 rounded-md"></div>
+                                                        <div class="h-3 w-1/4 bg-gray-200 rounded-md"></div>
+                                                        ${isDesktop ? `<div class="h-2 w-full bg-gray-100 rounded-md"></div><div class="h-2 w-5/6 bg-gray-100 rounded-md"></div>` : ""}
+                                                        <div class="h-9 w-full bg-gray-200 rounded-full mt-auto"></div>
+                                                    </div>
+                                                </div>
+                                            `).join("")}
+                                        </div>
+                                    </div>
                                 </div>
                                 `
-                                    : ""
-                                }
-
-                                ${getActiveCategories()
-                                  .map((section) => {
-                                    const items = getActiveMenuItems();
-                                    const sectionItems = section.isFeatured
-                                      ? items.slice(0, 6)
-                                      : items.filter(
-                                          (item) =>
-                                            item.categoryId ===
-                                              section.categoryId ||
-                                            item.category ===
-                                              section.categoryKey,
-                                        );
-                                    if (sectionItems.length === 0) return "";
-                                    return `
-                                        <div id="${section.id}" class="scroll-mt-24 lg:scroll-mt-36">
-                                            <div class="flex justify-between items-end mb-6 px-1">
-                                                <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
-                                                <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
-                                            </div>
-                                            <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : (currentPage === "menu-single" ? "grid grid-cols-1 md:grid-cols-2 gap-[10px]" : "grid grid-cols-2 gap-[10px]")}">
-                                                ${sectionItems
-                                                  .map((item) => {
-                                                    const actualIndex =
-                                                      items.indexOf(item);
-                                                    return `
-                                                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
-                                                            <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
-                                                                <button onclick="event.stopPropagation(); toggleMenuFavorite(getActiveMenuItems()[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
-                                                                    <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
-                                                                </button>
-                                                            </div>
-                                                            <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
-                                                                <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                    <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                                    <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
-                                                                </div>
-                                                                ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ""}
-                                                                <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
-                                                            </div>
-                                                        </div>
-                                                    `;
-                                                  })
-                                                  .join("")}
-                                            </div>
+                                    : `
+                                        ${
+                                          isAlternative
+                                            ? `
+                                        <!-- Category Navigation Pills -->
+                                        <div class="flex overflow-x-auto lg:flex-wrap gap-2.5 py-0.5 px-1 scrollbar-hide whitespace-nowrap lg:whitespace-normal select-none !mt-3 !-mb-8">
+                                            ${getActiveCategories()
+                                              .map((section) => {
+                                                return `
+                                                    <a href="#${section.id}" 
+                                                       onclick="event.preventDefault(); document.getElementById('${section.id}')?.scrollIntoView({ behavior: 'smooth', block: 'start' });"
+                                                       class="inline-flex items-center bg-[#D6D6D6] hover:bg-[#A8A8A8] text-[#1f0b35] px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 shrink-0 cursor-pointer">
+                                                        ${section.name}
+                                                    </a>
+                                                `;
+                                              })
+                                              .join("")}
                                         </div>
-                                    `;
-                                  })
-                                  .join("")}
+                                        `
+                                            : ""
+                                        }
+
+                                        ${getActiveCategories()
+                                          .map((section) => {
+                                            const items = getActiveMenuItems();
+                                            const sectionItems = section.isFeatured
+                                              ? items.slice(0, 6)
+                                              : items.filter(
+                                                  (item) =>
+                                                    item.categoryId ===
+                                                      section.categoryId ||
+                                                    item.category ===
+                                                      section.categoryKey,
+                                                );
+                                            if (sectionItems.length === 0) return "";
+                                            return `
+                                                <div id="${section.id}" class="scroll-mt-24 lg:scroll-mt-36">
+                                                    <div class="flex justify-between items-end mb-6 px-1">
+                                                        <h3 class="text-2xl font-black text-gray-900 tracking-tight uppercase">${section.name}</h3>
+                                                        <span class="text-gray-400 text-xs font-bold">${sectionItems.length} Items</span>
+                                                    </div>
+                                                    <div class="${isDesktop ? "grid grid-cols-4 gap-x-3 gap-y-5" : (currentPage === "menu-single" ? "grid grid-cols-1 md:grid-cols-2 gap-[10px]" : "grid grid-cols-2 gap-[10px]")}">
+                                                        ${sectionItems
+                                                          .map((item) => {
+                                                            const actualIndex =
+                                                              items.indexOf(item);
+                                                            return `
+                                                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
+                                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                                        <button onclick="event.stopPropagation(); toggleMenuFavorite(getActiveMenuItems()[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
+                                                                            <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                    <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
+                                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                                            <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
+                                                                            <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
+                                                                        </div>
+                                                                        ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ""}
+                                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                                    </div>
+                                                                </div>
+                                                            `;
+                                                          })
+                                                          .join("")}
+                                                    </div>
+                                                </div>
+                                            `;
+                                          })
+                                          .join("")}
+                                    `
+                                }
                             </div>
                         `;
                   } else if (mockupState.menuTab === "featured") {
@@ -5131,7 +5196,7 @@ const routes = {
                     <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm mb-2">Your cart is empty</h3>
                     <p class="text-xs text-gray-400 font-medium mb-4">Add items from the menu to get started</p>
                     <button onclick="navigateTo('menu')" class="bg-violet-600 text-white px-6 py-3 rounded-full font-black text-sm uppercase tracking-wider hover:bg-violet-700 active:scale-95 transition-all">
-                        Browse Menu
+                        + Add Items
                     </button>
                 </div>`;
       }
@@ -5267,14 +5332,14 @@ const routes = {
                         <div class="grid grid-cols-2 gap-4">
                             <div onclick="window.toggleCartEditSection('method')" class="flex gap-3 items-center cursor-pointer group p-2 -m-2 rounded-xl hover:bg-gray-50/80 transition-colors">
                                 <div class="w-8 h-8 rounded-lg ${mockupState.cartEditSection === "method" ? "bg-violet-700 ring-2 ring-violet-300" : "bg-violet-600"} flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
-                                    <i class="fa-solid ${mockupState.fulfillmentMode === "Delivery" ? "fa-truck" : mockupState.fulfillmentMode === "Curbside" ? "fa-car" : mockupState.fulfillmentMode === "DriveUp" ? "fa-car-side" : "fa-shop"} text-white text-sm"></i>
+                                    <i class="fa-solid ${mockupState.fulfillmentMode === "Delivery" ? "fa-truck" : mockupState.fulfillmentMode === "Curbside" ? "fa-square-parking" : mockupState.fulfillmentMode === "Drive Through" || mockupState.fulfillmentMode === "Drive-thru" ? "fa-car" : "fa-shop"} text-white text-sm"></i>
                                 </div>
                                 <div class="flex flex-col min-w-0 flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup method</span>
                                         <i class="fa-solid fa-chevron-down text-[8px] text-gray-400 transition-transform ${mockupState.cartEditSection === "method" ? "rotate-180 text-violet-600" : ""}"></i>
                                     </div>
-                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight mt-0.5 truncate">${mockupState.fulfillmentMode || "Pickup"}</span>
+                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight mt-0.5 truncate">${mockupState.fulfillmentMode || "In-store"}</span>
                                 </div>
                             </div>
                             <div onclick="window.toggleCartEditSection('time')" class="flex gap-3 items-center cursor-pointer group border-l border-gray-100 pl-4 p-2 -my-2 rounded-xl hover:bg-gray-50/80 transition-colors">
@@ -5306,20 +5371,22 @@ const routes = {
                                         Done <i class="fa-solid fa-check text-[9px]"></i>
                                     </button>
                                 </div>
-                                <div class="grid grid-cols-3 gap-2">
+                                <div class="grid grid-cols-2 gap-2">
                                     ${[
-                                      { label: "Pickup", icon: "fa-shop" },
-                                      { label: "Curbside", icon: "fa-car" },
+                                      { label: "In-store", icon: "fa-shop" },
+                                      { label: "Drive Through", icon: "fa-car" },
+                                      { label: "Curbside", icon: "fa-square-parking" },
                                       { label: "Delivery", icon: "fa-truck" },
                                     ]
                                       .map((m) => {
+                                        const mode = mockupState.fulfillmentMode || "In-store";
                                         const isActive =
-                                          (mockupState.fulfillmentMode ||
-                                            "Pickup") === m.label;
+                                          (m.label === "In-store" && (mode === "In-store" || mode === "In-Store" || mode === "Pickup")) ||
+                                          (mode.toLowerCase() === m.label.toLowerCase());
                                         return `
-                                            <button onclick="updateMockupState('fulfillmentMode', '${m.label}'); mockupState.cartEditSection = null; navigateTo('cart');" class="flex flex-col items-center justify-center gap-1 py-2.5 px-2 border-2 rounded-xl font-bold transition-all ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/50"}">
+                                            <button onclick="updateMockupState('fulfillmentMode', '${m.label}'); mockupState.cartEditSection = null; navigateTo('cart');" class="flex flex-col items-center justify-center gap-1.5 py-2 px-2 border-2 rounded-xl font-bold transition-all ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/50"}">
                                                 <i class="fa-solid ${m.icon} text-sm ${isActive ? "text-white" : "text-violet-600"}"></i>
-                                                <span class="text-[10px] font-black uppercase tracking-tight">${m.label}</span>
+                                                <span class="text-[10px] font-black uppercase tracking-tight">${m.label === "In-store" ? "In-Store" : m.label}</span>
                                             </button>
                                         `;
                                       })
@@ -10254,6 +10321,60 @@ function isDrinkCategory(categoryName) {
   return true;
 }
 
+const applyDefaultSelections = (detail) => {
+  if (detail.menuSubItemGroups) {
+    const selections = {};
+    for (const g of detail.menuSubItemGroups) {
+      const groupId = g.menuSubItemGroupId;
+      const maxSel = g.maxSelect || 1;
+      const groupNameStr = (g.displayName || g.groupName || "").toLowerCase();
+      const isIceOrSugar = groupNameStr.includes("ice") || groupNameStr.includes("sugar") || groupNameStr.includes("sweet");
+      
+      selections[groupId] = {
+        groupName: g.displayName || g.groupName || "",
+        maxSelect: maxSel,
+        minSelect: g.minSelect || 0,
+        items: {},
+      };
+      
+      let foundDefault = false;
+      for (const p of g.groupPrices || []) {
+        if (p.isDefault) {
+          selections[groupId].items[p.menuSubItemId] = {
+            menuSubItemId: p.menuSubItemId,
+            itemTypeId: (p.menuSubItem || {}).itemTypeId || 2,
+            itemGroupPriceId: parseInt(groupId),
+            quantity: 1,
+            name: (p.menuSubItem || {}).name || "",
+            price: p.price || 0,
+          };
+          foundDefault = true;
+        }
+      }
+      
+      // Fallback: If it's Ice/Sugar and no default was set, auto-select "100" or "Regular"
+      if (!foundDefault && isIceOrSugar) {
+        const fallbackMatch = (g.groupPrices || []).find(p => {
+           const subName = ((p.menuSubItem || {}).name || "").toLowerCase();
+           return subName.includes("100") || subName.includes("regular");
+        });
+        
+        if (fallbackMatch) {
+          selections[groupId].items[fallbackMatch.menuSubItemId] = {
+            menuSubItemId: fallbackMatch.menuSubItemId,
+            itemTypeId: (fallbackMatch.menuSubItem || {}).itemTypeId || 2,
+            itemGroupPriceId: parseInt(groupId),
+            quantity: 1,
+            name: (fallbackMatch.menuSubItem || {}).name || "",
+            price: fallbackMatch.price || 0,
+          };
+        }
+      }
+    }
+    mockupState._customizeSubItems = selections;
+  }
+};
+
 function selectItemAndNavigate(index) {
   const item = getActiveMenuItems()[index];
   mockupState.selectedItem = item;
@@ -10271,60 +10392,6 @@ function selectItemAndNavigate(index) {
   mockupState.selectedItemDetail = null;
   mockupState.lastMenuPage = currentPage;
   persistAllState();
-
-  const applyDefaultSelections = (detail) => {
-    if (detail.menuSubItemGroups) {
-      const selections = {};
-      for (const g of detail.menuSubItemGroups) {
-        const groupId = g.menuSubItemGroupId;
-        const maxSel = g.maxSelect || 1;
-        const groupNameStr = (g.displayName || g.groupName || "").toLowerCase();
-        const isIceOrSugar = groupNameStr.includes("ice") || groupNameStr.includes("sugar") || groupNameStr.includes("sweet");
-        
-        selections[groupId] = {
-          groupName: g.displayName || g.groupName || "",
-          maxSelect: maxSel,
-          minSelect: g.minSelect || 0,
-          items: {},
-        };
-        
-        let foundDefault = false;
-        for (const p of g.groupPrices || []) {
-          if (p.isDefault) {
-            selections[groupId].items[p.menuSubItemId] = {
-              menuSubItemId: p.menuSubItemId,
-              itemTypeId: (p.menuSubItem || {}).itemTypeId || 2,
-              itemGroupPriceId: parseInt(groupId),
-              quantity: 1,
-              name: (p.menuSubItem || {}).name || "",
-              price: p.price || 0,
-            };
-            foundDefault = true;
-          }
-        }
-        
-        // Fallback: If it's Ice/Sugar and no default was set, auto-select "100" or "Regular"
-        if (!foundDefault && isIceOrSugar) {
-          const fallbackMatch = (g.groupPrices || []).find(p => {
-             const subName = ((p.menuSubItem || {}).name || "").toLowerCase();
-             return subName.includes("100") || subName.includes("regular");
-          });
-          
-          if (fallbackMatch) {
-            selections[groupId].items[fallbackMatch.menuSubItemId] = {
-              menuSubItemId: fallbackMatch.menuSubItemId,
-              itemTypeId: (fallbackMatch.menuSubItem || {}).itemTypeId || 2,
-              itemGroupPriceId: parseInt(groupId),
-              quantity: 1,
-              name: (fallbackMatch.menuSubItem || {}).name || "",
-              price: fallbackMatch.price || 0,
-            };
-          }
-        }
-      }
-      mockupState._customizeSubItems = selections;
-    }
-  };
 
   // Fetch full item detail (with sub-item groups) from API
   if (item.id && mockupState.selectedLocationId && window.ApiService) {
@@ -13362,14 +13429,7 @@ window.addEventListener("DOMContentLoaded", () => {
         ? mockupState.apiLocations
         : LOCATIONS;
       
-      let matchedLoc = null;
-      if (storeIdNum === 7) {
-        // Fallback default/preference for ID 7 to Castro Valley (matches legacy code behavior)
-        matchedLoc = locationsToSearch.find(loc => loc.name && loc.name.toLowerCase().includes("castro valley"));
-      }
-      if (!matchedLoc) {
-        matchedLoc = locationsToSearch.find(loc => Number(loc.locationId) === Number(storeIdNum));
-      }
+      const matchedLoc = locationsToSearch.find(loc => Number(loc.locationId) === Number(storeIdNum));
 
       if (matchedLoc) {
         mockupState.selectedLocation = matchedLoc.name;
@@ -13560,16 +13620,7 @@ window.addEventListener("DOMContentLoaded", () => {
       .catch((err) => console.error("Failed to auto-fetch orders:", err));
   }
 
-  // Reset selected location to Tempe if it is currently set to a disabled one (9 or 10)
-  const disabledIds = [9, 10];
-  if (disabledIds.includes(mockupState.selectedLocationId)) {
-    console.warn(`Selected location ID ${mockupState.selectedLocationId} is disabled for ordering. Resetting to Tempe.`);
-    mockupState.selectedLocation = "i-Tea - Tempe";
-    mockupState.selectedLocationId = 7;
-    mockupState.selectedAddress = "825 W UNIVERSITY, TEMPE, AZ";
-    mockupState.selectedDistance = "0.8 mi";
-    persistAllState();
-  }
+
 
   fetchLocations().then(() => {
     fetchLocationsOrderingStatus().then(() => {
@@ -13616,16 +13667,19 @@ window.addEventListener("DOMContentLoaded", () => {
                 detail.menuSubItemGroups.forEach(g => { if (g.groupPrices) g.groupPrices = g.groupPrices.filter(p => !p.menuSubItem || p.menuSubItem.isActive !== false); });
               }
               mockupState.selectedItemDetail = detail;
+              applyDefaultSelections(detail);
               persistAllState();
             })
             .catch(() => {
               mockupState.selectedItemDetail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+              applyDefaultSelections(mockupState.selectedItemDetail);
               persistAllState();
             })
             .finally(() => { renderPage(); });
         } else {
           // No API id — use defaults and re-render
           mockupState.selectedItemDetail = { menuItemId: 0, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+          applyDefaultSelections(mockupState.selectedItemDetail);
           persistAllState();
         }
       }
