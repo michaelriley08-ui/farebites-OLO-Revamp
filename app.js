@@ -115,7 +115,7 @@ const LOCATIONS = [
     name: "i-Tea - Tempe",
     address: "825 W UNIVERSITY, TEMPE, AZ",
     dist: "0.8 mi",
-    fav: true,
+    fav: false,
     hours: "11:30 AM to 9:30 PM",
     locationId: 19,
     lat: 33.4223,
@@ -205,7 +205,7 @@ const LOCATIONS = [
     name: "i-Tea - OAKLAND",
     address: "388 9TH ST, 126A, OAKLAND, CA",
     dist: "8.5 mi",
-    fav: true,
+    fav: false,
     hours: "11:00 AM to 6:00 PM",
     locationId: 9,
     lat: 37.8009,
@@ -245,7 +245,7 @@ const LOCATIONS = [
     name: "i-Tea - TEARAY",
     address: "253 KEARNY ST, SAN FRANCISCO, CA",
     dist: "2.1 mi",
-    fav: true,
+    fav: false,
     hours: "12:00 PM to 6:00 PM",
     locationId: 9008,
     lat: 37.7905,
@@ -532,6 +532,7 @@ function getDynamicTimes(selectedDayLabel = "Today") {
 }
 
 const DEFAULT_STATE = {
+  menuScrollPosition: 0,
   fulfillmentMode: null,
   orderTime: "ASAP",
   locationFilter: "Near Me",
@@ -883,7 +884,9 @@ function loadCartFromStorage() {
     } catch (e) {
       console.error("Failed to parse saved cart", e);
     }
-  } else if (mockupState.cart.length === 0) {
+  } else {
+    mockupState.cart = [];
+    mockupState.cartItemCount = 0;
     mockupState.bagQuantity = 0;
     mockupState.noBagsSelected = false;
   }
@@ -1319,6 +1322,37 @@ function getActiveMenuItems() {
   return MENU_ITEMS;
 }
 
+function isItemAvailableAtCurrentLocation(item) {
+  const rawId = item.menuItemId || item.MenuItemId || item.id || item.Id;
+  const normalizeStr = (str) => {
+    if (!str) return "";
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+  };
+  const rawName = normalizeStr(item.name || item.Name || item.menuItemName || item.MenuItemName);
+  
+  if (!mockupState.apiMenuItems || mockupState.apiMenuItems.length === 0) {
+    return true;
+  }
+  
+  const found = mockupState.apiMenuItems.find((mi) => {
+    const miId = mi.id || mi.menuItemId;
+    const miName = normalizeStr(mi.name);
+    if (rawId && miId && String(rawId) === String(miId)) {
+      return true;
+    }
+    if (rawName && miName === rawName) {
+      return true;
+    }
+    if (rawName && miName && (miName.includes(rawName) || rawName.includes(miName))) {
+      return true;
+    }
+    return false;
+  });
+  
+  return !!found;
+}
+window.isItemAvailableAtCurrentLocation = isItemAvailableAtCurrentLocation;
+
 const MENU_ITEMS = [
   // Tea Spresso Series (11 items)
   {
@@ -1677,36 +1711,6 @@ function hamburgerDrawerHTML() {
                         </div>`;
                       })
                       .join("")}
-                    
-                    <div class="px-6 py-4 mt-2">
-                        <div class="font-black text-[22px] text-gray-900 leading-tight mb-3">Pages</div>
-                        <div class="flex flex-col gap-3">
-                            <a href="index.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">index.html</a>
-                            <a href="menu.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu.html</a>
-                            <a href="locations.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">locations.html</a>
-                            <a href="cart.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">cart.html</a>
-                            <a href="checkout.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">checkout.html</a>
-                            <a href="order-customize.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-customize.html</a>
-                            <a href="order-confirm.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-confirm.html</a>
-                            <a href="order-status.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-status.html</a>
-                            <a href="order-details.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">order-details.html</a>
-                            <a href="track-order.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">track-order.html</a>
-                            <a href="profile.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">profile.html</a>
-                            <a href="registration.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">registration.html</a>
-                            <a href="sign-in.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">sign-in.html</a>
-                            <a href="menu-scan.html" class="text-[19px] font-bold text-gray-700 hover:text-violet-600 transition-colors">menu-scan.html</a>
-                        </div>
-                        
-                        <!-- Alt Versions Card -->
-                        <div class="mt-5 p-4 bg-violet-50 rounded-2xl border border-violet-100 shadow-sm">
-                            <div class="font-black text-xs text-violet-700 uppercase tracking-widest mb-3">Alt Versions</div>
-                            <div class="flex flex-col gap-2.5">
-                                <a href="menu.html?store=7" class="text-base font-bold text-violet-900 hover:text-violet-600 transition-colors">menu.html</a>
-                                <a href="location-favorites.html" class="text-base font-bold text-violet-900 hover:text-violet-600 transition-colors">location-favorites.html</a>
-                                <a href="menu-favorites.html" class="text-base font-bold text-violet-900 hover:text-violet-600 transition-colors">menu-favorites.html</a>
-                            </div>
-                        </div>
-                    </div>
                 </nav>
             </div>
             <!-- Backdrop -->
@@ -1785,7 +1789,7 @@ function renderMenuPage() {
   };
   const orderCutoffTime = getOrderCutoffTime(closeTime, 20);
   return `
-        <div class="flex flex-col h-full bg-[#f9fafb] relative ${!isDesktop && mockupState.modalOpen ? "overflow-hidden" : "overflow-y-auto"} scrollbar-hide">
+        <div id="menu-scroller" class="flex flex-col ${isDesktop ? "min-h-screen" : "h-full"} bg-[#f9fafb] relative ${!isDesktop && mockupState.modalOpen ? "overflow-hidden" : (isDesktop ? "" : "overflow-y-auto")} scrollbar-hide">
             <!-- Compact Sticky Header: ≡ | 🔍 | i-Tea logo | ⭐ | 🛍 -->
             <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shrink-0">
                 <div class="px-3 py-2 flex items-center gap-2 w-full max-w-[1080px] mx-auto">
@@ -3250,7 +3254,7 @@ const routes = {
                     </button>
                 </header>
                 
-                <div class="flex-1 overflow-y-auto relative scrollbar-hide z-10 flex flex-col">
+                <div class="flex-1 ${isDesktop ? '' : 'overflow-y-auto'} relative scrollbar-hide z-10 flex flex-col">
                     <!-- Titles & CTA for Mobile/Tablet -->
                     ${
                       !isDesktop
@@ -5179,9 +5183,12 @@ const routes = {
       mockupState.selectedTimeSlot.includes("8:") ||
       mockupState.selectedTimeSlot.includes("9:");
 
+    const hasUnavailableItems = cart.some(item => !isItemAvailableAtCurrentLocation(item));
     const selectionNotMade =
       mockupState.bagQuantity === 0 && !mockupState.noBagsSelected;
-    const paymentAction = selectionNotMade
+    const paymentAction = hasUnavailableItems
+      ? `alert('Please remove unavailable items from your cart before checking out.')`
+      : selectionNotMade
       ? `updateMockupState('modalOpen', 'bag-alert')`
       : `navigateTo('checkout')`;
 
@@ -5233,18 +5240,24 @@ const routes = {
                       customSummary = "No customizations";
                     }
 
+                    const isAvailable = isItemAvailableAtCurrentLocation(item);
                     const itemTotal = (item.unitPrice * item.quantity).toFixed(
                       2,
                     );
 
                     return `
-                    <div class="flex justify-between items-start p-5 cursor-pointer hover:bg-gray-50 transition-colors group" onclick="window.editCartItemAndNavigate(${idx})">
+                    <div class="flex justify-between items-start p-5 cursor-pointer hover:bg-gray-50 transition-colors group ${isAvailable ? "" : "bg-red-50/10"}" onclick="${isAvailable ? `window.editCartItemAndNavigate(${idx})` : ""}">
                         <div class="flex gap-4 items-start">
-                            <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0">
+                            <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 ${isAvailable ? "" : "opacity-60"}">
                                 <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
                             </div>
                             <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight group-hover:text-violet-600">${item.name}</h3>
+                                <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight ${isAvailable ? "group-hover:text-violet-600" : "line-through opacity-60"}">${item.name}</h3>
+                                ${isAvailable ? "" : `
+                                <div class="text-[10px] font-black text-red-600 uppercase mt-1 mb-2 flex items-center gap-1">
+                                    <i class="fa-solid fa-triangle-exclamation text-[9px]"></i> Not available at this location
+                                </div>
+                                `}
                                 <div class="flex items-start gap-2 mb-3">
                                     <p class="text-[11px] text-gray-500 font-medium line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed flex-1" id="desc-${idx}">${customSummary}</p>
                                 </div>
@@ -5621,8 +5634,8 @@ const routes = {
                         <div class="flex justify-between text-lg font-black text-gray-900 uppercase"><span>Total</span><span>$${finalTotal}</span></div>
                         
                         <!-- Inline Checkout Button (Desktop Only) -->
-                        <button onclick="${paymentAction}" class="${isDesktop ? "block" : "hidden"} w-full mt-4 bg-violet-600 text-white px-6 py-4 rounded-full font-black text-[15px] shadow-[0_8px_20px_-5px_rgba(124,58,237,0.3)] hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">
-                            Checkout $${finalTotal}
+                        <button onclick="${paymentAction}" class="${isDesktop ? "block" : "hidden"} w-full mt-4 ${hasUnavailableItems ? "bg-gray-400 cursor-not-allowed opacity-75 shadow-none" : "bg-violet-600 hover:bg-violet-700 active:scale-95 shadow-[0_8px_20px_-5px_rgba(124,58,237,0.3)]"} text-white px-6 py-4 rounded-full font-black text-[15px] transition-all uppercase tracking-wider text-center">
+                            ${hasUnavailableItems ? "Unavailable Items in Cart" : `Checkout $${finalTotal}`}
                         </button>
                     </div>
                     
@@ -5632,8 +5645,8 @@ const routes = {
                 <!-- Floating Checkout Button -->
                 <div class="absolute bottom-8 left-0 right-0 w-full z-[60] pointer-events-none px-6 flex justify-center ${isDesktop ? "hidden" : ""}">
                     <div class="w-full max-w-[1080px] flex justify-end">
-                        <button onclick="${paymentAction}" class="pointer-events-auto bg-violet-600 text-white px-8 py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-wider">
-                            Checkout $${finalTotal}
+                        <button onclick="${paymentAction}" class="pointer-events-auto w-full sm:w-auto ${hasUnavailableItems ? "bg-gray-400 cursor-not-allowed opacity-75 shadow-none" : "bg-violet-600 shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 hover:bg-violet-700"} text-white px-8 py-4 rounded-full font-black text-lg transition-all uppercase tracking-wider">
+                            ${hasUnavailableItems ? "Unavailable Items in Cart" : `Checkout $${finalTotal}`}
                         </button>
                     </div>
                 </div>
@@ -5780,11 +5793,9 @@ const routes = {
   account: () => {
     const isDesktop = currentViewport === "desktop";
     const menuFavsCount = (mockupState.favorites || []).length;
-    const locList =
-      mockupState.apiLocations && mockupState.apiLocations.length > 0
-        ? mockupState.apiLocations
-        : LOCATIONS;
-    const savedLocsCount = locList.filter((l) => l.fav).length;
+    const enabledLocs = getEnabledLocations();
+    const storedFavs = JSON.parse(localStorage.getItem("farebites_location_favorites") || "{}");
+    const savedLocsCount = enabledLocs.filter((l) => !!storedFavs[l.name]).length;
 
     return `
             <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
@@ -6145,16 +6156,16 @@ const routes = {
                               if (!mockupState.showAllHistory) {
                                 html += `
                                            <div class="px-5 py-4 text-center">
-                                               <button onclick="updateMockupState('showAllHistory', true)" class="w-full py-3 rounded-full border-2 border-dashed border-violet-300 text-violet-600 font-black text-xs uppercase tracking-widest hover:border-violet-400 hover:bg-violet-50/50 transition-all flex items-center justify-center gap-2">
-                                                   <i class="fa-solid fa-chevron-down text-[10px]"></i> View All Order History (${allOrders.length} Orders) →
+                                               <button onclick="updateMockupState('showAllHistory', true)" class="w-full py-3 rounded-xl border-2 border-dashed border-violet-300 text-violet-600 font-black text-xs uppercase tracking-widest hover:border-violet-400 hover:bg-violet-50/50 transition-all flex items-center justify-center gap-2">
+                                                   <i class="fa-solid fa-chevron-down text-[10px]"></i> View More Past Orders
                                                </button>
                                            </div>
                                        `;
                               } else {
                                 html += `
                                            <div class="px-5 py-4 text-center">
-                                               <button onclick="updateMockupState('showAllHistory', false)" class="w-full py-3 rounded-full border-2 border-dashed border-gray-200 text-gray-500 font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
-                                                   <i class="fa-solid fa-chevron-up text-[10px]"></i> Show Less ↑
+                                               <button onclick="updateMockupState('showAllHistory', false)" class="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 text-gray-500 font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                                                   <i class="fa-solid fa-chevron-up text-[10px]"></i> Show Less
                                                </button>
                                            </div>
                                        `;
@@ -8055,7 +8066,7 @@ const routes = {
     const favorites = mockupState.favorites || [];
 
     return `
-            <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
+            <div id="menu-scroller" class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto scrollbar-hide">
                 <!-- Subtle top-aligned brand gradient overlay fading down -->
                 <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
 
@@ -8956,6 +8967,25 @@ routes["accessibility"] = () => {
 
 function renderPage() {
   if (window.isNavigatingAway) return;
+
+  // Reset any stuck body overflow from modal locks (e.g. if user navigated away
+  // while the customize-page modify modal was open)
+  document.body.style.overflow = "";
+  document.body.style.overflowX = "";
+
+  // Capture current scroll positions if we are re-rendering the same page
+  let currentScrollPos = 0;
+  let hasScroller = false;
+  if (window._lastRenderedPage === currentPage) {
+    const scroller = document.getElementById("menu-scroller");
+    if (scroller && scroller.scrollTop > 0) {
+      currentScrollPos = scroller.scrollTop;
+      hasScroller = true;
+    } else if (window.scrollY > 0) {
+      currentScrollPos = window.scrollY;
+    }
+  }
+
   if (window.carouselAutoplayInterval) {
     clearInterval(window.carouselAutoplayInterval);
     window.carouselAutoplayInterval = null;
@@ -9197,12 +9227,37 @@ function renderPage() {
       scrolledToHash = true;
     }
   }
-  if (!scrolledToHash && !isUpdatingMockupState) {
+  const pageChanged = (window._lastRenderedPage !== currentPage);
+  window._lastRenderedPage = currentPage;
+
+  if (pageChanged && !scrolledToHash && !isUpdatingMockupState) {
     window.scrollTo(0, 0);
   }
   mockupState.lastModalOpen = mockupState.modalOpen;
   persistAllState();
   document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
+
+  // Restore scroll positions (both menu return scroll, and same-page background updates)
+  if ((currentPage === "menu" || currentPage === "menu-single" || currentPage === "menu-favorites") &&
+      typeof mockupState.menuScrollPosition === "number" && mockupState.menuScrollPosition > 0) {
+    const scrollPos = mockupState.menuScrollPosition;
+    setTimeout(() => {
+      const scroller = document.getElementById("menu-scroller");
+      if (scroller) {
+        scroller.scrollTop = scrollPos;
+      }
+      window.scrollTo(0, scrollPos);
+      mockupState.menuScrollPosition = 0;
+      persistAllState();
+    }, 50);
+  } else if (currentScrollPos > 0) {
+    const scroller = document.getElementById("menu-scroller");
+    if (scroller && hasScroller) {
+      scroller.scrollTop = currentScrollPos;
+    } else {
+      window.scrollTo(0, currentScrollPos);
+    }
+  }
 
   if (currentPage === "locations" || currentPage === "locations-alt") {
     initLocationsMap();
@@ -10376,6 +10431,16 @@ const applyDefaultSelections = (detail) => {
 };
 
 function selectItemAndNavigate(index) {
+  let scrollPos = 0;
+  const scroller = document.getElementById("menu-scroller");
+  if (scroller && scroller.scrollTop > 0) {
+    scrollPos = scroller.scrollTop;
+  } else if (window.scrollY > 0) {
+    scrollPos = window.scrollY;
+  }
+  if (scrollPos > 0) {
+    mockupState.menuScrollPosition = scrollPos;
+  }
   const item = getActiveMenuItems()[index];
   mockupState.selectedItem = item;
   mockupState.editingCartIndex = null;
@@ -10905,35 +10970,55 @@ window._handlePlaceOrder = async function () {
   // This also catches edge cases where the cart was restored from localStorage with items from a different location.
   try {
     const locId = mockupState.selectedLocationId || 7;
-    const detail = await window.ApiService.getMenuItemDetail(locId, cart[0].menuItemId);
     let foundRestId = null;
-    if (detail && detail.menuSubItemGroups) {
-      for (const g of detail.menuSubItemGroups) {
-        for (const p of g.groupPrices || []) {
-          const sub = p.menuSubItem || {};
-          if (sub.restaurantId) {
-            foundRestId = sub.restaurantId;
-            break;
+
+    const validationPromises = cart.map(async (item) => {
+      if (!item.menuItemId) {
+        throw new Error(`Item "${item.name}" is not available at this location. Please remove it and try again.`);
+      }
+      try {
+        const detail = await window.ApiService.getMenuItemDetail(locId, item.menuItemId);
+        if (!detail) {
+          throw new Error();
+        }
+        
+        // Extract restaurantId if not already set
+        if (!foundRestId) {
+          if (detail.menuSubItemGroups) {
+            for (const g of detail.menuSubItemGroups) {
+              for (const p of g.groupPrices || []) {
+                const sub = p.menuSubItem || {};
+                if (sub.restaurantId) {
+                  foundRestId = sub.restaurantId;
+                  break;
+                }
+              }
+              if (foundRestId) break;
+            }
+          }
+          if (!foundRestId && detail.menuItemModifyPrices) {
+             for (const m of detail.menuItemModifyPrices) {
+                if (m.menuSubItem && m.menuSubItem.restaurantId) {
+                   foundRestId = m.menuSubItem.restaurantId;
+                   break;
+                }
+             }
           }
         }
-        if (foundRestId) break;
+      } catch (err) {
+        throw new Error(`Item "${item.name}" is not available at this location. Please remove it and try again.`);
       }
-    }
-    if (!foundRestId && detail && detail.menuItemModifyPrices) {
-       for (const m of detail.menuItemModifyPrices) {
-         if (m.menuSubItem && m.menuSubItem.restaurantId) {
-            foundRestId = m.menuSubItem.restaurantId;
-            break;
-         }
-       }
-    }
+    });
+
+    await Promise.all(validationPromises);
+
     if (foundRestId) {
       mockupState.selectedRestaurantId = foundRestId;
       persistAllState();
     }
-  } catch (err) {
-    console.error("Failed to validate cart item for current location", err);
-    alert("Some items in your cart are not available at this location. Please clear your cart and try again.");
+  } catch (validationError) {
+    console.error("Cart item validation failed:", validationError);
+    alert(validationError.message || "Some items in your cart are not available at this location. Please clear your cart and try again.");
     
     // Reset buttons
     btns.forEach((b) => {
@@ -12486,7 +12571,11 @@ window.reorderPastOrder = function (orderId) {
       ])
     );
 
+    let addedCount = 0;
+    const unavailableItemNames = [];
+
     orderItems.forEach((item) => {
+      const isAvailable = isItemAvailableAtCurrentLocation(item);
       const rawName = (
         item.name ||
         item.Name ||
@@ -12494,8 +12583,14 @@ window.reorderPastOrder = function (orderId) {
         item.MenuItemName ||
         item.productName ||
         item.ProductName ||
-        ""
+        "Item"
       ).trim();
+
+      if (!isAvailable) {
+        unavailableItemNames.push(rawName);
+        return;
+      }
+
       const rawNameLower = rawName.toLowerCase();
       const rawId = item.menuItemId || item.MenuItemId || item.id || item.Id;
 
@@ -12610,7 +12705,12 @@ window.reorderPastOrder = function (orderId) {
       };
 
       addOrMergeCartItem(cartItem);
+      addedCount++;
     });
+
+    if (unavailableItemNames.length > 0) {
+      alert(`The following items are not available at this location and were not added: ${unavailableItemNames.join(", ")}`);
+    }
 
     mockupState.modalOpen = null;
     persistAllState();
@@ -12780,6 +12880,7 @@ function renderReorderModalHTML() {
           <div class="bg-violet-50/60 p-3 rounded-xl flex flex-col gap-2.5">
             ${orderItems
               .map((item, idx) => {
+                const isAvailable = isItemAvailableAtCurrentLocation(item);
                 const normSubs = getItemNormalizedSubItems(item);
                 const opts = normSubs.map((s) => s.name);
                 const inst = (
@@ -12799,12 +12900,15 @@ function renderReorderModalHTML() {
                 const itemName = item.name || item.Name || item.menuItemName || item.MenuItemName || "Item";
                 const itemQty = item.quantity || item.Quantity || 1;
                 return `
-                <div class="bg-white p-2.5 rounded-xl border border-violet-100 shadow-2xs flex items-center gap-3">
+                <div class="bg-white p-2.5 rounded-xl border border-violet-100 shadow-2xs flex items-center gap-3 ${isAvailable ? "" : "opacity-50"}">
                   <img src="${img}" alt="${itemName}" class="w-10 h-10 rounded-lg object-cover bg-gray-50 border border-gray-100 shrink-0" onerror="this.src='images/no-product-pic.png'">
                   <div class="flex-1 min-w-0">
                     <div class="flex items-baseline justify-between gap-1">
-                      <span class="font-black text-gray-900 text-xs truncate">${idx + 1}. ${itemName}</span>
-                      <span class="font-bold text-violet-600 text-[11px] shrink-0">Qty: ${itemQty}</span>
+                      <span class="font-black text-gray-900 text-xs truncate ${isAvailable ? "" : "line-through"}">${idx + 1}. ${itemName}</span>
+                      ${isAvailable 
+                        ? `<span class="font-bold text-violet-600 text-[11px] shrink-0">Qty: ${itemQty}</span>`
+                        : `<span class="font-black text-red-600 text-[10px] uppercase shrink-0">Unavailable</span>`
+                      }
                     </div>
                     <div class="mt-1 flex flex-wrap gap-1">
                       ${opts.map((opt) => `
@@ -13311,6 +13415,18 @@ function handleStartOrder() {
 window.handleStartOrder = handleStartOrder;
 
 function navigateTo(pageId, options = {}) {
+  if (currentPage === "menu" || currentPage === "menu-single" || currentPage === "menu-favorites") {
+    let scrollPos = 0;
+    const scroller = document.getElementById("menu-scroller");
+    if (scroller && scroller.scrollTop > 0) {
+      scrollPos = scroller.scrollTop;
+    } else if (window.scrollY > 0) {
+      scrollPos = window.scrollY;
+    }
+    if (scrollPos > 0) {
+      mockupState.menuScrollPosition = scrollPos;
+    }
+  }
   mockupState.locationSearchQuery = "";
   mockupState.locationSearchFocused = false;
   persistAllState();
@@ -13618,6 +13734,28 @@ window.addEventListener("DOMContentLoaded", () => {
         renderPage();
       })
       .catch((err) => console.error("Failed to auto-fetch orders:", err));
+  } else {
+    // If the token is missing/expired, ensure the mockup state reflects that the user is not logged in.
+    // This prevents showing previous user's name ("Hi Steven Cisco") or their cart items when the session is invalid/guest.
+    if (mockupState.isLoggedIn || mockupState.userName !== "Guest") {
+      mockupState.isLoggedIn = false;
+      mockupState.userName = "Guest";
+      mockupState.userEmail = "";
+      mockupState.userProfile = {};
+      mockupState.apiOrders = [];
+      mockupState.userOrders = [];
+      mockupState.lastOrder = null;
+      mockupState.cart = [];
+      mockupState.cartItemCount = 0;
+      mockupState.bagQuantity = 0;
+      mockupState.noBagsSelected = false;
+
+      loadCartFromStorage(); // This will load "farebites_guest_cart" or reset to empty since isLoggedIn is false
+      persistAllState();
+    } else {
+      // Even if already not logged in, make sure guest cart is loaded
+      loadCartFromStorage();
+    }
   }
 
 
