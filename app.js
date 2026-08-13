@@ -3330,7 +3330,7 @@ const routes = {
                     ${
                       isDesktop
                         ? `
-                    <div class="bg-white pt-24 pb-12 px-12 rounded-t-[40px] -mt-16 w-full shrink-0 relative z-30 shadow-[0_-15px_30px_-5px_rgba(0,0,0,0.05)]">
+                    <div class="bg-white pt-12 pb-12 px-12 w-full shrink-0 relative z-30 shadow-sm">
                         <div class="max-w-[1080px] mx-auto text-center">
                             <h2 class="font-branding font-black text-3xl text-gray-900 uppercase tracking-tight mb-2">Explore Our Menu</h2>
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Select a category to start ordering</p>
@@ -3340,8 +3340,8 @@ const routes = {
                                   .map(
                                     (cat) => `
                                     <div onclick="navigateTo('locations');" class="flex flex-col items-center cursor-pointer group w-full max-w-[312px]">
-                                        <div class="w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
-                                            <img src="${cat.img}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500">
+                                        <div class="w-full aspect-[1024/450] rounded-2xl overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 mb-4 bg-white">
+                                            <img src="${cat.img}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500">
                                         </div>
                                         <h3 class="font-branding font-black text-2xl text-violet-600 uppercase tracking-tight text-center leading-tight group-hover:text-violet-600 transition-colors">${cat.name}</h3>
                                         <div class="text-lg font-black text-violet-600 uppercase tracking-widest mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
