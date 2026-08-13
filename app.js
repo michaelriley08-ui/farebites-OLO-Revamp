@@ -12939,13 +12939,13 @@ function renderReorderModalHTML() {
   }
 
   return `
-    <div class="modal-overlay z-[9999] fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this){mockupState.modalOpen=null;renderPage();}">
+    <div class="modal-overlay z-[9999] fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this){updateMockupState('modalOpen', null);}">
       <div class="bg-white w-full max-w-[480px] rounded-[32px] p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[85vh]">
         <!-- Centered Header -->
         <div class="relative pb-4 border-b border-gray-100 shrink-0 text-center">
           <h2 class="text-2xl font-black text-gray-900 uppercase tracking-tight">REORDER</h2>
           <p class="text-xs text-gray-500 font-medium mt-0.5">Quickly repeat your favorite recent orders</p>
-          <button onclick="mockupState.modalOpen=null;renderPage();" class="absolute right-0 top-0 w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500 shrink-0">
+          <button onclick="updateMockupState('modalOpen', null);" class="absolute right-0 top-0 w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500 shrink-0 z-10">
             <i class="fa-solid fa-xmark text-lg"></i>
           </button>
         </div>
@@ -12955,7 +12955,7 @@ function renderReorderModalHTML() {
         </div>
 
         <div class="pt-3 border-t border-gray-100 text-center shrink-0">
-          <button onclick="mockupState.modalOpen=null; navigateTo('account');" class="text-xs font-black text-violet-600 uppercase tracking-widest hover:underline">
+          <button onclick="updateMockupState('modalOpen', null); navigateTo('account');" class="text-xs font-black text-violet-600 uppercase tracking-widest hover:underline">
             View All Order History →
           </button>
         </div>
