@@ -244,6 +244,11 @@
             transform: scaleX(1);
         }
 
+        /* Active Navigation Link Indicator */
+        .active-nav-link {
+            color: #7c3aed !important;
+        }
+
         /* Scanning Laser Sweep Animation */
         @keyframes scanLaser {
             0% {
