@@ -5,8 +5,8 @@ const PAGE_FILE_MAP = {
   "forgot-password": "forgot-password.html",
   rewards: "rewards.html",
   cart: "cart.html",
-  customize: "order-customize.html",
-  "customize-alt": "order-customize-alt.html",
+  customize: "customize.html",
+  "customize-alt": "customize-alt.html",
   checkout: "checkout.html",
   "checkout-rewards": "checkout-rewards.html",
   "order-confirm": "order-confirm.html",
@@ -1103,6 +1103,15 @@ async function fetchLocations() {
               allowOrdering = false;
             }
 
+            // Temporary bypass for testing Castro Valley
+            if (loc.locationId === 7 || (loc.locationName && loc.locationName.toLowerCase().includes("castro valley"))) {
+              isOpen = true;
+              allowOrdering = true;
+              if (hoursStr === "Closed today" || hoursStr === "Hours unavailable") {
+                hoursStr = "10:30 AM to 10:00 PM";
+              }
+            }
+
             return {
               locationId: loc.locationId,
               name: loc.locationName || "Unnamed Location",
@@ -1194,7 +1203,14 @@ async function fetchLocationsOrderingStatus() {
           allowOrderWhileClosed = false;
         }
 
-        const allowOrdering = computedIsOpen || allowOrderWhileClosed;
+        let allowOrdering = computedIsOpen || allowOrderWhileClosed;
+
+        // Temporary bypass for testing Castro Valley
+        if (id === 7) {
+          computedIsOpen = true;
+          allowOrdering = true;
+        }
+
         statuses[id] = { allowOrdering, isOpen: computedIsOpen };
 
         // Update location object
@@ -1202,6 +1218,9 @@ async function fetchLocationsOrderingStatus() {
         if (locObj) {
           locObj.allowOrdering = allowOrdering;
           locObj.isOpen = computedIsOpen;
+          if (id === 7 && (locObj.hours === "Closed today" || locObj.hours === "Hours unavailable")) {
+            locObj.hours = "10:30 AM to 10:00 PM";
+          }
         }
       } catch (err) {
         console.error(`Failed to fetch status for location ${id}:`, err);
@@ -1803,6 +1822,13 @@ function hamburgerDrawerHTML() {
     `;
 }
 
+function toggleMenuSearch(open) {
+  mockupState.menuSearchOpen = open;
+  mockupState.menuSearchQuery = "";
+  persistAllState();
+  renderPage();
+}
+
 function renderMenuPage() {
   const isAlternative = true;
   const isDesktop = currentViewport === "desktop";
@@ -1848,6 +1874,10 @@ function renderMenuPage() {
   const addressText =
     mockupState.selectedAddress ||
     (selectedLoc ? selectedLoc.address : "825 W UNIVERSITY, TEMPE, AZ");
+  const shortAddressText = addressText.split(",")[0].trim();
+  const noStateAddressText = addressText
+    .replace(/,\s*[A-Z]{2}(\s\d{5})?$/, "")
+    .trim();
 
   const locationTitle = selectedLoc ? selectedLoc.name : "i-Tea - Tempe";
   const locationAddress = addressText;
@@ -2008,7 +2038,7 @@ function renderMenuPage() {
                             ${timeText}
                         </span>
                         <div class="flex items-center justify-center gap-1.5 text-sm text-[#1f0b35] font-black tracking-tight uppercase">
-                            <span>${addressText}</span>
+                            <span>${isDesktop ? noStateAddressText : shortAddressText}</span>
                             <i class="fa-solid fa-chevron-down text-[10px] text-violet-600 transition-transform group-hover:translate-y-0.5"></i>
                         </div>
                     </div>
@@ -2053,50 +2083,6 @@ function renderMenuPage() {
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Tabs & Search Row -->
-                <div class="bg-white border-t border-gray-100 px-4 py-2 w-full max-w-[1080px] mx-auto min-h-[48px] flex items-center justify-center">
-                    ${
-                      mockupState.menuSearchOpen
-                        ? `
-                        <!-- Expandable Search Input -->
-                        <div class="flex items-center w-full gap-3 animate-[fadeIn_0.2s_ease-out]">
-                            <div class="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2 gap-2">
-                                <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
-                                <input
-                                    type="text"
-                                    id="menu-search-input"
-                                    placeholder="Search menu..."
-                                    value="${mockupState.menuSearchQuery || ""}"
-                                    oninput="mockupState.menuSearchQuery = this.value; persistAllState(); renderPage();"
-                                    class="flex-1 bg-transparent text-gray-900 text-sm font-bold outline-none placeholder:text-gray-400 placeholder:font-normal"
-                                    autofocus
-                                >
-                                ${
-                                  mockupState.menuSearchQuery
-                                    ? `
-                                    <button onclick="updateMockupState('menuSearchQuery', '');" class="text-gray-400 hover:text-gray-600">
-                                        <i class="fa-solid fa-circle-xmark"></i>
-                                    </button>
-                                `
-                                    : ""
-                                }
-                            </div>
-                            <button onclick="updateMockupState('menuSearchOpen', false); updateMockupState('menuSearchQuery', '');" class="text-sm font-black text-violet-600 uppercase tracking-wide hover:opacity-85 transition-opacity">
-                                Cancel
-                            </button>
-                        </div>
-                    `
-                        : `
-                        <!-- Search Icon (Right Aligned) -->
-                        <div class="flex items-center justify-end w-full">
-                            <button onclick="updateMockupState('menuSearchOpen', true); updateMockupState('menuSearchQuery', '');" class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-violet-600 transition-colors shrink-0">
-                                <i class="fa-solid fa-magnifying-glass text-lg"></i>
-                            </button>
-                        </div>
-                    `
-                    }
                 </div>
             </div>
             `
@@ -2237,67 +2223,114 @@ function renderMenuPage() {
                     `;
                 })()}
 
-                <!-- Unified Tab Selector and Mobile Search -->
-                ${
-                  mockupState.menuSearchOpen && !isAlternative
-                    ? `
-                    <div class="flex items-center w-full gap-3 mb-6 mt-2 px-2 lg:px-0 animate-[fadeIn_0.2s_ease-out]">
-                        <div class="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2 gap-2">
-                            <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
-                            <input
-                                type="text"
-                                id="menu-search-input"
-                                placeholder="Search menu..."
-                                value="${mockupState.menuSearchQuery || ""}"
-                                oninput="mockupState.menuSearchQuery = this.value; persistAllState(); renderPage();"
-                                class="flex-1 bg-transparent text-gray-900 text-sm font-bold outline-none placeholder:text-gray-400 placeholder:font-normal"
-                                autofocus
-                            >
-                            ${
-                              mockupState.menuSearchQuery
-                                ? `
-                                <button onclick="updateMockupState('menuSearchQuery', '');" class="text-gray-400 hover:text-gray-600">
-                                    <i class="fa-solid fa-circle-xmark"></i>
+                <!-- Unified Tab Selector and Search (share one row) -->
+                ${(() => {
+                  const searchOpen = mockupState.menuSearchOpen;
+                  const justToggled =
+                    mockupState.lastMenuSearchOpen !== searchOpen;
+
+                  const tabButtonsHtml = [
+                    { id: "menu", name: "All" },
+                    ...(featuredItems.length > 0
+                      ? [{ id: "featured", name: "Featured" }]
+                      : []),
+                    { id: "favorites", name: "Favorites" },
+                    { id: "history", name: "History" },
+                  ]
+                    .map((tab) => {
+                      const isActive = mockupState.menuTab === tab.id;
+                      const activeClass = isActive
+                        ? "border-violet-600 text-violet-600 border-b-2 font-black"
+                        : "text-gray-400 font-bold hover:text-gray-600";
+                      return `<button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo(currentPage);" class="whitespace-nowrap shrink-0 pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}">${tab.name}</button>`;
+                    })
+                    .join("");
+
+                  const searchInputHtml = `
+                    <div class="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2 gap-2 ${isDesktop ? "lg:flex-none lg:w-[360px]" : ""}">
+                        <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                        <input
+                            type="text"
+                            id="menu-search-input"
+                            placeholder="Search menu..."
+                            value="${mockupState.menuSearchQuery || ""}"
+                            oninput="mockupState.menuSearchQuery = this.value; persistAllState(); renderPage();"
+                            class="flex-1 bg-transparent text-gray-900 text-sm font-bold outline-none placeholder:text-gray-400 placeholder:font-normal"
+                            autofocus
+                        >
+                        ${
+                          mockupState.menuSearchQuery
+                            ? `
+                            <button onclick="updateMockupState('menuSearchQuery', '');" class="text-gray-400 hover:text-gray-600">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                        `
+                            : ""
+                        }
+                    </div>
+                  `;
+
+                  if (isDesktop) {
+                    // Desktop: more room, so search expands and simply pushes the
+                    // tabs aside instead of hiding them entirely.
+                    return `
+                    <div class="flex items-center w-full gap-4 border-b border-gray-100 w-full mb-6 mt-2 pb-2">
+                        ${
+                          searchOpen
+                            ? `
+                            <div class="flex items-center gap-3 shrink-0 ${justToggled ? "animate-[fadeIn_0.2s_ease-out]" : ""}">
+                                ${searchInputHtml}
+                                <button onclick="toggleMenuSearch(false)" class="text-sm font-black text-violet-600 uppercase tracking-wide hover:opacity-85 transition-opacity shrink-0">
+                                    Cancel
                                 </button>
+                            </div>
                             `
-                                : ""
-                            }
+                            : `
+                            <button onclick="toggleMenuSearch(true)" class="shrink-0 flex items-center justify-center transition-colors text-gray-500 hover:text-violet-600 pb-2">
+                                <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                            </button>
+                            `
+                        }
+                        <div class="flex items-center overflow-x-auto scrollbar-hide gap-6 lg:gap-8 ${searchOpen ? "flex-1 justify-end" : ""}">
+                            ${tabButtonsHtml}
                         </div>
-                        <button onclick="updateMockupState('menuSearchOpen', false); updateMockupState('menuSearchQuery', '');" class="text-sm font-black text-violet-600 uppercase tracking-wide hover:opacity-85 transition-opacity">
+                    </div>
+                    `;
+                  }
+
+                  // Mobile/tablet: search takes over the full row and the tabs
+                  // fade out (and back in on cancel), rather than just appearing.
+                  const tabsRowHtml = `
+                    <div class="flex items-center overflow-x-auto scrollbar-hide border-b border-gray-100 w-full gap-6 lg:gap-8 justify-start pb-2 pl-2 lg:pl-0">
+                        <button onclick="toggleMenuSearch(true)" class="shrink-0 flex items-center justify-center transition-colors text-gray-500 hover:text-violet-600 pb-2 pr-2">
+                            <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                        </button>
+                        ${tabButtonsHtml}
+                    </div>
+                  `;
+                  const searchRowHtml = `
+                    <div class="flex items-center w-full gap-3 px-2 lg:px-0">
+                        ${searchInputHtml}
+                        <button onclick="toggleMenuSearch(false)" class="text-sm font-black text-violet-600 uppercase tracking-wide hover:opacity-85 transition-opacity shrink-0">
                             Cancel
                         </button>
                     </div>
-                    `
-                    : `
-                <div class="flex overflow-x-auto scrollbar-hide border-b border-gray-100 w-full gap-6 lg:gap-8 justify-start lg:mr-auto mb-6 mt-2 pb-2 pl-2 lg:pl-0">
-                    ${
-                      !isAlternative
-                        ? `
-                        <button onclick="updateMockupState('menuSearchOpen', true); updateMockupState('menuSearchQuery', '');" class="shrink-0 flex items-center justify-center transition-colors text-gray-500 hover:text-violet-600 pb-2 pr-2">
-                            <i class="fa-solid fa-magnifying-glass text-lg"></i>
-                        </button>
-                        `
-                        : ""
-                    }
-                    ${[
-                      { id: "menu", name: "All" },
-                      ...(featuredItems.length > 0
-                        ? [{ id: "featured", name: "Featured" }]
-                        : []),
-                      { id: "favorites", name: "Favorites" },
-                      { id: "history", name: "History" },
-                    ]
-                      .map((tab) => {
-                        const isActive = mockupState.menuTab === tab.id;
-                        const activeClass = isActive
-                          ? "border-violet-600 text-violet-600 border-b-2 font-black"
-                          : "text-gray-400 font-bold hover:text-gray-600";
-                        return `<button onclick="updateMockupState('menuTab', '${tab.id}'); navigateTo(currentPage);" class="whitespace-nowrap shrink-0 pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}">${tab.name}</button>`;
-                      })
-                      .join("")}
-                </div>
-                `
-                }
+                  `;
+
+                  const currentRowHtml = searchOpen
+                    ? searchRowHtml
+                    : tabsRowHtml;
+                  const outgoingRowHtml = searchOpen
+                    ? tabsRowHtml
+                    : searchRowHtml;
+
+                  return `
+                    <div class="relative w-full mb-6 mt-2">
+                        <div class="${justToggled ? "animate-[fadeIn_0.2s_ease-out]" : ""}">${currentRowHtml}</div>
+                        ${justToggled ? `<div class="absolute inset-0 top-0 left-0 pointer-events-none animate-[fadeOut_0.2s_ease-out_forwards]">${outgoingRowHtml}</div>` : ""}
+                    </div>
+                  `;
+                })()}
 
                 <!-- Render Tab Content Subview -->
                 ${(() => {
@@ -8180,7 +8213,7 @@ window.systemPagesData = [
     { group: "ordering-flow", id: "menu", name: "Menu Alt", file: "menu.html", icon: "fa-utensils", color: "#0ea5e9", auth: false, description: "Alternative menu layout with distinct category styling.", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/location/{id}/menu", note: "Fetch categories" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/menuitems", note: "Fetch items for a specific category" } ], connects: ["customize", "cart"] },
     { group: "ordering-flow", id: "menu-favorites", name: "Menu Favorites", file: "menu-favorites.html", icon: "fa-heart", color: "#ec4899", auth: true, description: "User's favorited items.", endpoints: [ { method: "GET", path: "/api/User/favorites", note: "Fetch favorited menu items" } ], connects: ["customize"] },
     { group: "ordering-flow", id: "menu-scan", name: "Menu Scan", file: "menu-scan.html", icon: "fa-qrcode", color: "#0ea5e9", auth: false, description: "Scan QR code to access menu.", endpoints: [], connects: ["menu"] },
-    { group: "ordering-flow", id: "customize", name: "Customize Item", file: "order-customize.html", icon: "fa-sliders", color: "#0ea5e9", auth: false, description: "Deep customization of a menu item (size, ice, sugar, toppings).", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/item/{id}/modifiers", note: "Fetch all modifier groups and options for item" } ], connects: ["cart"] },
+    { group: "ordering-flow", id: "customize", name: "Customize Item", file: "customize.html", icon: "fa-sliders", color: "#0ea5e9", auth: false, description: "Deep customization of a menu item (size, ice, sugar, toppings).", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/item/{id}/modifiers", note: "Fetch all modifier groups and options for item" } ], connects: ["cart"] },
     { group: "ordering-flow", id: "cart", name: "Cart & Checkout", file: "cart.html", icon: "fa-cart-shopping", color: "#0ea5e9", auth: false, description: "Review selected items, update quantities, apply promos.", endpoints: [ { method: "POST", path: "/api/Order/validate-promo", note: "Validate promo code against cart items" } ], connects: ["checkout", "menu"] },
     { group: "ordering-flow", id: "checkout", name: "Checkout", file: "checkout.html", icon: "fa-credit-card", color: "#059669", auth: true, description: "Finalize order details, select tip, enter payment info.", endpoints: [ { method: "POST", path: "/api/Payment/intent", note: "Create Stripe payment intent" }, { method: "POST", path: "/api/Order/submit", note: "Submit final order details and payment token" } ], connects: ["order-confirm"] },
     { group: "ordering-flow", id: "order-confirm", name: "Confirmation", file: "order-confirm.html", icon: "fa-check-circle", color: "#059669", auth: false, description: "Order success page showing order number and estimated time.", endpoints: [ { method: "GET", path: "/api/Order/{id}/status", note: "Fetch initial order status and ETA" } ], connects: ["track-order", "restaurant-home"] },
@@ -9242,6 +9275,7 @@ function renderPage() {
     window.scrollTo(0, 0);
   }
   mockupState.lastModalOpen = mockupState.modalOpen;
+  mockupState.lastMenuSearchOpen = mockupState.menuSearchOpen;
   persistAllState();
   document.title = `FareBites – ${PAGE_LABELS[currentPage] || currentPage}`;
 
@@ -13140,7 +13174,12 @@ function renderSingleLocationCardHtml(s, idx) {
   // Check locationsOrderingStatus first (freshest), then fall back to location object property
   let locationAllowOrdering = true;
   let locationIsOpen = true;
-  if (mockupState.locationsOrderingStatus && mockupState.locationsOrderingStatus[s.locationId] !== undefined) {
+
+  // Temporary bypass for testing Castro Valley
+  if (s.locationId === 7 || (s.name && s.name.toLowerCase().includes("castro valley"))) {
+    locationAllowOrdering = true;
+    locationIsOpen = true;
+  } else if (mockupState.locationsOrderingStatus && mockupState.locationsOrderingStatus[s.locationId] !== undefined) {
     const status = mockupState.locationsOrderingStatus[s.locationId];
     if (typeof status === 'object') {
       locationAllowOrdering = status.allowOrdering;
