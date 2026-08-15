@@ -958,13 +958,8 @@ function getEnabledLocations() {
     ? mockupState.apiLocations
     : LOCATIONS;
 
-  if (mockupState.locationsOrderingStatus) {
-    list = list.filter(loc => mockupState.locationsOrderingStatus[loc.locationId] === true);
-  } else {
-    // Show active enabled locations on the API
-    const activeIds = [7, 9, 10, 19, 47, 57];
-    list = list.filter(loc => activeIds.includes(Number(loc.locationId)));
-  }
+  // Return ALL locations — closed ones are shown with a "Closed" badge
+  // instead of being filtered out
   return list;
 }
 
@@ -1076,6 +1071,38 @@ async function fetchLocations() {
               console.warn(`Could not fetch hours for loc ${loc.locationId}`);
             }
 
+            // Compute open status from actual business hours schedule,
+            // ignoring the API's unreliable isOpen flag.
+            let isOpen = false;
+            let allowOrdering = false;
+            if (hData && hData.businessHours && hData.businessHours[todayDay]) {
+              const todayH = hData.businessHours[todayDay];
+              if (!todayH.isClosed && todayH.startTime && todayH.endTime) {
+                // Parse times like "11:30 AM" into minutes-since-midnight
+                const parseTime = (t) => {
+                  const [time, period] = t.split(' ');
+                  let [h, m] = time.split(':').map(Number);
+                  if (period === 'PM' && h !== 12) h += 12;
+                  if (period === 'AM' && h === 12) h = 0;
+                  return h * 60 + m;
+                };
+                const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+                const openMinutes = parseTime(todayH.startTime);
+                const closeMinutes = parseTime(todayH.endTime);
+                isOpen = nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+                allowOrdering = isOpen || (hData.allowOrderWhileClosed === true);
+              }
+            } else if (hData) {
+              // Fallback: trust the API flag if we have no schedule
+              isOpen = hData.isOpen === true;
+              allowOrdering = isOpen || (hData.allowOrderWhileClosed === true);
+            }
+            // Holiday override
+            if (hoursStr === "Closed today") {
+              isOpen = false;
+              allowOrdering = false;
+            }
+
             return {
               locationId: loc.locationId,
               name: loc.locationName || "Unnamed Location",
@@ -1087,6 +1114,8 @@ async function fetchLocations() {
               dist: "Nearby",
               fav: false,
               hours: hoursStr,
+              isOpen: isOpen,
+              allowOrdering: allowOrdering,
               businessHours: hData ? hData.businessHours : null,
               holidayHours: holData ? holData.holidayHours : null,
               lat: loc.latitude || (fallback ? fallback.lat : 37.7749),
@@ -1105,6 +1134,24 @@ async function fetchLocations() {
   }
 }
 
+// Helper: compute isOpen from a businessHours schedule object
+function computeIsOpenFromSchedule(businessHours) {
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const todayDay = days[new Date().getDay()];
+  const todayH = businessHours && businessHours[todayDay];
+  if (!todayH || todayH.isClosed || !todayH.startTime || !todayH.endTime) return false;
+  const parseTime = (t) => {
+    const [time, period] = t.split(' ');
+    let [h, m] = time.split(':').map(Number);
+    if (period === 'PM' && h !== 12) h += 12;
+    if (period === 'AM' && h === 12) h = 0;
+    return h * 60 + m;
+  };
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  return nowMinutes >= parseTime(todayH.startTime) && nowMinutes < parseTime(todayH.endTime);
+}
+
 async function fetchLocationsOrderingStatus() {
   const list = mockupState.apiLocations && mockupState.apiLocations.length > 0
     ? mockupState.apiLocations
@@ -1114,21 +1161,58 @@ async function fetchLocationsOrderingStatus() {
   await Promise.all(
     uniqueIds.map(async (id) => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${id}/menu`);
-        if (res.ok) {
-          const menu = await res.json();
-          statuses[id] = menu.allowOrdering ?? false;
-        } else {
-          statuses[id] = false;
+        // Fetch hours to compute open status from the actual schedule
+        const [menuRes, hoursRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${id}/menu`),
+          fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${id}/hours`),
+        ]);
+
+        let allowOrderWhileClosed = false;
+        let computedIsOpen = false;
+
+        if (hoursRes.ok) {
+          const hoursData = await hoursRes.json();
+          computedIsOpen = computeIsOpenFromSchedule(hoursData.businessHours);
+          allowOrderWhileClosed = hoursData.allowOrderWhileClosed === true;
+
+          // Also update hours text on the location object
+          const locObj = list.find(l => l.locationId === id);
+          if (locObj && hoursData.businessHours) {
+            const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+            const todayDay = days[new Date().getDay()];
+            const todayH = hoursData.businessHours[todayDay];
+            if (todayH && !todayH.isClosed && todayH.startTime && todayH.endTime) {
+              locObj.hours = `${todayH.startTime} to ${todayH.endTime}`;
+            } else if (todayH && todayH.isClosed) {
+              locObj.hours = "Closed today";
+            }
+          }
+        } else if (menuRes.ok) {
+          // Fallback: trust API flag if no hours endpoint
+          const menu = await menuRes.json();
+          computedIsOpen = menu.isOpen === true;
+          allowOrderWhileClosed = false;
+        }
+
+        const allowOrdering = computedIsOpen || allowOrderWhileClosed;
+        statuses[id] = { allowOrdering, isOpen: computedIsOpen };
+
+        // Update location object
+        const locObj = list.find(l => l.locationId === id);
+        if (locObj) {
+          locObj.allowOrdering = allowOrdering;
+          locObj.isOpen = computedIsOpen;
         }
       } catch (err) {
-        console.error(`Failed to fetch menu/allowOrdering for location ${id}:`, err);
-        statuses[id] = false;
+        console.error(`Failed to fetch status for location ${id}:`, err);
+        statuses[id] = { allowOrdering: false, isOpen: false };
       }
     })
   );
   mockupState.locationsOrderingStatus = statuses;
   persistAllState();
+  // Re-render the locations page if open so status badges update
+  if (currentPage === "locations") renderPage();
 }
 
 async function fetchMenuAndItems(locationId) {
@@ -1807,10 +1891,14 @@ function renderMenuPage() {
                     `
                         : ""
                     }
-                    <!-- Center: i-Tea logo -->
+                    <!-- Center: i-Tea logo (Desktop) or Menu Title (Mobile/Tablet) -->
+                    ${isDesktop ? `
                     <div class="flex-1 flex items-center justify-center">
                         <img src="images/i-tea-logo-new.png" class="h-9 w-auto object-contain" alt="i-Tea">
                     </div>
+                    ` : `
+                    <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Menu</h1>
+                    `}
                     <!-- Right: Cart -->
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
@@ -1911,7 +1999,7 @@ function renderMenuPage() {
             <div class="bg-white border-b border-gray-100 flex flex-col items-center justify-center text-center w-full shrink-0 animate-[fadeIn_0.3s_ease-out]">
                 <!-- Location details block -->
                 <div class="py-3.5 px-4 w-full relative">
-                    <h1 class="font-branding font-black text-[#1f0b35] text-[32px] tracking-tight leading-none uppercase mb-2">Menu</h1>
+
                     <div onclick="toggleMenu(event, 'location-dropdown-menu')" class="flex flex-col items-center cursor-pointer group hover:opacity-85 transition-opacity">
                         <span class="text-[11px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">
                             ${modeText}
@@ -3604,47 +3692,7 @@ const routes = {
                                 `;
                               }
                               return set.map(
-                                (s, idx) => `
-                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || "i-Tea - Tempe") ? "border-violet-600 shadow-md" : idx === 0 || idx === 1 ? "border-violet-200" : s.fav ? "border-violet-200" : "border-gray-200"} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md" style="${idx === 0 || idx === 1 ? "background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);" : s.name === (mockupState.selectedLocation || "i-Tea - Tempe") ? "background: rgba(124,58,237,0.05);" : ""}" onclick="focusLocation('${s.name}')">
-                                    <div class="min-w-0 flex-1 pr-3">
-                                        ${(() => {
-                                          const label =
-                                            mockupState.locationLabels &&
-                                            mockupState.locationLabels[s.name];
-                                          return label
-                                            ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>`
-                                            : "";
-                                        })()}
-                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">
-                                            <span>${s.name}</span>
-                                            <button onclick="toggleLocationFavorite('${s.name}', event)" class="heart-btn relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100/80 transition-colors duration-200 active:scale-90" title="Toggle Favorite">
-                                                ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-[19px]"></i>' : '<i class="fa-regular fa-heart text-gray-300 hover:text-violet-600 text-[19px]"></i>'}
-                                                <div class="burst-lines absolute inset-0 pointer-events-none opacity-0">
-                                                    <span class="line line-1"></span>
-                                                    <span class="line line-2"></span>
-                                                    <span class="line line-3"></span>
-                                                    <span class="line line-4"></span>
-                                                    <span class="line line-5"></span>
-                                                    <span class="line line-6"></span>
-                                                    <span class="line line-7"></span>
-                                                    <span class="line line-8"></span>
-                                                </div>
-                                            </button>
-                                        </h3>
-                                        <p class="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wide leading-snug break-words" style="font-family: Roboto, sans-serif;">${s.address ? s.address.toUpperCase() : ""}</p>
-                                        <p class="text-xs font-bold text-gray-400 mt-1.5 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
-                                        <div class="flex gap-4 mt-4">
-                                            <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop"></i> In store</span>
-                                            <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-car"></i> Drive-thru</span>
-                                            <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-square-parking"></i> Curbside</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-col items-end justify-between h-full gap-2 shrink-0">
-                                        <div class="text-xs font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
-                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || "null"}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[10px] px-4 py-2 rounded-full uppercase font-black tracking-widest shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
-                                        <span class="text-[10px] text-gray-400 underline uppercase font-bold hover:text-violet-600" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
-                                    </div>
-                                </div>`,
+                                (s, idx) => renderSingleLocationCardHtml(s, idx)
                               ).join("");
                             })()}
                         </div>
@@ -3734,47 +3782,7 @@ const routes = {
                                 `;
                               }
                               return set.map(
-                                (s, idx) => `
-                                <div data-location-card="${s.name}" class="p-5 border-2 ${s.name === (mockupState.selectedLocation || "i-Tea - Tempe") ? "border-violet-600 shadow-md" : idx === 0 || idx === 1 ? "border-violet-200" : s.fav ? "border-violet-200" : "border-gray-200"} rounded-2xl flex justify-between items-start cursor-pointer active:scale-[0.98] transition-all hover:shadow-md" style="${idx === 0 || idx === 1 ? "background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);" : s.name === (mockupState.selectedLocation || "i-Tea - Tempe") ? "background: rgba(124,58,237,0.05);" : ""}" onclick="focusLocation('${s.name}')">
-                                    <div class="min-w-0 flex-1 pr-2">
-                                        ${(() => {
-                                          const label =
-                                            mockupState.locationLabels &&
-                                            mockupState.locationLabels[s.name];
-                                          return label
-                                            ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>`
-                                            : "";
-                                        })()}
-                                        <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">
-                                            <span>${s.name}</span>
-                                            <button onclick="toggleLocationFavorite('${s.name}', event)" class="heart-btn relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100/80 transition-colors duration-200 active:scale-90" title="Toggle Favorite">
-                                                ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-[19px]"></i>' : '<i class="fa-regular fa-heart text-gray-300 hover:text-violet-600 text-[19px]"></i>'}
-                                                <div class="burst-lines absolute inset-0 pointer-events-none opacity-0">
-                                                    <span class="line line-1"></span>
-                                                    <span class="line line-2"></span>
-                                                    <span class="line line-3"></span>
-                                                    <span class="line line-4"></span>
-                                                    <span class="line line-5"></span>
-                                                    <span class="line line-6"></span>
-                                                    <span class="line line-7"></span>
-                                                    <span class="line line-8"></span>
-                                                </div>
-                                            </button>
-                                        </h3>
-                                        <p class="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wide leading-snug break-words" style="font-family: Roboto, sans-serif;">${s.address ? s.address.toUpperCase() : ""}</p>
-                                        <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
-                                        <div class="flex gap-4 mt-3">
-                                            <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop text-[13px]"></i> In store</span>
-                                            <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-car text-[13px]"></i> Drive-thru</span>
-                                            <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-square-parking text-[13px]"></i> Curbside</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-col items-end justify-between h-full gap-2 shrink-0 ml-3">
-                                        <div class="text-[11px] font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
-                                        <button onclick="event.stopPropagation(); selectLocation(${s.locationId || "null"}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[9px] px-3.5 py-1.5 rounded-full uppercase font-black tracking-widest whitespace-nowrap shadow-sm active:scale-95">Order Here</button>
-                                        <span class="text-[10px] text-gray-400 underline uppercase font-bold" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
-                                    </div>
-                                </div>`,
+                                (s, idx) => renderSingleLocationCardHtml(s, idx)
                               ).join("");
                             })()}
                         </div>
@@ -9044,10 +9052,10 @@ function renderPage() {
                         <img src="images/nav-logo.png" class="w-full h-full object-contain">
                     </div>
                     <div class="flex items-center gap-3 lg:gap-6 text-[16px] lg:text-[1.3rem] font-black uppercase tracking-tight text-[#1f0b35] ml-2">
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('restaurant-home')">Home</span>
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('menu')">Menu</span>
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="navigateTo('locations')">Order</span>
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap" onclick="tryOpenReorderModal();">Reorder</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap ${currentPage === 'restaurant-home' ? 'active-nav-link' : ''}" onclick="navigateTo('restaurant-home')">Home</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap ${(currentPage === 'menu' || currentPage === 'menu-single') ? 'active-nav-link' : ''}" onclick="navigateTo('menu')">Menu</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap ${currentPage === 'locations' ? 'active-nav-link' : ''}" onclick="navigateTo('locations')">Order</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap ${mockupState.modalOpen === 'reorder' ? 'active-nav-link' : ''}" onclick="tryOpenReorderModal();">Reorder</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-4 lg:gap-8 text-[14px] lg:text-[16px] font-black uppercase tracking-tight text-[#1f0b35]">
@@ -13127,29 +13135,77 @@ function getNearbyLocationsCount(targetLat, targetLng, radiusMiles = 15) {
 function renderSingleLocationCardHtml(s, idx) {
   const isSelected = s.name === (mockupState.selectedLocation || "i-Tea - Tempe");
   const label = mockupState.locationLabels && mockupState.locationLabels[s.name];
-  const bgStyle = (idx === 0 || idx === 1) 
-    ? "background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);" 
-    : isSelected 
-    ? "background: rgba(124,58,237,0.05);" 
+
+  // Determine if this location is open/accepting orders
+  // Check locationsOrderingStatus first (freshest), then fall back to location object property
+  let locationAllowOrdering = true;
+  let locationIsOpen = true;
+  if (mockupState.locationsOrderingStatus && mockupState.locationsOrderingStatus[s.locationId] !== undefined) {
+    const status = mockupState.locationsOrderingStatus[s.locationId];
+    if (typeof status === 'object') {
+      locationAllowOrdering = status.allowOrdering;
+      locationIsOpen = status.isOpen;
+    } else {
+      // Legacy boolean format
+      locationAllowOrdering = status;
+      locationIsOpen = status;
+    }
+  } else if (s.allowOrdering !== undefined) {
+    locationAllowOrdering = s.allowOrdering;
+    locationIsOpen = s.isOpen !== undefined ? s.isOpen : s.allowOrdering;
+  } else if (s.hours === 'Closed today') {
+    locationAllowOrdering = false;
+    locationIsOpen = false;
+  }
+
+  const isClosed = !locationAllowOrdering;
+
+  const bgStyle = isClosed
+    ? "background: rgba(0,0,0,0.02);"
+    : (idx === 0 || idx === 1)
+    ? "background: linear-gradient(to right, rgba(124, 58, 237, 0.07), white);"
+    : isSelected
+    ? "background: rgba(124,58,237,0.05);"
     : "";
-  const borderClass = isSelected 
-    ? "border-violet-600 shadow-md" 
-    : (idx === 0 || idx === 1 || s.fav) 
-    ? "border-violet-200" 
+
+  const borderClass = isClosed
+    ? "border-gray-200"
+    : isSelected
+    ? "border-violet-600 shadow-md"
+    : (idx === 0 || idx === 1 || s.fav)
+    ? "border-violet-200"
     : "border-gray-200";
 
+  // Always show hours + a status badge so users know both state and schedule
+  let statusBadge;
+  if (isClosed) {
+    statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest mr-1.5" style="background: rgba(220,38,38,0.09); color: #dc2626;"><i class="fa-solid fa-circle" style="font-size:6px"></i> Closed</span>`;
+  } else {
+    statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest mr-1.5" style="background: rgba(22,163,74,0.09); color: #16a34a;"><i class="fa-solid fa-circle" style="font-size:6px"></i> Open Now</span>`;
+  }
+
+  const hoursText = (s.hours && s.hours !== 'Hours unavailable')
+    ? `<i class="fa-regular fa-clock mr-1"></i> ${s.hours}`
+    : '';
+
+  const hoursDisplay = `${statusBadge}<span class="text-gray-400 text-[11px] font-bold uppercase tracking-widest" style="font-family: Roboto, sans-serif;">${hoursText}</span>`;
+
+  const orderButton = isClosed
+    ? `<button onclick="event.stopPropagation(); showClosedLocationModal('${s.name.replace(/'/g, "\\'")}')" class="bg-gray-200 text-gray-500 text-[10px] px-4 py-2 rounded-full uppercase font-black tracking-widest shadow-sm cursor-pointer transition active:scale-95 hover:bg-gray-300">Closed</button>`
+    : `<button onclick="event.stopPropagation(); selectLocation(${s.locationId || "null"}, '${s.name.replace(/'/g, "\\'")}', '${s.address.replace(/'/g, "\\'")}', '${s.dist}')" class="bg-violet-600 text-white text-[10px] px-4 py-2 rounded-full uppercase font-black tracking-widest shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>`;
+
   return `
-    <div data-location-card="${s.name}" class="p-5 border-2 ${borderClass} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md mb-3" style="${bgStyle}" onclick="focusLocation('${s.name}')">
+    <div data-location-card="${s.name}" class="p-5 border-2 ${borderClass} rounded-2xl flex justify-between items-start cursor-pointer transition hover:border-violet-400 hover:shadow-md mb-3${isClosed ? ' opacity-75' : ''}" style="${bgStyle}" onclick="${isClosed ? `showClosedLocationModal('${s.name.replace(/'/g, "\\'")}')` : `focusLocation('${s.name.replace(/'/g, "\\'")}')` }">
         <div class="min-w-0 flex-1 pr-3">
             ${label ? `<span class="text-[11px] font-black text-violet-600 uppercase tracking-widest mb-1.5 block" style="font-family: Roboto, sans-serif;">${label}</span>` : ""}
             <h3 class="font-bold text-base tracking-tight uppercase flex items-center gap-2 text-gray-900">
                 <span>${s.name}</span>
-                <button onclick="toggleLocationFavorite('${s.name}', event)" class="heart-btn relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100/80 transition-colors duration-200 active:scale-90" title="Toggle Favorite">
+                <button onclick="toggleLocationFavorite('${s.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', event)" class="heart-btn relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100/80 transition-colors duration-200 active:scale-90" title="Toggle Favorite">
                     ${s.fav ? '<i class="fa-solid fa-heart text-violet-600 text-[19px]"></i>' : '<i class="fa-regular fa-heart text-gray-300 hover:text-violet-600 text-[19px]"></i>'}
                 </button>
             </h3>
             <p class="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wide leading-snug break-words" style="font-family: Roboto, sans-serif;">${s.address ? s.address.toUpperCase() : ""}</p>
-            <p class="text-xs font-bold text-gray-400 mt-1.5 uppercase tracking-widest" style="font-family: Roboto, sans-serif;"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
+            <p class="text-xs font-bold mt-1.5 uppercase tracking-widest ${isClosed ? 'text-red-500' : 'text-gray-400'}">${hoursDisplay}</p>
             <div class="flex gap-4 mt-4">
                 <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-shop"></i> In store</span>
                 <span class="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap" style="font-family: Roboto, sans-serif;"><i class="fa-solid fa-car"></i> Drive-thru</span>
@@ -13158,11 +13214,113 @@ function renderSingleLocationCardHtml(s, idx) {
         </div>
         <div class="flex flex-col items-end justify-between h-full gap-2 shrink-0">
             <div class="text-xs font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
-            <button onclick="event.stopPropagation(); selectLocation(${s.locationId || "null"}, '${s.name}', '${s.address}', '${s.dist}')" class="bg-violet-600 text-white text-[10px] px-4 py-2 rounded-full uppercase font-black tracking-widest shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
+            ${orderButton}
             <span class="text-[10px] text-gray-400 underline uppercase font-bold hover:text-violet-600" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
         </div>
     </div>`;
 }
+
+function showClosedLocationModal(locationName) {
+  // Remove any existing closed modal
+  const existing = document.getElementById('closed-location-modal-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'closed-location-modal-overlay';
+  overlay.style.cssText = `
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem;
+    animation: fadeIn 0.2s ease-out;
+  `;
+
+  overlay.innerHTML = `
+    <style>
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes slideUpModal { from { opacity: 0; transform: translateY(24px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    </style>
+    <div style="
+      background: white;
+      border-radius: 28px;
+      padding: 2rem;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: 0 25px 60px -10px rgba(0,0,0,0.3);
+      text-align: center;
+      animation: slideUpModal 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+    ">
+      <button onclick="document.getElementById('closed-location-modal-overlay').remove();" style="
+        position: absolute; top: 1rem; right: 1rem;
+        width: 32px; height: 32px;
+        background: #f3f4f6;
+        border: none; border-radius: 50%;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; color: #6b7280;
+        transition: background 0.15s;
+      " onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div style="
+        width: 64px; height: 64px;
+        background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(220,38,38,0.05));
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1.25rem;
+      ">
+        <i class="fa-solid fa-store-slash" style="font-size: 24px; color: #dc2626;"></i>
+      </div>
+
+      <h2 style="
+        font-family: Roboto, sans-serif;
+        font-size: 1rem; font-weight: 900;
+        letter-spacing: 0.08em; text-transform: uppercase;
+        color: #111827; margin-bottom: 0.5rem;
+      ">${locationName || 'This Location'}</h2>
+
+      <p style="
+        font-family: Roboto, sans-serif;
+        font-size: 0.875rem; font-weight: 700;
+        color: #dc2626; text-transform: uppercase;
+        letter-spacing: 0.06em; margin-bottom: 1rem;
+      "><i class="fa-solid fa-circle" style="font-size: 8px; vertical-align: middle; margin-right: 4px;"></i> Currently Not Accepting Orders</p>
+
+      <p style="
+        font-family: Roboto, sans-serif;
+        font-size: 0.8125rem; color: #6b7280;
+        line-height: 1.6; margin-bottom: 1.75rem;
+      ">This location is currently closed and is not accepting online orders at this time. Please check back during business hours or choose a different location nearby.</p>
+
+      <button onclick="document.getElementById('closed-location-modal-overlay').remove();" style="
+        width: 100%;
+        padding: 0.875rem 1.5rem;
+        background: #7c3aed;
+        color: white;
+        border: none; border-radius: 999px;
+        font-family: Roboto, sans-serif;
+        font-size: 0.6875rem; font-weight: 900;
+        text-transform: uppercase; letter-spacing: 0.12em;
+        cursor: pointer;
+        box-shadow: 0 8px 24px -4px rgba(124,58,237,0.45);
+        transition: background 0.15s, transform 0.1s;
+      " onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#7c3aed'" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
+        Find Another Location
+      </button>
+    </div>
+  `;
+
+  // Close on backdrop click
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+
+  document.body.appendChild(overlay);
+}
+
+window.showClosedLocationModal = showClosedLocationModal;
 
 function handleLocationSearchInput(val) {
   mockupState.locationSearchQuery = val;
@@ -13432,22 +13590,6 @@ function navigateTo(pageId, options = {}) {
   persistAllState();
   let [basePageId, hash] = pageId.split("#");
 
-  // Automatically select Castro Valley store for menu if no location is selected
-  if (
-    (basePageId === "menu" || basePageId === "menu-single" || basePageId === "customize-alt") &&
-    !mockupState.selectedLocationId
-  ) {
-    mockupState.selectedLocation = "i-Tea - CASTRO VALLEY";
-    mockupState.selectedLocationId = 7;
-    mockupState.selectedRestaurantId = 7;
-    mockupState.selectedAddress = "20666 REDWOOD RD, CASTRO VALLEY, CA";
-    mockupState.selectedDistance = "15.1 mi";
-    mockupState.orderTime = "ASAP";
-    mockupState.apiCategories = [];
-    mockupState.apiMenuItems = [];
-    persistAllState();
-  }
-
   // Redirect to location selector if accessing menu or customization without a selected store
   if (
     (basePageId === "menu" ||
@@ -13559,22 +13701,7 @@ window.addEventListener("DOMContentLoaded", () => {
         persistAllState();
       }
     }
-  } else if (
-    (currentPage === "menu" || currentPage === "menu-single" || currentPage === "customize-alt") &&
-    !mockupState.selectedLocationId
-  ) {
-    // Fallback default for menu page if no store is selected at all
-    mockupState.selectedLocation = "i-Tea - CASTRO VALLEY";
-    mockupState.selectedLocationId = 7;
-    mockupState.selectedRestaurantId = 7;
-    mockupState.selectedAddress = "20666 REDWOOD RD, CASTRO VALLEY, CA";
-    mockupState.selectedDistance = "15.1 mi";
-    mockupState.orderTime = "ASAP";
-    mockupState.apiCategories = [];
-    mockupState.apiMenuItems = [];
-    persistAllState();
   }
-
   // Redirect to location selector if landing directly on menu or customization without a selected store
   if (
     (currentPage === "menu" ||
