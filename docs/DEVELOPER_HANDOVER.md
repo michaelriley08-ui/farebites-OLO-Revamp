@@ -65,7 +65,7 @@ The entire application relies on a global, mutable object called `mockupState`.
 * **Secure Cart Clearing:** When a user signs out, the active `mockupState.cart` is emptied to clear the UI, but the background `localStorage` cart is preserved for their next login.
 
 ### Order Customization & Pricing Logic
-* **Dynamic Customization:** The `order-customize.html` view parses data from the backend `RestaurantMenu` API endpoints. It renders steppers for Ice/Sugar levels and checkboxes for Toppings.
+* **Dynamic Customization:** The `customize.html` view parses data from the backend `RestaurantMenu` API endpoints. It renders steppers for Ice/Sugar levels and checkboxes for Toppings.
 * **Live Pricing:** As users select modifiers, the frontend dynamically calculates and updates the "Add to Cart" button price.
 * **Subtotals & Taxes:** The Cart and Checkout pages calculate the subtotal, apply a location-specific `taxRate`, add the `convenienceFee`, and process the user's selected `tipPercentage` (10%, 15%, 20%, or Custom) natively in the browser before displaying the Grand Total.
 
