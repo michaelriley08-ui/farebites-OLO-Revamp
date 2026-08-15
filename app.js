@@ -4503,7 +4503,7 @@ const routes = {
                 </div>
 
                 <!-- Schedule Pickup Modal -->
-                <div id="schedule-pickup-modal" class="absolute inset-0 bg-black/60 z-[90] ${scheduleModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                <div id="schedule-pickup-modal" class="fixed inset-0 bg-black/60 z-[99999] ${scheduleModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
                     <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[85vh]">
                         <div class="flex justify-between items-center mb-4 shrink-0">
                             <h3 class="font-black text-xl uppercase text-gray-900">Schedule Pickup</h3>
@@ -4561,7 +4561,7 @@ const routes = {
                 </div>
 
                 <!-- Date Modal -->
-                <div id="date-modal" class="absolute inset-0 bg-black/60 z-[100] ${dateModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                <div id="date-modal" class="fixed inset-0 bg-black/60 z-[99999] ${dateModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
                     <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[85vh]">
                         <div class="flex justify-between items-center mb-5 shrink-0">
                             <h3 class="font-black text-xl uppercase text-gray-900">Choose Day</h3>
@@ -4584,7 +4584,7 @@ const routes = {
                 </div>
 
                 <!-- Time Modal -->
-                <div id="time-modal" class="absolute inset-0 bg-black/60 z-[100] ${timeModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                <div id="time-modal" class="fixed inset-0 bg-black/60 z-[99999] ${timeModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
                     <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[90vh]">
                         <div class="flex justify-between items-center mb-5 shrink-0">
                             <h3 class="font-black text-xl uppercase text-gray-900">Choose Time</h3>
@@ -4651,7 +4651,7 @@ const routes = {
                     </div>
                 </div>
 
-                <div id="warning-modal" class="absolute inset-0 bg-black/60 z-[110] ${warningModalClass} flex-col justify-center items-center backdrop-blur-sm p-4">
+                <div id="warning-modal" class="fixed inset-0 bg-black/60 z-[99999] ${warningModalClass} flex-col justify-center items-center backdrop-blur-sm p-4">
                     <div class="bg-red-600 w-full sm:w-[380px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col items-center text-center">
                         <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
                             <i class="fa-solid fa-clock text-red-600 text-3xl"></i>
