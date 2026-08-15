@@ -1103,15 +1103,6 @@ async function fetchLocations() {
               allowOrdering = false;
             }
 
-            // Temporary bypass for testing Castro Valley
-            if (loc.locationId === 7 || (loc.locationName && loc.locationName.toLowerCase().includes("castro valley"))) {
-              isOpen = true;
-              allowOrdering = true;
-              if (hoursStr === "Closed today" || hoursStr === "Hours unavailable") {
-                hoursStr = "10:30 AM to 10:00 PM";
-              }
-            }
-
             return {
               locationId: loc.locationId,
               name: loc.locationName || "Unnamed Location",
@@ -1205,12 +1196,6 @@ async function fetchLocationsOrderingStatus() {
 
         let allowOrdering = computedIsOpen || allowOrderWhileClosed;
 
-        // Temporary bypass for testing Castro Valley
-        if (id === 7) {
-          computedIsOpen = true;
-          allowOrdering = true;
-        }
-
         statuses[id] = { allowOrdering, isOpen: computedIsOpen };
 
         // Update location object
@@ -1218,9 +1203,6 @@ async function fetchLocationsOrderingStatus() {
         if (locObj) {
           locObj.allowOrdering = allowOrdering;
           locObj.isOpen = computedIsOpen;
-          if (id === 7 && (locObj.hours === "Closed today" || locObj.hours === "Hours unavailable")) {
-            locObj.hours = "10:30 AM to 10:00 PM";
-          }
         }
       } catch (err) {
         console.error(`Failed to fetch status for location ${id}:`, err);
@@ -1777,6 +1759,8 @@ function hamburgerDrawerHTML() {
                             ? "closeHamburger(); signOutUser();"
                             : item.page === "reorder-modal"
                             ? "closeHamburger(); tryOpenReorderModal();"
+                            : item.page === "menu"
+                            ? "closeHamburger(); navigateTo('menu', { confirmLocation: true });"
                             : `closeHamburger(); navigateTo('${item.page}');`;
 
                         if (item.label === "Rewards") {
@@ -2235,7 +2219,7 @@ function renderMenuPage() {
                       ? [{ id: "featured", name: "Featured" }]
                       : []),
                     { id: "favorites", name: "Favorites" },
-                    { id: "history", name: "History" },
+                    { id: "history", name: "Reorder" },
                   ]
                     .map((tab) => {
                       const isActive = mockupState.menuTab === tab.id;
@@ -2657,6 +2641,9 @@ function renderMenuPage() {
                     };
                     allOrders.sort((a, b) => getOrderTime(b) - getOrderTime(a));
 
+                    const displayedOrders = allOrders.slice(0, 3);
+                    preloadPastOrdersMenuItemDetails(displayedOrders);
+
                     if (allOrders.length === 0) {
                       return `
                                 <div class="space-y-6">
@@ -2673,7 +2660,7 @@ function renderMenuPage() {
                             `;
                     }
 
-                    const orderCardsHTML = allOrders
+                    const orderCardsHTML = displayedOrders
                       .map((order) => {
                         const orderDate = new Date(
                           order.orderDate || order.placedAt || Date.now(),
@@ -2700,6 +2687,28 @@ function renderMenuPage() {
                           ? foundLoc.name
                           : mockupState.selectedLocation || "i-Tea";
 
+                        const MAX_THUMBS = 4;
+                        const thumbItems = orderItems.slice(0, MAX_THUMBS);
+                        const extraThumbCount = orderItems.length - MAX_THUMBS;
+                        const thumbsHtml =
+                          thumbItems
+                            .map((item) => {
+                              const img = getReorderItemImage(item);
+                              const itemName =
+                                item.name ||
+                                item.Name ||
+                                item.menuItemName ||
+                                item.MenuItemName ||
+                                "Item";
+                              return `<div class="w-11 h-11 rounded-lg overflow-hidden shrink-0 border border-gray-100 bg-gray-50" title="${itemName}">
+                                    <img src="${img}" alt="${itemName}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
+                                </div>`;
+                            })
+                            .join("") +
+                          (extraThumbCount > 0
+                            ? `<div class="w-11 h-11 rounded-lg shrink-0 bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-600 font-black text-[11px]">+${extraThumbCount}</div>`
+                            : "");
+
                         return `
                                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-4">
                                     <div class="flex justify-between items-start">
@@ -2708,6 +2717,9 @@ function renderMenuPage() {
                                             <p class="font-black text-violet-600 text-sm mt-0.5">${locationName}</p>
                                         </div>
                                         <span class="font-black text-gray-900 text-base">$${orderTotal}</span>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        ${thumbsHtml}
                                     </div>
                                     <div class="flex flex-col gap-1 flex-1">
                                         ${orderItems
@@ -2718,7 +2730,7 @@ function renderMenuPage() {
                                           .join("")}
                                     </div>
                                     <div class="flex gap-2 mt-2 pt-4 border-t border-gray-50">
-                                        <button onclick="viewPastOrder(${order.orderId || `'${orderNum}'`})" class="flex-1 py-2.5 rounded-full border-2 border-violet-600 text-violet-600 font-black text-[10px] uppercase tracking-widest hover:bg-violet-50 transition-colors">View</button>
+                                        <button onclick="openOrderDetailsModal(${order.orderId || `'${orderNum}'`})" class="flex-1 py-2.5 rounded-full border-2 border-violet-600 text-violet-600 font-black text-[10px] uppercase tracking-widest hover:bg-violet-50 transition-colors">View details</button>
                                         <button onclick="reorderPastOrder(${order.orderId || `'${orderNum}'`})" class="flex-1 py-2.5 rounded-full bg-violet-600 text-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:bg-violet-700 transition-colors">Reorder</button>
                                     </div>
                                 </div>
@@ -2734,6 +2746,17 @@ function renderMenuPage() {
                                 <div class="${isDesktop ? "grid grid-cols-2 lg:grid-cols-3 gap-5" : "flex flex-col gap-4"}">
                                     ${orderCardsHTML}
                                 </div>
+                                ${
+                                  allOrders.length > displayedOrders.length
+                                    ? `
+                                <div class="text-center pt-2">
+                                    <button onclick="navigateTo('account')" class="text-xs font-black text-violet-600 uppercase tracking-widest hover:underline">
+                                        View all orders →
+                                    </button>
+                                </div>
+                                `
+                                    : ""
+                                }
                             </div>
                         `;
                   }
@@ -3054,6 +3077,9 @@ const routes = {
     const rememberMeChecked = !!localStorage.getItem(
       "farebites_remembered_email",
     );
+    const signInReason = new URLSearchParams(window.location.search).get("reason");
+    const signInHeadline =
+      signInReason === "reorder" ? "Sign in to see your past orders" : "Sign In";
     return `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
             <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
@@ -3063,7 +3089,7 @@ const routes = {
                     <div class="w-full ${isDesktop ? "max-h-[36px] mb-2 mt-2" : "max-h-[52px] mb-1 mt-4"} flex items-center justify-center">
                          <img src="images/i-tea-logo-new.png" class="h-full ${isDesktop ? "max-h-[36px]" : "max-h-[52px]"} w-auto object-contain">
                     </div>
-                    <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? "mb-2" : "mb-4"} uppercase tracking-tight text-gray-900 leading-tight">Sign In</h2>
+                    <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? "mb-2" : "mb-4"} uppercase tracking-tight text-gray-900 leading-tight">${signInHeadline}</h2>
                     <div class="space-y-3">
                         <div class="relative group">
                             <input type="email" id="auth-email-input" placeholder="Email Address" value="${savedEmail}" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
@@ -3491,7 +3517,7 @@ const routes = {
                                                 </div>
                                                 <h3 class="font-black text-gray-900 text-lg uppercase tracking-tight mb-1">Your Favorites is Empty</h3>
                                                 <p class="text-gray-500 text-sm font-medium mb-4 max-w-[400px]">Tap the heart icon next to any drink on the menu to save it here for fast reordering!</p>
-                                                <button onclick="navigateTo('menu')" class="px-6 py-2.5 bg-[#E61874] text-white rounded-full font-black uppercase text-xs tracking-widest shadow-md hover:bg-[#E61874]/90 transition-colors active:scale-95">Explore Menu</button>
+                                                <button onclick="navigateTo('menu', { confirmLocation: true })" class="px-6 py-2.5 bg-[#E61874] text-white rounded-full font-black uppercase text-xs tracking-widest shadow-md hover:bg-[#E61874]/90 transition-colors active:scale-95">Explore Menu</button>
                                             </div>
                                         </div>
                                     `;
@@ -6124,7 +6150,7 @@ const routes = {
                                 return `
                                          <div class="px-5 py-8 text-center">
                                              <p class="text-sm text-gray-400 font-medium">No orders yet — place your first order!</p>
-                                             <button onclick="navigateTo('menu')" class="mt-3 text-violet-600 font-black text-xs uppercase tracking-widest hover:underline">Browse Menu →</button>
+                                             <button onclick="navigateTo('menu', { confirmLocation: true })" class="mt-3 text-violet-600 font-black text-xs uppercase tracking-widest hover:underline">Browse Menu →</button>
                                          </div>
                                      `;
                               }
@@ -7534,14 +7560,14 @@ const routes = {
                     <!-- Pricing Summary -->
                     <div class="bg-white rounded-[32px] p-7 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100 space-y-4 relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 to-fuchsia-500"></div>
-                        <div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Subtotal</span><span class="text-gray-700">$${subtotal.toFixed(2)}</span></div>
-                        <div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Tax & Fees</span><span class="text-gray-700">$${taxes.toFixed(2)}</span></div>
-                        ${convenienceFee > 0 ? `<div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Convenience Fee</span><span class="text-gray-700">$${convenienceFee.toFixed(2)}</span></div>` : ""}
-                        ${bagFee > 0 ? `<div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Plastic Bag(s)</span><span class="text-gray-700">$${bagFee.toFixed(2)}</span></div>` : ""}
-                        <div class="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest"><span>Tip</span><span class="text-gray-700">$${tipAmount.toFixed(2)}</span></div>
+                        <div class="flex justify-between text-sm font-black text-gray-900 uppercase tracking-widest"><span>Subtotal</span><span class="text-gray-700">$${subtotal.toFixed(2)}</span></div>
+                        <div class="flex justify-between text-sm font-black text-gray-900 uppercase tracking-widest"><span>Tax & Fees</span><span class="text-gray-700">$${taxes.toFixed(2)}</span></div>
+                        ${convenienceFee > 0 ? `<div class="flex justify-between text-sm font-black text-gray-900 uppercase tracking-widest"><span>Convenience Fee</span><span class="text-gray-700">$${convenienceFee.toFixed(2)}</span></div>` : ""}
+                        ${bagFee > 0 ? `<div class="flex justify-between text-sm font-black text-gray-900 uppercase tracking-widest"><span>Plastic Bag(s)</span><span class="text-gray-700">$${bagFee.toFixed(2)}</span></div>` : ""}
+                        <div class="flex justify-between text-sm font-black text-gray-900 uppercase tracking-widest"><span>Tip</span><span class="text-gray-700">$${tipAmount.toFixed(2)}</span></div>
                         <div class="h-[2px] bg-gray-50 w-full my-5 rounded-full"></div>
                         <div class="flex justify-between items-end">
-                            <span class="text-sm font-black text-gray-400 uppercase tracking-widest mb-1">Total</span>
+                            <span class="text-sm font-black text-gray-900 uppercase tracking-widest mb-1">Total After Tip</span>
                             <span class="text-3xl font-black text-gray-900 tracking-tighter">$${finalTotal}</span>
                         </div>
                     </div>
@@ -8148,7 +8174,7 @@ const routes = {
                             </div>
                             <h3 class="text-xl font-black text-gray-900 uppercase tracking-tight mb-2">No favorites yet</h3>
                             <p class="text-gray-500 font-medium mb-8">Start adding items you love to see them here!</p>
-                            <button onclick="navigateTo('menu')" class="bg-violet-600 text-white px-8 py-3 rounded-full font-black uppercase text-sm shadow-lg tracking-wide">Explore Menu</button>
+                            <button onclick="navigateTo('menu', { confirmLocation: true })" class="bg-violet-600 text-white px-8 py-3 rounded-full font-black uppercase text-sm shadow-lg tracking-wide">Explore Menu</button>
                         </div>
                     `
                         : `
@@ -8187,7 +8213,7 @@ const routes = {
                         <i class="fa-solid fa-gift absolute -right-6 -bottom-6 text-9xl text-white/10 rotate-12"></i>
                         <h3 class="text-2xl font-black tracking-tight mb-2 relative z-10 uppercase">Want more rewards?</h3>
                         <p class="text-violet-100 font-medium mb-6 relative z-10 max-w-sm mx-auto">Favorite 5 items to earn 500 bonus points on your next visit!</p>
-                        <button onclick="navigateTo('menu')" class="bg-white text-violet-600 px-8 py-3 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 relative z-10">Browse Menu</button>
+                        <button onclick="navigateTo('menu', { confirmLocation: true })" class="bg-white text-violet-600 px-8 py-3 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 relative z-10">Browse Menu</button>
                     </div>
                 </div>
             </div>`;
@@ -9086,9 +9112,8 @@ function renderPage() {
                     </div>
                     <div class="flex items-center gap-3 lg:gap-6 text-[16px] lg:text-[1.3rem] font-black uppercase tracking-tight text-[#1f0b35] ml-2">
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap ${currentPage === 'restaurant-home' ? 'active-nav-link' : ''}" onclick="navigateTo('restaurant-home')">Home</span>
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap ${(currentPage === 'menu' || currentPage === 'menu-single') ? 'active-nav-link' : ''}" onclick="navigateTo('menu')">Menu</span>
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap ${currentPage === 'locations' ? 'active-nav-link' : ''}" onclick="navigateTo('locations')">Order</span>
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap ${mockupState.modalOpen === 'reorder' ? 'active-nav-link' : ''}" onclick="tryOpenReorderModal();">Reorder</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap ${(currentPage === 'menu' || currentPage === 'menu-single') ? 'active-nav-link' : ''}" onclick="navigateTo('menu', { confirmLocation: true })">Menu</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap ${(currentPage === 'menu' || currentPage === 'menu-single') && mockupState.menuTab === 'history' ? 'active-nav-link' : ''}" onclick="tryGoToReorder();">Reorder</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-4 lg:gap-8 text-[14px] lg:text-[16px] font-black uppercase tracking-tight text-[#1f0b35]">
@@ -9108,13 +9133,9 @@ function renderPage() {
                             <div id="user-profile-dropdown" class="dropdown-menu">
                                 <div class="dropdown-column-title">My Profile</div>
                                 <div class="dropdown-item" onclick="navigateTo('account')">Account Details</div>
-                                <div class="dropdown-item flex items-center justify-between" onclick="tryOpenReorderModal();">
-                                    <span>Reorder Past Orders</span>
-                                    <i class="fa-solid fa-rotate-left text-xs text-violet-500"></i>
-                                </div>
 
                                 <div class="h-px bg-violet-100/50 my-2"></div>
-                                <div class="dropdown-item text-red-500 hover:text-red-600" onclick="signOutUser()">Sign Out</div>
+                                <div class="dropdown-item text-gray-900 hover:text-black" onclick="signOutUser()">Sign Out</div>
                             </div>
                         </div>
                     `
@@ -9254,6 +9275,11 @@ function renderPage() {
   // Render Reorder Modal if modalOpen === 'reorder'
   if (mockupState.modalOpen === "reorder") {
     contentHtml += renderReorderModalHTML();
+  }
+
+  // Render Order Details (read-only) Modal if modalOpen === 'order-details-view'
+  if (mockupState.modalOpen === "order-details-view") {
+    contentHtml += renderOrderDetailsViewModalHTML();
   }
 
   viewport.innerHTML = contentHtml + loadingOverlayHtml;
@@ -11474,7 +11500,12 @@ async function handleLogin() {
     }
     persistAllState();
     if (typeof resetInactivityTimer === "function") resetInactivityTimer();
-    navigateTo("restaurant-home");
+    const signInReason = new URLSearchParams(window.location.search).get("reason");
+    if (signInReason === "reorder") {
+      navigateTo("menu", { menuTab: "history" });
+    } else {
+      navigateTo("restaurant-home");
+    }
   } catch (err) {
     if (errorEl) {
       errorEl.textContent =
@@ -12251,6 +12282,15 @@ function tryOpenReorderModal() {
 }
 window.tryOpenReorderModal = tryOpenReorderModal;
 
+function tryGoToReorder() {
+  if (mockupState.isLoggedIn) {
+    navigateTo("menu", { menuTab: "history" });
+  } else {
+    window.location.href = "sign-in.html?reason=reorder";
+  }
+}
+window.tryGoToReorder = tryGoToReorder;
+
 function preloadPastOrdersMenuItemDetails(orders) {
   if (!orders) return;
   const list = Array.isArray(orders) ? orders : orders.items || orders.data || [];
@@ -12269,7 +12309,11 @@ function preloadPastOrdersMenuItemDetails(orders) {
           const detail = await window.ApiService.getMenuItemDetail(locId, rawId);
           mockupState.reorderDetailsCache[rawId] = detail;
           persistAllState();
-          if (mockupState.modalOpen === "reorder") {
+          if (
+            mockupState.modalOpen === "reorder" ||
+            mockupState.modalOpen === "order-details-view" ||
+            (currentPage === "menu" && mockupState.menuTab === "history")
+          ) {
             renderPage();
           }
         } catch (e) {
@@ -13006,6 +13050,89 @@ function renderReorderModalHTML() {
   `;
 }
 
+function openOrderDetailsModal(orderId) {
+  mockupState.viewingOrderId = orderId;
+  mockupState.modalOpen = "order-details-view";
+  persistAllState();
+  renderPage();
+}
+window.openOrderDetailsModal = openOrderDetailsModal;
+
+function renderOrderDetailsViewModalHTML() {
+  if (mockupState.modalOpen !== "order-details-view") return "";
+
+  const allOrders = getAllUserOrders();
+  const order = allOrders.find(
+    (o) => String(o.orderId || o.orderNumber) === String(mockupState.viewingOrderId),
+  );
+  if (!order) return "";
+
+  const orderDate = new Date(
+    order.orderDate || order.placedAt || Date.now(),
+  ).toLocaleDateString();
+  const orderTotal = (order.total || order.subTotal || 0).toFixed(2);
+  const orderItems =
+    order.orderMenuItems || order.items || order.orderItems || [];
+
+  const itemsHtml = orderItems
+    .map((item) => {
+      const img = getReorderItemImage(item);
+      const itemName =
+        item.name || item.Name || item.menuItemName || item.MenuItemName || "Item";
+      const itemQty = item.quantity || item.Quantity || 1;
+      const unitPrice =
+        item.unitPrice ||
+        item.price ||
+        item.paidPrice ||
+        item.basePrice ||
+        item.itemPrice ||
+        item.amount ||
+        0;
+      const itemTotal = (unitPrice * itemQty).toFixed(2);
+      const customSummary = getItemCustomizationSummary(item);
+      return `
+        <div class="flex justify-between items-start p-4 gap-4">
+          <div class="flex gap-4 items-start min-w-0">
+            <div class="w-11 h-11 rounded-lg overflow-hidden shrink-0 border border-gray-100 bg-gray-50">
+              <img src="${img}" alt="${itemName}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
+            </div>
+            <div class="min-w-0">
+              <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight">${itemName}</h3>
+              <p class="text-[11px] text-gray-500 font-medium leading-relaxed mt-1 mb-2">${customSummary}</p>
+              <p class="text-xs font-bold text-gray-600">Qty: ${itemQty}</p>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <span class="font-black text-gray-900">$${itemTotal}</span>
+          </div>
+        </div>`;
+    })
+    .join("");
+
+  return `
+    <div class="modal-overlay z-[9999] fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this){updateMockupState('modalOpen', null);}">
+      <div class="bg-white w-full max-w-[480px] rounded-[32px] p-6 relative shadow-2xl animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[85vh]">
+        <div class="relative pb-4 border-b border-gray-100 shrink-0 text-center">
+          <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight">Order Details</h2>
+          <p class="text-xs text-gray-500 font-medium mt-0.5">${orderDate}</p>
+          <button onclick="updateMockupState('modalOpen', null);" class="absolute right-0 top-0 w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500 shrink-0 z-10">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-1 divide-y divide-gray-100 scrollbar-thin">
+          ${itemsHtml}
+        </div>
+
+        <div class="pt-4 mt-2 border-t border-gray-100 shrink-0 flex items-center justify-between">
+          <span class="font-black text-gray-900 uppercase tracking-wide text-sm">Total</span>
+          <span class="font-black text-gray-900 text-lg">$${orderTotal}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 window.isCustomPickupTimeAllowed = function (
   locationId = mockupState.selectedLocationId,
 ) {
@@ -13088,15 +13215,6 @@ async function selectLocation(
   mockupState.orderTime = "ASAP";
   mockupState.fulfillmentMode = null;
 
-  // Auto-open Reorder Modal after location selection ONLY for logged in users with empty cart and existing past orders
-  const apiOrders = mockupState.apiOrders || [];
-  const apiList = Array.isArray(apiOrders) ? apiOrders : apiOrders.items || apiOrders.data || [];
-  const userList = mockupState.userOrders || [];
-  const hasOrders = apiList.length > 0 || userList.length > 0 || !!mockupState.lastOrder;
-  if (mockupState.isLoggedIn && hasOrders && (!mockupState.cart || mockupState.cart.length === 0)) {
-    mockupState.modalOpen = "reorder";
-  }
-
   persistAllState();
 
   navigateTo("order-details");
@@ -13175,11 +13293,7 @@ function renderSingleLocationCardHtml(s, idx) {
   let locationAllowOrdering = true;
   let locationIsOpen = true;
 
-  // Temporary bypass for testing Castro Valley
-  if (s.locationId === 7 || (s.name && s.name.toLowerCase().includes("castro valley"))) {
-    locationAllowOrdering = true;
-    locationIsOpen = true;
-  } else if (mockupState.locationsOrderingStatus && mockupState.locationsOrderingStatus[s.locationId] !== undefined) {
+  if (mockupState.locationsOrderingStatus && mockupState.locationsOrderingStatus[s.locationId] !== undefined) {
     const status = mockupState.locationsOrderingStatus[s.locationId];
     if (typeof status === 'object') {
       locationAllowOrdering = status.allowOrdering;
@@ -13629,13 +13743,18 @@ function navigateTo(pageId, options = {}) {
   persistAllState();
   let [basePageId, hash] = pageId.split("#");
 
-  // Redirect to location selector if accessing menu or customization without a selected store
+  // Redirect to location selector if accessing menu or customization without a selected store,
+  // or if the caller explicitly wants the location reconfirmed (top-level "Menu" entry points)
   if (
     (basePageId === "menu" ||
       basePageId === "menu-single" ||
       basePageId === "customize" ||
       basePageId === "customize-alt") &&
-    !mockupState.selectedLocationId
+    (!mockupState.selectedLocationId ||
+      ((basePageId === "menu" || basePageId === "menu-single") &&
+        options &&
+        options.confirmLocation &&
+        basePageId !== currentPage))
   ) {
     basePageId =
       basePageId === "menu" || basePageId === "menu-single" || basePageId === "customize-alt"
@@ -13682,6 +13801,13 @@ function navigateTo(pageId, options = {}) {
     }
   }
 
+  // An explicit tab request (e.g. the "Reorder" nav button) applies whether this
+  // is a same-page rerender or a fresh navigation to the menu page.
+  if ((basePageId === "menu" || basePageId === "menu-single") && options && options.menuTab) {
+    mockupState.menuTab = options.menuTab;
+    persistAllState();
+  }
+
   if (basePageId === currentPage) {
     if (hash) {
       const element = document.getElementById(hash);
@@ -13694,6 +13820,14 @@ function navigateTo(pageId, options = {}) {
     }
     return;
   }
+
+  // Default to the "All" tab when arriving at the menu page from elsewhere,
+  // unless a specific tab was explicitly requested above.
+  if ((basePageId === "menu" || basePageId === "menu-single") && !(options && options.menuTab)) {
+    mockupState.menuTab = "menu";
+    persistAllState();
+  }
+
   const nextFile = PAGE_FILE_MAP[basePageId] || `${basePageId}.html`;
   let targetUrl = hash ? `${nextFile}#${hash}` : nextFile;
   if (basePageId === "menu" || basePageId === "menu-single") {
