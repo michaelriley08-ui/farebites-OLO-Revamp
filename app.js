@@ -1659,6 +1659,7 @@ function toggleMenu(e, menuId) {
     "location-dropdown-order-details",
     "location-dropdown-menu",
     "location-dropdown-order-confirm",
+    "pickup-mode-dropdown-menu",
   ];
   allMenus.forEach((id) => {
     const menu = document.getElementById(id);
@@ -1727,11 +1728,6 @@ function hamburgerDrawerHTML() {
           },
         ]
       : []),
-    {
-      label: "Order Status",
-      icon: "fa-clock-rotate-left",
-      page: "order-status",
-    },
     { label: "Scan QR code for menu", icon: "fa-qrcode", page: "menu-scan" },
   ];
 
@@ -1983,7 +1979,10 @@ function renderMenuPage() {
                         <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
                             <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
                             <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
-                            <div class="space-y-3 text-sm">
+                            <div class="mb-4">
+                                <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
+                            </div>
+                            <div class="space-y-3 text-sm pt-4 border-t border-gray-100">
                                 <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
                                     <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                                         <i class="fa-regular fa-clock text-violet-600 text-sm"></i>
@@ -2005,36 +2004,41 @@ function renderMenuPage() {
                                     </div>
                                 </div>
                             </div>
-                            <div class="mt-4 pt-4 border-t border-gray-100">
-                                <span class="text-[11px] font-black uppercase text-gray-500 tracking-wider block mb-2">Pickup Method</span>
-                                <div class="grid grid-cols-3 gap-2">
-                                    ${[
-                                      { id: "In-store", label: "In-Store Pickup", icon: "fa-shop" },
-                                      { id: "Drive Through", label: "Drive-Thru Pickup", icon: "fa-car" },
-                                      { id: "Curbside", label: "Curbside Pickup", icon: "fa-square-parking" },
-                                    ]
-                                      .map((m) => {
-                                        const currentMode = mockupState.fulfillmentMode || "In-store";
-                                        const isActive =
-                                          (m.id === "In-store" && (currentMode === "In-store" || currentMode === "In-Store" || currentMode === "Pickup")) ||
-                                          currentMode.toLowerCase() === m.id.toLowerCase();
-                                        return `
-                                            <button onclick="event.stopPropagation(); updateMockupState('fulfillmentMode', '${m.id}'); navigateTo('menu');" class="flex flex-col items-center justify-center gap-1.5 py-2.5 px-2 border-2 rounded-xl font-bold transition-all ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/50"}">
-                                                <i class="fa-solid ${m.icon} text-sm ${isActive ? "text-white" : "text-violet-600"}"></i>
-                                                <span class="text-[9px] font-black uppercase tracking-tight leading-tight text-center">${m.label}</span>
-                                            </button>
-                                        `;
-                                      })
-                                      .join("")}
-                                </div>
-                            </div>
-                            <div class="mt-4 pt-4 border-t border-gray-100">
-                                <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="min-w-0">
+                    <button onclick="toggleMenu(event, 'pickup-mode-dropdown-menu')" class="flex items-center gap-1 shrink-0 whitespace-nowrap text-[10px] sm:text-xs text-gray-600 font-black uppercase tracking-wide py-1.5 px-2 rounded-lg hover:text-violet-600 hover:bg-violet-100 transition-colors cursor-pointer">
+                        <span>${modeText}</span>
+                        <i class="fa-solid fa-chevron-down text-[9px] text-violet-600 shrink-0"></i>
+                    </button>
+                    <!-- Pickup Mode Dropdown -->
+                    <div id="pickup-mode-dropdown-menu" class="hidden absolute left-4 right-4 sm:left-auto sm:right-0 sm:w-[260px] top-[calc(100%+0.5rem)] z-[100] animate-[slideUp_0.2s_ease-out]">
+                        <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-4 text-left">
+                            <span class="text-[11px] font-black uppercase text-gray-500 tracking-wider block mb-2">Pickup Method</span>
+                            <div class="grid grid-cols-3 gap-2">
+                                ${[
+                                  { id: "In-store", label: "In-Store Pickup", icon: "fa-shop" },
+                                  { id: "Drive Through", label: "Drive-Thru Pickup", icon: "fa-car" },
+                                  { id: "Curbside", label: "Curbside Pickup", icon: "fa-square-parking" },
+                                ]
+                                  .map((m) => {
+                                    const currentMode = mockupState.fulfillmentMode || "In-store";
+                                    const isActive =
+                                      (m.id === "In-store" && (currentMode === "In-store" || currentMode === "In-Store" || currentMode === "Pickup")) ||
+                                      currentMode.toLowerCase() === m.id.toLowerCase();
+                                    return `
+                                        <button onclick="event.stopPropagation(); updateMockupState('fulfillmentMode', '${m.id}'); navigateTo('menu');" class="flex flex-col items-center justify-center gap-1.5 py-2.5 px-2 border-2 rounded-xl font-bold transition-all ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/50"}">
+                                            <i class="fa-solid ${m.icon} text-sm ${isActive ? "text-white" : "text-violet-600"}"></i>
+                                            <span class="text-[9px] font-black uppercase tracking-tight leading-tight text-center">${m.label}</span>
+                                        </button>
+                                    `;
+                                  })
+                                  .join("")}
                             </div>
                         </div>
                     </div>
                 </div>
-                <span class="shrink-0 whitespace-nowrap text-[10px] sm:text-xs text-gray-500 font-black uppercase tracking-wide py-1.5">${modeText}</span>
             </div>
             `
                 : ""
@@ -2065,7 +2069,10 @@ function renderMenuPage() {
                         <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
                             <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
                             <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
-                            <div class="space-y-3 text-sm">
+                            <div class="mb-4">
+                                <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
+                            </div>
+                            <div class="space-y-3 text-sm pt-4 border-t border-gray-100">
                                 <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
                                     <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                                         <i class="fa-regular fa-clock text-violet-600 text-sm"></i>
@@ -2109,9 +2116,6 @@ function renderMenuPage() {
                                       })
                                       .join("")}
                                 </div>
-                            </div>
-                            <div class="mt-4 pt-4 border-t border-gray-100">
-                                <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
                             </div>
                         </div>
                     </div>
@@ -4335,7 +4339,9 @@ const routes = {
       const clickHandler =
         opt.id === "Dine In"
           ? `mockupState.fulfillmentMode = '${opt.id}'; mockupState.orderTypeRequiredError = false; navigateTo('menu-scan')`
-          : `updateMockupState('fulfillmentMode', '${opt.id}'); mockupState.orderTypeRequiredError = false; navigateTo(currentPage);`;
+          : isDesktop
+          ? `updateMockupState('fulfillmentMode', '${opt.id}'); mockupState.orderTypeRequiredError = false; navigateTo(currentPage);`
+          : `updateMockupState('fulfillmentMode', '${opt.id}'); mockupState.orderTypeRequiredError = false; navigateTo(mockupState.cart && mockupState.cart.length > 0 ? 'cart' : 'menu');`;
 
       return `
                 <div onclick="${clickHandler}" class="flex flex-col p-4 bg-white rounded-2xl shadow-sm border-2 cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md ${isActive ? "border-violet-600 ring-2 ring-violet-100 bg-violet-50/10" : mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? "border-red-400 hover:border-violet-300" : "border-gray-100 hover:border-violet-300"}">
@@ -4354,6 +4360,9 @@ const routes = {
 
     const mainContent = `
             <div class="flex-1 flex flex-col py-6 px-6 md:px-12 max-w-2xl mx-auto w-full">
+                ${
+                  isDesktop
+                    ? `
                 <!-- Location Info Card -->
                 <div class="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 mb-5 cursor-pointer active:scale-[0.98] transition-all hover:bg-gray-50 text-left" onclick="navigateTo('locations')">
                     <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
@@ -4366,10 +4375,13 @@ const routes = {
                     </div>
                     <i class="fa-solid fa-chevron-right text-gray-300 text-sm"></i>
                 </div>
+                `
+                    : ""
+                }
 
                 <div class="text-center mb-5 shrink-0">
-                    <h2 class="text-3xl md:text-4xl font-branding font-black text-[#1A1A1A] uppercase tracking-tight leading-tight mb-3">What type of order can we get started for you?</h2>
-                    <p class="text-sm md:text-base font-bold text-gray-400 uppercase tracking-widest leading-relaxed">Order ahead for pickup or dine in</p>
+                    <h2 class="text-3xl md:text-4xl font-branding font-black text-[#1A1A1A] uppercase tracking-tight leading-tight mb-3">${isDesktop ? "What type of order can we get started for you?" : "Choose Order Type"}</h2>
+                    ${isDesktop ? `<p class="text-sm md:text-base font-bold text-gray-400 uppercase tracking-widest leading-relaxed">Order ahead for pickup or dine in</p>` : ""}
                 </div>
 
 
@@ -4377,6 +4389,9 @@ const routes = {
                     ${options.map(renderOptionCard).join("")}
                 </div>
 
+                ${
+                  isDesktop
+                    ? `
                 <div class="flex flex-col items-center">
                     ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? `
                     <p class="text-red-500 font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5 animate-pulse">
@@ -4385,6 +4400,9 @@ const routes = {
                     ` : ""}
                     <button onclick="handleStartOrder()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 transition-all uppercase tracking-widest font-black ${!mockupState.fulfillmentMode ? "opacity-90 hover:opacity-100" : ""}">${mockupState.cart && mockupState.cart.length > 0 ? "Save & Return to Cart" : "Start Order"}</button>
                 </div>
+                `
+                    : ""
+                }
             </div>
         `;
 
@@ -4401,18 +4419,15 @@ const routes = {
                 ${
                   !isDesktop
                     ? `
-                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2 flex items-center justify-between relative z-50">
-                    <button onclick="navigateTo('locations')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
-                        <span>Back</span>
-                    </button>
-                    <div>
-                        <button onclick="toggleMenu(event, 'location-dropdown-order-details-alt')" class="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-600 font-bold hover:text-violet-600 hover:bg-violet-100 px-2 py-1.5 rounded-lg transition-colors text-right cursor-pointer">
-                            <i class="fa-solid fa-location-dot text-violet-600"></i>
+                <div class="bg-white border-b border-gray-100 shrink-0 px-3 py-2 flex items-center relative z-50">
+                    <div class="min-w-0">
+                        <button onclick="toggleMenu(event, 'location-dropdown-order-details-alt')" class="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-600 font-bold hover:text-violet-600 hover:bg-violet-100 px-2 py-1.5 rounded-lg transition-colors cursor-pointer min-w-0">
+                            <i class="fa-solid fa-location-dot text-violet-600 shrink-0"></i>
                             <span class="truncate max-w-[140px] sm:max-w-[200px] tracking-wider font-medium">${locationAddress.replace(/, [A-Z]{2}(\s\d{5})?$/, "")}</span>
+                            <i class="fa-solid fa-chevron-down text-[9px] text-violet-600 shrink-0"></i>
                         </button>
                         <!-- Dropdown Menu -->
-                        <div id="location-dropdown-order-details-alt" class="hidden absolute left-4 right-4 sm:left-auto sm:right-4 sm:w-[320px] top-[calc(100%+0.5rem)] z-[100] animate-[slideUp_0.2s_ease-out]">
+                        <div id="location-dropdown-order-details-alt" class="hidden absolute left-4 right-4 sm:left-4 sm:right-auto sm:w-[320px] top-[calc(100%+0.5rem)] z-[100] animate-[slideUp_0.2s_ease-out]">
                             <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
                                 <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
                                 <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
@@ -4514,7 +4529,7 @@ const routes = {
 
     const formContentHtml = `
             <div class="flex-1 flex flex-col justify-center py-6 px-6 md:px-12 max-w-2xl mx-auto w-full text-center">
-                <h2 class="text-2xl md:text-3xl font-black mb-6 uppercase tracking-tight font-black text-gray-900 leading-tight">Ready to Dine In?</h2>
+                ${isDesktop ? `<h2 class="text-2xl md:text-3xl font-black mb-6 uppercase tracking-tight font-black text-gray-900 leading-tight">Ready to Dine In?</h2>` : ""}
                 <div class="space-y-4 text-left uppercase font-black text-gray-600 mb-8 max-w-sm mx-auto w-full">
                     <p class="text-sm flex gap-3"><span class="text-violet-600 font-black">1.</span><span>Find the QR code on your table.</span></p>
                     <p class="text-sm flex gap-3"><span class="text-violet-600 font-black">2.</span><span>Tap the button below to open camera.</span></p>
@@ -4545,21 +4560,9 @@ const routes = {
                     <button onclick="openHamburger()" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
-                    <span class="text-lg font-black text-violet-600 flex-1 text-center">Scan to Dine In</span>
+                    <h1 class="text-xl font-black tracking-tight uppercase text-gray-900 flex-1 text-center" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Scan to Dine In</h1>
                     <button onclick="navigateTo('cart')" class="relative w-10 h-10 flex items-center justify-center text-gray-700 hover:opacity-80 transition-opacity cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>${mockupState.cartItemCount > 0 ? `<span class="absolute top-0 right-0 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white box-content shadow-sm">${mockupState.cartItemCount}</span>` : ""}</button>
                 </header>
-                ${
-                  !isDesktop
-                    ? `
-                <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
-                    <button onclick="navigateTo('restaurant-home')" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
-                        <span>Back</span>
-                    </button>
-                </div>
-                `
-                    : ""
-                }
 
                 <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden h-full">
                     ${isDesktop ? imageHtml : ""}
