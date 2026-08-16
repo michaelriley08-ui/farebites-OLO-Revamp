@@ -535,6 +535,11 @@ const DEFAULT_STATE = {
   menuScrollPosition: 0,
   fulfillmentMode: null,
   orderTime: "ASAP",
+  // Cart/order-review requires an explicit tap on a pickup method (no sensible
+  // default exists) before Checkout unlocks. Pickup time always has a valid
+  // computed default (ASAP, see getEstimatedPickupTime), so it isn't gated.
+  pickupMethodChosen: false,
+  pickupValidationError: false,
   locationFilter: "Near Me",
   locationSearchQuery: "",
   locationSearchFocused: false,
@@ -573,13 +578,6 @@ const DEFAULT_STATE = {
       name: "P4 Brown Sugar Boba Latte",
       price: 5.75,
       image: assets.boba2,
-      category: "Tea Spresso Series",
-    },
-    {
-      id: 3,
-      name: "M8 Taro Boba Purée Latte",
-      price: 5.75,
-      image: assets.boba3,
       category: "Tea Spresso Series",
     },
     {
@@ -697,14 +695,25 @@ window.getPreviousOrderLocation = getPreviousOrderLocation;
 
 function loadMockupState() {
   try {
+    const sessionRaw = sessionStorage.getItem(STORAGE_KEYS.state);
     const saved = JSON.parse(
-      sessionStorage.getItem(STORAGE_KEYS.state) ||
-        localStorage.getItem(STORAGE_KEYS.state) ||
-        "null",
+      sessionRaw || localStorage.getItem(STORAGE_KEYS.state) || "null",
     );
     const state = saved ? { ...DEFAULT_STATE, ...saved } : { ...DEFAULT_STATE };
     state.locationSearchQuery = "";
     state.locationSearchFocused = false;
+
+    // Location + order type are scoped to this browser session. If nothing was
+    // found in sessionStorage, this is a fresh tab/session picking up the old
+    // localStorage fallback — don't carry a stale store/order-type into it.
+    if (!sessionRaw) {
+      state.selectedLocationId = DEFAULT_STATE.selectedLocationId;
+      state.selectedLocation = null;
+      state.selectedAddress = null;
+      state.selectedDistance = null;
+      state.fulfillmentMode = DEFAULT_STATE.fulfillmentMode;
+      state.orderTime = DEFAULT_STATE.orderTime;
+    }
 
     // Load menu favorites from localStorage
     const savedMenuFavs = JSON.parse(
@@ -1449,14 +1458,6 @@ const MENU_ITEMS = [
     category: "Tea Spresso Series",
   },
   {
-    name: "M8 Taro Boba Purée Latte",
-    description: "Come With Fresh Taro Puree, Freshly Made Taro Boba",
-    price: 5.75,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/M8_Fresh-Taro-Puree-Boba-Latte.jpg",
-    category: "Tea Spresso Series",
-  },
-  {
     name: "M9 3G Fresh Taro Boba Latte",
     description:
       "Come With Mashed Taro, Grass Jelly, Red Bean, and Fresh Taro Boba",
@@ -1760,7 +1761,7 @@ function hamburgerDrawerHTML() {
                             : item.page === "reorder-modal"
                             ? "closeHamburger(); tryOpenReorderModal();"
                             : item.page === "menu"
-                            ? "closeHamburger(); navigateTo('menu', { confirmLocation: true });"
+                            ? "closeHamburger(); navigateTo('menu');"
                             : `closeHamburger(); navigateTo('${item.page}');`;
 
                         if (item.label === "Rewards") {
@@ -1887,7 +1888,7 @@ function renderMenuPage() {
   };
   const orderCutoffTime = getOrderCutoffTime(closeTime, 20);
   return `
-        <div id="menu-scroller" class="flex flex-col ${isDesktop ? "min-h-screen" : "h-full"} bg-[#f9fafb] relative ${!isDesktop && mockupState.modalOpen ? "overflow-hidden" : (isDesktop ? "" : "overflow-y-auto")} scrollbar-hide">
+        <div id="menu-scroller" class="flex flex-col ${isDesktop ? "min-h-screen" : "h-full"} bg-[#f9fafb] relative ${!isDesktop && mockupState.modalOpen ? "overflow-hidden" : ""} scrollbar-hide">
             <!-- Compact Sticky Header: ≡ | 🔍 | i-Tea logo | ⭐ | 🛍 -->
             <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shrink-0">
                 <div class="px-3 py-2 flex items-center gap-2 w-full max-w-[1080px] mx-auto">
@@ -1985,17 +1986,31 @@ function renderMenuPage() {
                                         <span class="text-gray-600 font-medium text-sm">${locationObj.phone || "(480) 968-3568"}</span>
                                     </div>
                                 </div>
-                                <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
-                                    <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
-                                        <i class="fa-solid fa-car text-violet-600 text-sm"></i>
-                                    </div>
-                                    <div>
-                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Drive-Thru / Curbside</span>
-                                        <span class="text-gray-600 font-medium text-xs leading-relaxed block">Available during regular business hours. Pull up to the front for curbside.</span>
-                                    </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-100">
+                                <span class="text-[11px] font-black uppercase text-gray-500 tracking-wider block mb-2">Pickup Method</span>
+                                <div class="grid grid-cols-3 gap-2">
+                                    ${[
+                                      { id: "In-store", label: "In-Store Pickup", icon: "fa-shop" },
+                                      { id: "Drive Through", label: "Drive-Thru Pickup", icon: "fa-car" },
+                                      { id: "Curbside", label: "Curbside Pickup", icon: "fa-square-parking" },
+                                    ]
+                                      .map((m) => {
+                                        const currentMode = mockupState.fulfillmentMode || "In-store";
+                                        const isActive =
+                                          (m.id === "In-store" && (currentMode === "In-store" || currentMode === "In-Store" || currentMode === "Pickup")) ||
+                                          currentMode.toLowerCase() === m.id.toLowerCase();
+                                        return `
+                                            <button onclick="event.stopPropagation(); updateMockupState('fulfillmentMode', '${m.id}'); navigateTo('menu');" class="flex flex-col items-center justify-center gap-1.5 py-2.5 px-2 border-2 rounded-xl font-bold transition-all ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/50"}">
+                                                <i class="fa-solid ${m.icon} text-sm ${isActive ? "text-white" : "text-violet-600"}"></i>
+                                                <span class="text-[9px] font-black uppercase tracking-tight leading-tight text-center">${m.label}</span>
+                                            </button>
+                                        `;
+                                      })
+                                      .join("")}
                                 </div>
                             </div>
-                            <div class="mt-5 pt-4 border-t border-gray-100">
+                            <div class="mt-4 pt-4 border-t border-gray-100">
                                 <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
                             </div>
                         </div>
@@ -2052,17 +2067,31 @@ function renderMenuPage() {
                                         <span class="text-gray-600 font-medium text-sm">${locationObj.phone || "(480) 968-3568"}</span>
                                     </div>
                                 </div>
-                                <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
-                                    <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
-                                        <i class="fa-solid fa-car text-violet-600 text-sm"></i>
-                                    </div>
-                                    <div>
-                                        <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Drive-Thru / Curbside</span>
-                                        <span class="text-gray-600 font-medium text-xs leading-relaxed block">Available during regular business hours. Pull up to the front for curbside.</span>
-                                    </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-100">
+                                <span class="text-[11px] font-black uppercase text-gray-500 tracking-wider block mb-2">Pickup Method</span>
+                                <div class="grid grid-cols-3 gap-2">
+                                    ${[
+                                      { id: "In-store", label: "In-Store Pickup", icon: "fa-shop" },
+                                      { id: "Drive Through", label: "Drive-Thru Pickup", icon: "fa-car" },
+                                      { id: "Curbside", label: "Curbside Pickup", icon: "fa-square-parking" },
+                                    ]
+                                      .map((m) => {
+                                        const currentMode = mockupState.fulfillmentMode || "In-store";
+                                        const isActive =
+                                          (m.id === "In-store" && (currentMode === "In-store" || currentMode === "In-Store" || currentMode === "Pickup")) ||
+                                          currentMode.toLowerCase() === m.id.toLowerCase();
+                                        return `
+                                            <button onclick="event.stopPropagation(); updateMockupState('fulfillmentMode', '${m.id}'); navigateTo('menu');" class="flex flex-col items-center justify-center gap-1.5 py-2.5 px-2 border-2 rounded-xl font-bold transition-all ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/50"}">
+                                                <i class="fa-solid ${m.icon} text-sm ${isActive ? "text-white" : "text-violet-600"}"></i>
+                                                <span class="text-[9px] font-black uppercase tracking-tight leading-tight text-center">${m.label}</span>
+                                            </button>
+                                        `;
+                                      })
+                                      .join("")}
                                 </div>
                             </div>
-                            <div class="mt-5 pt-4 border-t border-gray-100">
+                            <div class="mt-4 pt-4 border-t border-gray-100">
                                 <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
                             </div>
                         </div>
@@ -2130,7 +2159,7 @@ function renderMenuPage() {
             }
 
             <div class="max-w-[1080px] mx-auto w-full">
-            <div class="${isDesktop ? "px-8 pb-8 pt-2" : "px-3 pb-3 pt-1"} max-w-[1080px] mx-auto w-full overflow-hidden">
+            <div class="${isDesktop ? "px-8 pb-8 pt-2" : "px-3 pb-3 pt-1"} max-w-[1080px] mx-auto w-full">
                 ${(() => {
                   if (featuredItems.length === 0) return "";
                   return isDesktop
@@ -2258,7 +2287,7 @@ function renderMenuPage() {
                     // Desktop: more room, so search expands and simply pushes the
                     // tabs aside instead of hiding them entirely.
                     return `
-                    <div class="flex items-center w-full gap-4 border-b border-gray-100 w-full mb-6 mt-2 pb-2">
+                    <div class="flex items-center w-full gap-4 border-b border-gray-100 w-full mb-3 pt-2 pb-1 sticky top-[70px] z-40 bg-[#f9fafb]">
                         ${
                           searchOpen
                             ? `
@@ -2285,7 +2314,7 @@ function renderMenuPage() {
                   // Mobile/tablet: search takes over the full row and the tabs
                   // fade out (and back in on cancel), rather than just appearing.
                   const tabsRowHtml = `
-                    <div class="flex items-center overflow-x-auto scrollbar-hide border-b border-gray-100 w-full gap-6 lg:gap-8 justify-start pb-2 pl-2 lg:pl-0">
+                    <div class="flex items-center overflow-x-auto scrollbar-hide border-b border-gray-100 w-full gap-6 lg:gap-8 justify-start pb-1 pl-2 lg:pl-0">
                         <button onclick="toggleMenuSearch(true)" class="shrink-0 flex items-center justify-center transition-colors text-gray-500 hover:text-violet-600 pb-2 pr-2">
                             <i class="fa-solid fa-magnifying-glass text-lg"></i>
                         </button>
@@ -2309,7 +2338,7 @@ function renderMenuPage() {
                     : searchRowHtml;
 
                   return `
-                    <div class="relative w-full mb-6 mt-2">
+                    <div class="relative w-full mb-3 pt-2 sticky top-14 z-40 bg-[#f9fafb]">
                         <div class="${justToggled ? "animate-[fadeIn_0.2s_ease-out]" : ""}">${currentRowHtml}</div>
                         ${justToggled ? `<div class="absolute inset-0 top-0 left-0 pointer-events-none animate-[fadeOut_0.2s_ease-out_forwards]">${outgoingRowHtml}</div>` : ""}
                     </div>
@@ -2420,7 +2449,7 @@ function renderMenuPage() {
                                                 return `
                                                     <a href="#${section.id}" 
                                                        onclick="event.preventDefault(); document.getElementById('${section.id}')?.scrollIntoView({ behavior: 'smooth', block: 'start' });"
-                                                       class="inline-flex items-center bg-[#D6D6D6] hover:bg-[#A8A8A8] text-[#1f0b35] px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 shrink-0 cursor-pointer">
+                                                       class="inline-flex items-center bg-violet-100 hover:bg-violet-200 text-violet-900 px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 shrink-0 cursor-pointer">
                                                         ${section.name}
                                                     </a>
                                                 `;
@@ -2536,34 +2565,25 @@ function renderMenuPage() {
                                     </div>
                                     `
                                         : `
-                                    <!-- Mobile/Tablet: horizontal scrollable row -->
-                                    <div class="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-3 -mx-1 px-1">
+                                    <div class="${currentPage === "menu-single" ? "grid grid-cols-1 md:grid-cols-2 gap-[10px]" : "grid grid-cols-2 gap-[10px]"}">
                                         ${featuredItems
-                                          .map((item, index) => {
+                                          .map((item) => {
                                             const actualIndex =
                                               allItems.indexOf(item);
-                                            const isP1 = index === 0;
-                                            const badgeStyle = isP1
-                                              ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"'
-                                              : "";
-                                            const badgeClass = isP1
-                                              ? "absolute top-3 left-3 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm"
-                                              : "absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm";
                                             return `
-                                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col w-[72vw] max-w-[260px] shrink-0 snap-center hover:shadow-md transition-shadow overflow-hidden">
-                                                    <div class="w-full h-56 overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
+                                                    <div class="w-full ${currentPage === "menu-single" ? "h-64" : "h-56"} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
                                                         <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
-                                                        <div class="${badgeClass}" ${badgeStyle}>Featured</div>
                                                         <button onclick="event.stopPropagation(); toggleMenuFavorite(allItems[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
                                                             <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
                                                         </button>
                                                     </div>
                                                     <div class="flex flex-col flex-1 px-1.5 pb-3 pt-3">
                                                         <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                            <h4 class="font-black text-gray-900 text-[15px] leading-tight tracking-tight uppercase mb-1 line-clamp-2">${item.name}</h4>
+                                                            <h4 class="font-black text-gray-900 text-[15px] leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
                                                             <div class="font-black text-violet-600 text-sm mb-3">$${item.price.toFixed(2)}</div>
                                                         </div>
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-2 text-[11px] rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-2.5 text-[11px] rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
                                                     </div>
                                                 </div>
                                             `;
@@ -2576,8 +2596,19 @@ function renderMenuPage() {
                             </div>
                         `;
                   } else if (mockupState.menuTab === "favorites") {
-                    const hasFavorites =
-                      mockupState.favorites && mockupState.favorites.length > 0;
+                    // Only show favorites that actually resolve to an item in the
+                    // current menu — a name that isn't found (e.g. removed from the
+                    // menu, or from a different location) has no valid index to open,
+                    // so silently falling back to item 0 would open the wrong item.
+                    const resolvedFavorites = (mockupState.favorites || [])
+                      .map((fav) => ({
+                        fav,
+                        actualIndex: getActiveMenuItems().findIndex(
+                          (item) => item.name === fav.name,
+                        ),
+                      }))
+                      .filter(({ actualIndex }) => actualIndex >= 0);
+                    const hasFavorites = resolvedFavorites.length > 0;
                     return `
                             <div class="space-y-6">
                                 <div class="flex justify-between items-end mb-4 px-1">
@@ -2587,17 +2618,8 @@ function renderMenuPage() {
                                   hasFavorites
                                     ? `
                                     <div class="${isDesktop ? "grid grid-cols-4 gap-5" : (currentPage === "menu-single" ? "grid grid-cols-1 md:grid-cols-2 gap-[10px]" : "grid grid-cols-2 gap-[10px]")}">
-                                        ${mockupState.favorites
-                                          .map((fav) => {
-                                            const originalIndex =
-                                              getActiveMenuItems().findIndex(
-                                                (item) =>
-                                                  item.name === fav.name,
-                                              );
-                                            const actualIndex =
-                                              originalIndex >= 0
-                                                ? originalIndex
-                                                : 0;
+                                        ${resolvedFavorites
+                                          .map(({ fav, actualIndex }) => {
                                             return `
                                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card overflow-hidden">
                                                     <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
@@ -3517,7 +3539,7 @@ const routes = {
                                                 </div>
                                                 <h3 class="font-black text-gray-900 text-lg uppercase tracking-tight mb-1">Your Favorites is Empty</h3>
                                                 <p class="text-gray-500 text-sm font-medium mb-4 max-w-[400px]">Tap the heart icon next to any drink on the menu to save it here for fast reordering!</p>
-                                                <button onclick="navigateTo('menu', { confirmLocation: true })" class="px-6 py-2.5 bg-[#E61874] text-white rounded-full font-black uppercase text-xs tracking-widest shadow-md hover:bg-[#E61874]/90 transition-colors active:scale-95">Explore Menu</button>
+                                                <button onclick="navigateTo('menu')" class="px-6 py-2.5 bg-[#E61874] text-white rounded-full font-black uppercase text-xs tracking-widest shadow-md hover:bg-[#E61874]/90 transition-colors active:scale-95">Explore Menu</button>
                                             </div>
                                         </div>
                                     `;
@@ -3727,7 +3749,7 @@ const routes = {
                                       ? "border-violet-600 text-violet-600 border-b-2 font-black"
                                       : "text-gray-400 font-bold hover:text-gray-600";
                                     return `
-                                        <button onclick="updateMockupState('locationFilter', '${tab.id}');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
+                                        <button onclick="${tab.id === "My Locations" && !mockupState.isLoggedIn ? "navigateTo('sign-in')" : `updateMockupState('locationFilter', '${tab.id}');`}" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
                                             ${tab.name}
                                         </button>
                                     `;
@@ -3816,7 +3838,7 @@ const routes = {
                                       ? "border-violet-600 text-violet-600 border-b-2 font-black"
                                       : "text-gray-400 font-bold hover:text-gray-600";
                                     return `
-                                        <button onclick="updateMockupState('locationFilter', '${tab.id}');" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
+                                        <button onclick="${tab.id === "My Locations" && !mockupState.isLoggedIn ? "navigateTo('sign-in')" : `updateMockupState('locationFilter', '${tab.id}');`}" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
                                             ${tab.name}
                                         </button>
                                     `;
@@ -4253,53 +4275,6 @@ const routes = {
       },
     ];
 
-    const monthOffset = mockupState.monthOffset || 0;
-    const currentMonth = getCalendarData(monthOffset);
-
-    let calendarCells = "";
-    for (let i = 0; i < currentMonth.startDay; i++) {
-      calendarCells += `<div></div>`;
-    }
-    for (let i = 1; i <= currentMonth.days; i++) {
-      let isPast = isPastDate(
-        currentMonth.targetYear,
-        currentMonth.targetMonthIdx,
-        i,
-      );
-      if (isPast) {
-        calendarCells += `<div class="py-2 text-gray-300 font-bold text-sm text-center">${i}</div>`;
-      } else {
-        let label = getDayLabel(
-          currentMonth.targetYear,
-          currentMonth.targetMonthIdx,
-          i,
-        );
-        let isSelected = mockupState.selectedDay === label;
-        let setOrderTimeAction =
-          currentPage === "order-details"
-            ? `updateMockupState('orderTime', '${label === "Today" && mockupState.selectedTimeSlot === (getDynamicTimes(label)[0] || "") ? "ASAP" : "Later"}'); `
-            : "";
-        calendarCells += `<button onclick="${setOrderTimeAction}updateMockupState('selectedDay', '${label}'); mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="py-2 rounded-full font-bold text-sm text-center ${isSelected ? "bg-violet-600 text-white shadow-md flex items-center justify-center shrink-0 w-8 h-8 mx-auto" : "text-gray-800 hover:bg-violet-100 transition-colors flex items-center justify-center shrink-0 w-8 h-8 mx-auto"}">${i}</button>`;
-      }
-    }
-    // Pad the end to ensure exactly 42 cells (6 rows of 7 days) to prevent modal height jumping
-    const totalCells = currentMonth.startDay + currentMonth.days;
-    const paddingCells = 42 - totalCells;
-    for (let i = 0; i < paddingCells; i++) {
-      calendarCells += `<div></div>`;
-    }
-
-    const dateModalClass = mockupState.modalOpen === "date" ? "flex" : "hidden";
-    const timeModalClass = mockupState.modalOpen === "time" ? "flex" : "hidden";
-    const warningModalClass =
-      mockupState.modalOpen === "warning" ? "flex" : "hidden";
-    const scheduleModalClass =
-      mockupState.modalOpen === "schedule-pickup" ? "flex" : "hidden";
-
-    const times15 = getDynamicTimes(mockupState.selectedDay);
-    const isNearClose =
-      mockupState.selectedTimeSlot.includes("8:") ||
-      mockupState.selectedTimeSlot.includes("9:");
     const locationTitle = mockupState.selectedLocation || "i-Tea";
     const locList =
       mockupState.apiLocations && mockupState.apiLocations.length > 0
@@ -4341,7 +4316,7 @@ const routes = {
       const clickHandler =
         opt.id === "Dine In"
           ? `mockupState.fulfillmentMode = '${opt.id}'; mockupState.orderTypeRequiredError = false; navigateTo('menu-scan')`
-          : `updateMockupState('fulfillmentMode', '${opt.id}'); mockupState.orderTypeRequiredError = false; updateMockupState('modalOpen', 'schedule-pickup'); navigateTo(currentPage);`;
+          : `updateMockupState('fulfillmentMode', '${opt.id}'); mockupState.orderTypeRequiredError = false; navigateTo(currentPage);`;
 
       return `
                 <div onclick="${clickHandler}" class="flex flex-col p-4 bg-white rounded-2xl shadow-sm border-2 cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md ${isActive ? "border-violet-600 ring-2 ring-violet-100 bg-violet-50/10" : mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? "border-red-400 hover:border-violet-300" : "border-gray-100 hover:border-violet-300"}">
@@ -4382,28 +4357,6 @@ const routes = {
                 <div class="${isDesktop ? "grid grid-cols-2 gap-4" : "flex flex-col gap-4"} mb-6">
                     ${options.map(renderOptionCard).join("")}
                 </div>
-
-                ${
-                  mockupState.fulfillmentMode !== "Dine In"
-                    ? `
-                <div onclick="updateMockupState('modalOpen', 'schedule-pickup'); navigateTo(currentPage);" class="mb-8 p-4 bg-white rounded-3xl border border-gray-100 shadow-md text-center cursor-pointer hover:border-violet-300 transition-all active:scale-[0.99] flex flex-col items-center justify-center gap-1">
-                    <span class="text-[11px] font-black text-violet-600 uppercase tracking-widest">
-                        ${mockupState.fulfillmentMode ? `${mockupState.fulfillmentMode.toUpperCase()} PICKUP TIME` : "APPROXIMATE PICKUP TIME"}
-                    </span>
-                    <div class="font-branding font-black text-gray-900 text-[40px] md:text-[44px] tracking-tight uppercase leading-none mt-1.5 mb-1">
-                        ${mockupState.orderTime === "ASAP" ? `ASAP ~ ${getEstimatedPickupTime(20)}` : `${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay.split(",")[0]} at ${mockupState.selectedTimeSlot}`}
-                    </div>
-                    <div class="mt-2 flex flex-col items-center justify-center gap-2">
-                        <div class="flex items-center justify-center gap-2 bg-[#1F0B35] text-white px-5 py-2 rounded-full shadow-sm hover:opacity-90 transition-opacity">
-                            <i class="fa-regular fa-clock text-xl"></i>
-                            <span class="text-xl font-bold uppercase tracking-wider">Change Time</span>
-                        </div>
-                        ${mockupState.orderTime !== "ASAP" ? `<button onclick="event.stopPropagation(); updateMockupState('orderTime', 'ASAP'); navigateTo(currentPage);" class="text-xs font-bold text-[#da2377] hover:text-violet-600 transition-colors uppercase tracking-wider mt-1 underline underline-offset-2">Change back to ASAP</button>` : ""}
-                    </div>
-                </div>
-                `
-                    : ""
-                }
 
                 <div class="flex flex-col items-center">
                     ${mockupState.orderTypeRequiredError && !mockupState.fulfillmentMode ? `
@@ -4502,174 +4455,6 @@ const routes = {
                     </div>
                 </div>
 
-                <!-- Schedule Pickup Modal -->
-                <div id="schedule-pickup-modal" class="fixed inset-0 bg-black/60 z-[99999] ${scheduleModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
-                    <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[85vh]">
-                        <div class="flex justify-between items-center mb-4 shrink-0">
-                            <h3 class="font-black text-xl uppercase text-gray-900">Schedule Pickup</h3>
-                            <button onclick="mockupState.modalOpen = null; navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                        
-                        <div class="flex-1 overflow-y-auto scrollbar-hide space-y-4 pr-1">
-                             <!-- Estimated pickup time card above selection -->
-                             <div class="p-4 bg-violet-50/40 rounded-2xl border border-violet-100 text-left">
-                                 <p class="text-[10px] font-black text-violet-600 uppercase tracking-widest">Selected Pickup Time</p>
-                                 <div class="flex items-center gap-2 mt-2">
-                                     <i class="fa-regular fa-clock text-violet-600 border border-violet-100 rounded p-1 bg-white"></i>
-                                     <p class="font-black text-gray-800 text-sm tracking-tight">
-                                         ${mockupState.orderTime === "ASAP" ? `Today ASAP (approx. at ${getEstimatedPickupTime(20)})` : `${mockupState.selectedDay} at ${mockupState.selectedTimeSlot}`}
-                                     </p>
-                                 </div>
-                             </div>
-
-                            <div>
-                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 font-black text-left">Ordering For</p>
-                                <div class="grid grid-cols-2 gap-3 mb-4">
-                                    <button onclick="setOrderTime('ASAP'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === "ASAP" ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-400 border-gray-100"} font-black uppercase"><i class="fa-solid fa-bolt text-lg mb-0.5"></i>ASAP</button>
-                                    <button onclick="setOrderTime('Later'); navigateTo(currentPage);" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${!isCustomPickupTimeAllowed() ? "bg-gray-50 text-gray-300 border-gray-100 opacity-60 cursor-not-allowed" : mockupState.orderTime === "Later" ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-400 border-gray-100"} font-black uppercase"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i>Later</button>
-                                </div>
-
-                                ${isCustomPickupTimeAllowed() ? `
-                                <div class="space-y-3">
-                                    <button onclick="if(isCustomPickupTimeAllowed()){setOrderTime('Later'); mockupState.modalOpen = 'date'; navigateTo(currentPage);}else{setOrderTime('Later');}" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === "ASAP" ? "Today" : mockupState.selectedDay}</span></span>
-                                        <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
-                                    </button>
-                                    <button onclick="if(isCustomPickupTimeAllowed()){setOrderTime('Later'); mockupState.modalOpen = 'time'; navigateTo(currentPage);}else{setOrderTime('Later');}" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
-                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === "ASAP" ? getEstimatedPickupTime(20) : mockupState.selectedTimeSlot}</span></span>
-                                        <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
-                                    </button>
-                                </div>
-                                ` : `
-                                <div class="p-4 bg-violet-50/70 rounded-2xl border border-violet-100 flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-full bg-violet-600 text-white flex items-center justify-center shrink-0 font-bold text-sm shadow-sm">
-                                        <i class="fa-solid fa-bolt"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-black text-gray-900 uppercase tracking-tight">ASAP Pickup Only</p>
-                                        <p class="text-[11px] font-medium text-gray-500 leading-tight">This location currently only supports ASAP pickup orders. Your order will be prepared as soon as it is submitted.</p>
-                                    </div>
-                                </div>
-                                `}
-                            </div>
-                        </div>
-
-                        <div class="shrink-0 pt-4 border-t border-gray-100">
-                            <button onclick="mockupState.modalOpen = null; navigateTo(currentPage);" class="w-full py-4 rounded-full bg-violet-600 text-white font-black uppercase text-sm tracking-widest shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] transition-all active:scale-95">Confirm Time</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Date Modal -->
-                <div id="date-modal" class="fixed inset-0 bg-black/60 z-[99999] ${dateModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
-                    <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[85vh]">
-                        <div class="flex justify-between items-center mb-5 shrink-0">
-                            <h3 class="font-black text-xl uppercase text-gray-900">Choose Day</h3>
-                            <button onclick="mockupState.modalOpen = 'schedule-pickup'; navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                        <div class="bg-white rounded-2xl p-4 border border-violet-100 shadow-sm overflow-y-auto scrollbar-hide">
-                            <div class="flex justify-between items-center mb-3 px-1">
-                                <button onclick="mockupState.monthOffset = Math.max(0, (mockupState.monthOffset||0) - 1); navigateTo(currentPage);" class="${monthOffset === 0 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:text-violet-600 transition-colors"} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-left text-sm"></i></button>
-                                <span class="font-black text-sm uppercase tracking-widest text-gray-800">${currentMonth.name}</span>
-                                <button onclick="mockupState.monthOffset = Math.min(2, (mockupState.monthOffset||0) + 1); navigateTo(currentPage);" class="${monthOffset === 2 ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:text-violet-600 transition-colors"} w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-chevron-right text-sm"></i></button>
-                            </div>
-                            <div class="grid grid-cols-7 gap-1 text-center mb-2">
-                                ${["S", "M", "T", "W", "T", "F", "S"].map((d) => `<div class="text-[10px] font-black text-gray-400">${d}</div>`).join("")}
-                            </div>
-                            <div class="grid grid-cols-7 gap-1 text-center">
-                                ${calendarCells}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Time Modal -->
-                <div id="time-modal" class="fixed inset-0 bg-black/60 z-[99999] ${timeModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
-                    <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[90vh]">
-                        <div class="flex justify-between items-center mb-5 shrink-0">
-                            <h3 class="font-black text-xl uppercase text-gray-900">Choose Time</h3>
-                            <button onclick="mockupState.modalOpen = 'schedule-pickup'; navigateTo(currentPage);" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                        
-                        <div class="flex-1 flex flex-col min-h-0 bg-gray-50/50 rounded-2xl p-4 border border-gray-100 mb-5">
-                            <div class="overflow-y-auto scrollbar-hide h-[230px] pr-1">
-                                <div class="grid grid-cols-3 gap-2">
-                                    ${
-                                      times15.length > 0
-                                        ? times15
-                                            .map((time, idx) => {
-                                              const isThisTimeNearClose =
-                                                time.includes("8:") ||
-                                                time.includes("9:");
-                                              const isAsap =
-                                                idx === 0 &&
-                                                mockupState.selectedDay ===
-                                                  "Today";
-                                              const orderTimeUpdate =
-                                                currentPage ===
-                                                "order-details"
-                                                  ? `updateMockupState('orderTime', '${isAsap ? "ASAP" : "Later"}'); `
-                                                  : ``;
-                                              const clickAction =
-                                                isThisTimeNearClose &&
-                                                !mockupState.acknowledgedClose
-                                                  ? `${orderTimeUpdate}updateMockupState('selectedTimeSlot', '${time}'); mockupState.modalOpen = 'warning'; navigateTo(currentPage);`
-                                                  : `${orderTimeUpdate}updateMockupState('selectedTimeSlot', '${time}'); navigateTo(currentPage);`;
-
-                                              return `
-                                        <button id="time-slot-${idx}" onclick="${clickAction}" class="py-3 rounded-full border-2 ${mockupState.selectedTimeSlot === time ? "border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200" : "border-gray-100 text-gray-700 hover:border-violet-300 bg-white"} font-black text-[11px] transition-all tracking-tight whitespace-nowrap">${time}</button>
-                                        `;
-                                            })
-                                            .join("")
-                                        : `<div class="col-span-3 py-10 text-center flex flex-col items-center"><i class="fa-solid fa-store-slash text-2xl text-gray-300 mb-2"></i><p class="text-gray-500 font-bold text-sm">Closed for this date</p></div>`
-                                    }
-                                </div>
-                            </div>
-
-                            <div class="mt-4 pt-4 border-t border-gray-100 shrink-0">
-                                <label class="block text-[10px] font-black text-violet-600 uppercase tracking-widest mb-3">Or enter a custom pickup time</label>
-                                <div class="flex items-center gap-3">
-                                    <div class="relative flex-1">
-                                        <i class="fa-regular fa-clock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                        <input type="time" class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-violet-600 focus:ring-0 font-bold text-gray-800 outline-none transition-colors" onchange="let val = this.value; let parts = val.split(':'); let h = parseInt(parts[0]); let ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12; h = h || 12; let formatted = h + ':' + parts[1] + ' ' + ampm; updateMockupState('selectedTimeSlot', formatted); if(h >= 8 && ampm === 'PM') { mockupState.modalOpen = 'warning'; mockupState.acknowledgedClose = false; } navigateTo(currentPage);" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="shrink-0 pb-2">
-                            <button onclick="
-                                if(${isNearClose} && !mockupState.acknowledgedClose) {
-                                    mockupState.modalOpen = 'warning';
-                                    navigateTo(currentPage);
-                                } else {
-                                    mockupState.modalOpen = 'schedule-pickup';
-                                    navigateTo(currentPage);
-                                }
-                            " class="w-full py-4 rounded-full bg-violet-600 text-white font-black uppercase text-sm tracking-widest shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] transition-all active:scale-95">Confirm Time</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="warning-modal" class="fixed inset-0 bg-black/60 z-[99999] ${warningModalClass} flex-col justify-center items-center backdrop-blur-sm p-4">
-                    <div class="bg-red-600 w-full sm:w-[380px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col items-center text-center">
-                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
-                            <i class="fa-solid fa-clock text-red-600 text-3xl"></i>
-                        </div>
-                        
-                        <h3 class="font-black text-2xl uppercase text-white mb-2 leading-tight">Store Closes<br>at 9:00 PM</h3>
-                        
-                        <p class="text-red-100 font-bold mb-8 px-2">
-                            ${isNearClose ? "You have selected a pickup time within an hour of close. Please ensure you pick up your order before our doors close." : "Please ensure you pick up your order before our doors close."}
-                        </p>
-                        
-                        <button onclick="updateMockupState('acknowledgedClose', true); mockupState.modalOpen = 'schedule-pickup'; navigateTo(currentPage);" class="w-full py-4 rounded-full bg-white text-red-600 font-black uppercase text-sm tracking-widest shadow-xl hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-check text-lg"></i> I Understand
-                        </button>
-                        
-                        <button onclick="mockupState.modalOpen = 'time'; navigateTo(currentPage);" class="mt-4 text-red-200 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">Go Back</button>
-                    </div>
-                </div>
             </div>
         `;
   },
@@ -5244,6 +5029,7 @@ const routes = {
     const dateModalClass = mockupState.modalOpen === "date" ? "flex" : "hidden";
     const timeModalClass = mockupState.modalOpen === "time" ? "flex" : "hidden";
     const warningModalClass = mockupState.modalOpen === "warning" ? "flex" : "hidden";
+    const scheduleModalClass = mockupState.modalOpen === "schedule-pickup" ? "flex" : "hidden";
 
     const times15 = getDynamicTimes(mockupState.selectedDay || "Today");
     const isNearClose =
@@ -5253,11 +5039,20 @@ const routes = {
     const hasUnavailableItems = cart.some(item => !isItemAvailableAtCurrentLocation(item));
     const selectionNotMade =
       mockupState.bagQuantity === 0 && !mockupState.noBagsSelected;
+    const pickupNotConfirmed = !mockupState.pickupMethodChosen;
     const paymentAction = hasUnavailableItems
       ? `alert('Please remove unavailable items from your cart before checking out.')`
+      : pickupNotConfirmed
+      ? `mockupState.pickupValidationError = true; navigateTo(currentPage); document.getElementById('pickup-details-section')?.scrollIntoView({behavior:'smooth', block:'center'});`
       : selectionNotMade
       ? `updateMockupState('modalOpen', 'bag-alert')`
       : `navigateTo('checkout')`;
+    const checkoutButtonGreyed = hasUnavailableItems || pickupNotConfirmed;
+    const checkoutButtonLabel = hasUnavailableItems
+      ? "Unavailable Items in Cart"
+      : pickupNotConfirmed
+      ? "Confirm Pickup Details Above"
+      : `Checkout $${finalTotal}`;
 
     // Render cart items dynamically
     const renderCartItems = () => {
@@ -5408,146 +5203,70 @@ const routes = {
                             </button>
                         </div>
 
-                        <!-- Pickup Details (Compact Grid) -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <div onclick="window.toggleCartEditSection('method')" class="flex gap-3 items-center cursor-pointer group p-2 -m-2 rounded-xl hover:bg-gray-50/80 transition-colors">
-                                <div class="w-8 h-8 rounded-lg ${mockupState.cartEditSection === "method" ? "bg-violet-700 ring-2 ring-violet-300" : "bg-violet-600"} flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
-                                    <i class="fa-solid ${mockupState.fulfillmentMode === "Delivery" ? "fa-truck" : mockupState.fulfillmentMode === "Curbside" ? "fa-square-parking" : mockupState.fulfillmentMode === "Drive Through" || mockupState.fulfillmentMode === "Drive-thru" ? "fa-car" : "fa-shop"} text-white text-sm"></i>
-                                </div>
-                                <div class="flex flex-col min-w-0 flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup method</span>
-                                        <i class="fa-solid fa-chevron-down text-[8px] text-gray-400 transition-transform ${mockupState.cartEditSection === "method" ? "rotate-180 text-violet-600" : ""}"></i>
-                                    </div>
-                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight mt-0.5 truncate">${mockupState.fulfillmentMode || "In-store"}</span>
-                                </div>
+                        <!-- Pickup Details -->
+                        <div id="pickup-details-section" class="pt-2 -mx-1 px-1 ${mockupState.pickupValidationError && !mockupState.pickupMethodChosen ? "rounded-2xl ring-2 ring-red-400" : ""}">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-[11px] font-black uppercase tracking-widest text-gray-900">Pickup Details</span>
+                                ${
+                                  mockupState.pickupMethodChosen
+                                    ? `<span class="text-[10px] font-black uppercase tracking-widest text-green-600 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Confirmed</span>`
+                                    : `<span class="text-[10px] font-black uppercase tracking-widest text-red-500">* Required</span>`
+                                }
                             </div>
-                            <div onclick="window.toggleCartEditSection('time')" class="flex gap-3 items-center cursor-pointer group border-l border-gray-100 pl-4 p-2 -my-2 rounded-xl hover:bg-gray-50/80 transition-colors">
-                                <div class="w-8 h-8 rounded-lg ${mockupState.cartEditSection === "time" ? "bg-violet-700 ring-2 ring-violet-300" : "bg-violet-600"} flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-105">
-                                    <i class="fa-regular fa-clock text-white text-sm"></i>
+                            ${
+                              mockupState.pickupValidationError && !mockupState.pickupMethodChosen
+                                ? `
+                                <p class="text-red-500 font-bold text-[11px] uppercase tracking-wider mb-3 flex items-center gap-1.5 animate-pulse">
+                                    <i class="fa-solid fa-circle-exclamation text-sm"></i> Please select a pickup method to continue
+                                </p>
+                                `
+                                : ""
+                            }
+
+                            <!-- Pickup Method (always visible, must be explicitly tapped) -->
+                            <p class="text-[10px] font-black uppercase text-gray-500 tracking-wider mb-2">Pickup Method</p>
+                            <div class="grid grid-cols-3 gap-2 mb-4">
+                                ${[
+                                  { value: "In-store", display: "In-Store Pickup", icon: "fa-shop" },
+                                  { value: "Drive Through", display: "Drive-Thru Pickup", icon: "fa-car" },
+                                  { value: "Curbside", display: "Curbside Pickup", icon: "fa-square-parking" },
+                                ]
+                                  .map((m) => {
+                                    const mode = mockupState.fulfillmentMode || "In-store";
+                                    const isActive =
+                                      mockupState.pickupMethodChosen &&
+                                      ((m.value === "In-store" && (mode === "In-store" || mode === "In-Store" || mode === "Pickup")) ||
+                                        (mode.toLowerCase() === m.value.toLowerCase()));
+                                    return `
+                                        <button onclick="updateMockupState('fulfillmentMode', '${m.value}'); mockupState.pickupMethodChosen = true; mockupState.pickupValidationError = false; navigateTo('cart');" class="flex flex-col items-center justify-center gap-1.5 py-2.5 px-1.5 border-2 rounded-xl font-bold transition-all ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/50"}">
+                                            <i class="fa-solid ${m.icon} text-sm ${isActive ? "text-white" : "text-violet-600"}"></i>
+                                            <span class="text-[9px] font-black uppercase tracking-tight text-center leading-tight">${m.display}</span>
+                                        </button>
+                                    `;
+                                  })
+                                  .join("")}
+                            </div>
+
+                            <!-- Pickup Time -- exact same card as the original order-details design: always shows the
+                                 computed default (now+20min, clamped to store-open+20min via getEstimatedPickupTime),
+                                 big and unmissable, with a black "Change Time" button to open the Schedule Pickup modal. -->
+                            <p class="text-[10px] font-black uppercase text-gray-500 tracking-wider mb-2">Pickup Time</p>
+                            <div onclick="updateMockupState('modalOpen', 'schedule-pickup'); navigateTo('cart');" class="p-4 bg-white rounded-3xl border border-gray-100 shadow-md text-center cursor-pointer hover:border-violet-300 transition-all active:scale-[0.99] flex flex-col items-center justify-center gap-1">
+                                <span class="text-[11px] font-black text-violet-600 uppercase tracking-widest">
+                                    ${mockupState.fulfillmentMode ? `${mockupState.fulfillmentMode.toUpperCase()} PICKUP TIME` : "APPROXIMATE PICKUP TIME"}
+                                </span>
+                                <div class="font-branding font-black text-gray-900 text-[36px] tracking-tight uppercase leading-none mt-1.5 mb-1">
+                                    ${mockupState.orderTime === "ASAP" ? `ASAP ~ ${getEstimatedPickupTime(20)}` : `${mockupState.selectedDay === "Today" ? "Today" : (mockupState.selectedDay || "Today").split(",")[0]} at ${mockupState.selectedTimeSlot}`}
                                 </div>
-                                <div class="flex flex-col min-w-0 flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Pickup time</span>
-                                        <i class="fa-solid fa-chevron-down text-[8px] text-gray-400 transition-transform ${mockupState.cartEditSection === "time" ? "rotate-180 text-violet-600" : ""}"></i>
+                                <div class="mt-2 flex flex-col items-center justify-center gap-2">
+                                    <div class="flex items-center justify-center gap-2 bg-[#1F0B35] text-white px-5 py-2 rounded-full shadow-sm hover:opacity-90 transition-opacity">
+                                        <i class="fa-regular fa-clock text-xl"></i>
+                                        <span class="text-xl font-bold uppercase tracking-wider">Change Time</span>
                                     </div>
-                                    <span class="text-[11px] font-black text-gray-700 uppercase tracking-tight leading-tight mt-0.5 truncate">${
-                                      mockupState.orderTime === "Later"
-                                        ? `${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay || "Today"}, ${mockupState.selectedTimeSlot || getEstimatedPickupTime(20)}`
-                                        : `ASAP (${getEstimatedPickupTime(20)})`
-                                    }</span>
+                                    ${mockupState.orderTime !== "ASAP" ? `<button onclick="event.stopPropagation(); updateMockupState('orderTime', 'ASAP'); navigateTo('cart');" class="text-xs font-bold text-[#da2377] hover:text-violet-600 transition-colors uppercase tracking-wider mt-1 underline underline-offset-2">Change back to ASAP</button>` : ""}
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Inline Method Selector Drawer -->
-                        ${
-                          mockupState.cartEditSection === "method"
-                            ? `
-                            <div class="pt-3 border-t border-gray-100 flex flex-col gap-2.5 animate-[fadeIn_0.2s_ease-out]">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Select Pickup Method</span>
-                                    <button onclick="window.toggleCartEditSection('method')" class="text-[11px] font-black text-violet-600 hover:text-violet-700 uppercase tracking-wider flex items-center gap-1">
-                                        Done <i class="fa-solid fa-check text-[9px]"></i>
-                                    </button>
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    ${[
-                                      { label: "In-store", icon: "fa-shop" },
-                                      { label: "Drive Through", icon: "fa-car" },
-                                      { label: "Curbside", icon: "fa-square-parking" },
-                                      { label: "Delivery", icon: "fa-truck" },
-                                    ]
-                                      .map((m) => {
-                                        const mode = mockupState.fulfillmentMode || "In-store";
-                                        const isActive =
-                                          (m.label === "In-store" && (mode === "In-store" || mode === "In-Store" || mode === "Pickup")) ||
-                                          (mode.toLowerCase() === m.label.toLowerCase());
-                                        return `
-                                            <button onclick="updateMockupState('fulfillmentMode', '${m.label}'); mockupState.cartEditSection = null; navigateTo('cart');" class="flex flex-col items-center justify-center gap-1.5 py-2 px-2 border-2 rounded-xl font-bold transition-all ${isActive ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/50"}">
-                                                <i class="fa-solid ${m.icon} text-sm ${isActive ? "text-white" : "text-violet-600"}"></i>
-                                                <span class="text-[10px] font-black uppercase tracking-tight">${m.label === "In-store" ? "In-Store" : m.label}</span>
-                                            </button>
-                                        `;
-                                      })
-                                      .join("")}
-                                </div>
-                            </div>
-                        `
-                            : ""
-                        }
-
-                        <!-- Inline Time Selector Drawer -->
-                        ${
-                          mockupState.cartEditSection === "time"
-                            ? `
-                            <div class="pt-3 border-t border-gray-100 flex flex-col gap-2.5 animate-[fadeIn_0.2s_ease-out]">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Select Pickup Time</span>
-                                    <button onclick="window.toggleCartEditSection('time')" class="text-[11px] font-black text-violet-600 hover:text-violet-700 uppercase tracking-wider flex items-center gap-1">
-                                        Done <i class="fa-solid fa-check text-[9px]"></i>
-                                    </button>
-                                </div>
-                                <!-- ASAP vs Schedule Later pills -->
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button onclick="updateMockupState('orderTime', 'ASAP'); mockupState.cartEditSection = null; navigateTo('cart');" class="py-2.5 px-3 rounded-xl border-2 font-black text-xs uppercase flex items-center justify-center gap-2 transition-all ${mockupState.orderTime !== "Later" ? "bg-violet-600 text-white border-violet-600 shadow-sm" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600"}">
-                                        <i class="fa-solid fa-bolt text-xs ${mockupState.orderTime !== "Later" ? "text-amber-300" : "text-violet-600"}"></i>
-                                        <span>ASAP (${getEstimatedPickupTime(20)})</span>
-                                    </button>
-                                    <button onclick="updateMockupState('orderTime', 'Later'); navigateTo('cart');" class="py-2.5 px-3 rounded-xl border-2 font-black text-xs uppercase flex items-center justify-center gap-2 transition-all ${mockupState.orderTime === "Later" ? "bg-violet-600 text-white border-violet-600 shadow-sm" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600"}">
-                                        <i class="fa-regular fa-clock text-xs ${mockupState.orderTime === "Later" ? "text-white" : "text-violet-600"}"></i>
-                                        <span>Schedule Later</span>
-                                    </button>
-                                </div>
-
-                                ${
-                                  mockupState.orderTime === "Later"
-                                    ? `
-                                    <div class="bg-gray-50/80 rounded-xl p-3 border border-gray-100 flex flex-col gap-2.5 mt-1">
-                                         <div class="flex items-center justify-between">
-                                             <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Date</span>
-                                             <div class="relative">
-                                                 <select onchange="updateMockupState('selectedDay', this.value); updateMockupState('orderTime', 'Later'); const newTimes = getDynamicTimes(this.value); if (newTimes && newTimes.length > 0 && !newTimes.includes(mockupState.selectedTimeSlot)) { updateMockupState('selectedTimeSlot', newTimes[0]); } navigateTo('cart');" class="appearance-none bg-white border-2 border-violet-100 hover:border-violet-300 rounded-xl px-3 py-1 pr-7 font-black text-xs text-violet-700 outline-none cursor-pointer transition-colors shadow-sm">
-                                                     ${getAvailableDays(14).map(day => `
-                                                         <option value="${day}" ${mockupState.selectedDay === day ? 'selected' : ''}>${day}</option>
-                                                     `).join('')}
-                                                 </select>
-                                                 <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-violet-600 pointer-events-none"></i>
-                                             </div>
-                                         </div>
-                                        
-                                        <!-- Multi-Row Wrap Time Slot Chips -->
-                                        <div class="flex flex-wrap gap-2 py-1">
-                                            ${(() => {
-                                              const times = getDynamicTimes(
-                                                mockupState.selectedDay ||
-                                                  "Today",
-                                              );
-                                              if (!times || times.length === 0) {
-                                                return `<span class="text-xs font-bold text-gray-400">Closed for selected date</span>`;
-                                              }
-                                              return times
-                                                .map((t) => {
-                                                  const isSelected =
-                                                    mockupState.selectedTimeSlot ===
-                                                    t;
-                                                  return `
-                                                        <button onclick="updateMockupState('selectedTimeSlot', '${t}'); updateMockupState('orderTime', 'Later'); mockupState.cartEditSection = null; navigateTo('cart');" class="px-3 py-1.5 rounded-full border-2 font-black text-[11px] shrink-0 transition-all ${isSelected ? "bg-violet-600 text-white border-violet-600 shadow-sm" : "bg-white text-gray-700 border-violet-200 hover:border-violet-600 hover:bg-violet-50/40"}">
-                                                            ${t}
-                                                        </button>
-                                                    `;
-                                                })
-                                                .join("");
-                                            })()}
-                                        </div>
-                                    </div>
-                                `
-                                    : ""
-                                }
-                            </div>
-                        `
-                            : ""
-                        }
                     </div>
 
                     <!-- Cart Items -->
@@ -5701,8 +5420,8 @@ const routes = {
                         <div class="flex justify-between text-lg font-black text-gray-900 uppercase"><span>Total</span><span>$${finalTotal}</span></div>
                         
                         <!-- Inline Checkout Button (Desktop Only) -->
-                        <button onclick="${paymentAction}" class="${isDesktop ? "block" : "hidden"} w-full mt-4 ${hasUnavailableItems ? "bg-gray-400 cursor-not-allowed opacity-75 shadow-none" : "bg-violet-600 hover:bg-violet-700 active:scale-95 shadow-[0_8px_20px_-5px_rgba(124,58,237,0.3)]"} text-white px-6 py-4 rounded-full font-black text-[15px] transition-all uppercase tracking-wider text-center">
-                            ${hasUnavailableItems ? "Unavailable Items in Cart" : `Checkout $${finalTotal}`}
+                        <button onclick="${paymentAction}" class="${isDesktop ? "block" : "hidden"} w-full mt-4 ${checkoutButtonGreyed ? "bg-gray-400 hover:bg-gray-400 opacity-75 shadow-none" : "bg-violet-600 hover:bg-violet-700 active:scale-95 shadow-[0_8px_20px_-5px_rgba(124,58,237,0.3)]"} text-white px-6 py-4 rounded-full font-black text-[15px] transition-all uppercase tracking-wider text-center">
+                            ${checkoutButtonLabel}
                         </button>
                     </div>
                     
@@ -5712,9 +5431,67 @@ const routes = {
                 <!-- Floating Checkout Button -->
                 <div class="absolute bottom-8 left-0 right-0 w-full z-[60] pointer-events-none px-6 flex justify-center ${isDesktop ? "hidden" : ""}">
                     <div class="w-full max-w-[1080px] flex justify-end">
-                        <button onclick="${paymentAction}" class="pointer-events-auto w-full sm:w-auto ${hasUnavailableItems ? "bg-gray-400 cursor-not-allowed opacity-75 shadow-none" : "bg-violet-600 shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 hover:bg-violet-700"} text-white px-8 py-4 rounded-full font-black text-lg transition-all uppercase tracking-wider">
-                            ${hasUnavailableItems ? "Unavailable Items in Cart" : `Checkout $${finalTotal}`}
+                        <button onclick="${paymentAction}" class="pointer-events-auto w-full sm:w-auto ${checkoutButtonGreyed ? "bg-gray-400 opacity-75 shadow-none" : "bg-violet-600 shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] active:scale-95 hover:bg-violet-700"} text-white px-8 py-4 rounded-full font-black text-lg transition-all uppercase tracking-wider">
+                            ${checkoutButtonLabel}
                         </button>
+                    </div>
+                </div>
+
+                <!-- Schedule Pickup Modal -->
+                <div id="schedule-pickup-modal" class="fixed inset-0 bg-black/60 z-[99999] ${scheduleModalClass} flex-col justify-end sm:justify-center items-center backdrop-blur-sm p-4 pt-10">
+                    <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[85vh]">
+                        <div class="flex justify-between items-center mb-4 shrink-0">
+                            <h3 class="font-black text-xl uppercase text-gray-900">Schedule Pickup</h3>
+                            <button onclick="mockupState.modalOpen = null; navigateTo('cart');" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto scrollbar-hide space-y-4 pr-1">
+                             <!-- Estimated pickup time card above selection -->
+                             <div class="p-4 bg-violet-50/40 rounded-2xl border border-violet-100 text-left">
+                                 <p class="text-[10px] font-black text-violet-600 uppercase tracking-widest">Selected Pickup Time</p>
+                                 <div class="flex items-center gap-2 mt-2">
+                                     <i class="fa-regular fa-clock text-violet-600 border border-violet-100 rounded p-1 bg-white"></i>
+                                     <p class="font-black text-gray-800 text-sm tracking-tight">
+                                         ${mockupState.orderTime === "ASAP" ? `Today ASAP (approx. at ${getEstimatedPickupTime(20)})` : `${mockupState.selectedDay || "Today"} at ${mockupState.selectedTimeSlot}`}
+                                     </p>
+                                 </div>
+                             </div>
+
+                            <div>
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 font-black text-left">Ordering For</p>
+                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                    <button onclick="setOrderTime('ASAP'); navigateTo('cart');" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${mockupState.orderTime === "ASAP" ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-400 border-gray-100"} font-black uppercase"><i class="fa-solid fa-bolt text-lg mb-0.5"></i>ASAP</button>
+                                    <button onclick="setOrderTime('Later'); navigateTo('cart');" class="py-3 border-2 rounded-xl font-bold flex flex-col items-center gap-1 ${!isCustomPickupTimeAllowed() ? "bg-gray-50 text-gray-300 border-gray-100 opacity-60 cursor-not-allowed" : mockupState.orderTime === "Later" ? "bg-violet-600 text-white border-violet-600 shadow-[0_8px_25px_-5px_rgba(124,58,237,0.3)]" : "bg-white text-gray-400 border-gray-100"} font-black uppercase"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i>Later</button>
+                                </div>
+
+                                ${isCustomPickupTimeAllowed() ? `
+                                <div class="space-y-3">
+                                    <button onclick="if(isCustomPickupTimeAllowed()){setOrderTime('Later'); mockupState.modalOpen = 'date'; navigateTo('cart');}else{setOrderTime('Later');}" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
+                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-calendar text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === "ASAP" ? "Today" : mockupState.selectedDay}</span></span>
+                                        <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
+                                    </button>
+                                    <button onclick="if(isCustomPickupTimeAllowed()){setOrderTime('Later'); mockupState.modalOpen = 'time'; navigateTo('cart');}else{setOrderTime('Later');}" class="w-full py-3 px-4 border-2 border-violet-100 hover:border-violet-300 rounded-full font-bold text-sm text-gray-800 flex items-center justify-between transition-colors min-w-0 bg-white">
+                                        <span class="flex items-center gap-2 overflow-hidden w-full"><i class="fa-regular fa-clock text-violet-600 shrink-0"></i> <span class="truncate block w-full text-left font-black tracking-tight">${mockupState.orderTime === "ASAP" ? getEstimatedPickupTime(20) : mockupState.selectedTimeSlot}</span></span>
+                                        <div class="shrink-0 ml-2 w-6 h-6 flex items-center justify-center bg-violet-50 rounded-full shadow-sm text-violet-600"><i class="fa-solid fa-chevron-down text-[10px]"></i></div>
+                                    </button>
+                                </div>
+                                ` : `
+                                <div class="p-4 bg-violet-50/70 rounded-2xl border border-violet-100 flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-full bg-violet-600 text-white flex items-center justify-center shrink-0 font-bold text-sm shadow-sm">
+                                        <i class="fa-solid fa-bolt"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-black text-gray-900 uppercase tracking-tight">ASAP Pickup Only</p>
+                                        <p class="text-[11px] font-medium text-gray-500 leading-tight">This location currently only supports ASAP pickup orders. Your order will be prepared as soon as it is submitted.</p>
+                                    </div>
+                                </div>
+                                `}
+                            </div>
+                        </div>
+
+                        <div class="shrink-0 pt-4 border-t border-gray-100">
+                            <button onclick="mockupState.modalOpen = null; navigateTo('cart');" class="w-full py-4 rounded-full bg-violet-600 text-white font-black uppercase text-sm tracking-widest shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] transition-all active:scale-95">Confirm Time</button>
+                        </div>
                     </div>
                 </div>
 
@@ -5723,7 +5500,7 @@ const routes = {
                     <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[85vh]">
                         <div class="flex justify-between items-center mb-5 shrink-0">
                             <h3 class="font-black text-xl uppercase text-gray-900">Choose Day</h3>
-                            <button onclick="mockupState.modalOpen = null; navigateTo('cart');" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                            <button onclick="mockupState.modalOpen = 'schedule-pickup'; navigateTo('cart');" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                         <div class="bg-white rounded-2xl p-4 border border-violet-100 shadow-sm overflow-y-auto scrollbar-hide">
                             <div class="flex justify-between items-center mb-3 px-1">
@@ -5746,7 +5523,7 @@ const routes = {
                     <div class="bg-white w-full sm:w-[420px] max-w-full rounded-3xl p-6 shadow-2xl ${mockupState.lastModalOpen === mockupState.modalOpen ? "" : "animate-[slideUp_0.3s_ease-out]"} flex flex-col max-h-[90vh]">
                         <div class="flex justify-between items-center mb-5 shrink-0">
                             <h3 class="font-black text-xl uppercase text-gray-900">Choose Time</h3>
-                            <button onclick="mockupState.modalOpen = null; navigateTo('cart');" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                            <button onclick="mockupState.modalOpen = 'schedule-pickup'; navigateTo('cart');" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                         
                         <div class="flex-1 flex flex-col min-h-0 bg-gray-50/50 rounded-2xl p-4 border border-gray-100 mb-5">
@@ -5793,7 +5570,7 @@ const routes = {
                                     mockupState.modalOpen = 'warning';
                                     navigateTo('cart');
                                 } else {
-                                    mockupState.modalOpen = null;
+                                    mockupState.modalOpen = 'schedule-pickup';
                                     navigateTo('cart');
                                 }
                             " class="w-full py-4 rounded-full bg-violet-600 text-white font-black uppercase text-sm tracking-widest shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] transition-all active:scale-95">Confirm Time</button>
@@ -5814,7 +5591,7 @@ const routes = {
                             ${isNearClose ? "You have selected a pickup time within an hour of close. Please ensure you pick up your order before our doors close." : "Please ensure you pick up your order before our doors close."}
                         </p>
                         
-                        <button onclick="updateMockupState('acknowledgedClose', true); mockupState.modalOpen = null; navigateTo('cart');" class="w-full py-4 rounded-full bg-white text-red-600 font-black uppercase text-sm tracking-widest shadow-xl hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2">
+                        <button onclick="updateMockupState('acknowledgedClose', true); mockupState.modalOpen = 'schedule-pickup'; navigateTo('cart');" class="w-full py-4 rounded-full bg-white text-red-600 font-black uppercase text-sm tracking-widest shadow-xl hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2">
                             <i class="fa-solid fa-check text-lg"></i> I Understand
                         </button>
                         
@@ -6150,7 +5927,7 @@ const routes = {
                                 return `
                                          <div class="px-5 py-8 text-center">
                                              <p class="text-sm text-gray-400 font-medium">No orders yet — place your first order!</p>
-                                             <button onclick="navigateTo('menu', { confirmLocation: true })" class="mt-3 text-violet-600 font-black text-xs uppercase tracking-widest hover:underline">Browse Menu →</button>
+                                             <button onclick="navigateTo('menu')" class="mt-3 text-violet-600 font-black text-xs uppercase tracking-widest hover:underline">Browse Menu →</button>
                                          </div>
                                      `;
                               }
@@ -7218,17 +6995,19 @@ const routes = {
     if (orderNum !== "Pending" && !String(orderNum).startsWith("FB-")) {
       orderNum = "FB-" + orderNum;
     }
-    const locationName = mockupState.selectedLocation || "i-Tea";
+    const locationName = order.locationName || mockupState.selectedLocation || "i-Tea";
+    const orderLocationId = order.locationId ?? mockupState.selectedLocationId;
     const selectedLoc =
       (mockupState.apiLocations || []).find(
-        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
+        (loc) => Number(loc.locationId) === Number(orderLocationId),
       ) ||
       LOCATIONS.find(
-        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
+        (loc) => Number(loc.locationId) === Number(orderLocationId),
       ) ||
       LOCATIONS.find((loc) => loc.name === locationName) ||
       {};
     const locationAddress =
+      order.locationAddress ||
       selectedLoc.address ||
       selectedLoc.streetAddress ||
       "825 W UNIVERSITY, TEMPE, AZ";
@@ -7258,7 +7037,7 @@ const routes = {
                   !isDesktop
                     ? `
                 <div class="bg-white border-b border-gray-100 shrink-0 px-4 py-2">
-                    <button onclick="navigateTo('menu', { replace: true })" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
+                    <button onclick="resumeLastOrderLocation(); navigateTo('menu', { replace: true })" class="flex items-center gap-1.5 text-xs text-[#1f0b35] font-black uppercase tracking-tight group hover:text-violet-600 transition-colors">
                         <i class="fa-solid fa-chevron-left text-[10px] text-violet-600 transition-transform group-hover:-translate-x-0.5"></i>
                         <span>Back to Menu</span>
                     </button>
@@ -7420,7 +7199,7 @@ const routes = {
                         }
 
                         <div class="w-full space-y-4 pt-4">
-                            <button onclick="navigateTo('menu', { replace: true })" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Order Again</button>
+                            <button onclick="resumeLastOrderLocation(); navigateTo('menu', { replace: true })" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">Order Again</button>
                             <button onclick="navigateTo('home', { replace: true })" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                         </div>
                     </div>
@@ -7471,6 +7250,11 @@ const routes = {
       updateMockupState("modalOpen", `payment-${method}`);
     };
 
+    const pickupTimeDisplay =
+      mockupState.orderTime === "Later"
+        ? `${mockupState.selectedDay === "Today" ? "Today" : mockupState.selectedDay || "Today"}, ${mockupState.selectedTimeSlot || getEstimatedPickupTime(20)}`
+        : `ASAP (${getEstimatedPickupTime(20)})`;
+
     return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 uppercase font-black justify-center">
@@ -7496,6 +7280,23 @@ const routes = {
                 }
                 
                 <div id="payment-scroller" class="flex-1 overflow-y-auto ${isDesktop ? "p-6 md:p-8 space-y-8 w-full max-w-3xl mx-auto pb-12" : "p-4 space-y-6 w-full max-w-[1080px] mx-auto pb-32"} scrollbar-hide">
+
+                    <!-- Pickup Details -->
+                    <div>
+                        <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Pickup Details</h2>
+                        <div onclick="navigateTo('cart')" class="bg-white rounded-[24px] ${isDesktop ? "p-4" : "p-3.5"} shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-violet-50/50 hover:border-violet-200 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 group">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-[16px] bg-gray-50 group-hover:bg-white group-hover:shadow-sm transition-all flex items-center justify-center text-gray-400 group-hover:text-violet-500">
+                                    <i class="fa-regular fa-clock text-xl"></i>
+                                </div>
+                                <div>
+                                    <span class="font-black text-gray-900 uppercase text-sm block tracking-tight">${mockupState.fulfillmentMode || "In-store"}</span>
+                                    <span class="text-xs font-bold text-violet-600 uppercase tracking-widest mt-0.5 block">${pickupTimeDisplay}</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-black text-violet-600 uppercase tracking-widest group-hover:underline shrink-0">Edit</span>
+                        </div>
+                    </div>
 
                     
                     <!-- Payment Methods -->
@@ -8174,7 +7975,7 @@ const routes = {
                             </div>
                             <h3 class="text-xl font-black text-gray-900 uppercase tracking-tight mb-2">No favorites yet</h3>
                             <p class="text-gray-500 font-medium mb-8">Start adding items you love to see them here!</p>
-                            <button onclick="navigateTo('menu', { confirmLocation: true })" class="bg-violet-600 text-white px-8 py-3 rounded-full font-black uppercase text-sm shadow-lg tracking-wide">Explore Menu</button>
+                            <button onclick="navigateTo('menu')" class="bg-violet-600 text-white px-8 py-3 rounded-full font-black uppercase text-sm shadow-lg tracking-wide">Explore Menu</button>
                         </div>
                     `
                         : `
@@ -8213,7 +8014,7 @@ const routes = {
                         <i class="fa-solid fa-gift absolute -right-6 -bottom-6 text-9xl text-white/10 rotate-12"></i>
                         <h3 class="text-2xl font-black tracking-tight mb-2 relative z-10 uppercase">Want more rewards?</h3>
                         <p class="text-violet-100 font-medium mb-6 relative z-10 max-w-sm mx-auto">Favorite 5 items to earn 500 bonus points on your next visit!</p>
-                        <button onclick="navigateTo('menu', { confirmLocation: true })" class="bg-white text-violet-600 px-8 py-3 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 relative z-10">Browse Menu</button>
+                        <button onclick="navigateTo('menu')" class="bg-white text-violet-600 px-8 py-3 rounded-full font-black uppercase text-sm shadow-lg transition-transform active:scale-95 relative z-10">Browse Menu</button>
                     </div>
                 </div>
             </div>`;
@@ -9112,7 +8913,7 @@ function renderPage() {
                     </div>
                     <div class="flex items-center gap-3 lg:gap-6 text-[16px] lg:text-[1.3rem] font-black uppercase tracking-tight text-[#1f0b35] ml-2">
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap ${currentPage === 'restaurant-home' ? 'active-nav-link' : ''}" onclick="navigateTo('restaurant-home')">Home</span>
-                        <span class="cursor-pointer nav-link-animated whitespace-nowrap ${(currentPage === 'menu' || currentPage === 'menu-single') ? 'active-nav-link' : ''}" onclick="navigateTo('menu', { confirmLocation: true })">Menu</span>
+                        <span class="cursor-pointer nav-link-animated whitespace-nowrap ${(currentPage === 'menu' || currentPage === 'menu-single') ? 'active-nav-link' : ''}" onclick="navigateTo('menu')">Menu</span>
                         <span class="cursor-pointer nav-link-animated whitespace-nowrap ${(currentPage === 'menu' || currentPage === 'menu-single') && mockupState.menuTab === 'history' ? 'active-nav-link' : ''}" onclick="tryGoToReorder();">Reorder</span>
                     </div>
                 </div>
@@ -9280,6 +9081,11 @@ function renderPage() {
   // Render Order Details (read-only) Modal if modalOpen === 'order-details-view'
   if (mockupState.modalOpen === "order-details-view") {
     contentHtml += renderOrderDetailsViewModalHTML();
+  }
+
+  // Render the location-change confirmation modal if modalOpen === 'confirm-location-change'
+  if (mockupState.modalOpen === "confirm-location-change") {
+    contentHtml += renderConfirmLocationChangeModalHTML();
   }
 
   viewport.innerHTML = contentHtml + loadingOverlayHtml;
@@ -12228,6 +12034,22 @@ function recordPlacedOrder(orderObj) {
     orderObj.locationAddress = loc ? loc.address : (mockupState.selectedAddress || "825 W UNIVERSITY, TEMPE, AZ");
   }
   mockupState.lastOrder = orderObj;
+
+  // The ordering session is over once an order is placed. Clear the live
+  // location/fulfillment selection so the next visit to Menu requires an
+  // active re-choice instead of silently reusing this store. (The order
+  // object above already carries its own locationId/Name/Address for the
+  // confirmation screen and order history, independent of this.)
+  mockupState.selectedLocationId = null;
+  mockupState.selectedLocation = null;
+  mockupState.selectedAddress = null;
+  mockupState.selectedDistance = null;
+  mockupState.selectedRestaurantId = null;
+  mockupState.fulfillmentMode = null;
+  mockupState.orderTime = "ASAP";
+  mockupState.pickupMethodChosen = false;
+  mockupState.pickupValidationError = false;
+
   if (!mockupState.userOrders) {
     mockupState.userOrders = [];
   }
@@ -12241,6 +12063,20 @@ function recordPlacedOrder(orderObj) {
   mockupState.userOrders.unshift(orderObj);
 }
 window.recordPlacedOrder = recordPlacedOrder;
+
+// "Order Again" / "Back to Menu" on the confirmation screen deliberately mean
+// "start another order at the same store, right now" — restore the location
+// recordPlacedOrder() just cleared before navigating to the menu.
+function resumeLastOrderLocation() {
+  const order = mockupState.lastOrder;
+  if (order) {
+    mockupState.selectedLocationId = order.locationId;
+    mockupState.selectedLocation = order.locationName;
+    mockupState.selectedAddress = order.locationAddress;
+    mockupState.selectedRestaurantId = order.locationId;
+  }
+}
+window.resumeLastOrderLocation = resumeLastOrderLocation;
 
 function getAllUserOrders() {
   const userOrders = mockupState.userOrders || [];
@@ -12291,6 +12127,11 @@ function tryGoToReorder() {
 }
 window.tryGoToReorder = tryGoToReorder;
 
+// Tracks menu-item IDs already fetched (or in flight) this session, success or
+// failure, so a permanently-404ing item doesn't get re-requested on every
+// render of the Reorder tab (each render calls this function).
+const _preloadedMenuItemIds = new Set();
+
 function preloadPastOrdersMenuItemDetails(orders) {
   if (!orders) return;
   const list = Array.isArray(orders) ? orders : orders.items || orders.data || [];
@@ -12304,21 +12145,27 @@ function preloadPastOrdersMenuItemDetails(orders) {
     const items = order.orderMenuItems || order.items || order.orderItems || [];
     items.forEach(async (item) => {
       const rawId = item.menuItemId || item.MenuItemId || item.id || item.Id;
-      if (rawId && !mockupState.reorderDetailsCache[rawId]) {
-        try {
-          const detail = await window.ApiService.getMenuItemDetail(locId, rawId);
-          mockupState.reorderDetailsCache[rawId] = detail;
-          persistAllState();
-          if (
-            mockupState.modalOpen === "reorder" ||
-            mockupState.modalOpen === "order-details-view" ||
-            (currentPage === "menu" && mockupState.menuTab === "history")
-          ) {
-            renderPage();
-          }
-        } catch (e) {
-          console.error("Error preloading item detail for cache:", e);
+      if (
+        !rawId ||
+        mockupState.reorderDetailsCache[rawId] ||
+        _preloadedMenuItemIds.has(rawId)
+      ) {
+        return;
+      }
+      _preloadedMenuItemIds.add(rawId);
+      try {
+        const detail = await window.ApiService.getMenuItemDetail(locId, rawId);
+        mockupState.reorderDetailsCache[rawId] = detail;
+        persistAllState();
+        if (
+          mockupState.modalOpen === "reorder" ||
+          mockupState.modalOpen === "order-details-view" ||
+          (currentPage === "menu" && mockupState.menuTab === "history")
+        ) {
+          renderPage();
         }
+      } catch (e) {
+        console.error("Error preloading item detail for cache:", e);
       }
     });
   });
@@ -12871,6 +12718,34 @@ function getReorderItemImage(item) {
   return resolveImageUrl(img, getFallbackItemImg());
 }
 
+function renderConfirmLocationChangeModalHTML() {
+  if (mockupState.modalOpen !== "confirm-location-change" || !mockupState.pendingLocationChange) return "";
+
+  const newName = mockupState.pendingLocationChange.locationName || "this location";
+
+  return `
+    <div class="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center p-4 animate-[fadeIn_0.3s_ease-out]" onclick="if(event.target===this){cancelLocationChange();}">
+        <div class="bg-white w-[92%] max-w-[420px] rounded-3xl p-8 relative shadow-2xl animate-[fadeIn_0.3s_ease-out]">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-violet-50 text-violet-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-violet-100">
+                    <i class="fa-solid fa-cart-shopping text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-black text-gray-900 uppercase tracking-tighter mb-2">Switch to ${newName}?</h2>
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-relaxed px-4">Your cart items are only available at your current store. Switching locations will clear your cart.</p>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button onclick="confirmLocationChange()" class="w-full py-5 bg-violet-600 text-white rounded-full font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-violet-200 hover:bg-violet-700 transition-all active:scale-95">
+                    Switch &amp; Clear Cart
+                </button>
+                <button onclick="cancelLocationChange()" class="w-full py-3 text-gray-400 font-extrabold uppercase tracking-widest text-[10px] hover:text-gray-900 transition-colors">
+                    Keep My Current Store
+                </button>
+            </div>
+        </div>
+    </div>`;
+}
+
 function renderReorderModalHTML() {
   if (mockupState.modalOpen !== "reorder") return "";
 
@@ -13128,6 +13003,8 @@ function renderOrderDetailsViewModalHTML() {
           <span class="font-black text-gray-900 uppercase tracking-wide text-sm">Total</span>
           <span class="font-black text-gray-900 text-lg">$${orderTotal}</span>
         </div>
+
+        <button onclick="reorderPastOrder(${order.orderId || `'${order.orderNumber || mockupState.viewingOrderId}'`})" class="w-full mt-4 py-4 bg-violet-600 text-white rounded-full font-black uppercase tracking-widest text-sm hover:bg-violet-700 active:scale-[0.98] transition-all shrink-0">Reorder</button>
       </div>
     </div>
   `;
@@ -13190,19 +13067,40 @@ async function selectLocation(
   locationAddress,
   locationDistance,
 ) {
-  if (mockupState.selectedLocationId && mockupState.selectedLocationId !== locationId && mockupState.cart && mockupState.cart.length > 0) {
-    if (!confirm("Changing your location will clear your current cart. Do you want to continue?")) {
-      return;
-    }
+  const locationChanged = mockupState.selectedLocationId !== locationId;
+
+  // Switching stores clears the cart — confirm with our own modal rather than
+  // a native browser confirm(), which renders inconsistently across embedded
+  // browser contexts and blocks the whole tab while open.
+  if (mockupState.selectedLocationId && locationChanged && mockupState.cart && mockupState.cart.length > 0) {
+    mockupState.pendingLocationChange = { locationId, locationName, locationAddress, locationDistance };
+    mockupState.modalOpen = "confirm-location-change";
+    navigateTo(currentPage);
+    return;
   }
 
-  if (mockupState.selectedLocationId !== locationId) {
+  await applyLocationChange(locationId, locationName, locationAddress, locationDistance, locationChanged);
+}
+
+async function applyLocationChange(
+  locationId,
+  locationName,
+  locationAddress,
+  locationDistance,
+  locationChanged,
+) {
+  if (locationChanged) {
     mockupState.cart = [];
     mockupState.cartItemCount = 0;
     mockupState.selectedRestaurantId = locationId || null; // Default to the locationId so placing orders for non-i-Tea fallback stores succeeds
     mockupState.apiCategories = [];
     mockupState.apiMenuItems = [];
-    
+    // Order type/time only need to be reconfirmed when the store itself changes.
+    mockupState.orderTime = "ASAP";
+    mockupState.fulfillmentMode = null;
+    mockupState.pickupMethodChosen = false;
+    mockupState.pickupValidationError = false;
+
     if (locationId) {
       await fetchMenuAndItems(locationId);
     }
@@ -13212,13 +13110,39 @@ async function selectLocation(
   mockupState.selectedLocationId = locationId || null;
   if (locationAddress) mockupState.selectedAddress = locationAddress;
   if (locationDistance) mockupState.selectedDistance = locationDistance;
-  mockupState.orderTime = "ASAP";
-  mockupState.fulfillmentMode = null;
 
   persistAllState();
 
-  navigateTo("order-details");
+  // Re-selecting the same store with order type already set doesn't need
+  // another trip through order-details — just go back to the menu.
+  if (locationChanged || !mockupState.fulfillmentMode) {
+    navigateTo("order-details");
+  } else {
+    navigateTo("menu");
+  }
 }
+
+async function confirmLocationChange() {
+  const pending = mockupState.pendingLocationChange;
+  mockupState.pendingLocationChange = null;
+  mockupState.modalOpen = null;
+  if (!pending) return;
+  await applyLocationChange(
+    pending.locationId,
+    pending.locationName,
+    pending.locationAddress,
+    pending.locationDistance,
+    true,
+  );
+}
+window.confirmLocationChange = confirmLocationChange;
+
+function cancelLocationChange() {
+  mockupState.pendingLocationChange = null;
+  mockupState.modalOpen = null;
+  navigateTo(currentPage);
+}
+window.cancelLocationChange = cancelLocationChange;
 
 let leafletMap = null;
 let mapMarkers = {};
@@ -13285,7 +13209,7 @@ function getNearbyLocationsCount(targetLat, targetLng, radiusMiles = 15) {
 }
 
 function renderSingleLocationCardHtml(s, idx) {
-  const isSelected = s.name === (mockupState.selectedLocation || "i-Tea - Tempe");
+  const isSelected = !!mockupState.selectedLocation && s.name === mockupState.selectedLocation;
   const label = mockupState.locationLabels && mockupState.locationLabels[s.name];
 
   // Determine if this location is open/accepting orders
@@ -13740,21 +13664,18 @@ function navigateTo(pageId, options = {}) {
   }
   mockupState.locationSearchQuery = "";
   mockupState.locationSearchFocused = false;
-  persistAllState();
   let [basePageId, hash] = pageId.split("#");
 
-  // Redirect to location selector if accessing menu or customization without a selected store,
-  // or if the caller explicitly wants the location reconfirmed (top-level "Menu" entry points)
+  persistAllState();
+
+  // Redirect to location selector if accessing menu or customization without a selected store.
+  // Once a store is selected, it stays selected for the rest of the session — no re-confirming.
   if (
     (basePageId === "menu" ||
       basePageId === "menu-single" ||
       basePageId === "customize" ||
       basePageId === "customize-alt") &&
-    (!mockupState.selectedLocationId ||
-      ((basePageId === "menu" || basePageId === "menu-single") &&
-        options &&
-        options.confirmLocation &&
-        basePageId !== currentPage))
+    !mockupState.selectedLocationId
   ) {
     basePageId =
       basePageId === "menu" || basePageId === "menu-single" || basePageId === "customize-alt"
@@ -13913,13 +13834,20 @@ window.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  // Once an order is placed, selectedLocationId is intentionally cleared (see
+  // recordPlacedOrder) so the next ordering session requires an active choice.
+  // Fall back to the locations picker here instead of assuming a store.
+  const fallbackMenuTarget = mockupState.selectedLocationId
+    ? `menu.html?store=${mockupState.selectedLocationId}`
+    : "locations-alt.html";
+
   // Empty cart guard for cart, checkout, and checkout-rewards: if landing on cart/checkout with an empty cart after submitting an order
   if ((currentPage === "checkout" || currentPage === "checkout-rewards" || currentPage === "cart") && (!mockupState.cart || mockupState.cart.length === 0)) {
     if (mockupState.lastOrder) {
-      window.location.replace(`menu.html?store=${mockupState.selectedLocationId || 7}`);
+      window.location.replace(fallbackMenuTarget);
       return;
     } else if (currentPage === "checkout" || currentPage === "checkout-rewards") {
-      window.location.replace(`menu.html?store=${mockupState.selectedLocationId || 7}`);
+      window.location.replace(fallbackMenuTarget);
       return;
     }
   }
@@ -13928,7 +13856,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (currentPage === "order-confirm") {
     window.history.pushState({ page: "order-confirm" }, "", window.location.href);
     window.addEventListener("popstate", () => {
-      window.location.replace(`menu.html?store=${mockupState.selectedLocationId || 7}`);
+      window.location.replace(fallbackMenuTarget);
     });
   }
 
