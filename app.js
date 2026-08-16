@@ -5258,12 +5258,11 @@ const routes = {
                                         Done <i class="fa-solid fa-check text-[9px]"></i>
                                     </button>
                                 </div>
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-3 gap-2">
                                     ${[
                                       { label: "In-store", icon: "fa-shop" },
                                       { label: "Drive Through", icon: "fa-car" },
                                       { label: "Curbside", icon: "fa-square-parking" },
-                                      { label: "Delivery", icon: "fa-truck" },
                                     ]
                                       .map((m) => {
                                         const mode = mockupState.fulfillmentMode || "In-store";
@@ -12804,7 +12803,10 @@ function renderReorderModalHTML() {
   };
   allOrders.sort((a, b) => getOrderTime(b) - getOrderTime(a));
 
-  const displayedOrders = allOrders.slice(0, 5);
+  // On the homepage (index.html) this modal only opens automatically after login,
+  // so keep it lightweight and point "View All" at the new Reorder tab on menu.html.
+  const isHomepage = currentPage === "restaurant-home";
+  const displayedOrders = allOrders.slice(0, isHomepage ? 2 : 5);
 
   let ordersContent = "";
   if (displayedOrders.length === 0) {
@@ -12848,38 +12850,22 @@ function renderReorderModalHTML() {
           mockupState.expandedReorderOrders[orderNum]
         );
 
-        const rawMethod = order.orderType || order.fulfillmentMode || order.pickupMethod || order.type || "In-store";
-        let pickupMethod = "In-store Pickup";
-        let pickupIcon = "fa-store";
-        if (rawMethod.toLowerCase().includes("drive")) {
-          pickupMethod = "Drive-Thru";
-          pickupIcon = "fa-car";
-        } else if (rawMethod.toLowerCase().includes("curb")) {
-          pickupMethod = "Curbside";
-          pickupIcon = "fa-square-parking";
-        } else if (rawMethod.toLowerCase().includes("dine")) {
-          pickupMethod = "Dine In";
-          pickupIcon = "fa-mobile-screen-button";
-        }
-
         return `
         <div class="p-5 bg-white rounded-2xl border-2 border-gray-100 shadow-sm hover:border-violet-200 transition-all flex flex-col gap-3">
-          <!-- Card Header: Date, Pickup Method, Location & Total -->
-          <div class="flex justify-between items-center pb-3 border-b border-gray-100 flex-wrap gap-2">
-            <div class="flex items-center gap-2 flex-wrap">
+          <!-- Card Header: Date, Location & Order Total -->
+          <div class="flex flex-col gap-1.5 pb-3 border-b border-gray-100">
+            <div class="flex justify-between items-center gap-2">
               <p class="text-xs font-extrabold text-gray-400 uppercase tracking-wider">${orderDate}</p>
-              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-violet-100/80 text-violet-800 font-extrabold text-[10px] rounded-md uppercase tracking-wider">
-                <i class="fa-solid ${pickupIcon} text-[9px] text-violet-600"></i> ${pickupMethod}
-              </span>
-            </div>
-            <div class="flex items-center gap-2">
               <span class="inline-block px-2.5 py-1 bg-violet-50 text-violet-700 font-black text-[11px] rounded-full uppercase tracking-wider">${locationName}</span>
-              ${
-                orderTotal > 0
-                  ? `<span class="text-xs font-black text-gray-900">$${orderTotal}</span>`
-                  : ""
-              }
             </div>
+            ${
+              orderTotal > 0
+                ? `<div class="flex justify-between items-center gap-2">
+                     <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Order Total</span>
+                     <span class="text-sm font-black text-gray-900">$${orderTotal}</span>
+                   </div>`
+                : ""
+            }
           </div>
 
           <!-- All Items Container with Purple Background -->
@@ -12913,7 +12899,7 @@ function renderReorderModalHTML() {
                       <span class="font-black text-gray-900 text-xs truncate ${isAvailable ? "" : "line-through"}">${idx + 1}. ${itemName}</span>
                       ${isAvailable 
                         ? `<span class="font-bold text-violet-600 text-[11px] shrink-0">Qty: ${itemQty}</span>`
-                        : `<span class="font-black text-red-600 text-[10px] uppercase shrink-0">Unavailable</span>`
+                        : `<span class="font-black text-red-600 text-[10px] uppercase shrink-0">Not available at this location</span>`
                       }
                     </div>
                     <div class="mt-1 flex flex-wrap gap-1">
@@ -12930,12 +12916,12 @@ function renderReorderModalHTML() {
               .join("")}
           </div>
 
-          <!-- Action Button: Add to Bag -->
+          <!-- Action Button: Reorder -->
           <div class="pt-1 mt-1">
             <button onclick="reorderAndCloseModal('${
               order.orderId || orderNum
             }')" class="w-full py-3 rounded-full bg-violet-600 hover:bg-violet-700 text-white font-black text-xs uppercase tracking-widest shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
-              ADD TO BAG
+              REORDER
             </button>
           </div>
         </div>
@@ -12961,7 +12947,7 @@ function renderReorderModalHTML() {
         </div>
 
         <div class="pt-3 border-t border-gray-100 text-center shrink-0">
-          <button onclick="updateMockupState('modalOpen', null); navigateTo('account');" class="text-xs font-black text-violet-600 uppercase tracking-widest hover:underline">
+          <button onclick="updateMockupState('modalOpen', null); navigateTo('${isHomepage ? "menu', { menuTab: 'history' }" : "account'"});" class="text-xs font-black text-violet-600 uppercase tracking-widest hover:underline">
             View All Order History →
           </button>
         </div>
