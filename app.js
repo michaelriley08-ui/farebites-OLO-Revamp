@@ -4276,46 +4276,52 @@ const routes = {
     // ---- DESKTOP LAYOUT ----
     if (isDesktop) {
       return `
-                <div class="flex flex-col h-full bg-[#f6f6f6] relative overflow-y-auto">
-                    <div class="w-full max-w-3xl mx-auto p-6 md:p-8 flex flex-col gap-6">
+                <div class="flex flex-col bg-[#f6f6f6] relative overflow-hidden" style="height: calc(100vh - 70px);">
+                    <div class="flex-1 overflow-y-auto">
+                        <div class="w-full max-w-3xl mx-auto p-6 md:p-8 pb-4 flex flex-col gap-6">
 
-                        <!-- Page Title -->
-                        <div>
-                            <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Customize Order</h1>
-                            <p class="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">${item.category || ""}</p>
-                        </div>
-
-                        <!-- Item Image + Info Card -->
-                        <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex gap-0">
-                            <div class="w-64 shrink-0 p-3">
-                                <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
-                                    <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
-                                </div>
+                            <!-- Page Title -->
+                            <div>
+                                <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Customize Order</h1>
+                                <p class="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">${item.category || ""}</p>
                             </div>
-                            <div class="flex-1 px-8 py-6 flex flex-col justify-center gap-4">
-                                <div>
-                                    <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
-                                    <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-2">${item.name}</h3>
-                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || detail?.description || ""}</p>
+
+                            <!-- Item Image + Info Card -->
+                            <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex gap-0">
+                                <div class="w-64 shrink-0 p-3">
+                                    <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
+                                    </div>
                                 </div>
-                                <div class="flex items-center gap-4">
-                                    <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Quantity</span>
-                                    <div class="flex items-center bg-gray-50 rounded-full border border-gray-100 px-4 py-2 gap-6 shadow-sm">
-                                        <button onclick="updateMockupState('itemQuantity', Math.max(1, mockupState.itemQuantity - 1))" class="text-gray-400 hover:text-gray-900 transition-colors"><i class="fa-solid fa-minus"></i></button>
-                                        <span class="font-black text-gray-900 min-w-[20px] text-center">${mockupState.itemQuantity}</span>
-                                        <button onclick="updateMockupState('itemQuantity', mockupState.itemQuantity + 1)" class="text-gray-400 hover:text-violet-600 transition-colors"><i class="fa-solid fa-plus"></i></button>
+                                <div class="flex-1 px-8 py-6 flex flex-col justify-center gap-4">
+                                    <div>
+                                        <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
+                                        <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-2">${item.name}</h3>
+                                        <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || detail?.description || ""}</p>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Quantity</span>
+                                        <div class="flex items-center bg-gray-50 rounded-full border border-gray-100 px-4 py-2 gap-6 shadow-sm">
+                                            <button onclick="updateMockupState('itemQuantity', Math.max(1, mockupState.itemQuantity - 1))" class="text-gray-400 hover:text-gray-900 transition-colors"><i class="fa-solid fa-minus"></i></button>
+                                            <span class="font-black text-gray-900 min-w-[20px] text-center">${mockupState.itemQuantity}</span>
+                                            <button onclick="updateMockupState('itemQuantity', mockupState.itemQuantity + 1)" class="text-gray-400 hover:text-violet-600 transition-colors"><i class="fa-solid fa-plus"></i></button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col gap-7">
+                                ${renderAllModifierSectionsAlt2(detail, sels, modSels, "grid")}
+
+
+                            </div>
+
                         </div>
+                    </div>
 
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col gap-7">
-                            ${renderAllModifierSectionsAlt2(detail, sels, modSels, "grid")}
-
-
-                        </div>
-
-                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-6">
+                    <!-- Sticky Bottom Actions -->
+                    <div class="shrink-0 sticky bottom-0 z-30 bg-white border-t border-gray-100 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+                        <div class="w-full max-w-3xl mx-auto px-6 py-5 md:px-8 flex items-center gap-6">
                             <div class="flex flex-col gap-0.5">
                                 <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Options Total</span>
                                 <span class="text-lg font-black text-gray-700">+$${extrasTotal.toFixed(2)}</span>
@@ -4323,7 +4329,6 @@ const routes = {
                             <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} — $${totalPrice}</button>
                             <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
                         </div>
-
                     </div>
                 </div>
             `;
