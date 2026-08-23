@@ -74,8 +74,6 @@ const STORAGE_KEYS = {
 const assets = {
   featured:
     "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80",
-  steak:
-    "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80",
   bobaHero:
     "https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg",
   boba1:
@@ -85,22 +83,8 @@ const assets = {
   boba3:
     "https://olodev.azurewebsites.net/imagesmenu/M8_Fresh-Taro-Puree-Boba-Latte.jpg",
   boba4: "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg",
-  menuHero:
-    "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1200&q=80",
-  cobbSalad:
-    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
-  shrimpTacos:
-    "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=800&q=80",
-  burger:
-    "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80",
-  burritoBowl:
-    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&getSet=80",
-  icedMatcha:
-    "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=400&q=80",
   restaurantHero:
     "https://order-iteausa.com/imagesmenu/N9-Fresh-Strawberry-Mango-Fruit-Tea.jpg",
-  googleMapsEmbed:
-    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.8329606830704!2d-111.9525413!3d33.4211153!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08de64c1bf87%3A0x7d022b7a9de3e878!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1716768000000!5m2!1sen!2sus",
 };
 
 const isLocalApp =
@@ -114,7 +98,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - Tempe",
     address: "825 W UNIVERSITY, TEMPE, AZ",
-    dist: "0.8 mi",
+    dist: null,
     fav: false,
     hours: "11:30 AM to 9:30 PM",
     locationId: 19,
@@ -124,7 +108,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - ALAMEDA",
     address: "1860 PARK ST, ALAMEDA, CA",
-    dist: "1.2 mi",
+    dist: null,
     fav: false,
     hours: "12:00 PM to 9:30 PM",
     locationId: 47,
@@ -134,7 +118,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - CASTRO VALLEY",
     address: "20666 REDWOOD RD, CASTRO VALLEY, CA",
-    dist: "15.1 mi",
+    dist: null,
     fav: false,
     hours: "10:30 AM to 10:00 PM",
     locationId: 7,
@@ -144,7 +128,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - UC DAVIS",
     address: "236 A ST, DAVIS, CA",
-    dist: "45.0 mi",
+    dist: null,
     fav: false,
     hours: "11:00 AM to 8:00 PM",
     locationId: 9001,
@@ -154,7 +138,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - FREMONT #1",
     address: "43421 CHRISTY ST, FREMONT, CA",
-    dist: "18.2 mi",
+    dist: null,
     fav: false,
     hours: "11:30 AM to 9:00 PM",
     locationId: 9002,
@@ -164,7 +148,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - FRESNO",
     address: "345 E SHAW AVE, FRESNO, CA",
-    dist: "120.5 mi",
+    dist: null,
     fav: false,
     hours: "1:00 PM to 6:45 PM",
     locationId: 9003,
@@ -174,7 +158,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - MILPITAS",
     address: "766 E CALAVERAS BLVD, MILPITAS, CA",
-    dist: "25.3 mi",
+    dist: null,
     fav: false,
     hours: "11:30 AM to 9:20 PM",
     locationId: 57,
@@ -184,7 +168,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - MORAGA",
     address: "1460 MORAGA RD, MORAGA, CA",
-    dist: "15.8 mi",
+    dist: null,
     fav: false,
     hours: "12:30 PM to 8:00 PM",
     locationId: 58,
@@ -194,7 +178,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - NEWARK",
     address: "34925 NEWARK BLVD, NEWARK, CA",
-    dist: "20.1 mi",
+    dist: null,
     fav: false,
     hours: "11:30 AM to 9:20 PM",
     locationId: 9004,
@@ -204,7 +188,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - OAKLAND",
     address: "388 9TH ST, 126A, OAKLAND, CA",
-    dist: "8.5 mi",
+    dist: null,
     fav: false,
     hours: "11:00 AM to 6:00 PM",
     locationId: 9,
@@ -214,7 +198,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - PITTSBURG",
     address: "212A LOVERIDGE RD, PITTSBURG, CA",
-    dist: "32.4 mi",
+    dist: null,
     fav: false,
     hours: "11:00 AM to 7:00 PM",
     locationId: 9005,
@@ -224,7 +208,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - PLEASANTON",
     address: "915 MAIN ST, STE C, PLEASANTON, CA",
-    dist: "28.0 mi",
+    dist: null,
     fav: false,
     hours: "11:30 AM to 7:30 PM",
     locationId: 9006,
@@ -234,7 +218,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - STOCKTON",
     address: "6846 STOCKTON BLVD, SACRAMENTO, CA",
-    dist: "85.2 mi",
+    dist: null,
     fav: false,
     hours: "10:20 AM to 8:00 PM",
     locationId: 9007,
@@ -244,7 +228,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - TEARAY",
     address: "253 KEARNY ST, SAN FRANCISCO, CA",
-    dist: "2.1 mi",
+    dist: null,
     fav: false,
     hours: "12:00 PM to 6:00 PM",
     locationId: 9008,
@@ -254,7 +238,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - SAN JOSE",
     address: "2936 ABORN SQUARE RD, SAN JOSE, CA",
-    dist: "35.6 mi",
+    dist: null,
     fav: false,
     hours: "11:30 AM to 9:30 PM",
     locationId: 9009,
@@ -264,7 +248,7 @@ const LOCATIONS = [
   {
     name: "i-Tea - SAN LEANDRO",
     address: "177 PELTON CENTER WAY, SAN LEANDRO, CA",
-    dist: "10.2 mi",
+    dist: null,
     fav: false,
     hours: "Open 24 Hours",
     locationId: 10,
@@ -575,6 +559,8 @@ const DEFAULT_STATE = {
   cartItemCount: 0,
   bagQuantity: 0,
   noBagsSelected: false,
+  bagMenuItem: null, // { menuItemId, price } for the real "Bag" item at this location, or null if it doesn't sell bags
+  selectedLocationPhone: null, // real phone number for the currently selected location, from the API
   toppings: ["BOBA"],
   modalOpen: null,
   menuTab: "menu",
@@ -693,23 +679,23 @@ function getPreviousOrderLocation() {
         locationId: found.locationId,
         name: found.name,
         address: found.address,
-        dist: found.dist || "0.0 mi"
+        dist: found.dist || null
       };
     }
-    
+
     return {
       locationId: lastOrder.locationId || 7,
       name: lastOrder.locationName || "i-Tea - Tempe",
       address: lastOrder.locationAddress || "825 W UNIVERSITY, TEMPE, AZ",
-      dist: lastOrder.locationDistance || "0.8 mi"
+      dist: lastOrder.locationDistance || null
     };
   }
-  
+
   return {
     locationId: 7,
     name: "i-Tea - Tempe",
     address: "825 W UNIVERSITY, TEMPE, AZ",
-    dist: "0.8 mi"
+    dist: null
   };
 }
 window.getPreviousOrderLocation = getPreviousOrderLocation;
@@ -1067,6 +1053,8 @@ async function fetchLocations() {
                 l.name.toLowerCase() === (loc.locationName || "").toLowerCase(),
             );
             let hoursStr = "Hours unavailable";
+            let hData = null;
+            let holData = null;
 
             try {
               const [hRes, holRes] = await Promise.all([
@@ -1077,9 +1065,6 @@ async function fetchLocations() {
                   `${API_BASE_URL}/api/RestaurantMenu/location/${loc.locationId}/hours-with-holidays`,
                 ),
               ]);
-
-              let hData = null;
-              let holData = null;
 
               if (hRes.ok) hData = await hRes.json();
               if (holRes.ok) holData = await holRes.json();
@@ -1176,7 +1161,7 @@ async function fetchLocations() {
                   .trim()
                   .replace(/^,|,$/g, "")
                   .trim(),
-              dist: "Nearby",
+              dist: null,
               fav: false,
               hours: hoursStr,
               isOpen: isOpen,
@@ -1281,10 +1266,29 @@ async function fetchLocationsOrderingStatus() {
   if (currentPage === "locations") renderPage();
 }
 
+async function fetchLocationPhone(locationId) {
+  // The bulk /api/Locations list requires a login and 401s for guests, but
+  // this single-location endpoint is public and returns a real phone number
+  // per location — use it instead of a hardcoded "contact us" number.
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/RestaurantMenu/location/${locationId}`,
+    );
+    if (!response.ok) throw new Error("Location response was not ok");
+    const data = await response.json();
+    mockupState.selectedLocationPhone = data?.phone || null;
+  } catch (error) {
+    console.error(`Failed to fetch phone for location ${locationId}:`, error);
+    mockupState.selectedLocationPhone = null;
+  }
+  persistAllState();
+}
+
 async function fetchMenuAndItems(locationId) {
   if (!locationId) return;
   mockupState.isLoading = true;
   persistAllState();
+  fetchLocationPhone(locationId);
   try {
     const menuResponse = await fetch(
       `${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/menu`,
@@ -1299,15 +1303,45 @@ async function fetchMenuAndItems(locationId) {
       if (menuData.convenienceFee != null)
         mockupState.locationConvenienceFee = menuData.convenienceFee;
 
-      const filteredCategories = menuData.categories.filter((cat) => {
+      const bagCategory = menuData.categories.find((cat) => {
         const name = (cat.name || "").toLowerCase().trim();
-        return name !== "bag" && name !== "bags";
+        return name === "bag" || name === "bags";
       });
+      const filteredCategories = menuData.categories.filter(
+        (cat) => cat !== bagCategory,
+      );
       mockupState.apiCategories = filteredCategories.map((cat) => ({
         categoryId: cat.categoryId,
         name: cat.name,
         imgUrl: resolveImageUrl(cat.imgUrl, getFallbackCategoryImg()),
       }));
+
+      // The real bag fee is just an ordinary menu item (usually hidden in an
+      // inactive "Bag" category) rather than a flat rate — look it up per
+      // location instead of guessing a dollar amount. Locations that don't
+      // sell bags (no such category) simply have no bag fee.
+      mockupState.bagMenuItem = null;
+      if (bagCategory) {
+        try {
+          const bagItemsResponse = await fetch(
+            `${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/category/${bagCategory.categoryId}/items`,
+          );
+          if (bagItemsResponse.ok) {
+            const bagItemsData = await bagItemsResponse.json();
+            const bagItem = (bagItemsData || []).find(
+              (item) => item.isAvailable !== false,
+            );
+            if (bagItem) {
+              mockupState.bagMenuItem = {
+                menuItemId: bagItem.menuItemId,
+                price: bagItem.price || 0,
+              };
+            }
+          }
+        } catch (bagError) {
+          console.error("Failed to fetch bag item for location:", bagError);
+        }
+      }
 
       let allItems = [];
       for (const cat of filteredCategories) {
@@ -2035,7 +2069,7 @@ function renderMenuPage() {
                                     </div>
                                     <div>
                                         <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Phone</span>
-                                        <span class="text-gray-600 font-medium text-sm">${locationObj.phone || "(480) 968-3568"}</span>
+                                        <span class="text-gray-600 font-medium text-sm">${mockupState.selectedLocationPhone || locationObj.phone || "Phone unavailable"}</span>
                                     </div>
                                 </div>
                             </div>
@@ -2125,7 +2159,7 @@ function renderMenuPage() {
                                     </div>
                                     <div>
                                         <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Phone</span>
-                                        <span class="text-gray-600 font-medium text-sm">${locationObj.phone || "(480) 968-3568"}</span>
+                                        <span class="text-gray-600 font-medium text-sm">${mockupState.selectedLocationPhone || locationObj.phone || "Phone unavailable"}</span>
                                     </div>
                                 </div>
                             </div>
@@ -2244,7 +2278,7 @@ function renderMenuPage() {
                                 const fIndex = allItems.indexOf(fItem);
                                 return `
                                 <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                    <img src="${fItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <img src="${fItem.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
                                     <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
                                     <span class="absolute top-4 left-6 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                     <div class="relative z-10 w-full pr-36">
@@ -2280,7 +2314,7 @@ function renderMenuPage() {
                                 const fIndex = allItems.indexOf(fItem);
                                 return `
                                 <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${fIndex})">
-                                    <img src="${fItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <img src="${fItem.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
                                     <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
                                     <span class="absolute top-4 left-5 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                     <div class="relative z-10">
@@ -2678,10 +2712,12 @@ function renderMenuPage() {
                                     <div class="${isDesktop ? "grid grid-cols-4 gap-5" : (currentPage === "menu-single" ? "grid grid-cols-1 md:grid-cols-2 gap-[10px]" : "grid grid-cols-2 gap-[10px]")}">
                                         ${resolvedFavorites
                                           .map(({ fav, actualIndex }) => {
+                                            const realFavItem = getActiveMenuItems()[actualIndex];
+                                            const favImage = (realFavItem && realFavItem.image) || fav.image;
                                             return `
                                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card overflow-hidden">
                                                     <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <img src="${fav.image}" class="w-full h-full object-cover object-top group-hover/card:scale-105 transition-transform duration-500">
+                                                        <img src="${favImage}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top group-hover/card:scale-105 transition-transform duration-500">
                                                         <button onclick="event.stopPropagation(); removeFavorite(${fav.id})" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
                                                             <i class="fa-solid fa-heart text-violet-600 text-lg"></i>
                                                         </button>
@@ -2865,11 +2901,16 @@ function renderMenuPage() {
                     ${(mockupState.favorites || [])
                       .slice(0, 6)
                       .map(
-                        (fav, index) => `
+                        (fav, index) => {
+                          const realFavItem = getActiveMenuItems().find(
+                            (item) => (item.name || "").toLowerCase() === (fav.name || "").toLowerCase(),
+                          );
+                          const favImage = (realFavItem && realFavItem.image) || fav.image;
+                          return `
                         <div class="flex items-center justify-between group">
                             <div class="flex items-center gap-4">
                                 <div class="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-50">
-                                    <img src="${fav.image}" class="w-full h-full object-cover object-top">
+                                    <img src="${favImage}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
                                 </div>
                                 <div>
                                     <div class="font-black text-sm text-gray-900 leading-tight uppercase line-clamp-2">${fav.name}</div>
@@ -2882,7 +2923,8 @@ function renderMenuPage() {
                                 <i class="fa-solid fa-plus text-xs"></i>
                             </button>
                         </div>
-                    `,
+                    `;
+                        },
                       )
                       .join("")}
                 </div>
@@ -3173,11 +3215,11 @@ const routes = {
                     <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? "mb-2" : "mb-4"} uppercase tracking-tight text-gray-900 leading-tight">${signInHeadline}</h2>
                     <div class="space-y-3">
                         <div class="relative group">
-                            <input type="email" id="auth-email-input" placeholder="Email Address" value="${savedEmail}" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
+                            <input type="email" id="auth-email-input" autocomplete="username" placeholder="Email Address" value="${savedEmail}" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
                             <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
                         </div>
                         <div class="relative group">
-                            <input type="password" id="auth-password-input" placeholder="Password" class="w-full bg-white pl-8 pr-12 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
+                            <input type="password" id="auth-password-input" autocomplete="current-password" placeholder="Password" class="w-full bg-white pl-8 pr-12 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
                             <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
                             <button type="button" onclick="const p = document.getElementById('auth-password-input'); const i = this.querySelector('i'); if(p.type==='password'){p.type='text'; i.className='fa-solid fa-eye-slash text-gray-400';}else{p.type='password'; i.className='fa-solid fa-eye text-gray-400';}" class="absolute right-6 top-1/2 -translate-y-1/2 focus:outline-none">
                                 <i class="fa-solid fa-eye text-gray-400"></i>
@@ -3238,7 +3280,7 @@ const routes = {
                     
                     <div class="space-y-4">
                         <div class="relative group">
-                            <input type="email" id="forgot-email-input" placeholder="Email Address" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
+                            <input type="email" id="forgot-email-input" autocomplete="username" placeholder="Email Address" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
                             <div class="absolute inset-0 rounded-full bg-violet-600/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity"></div>
                         </div>
                         
@@ -3272,7 +3314,7 @@ const routes = {
                     
                     <div class="space-y-4">
                         <div class="relative group">
-                            <input type="password" id="reset-password-input" placeholder="New Password" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300 pr-12">
+                            <input type="password" id="reset-password-input" autocomplete="new-password" placeholder="New Password" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300 pr-12">
                             <button type="button" onclick="togglePasswordVisibility('reset-password-input', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600 transition-colors">
                                 <i class="fa-solid fa-eye text-lg"></i>
                             </button>
@@ -3280,7 +3322,7 @@ const routes = {
                         </div>
 
                         <div class="relative group">
-                            <input type="password" id="reset-confirm-input" placeholder="Confirm Password" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300 pr-12">
+                            <input type="password" id="reset-confirm-input" autocomplete="new-password" placeholder="Confirm Password" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300 pr-12">
                             <button type="button" onclick="togglePasswordVisibility('reset-confirm-input', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600 transition-colors">
                                 <i class="fa-solid fa-eye text-lg"></i>
                             </button>
@@ -3530,7 +3572,7 @@ const routes = {
                                 const fIndex = items.indexOf(fItem);
                                 return `
                                 <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden border-4 border-white shadow-xl h-[225px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${fIndex})">
-                                    <img src="${fItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                    <img src="${fItem.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
                                     <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
                                     <span class="absolute top-4 left-5 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                     <div class="relative z-10 text-left w-full pr-12">
@@ -3670,7 +3712,7 @@ const routes = {
                                     const fIndex = items.indexOf(fItem);
                                     return `
                                     <div class="relative shrink-0 w-full rounded-3xl overflow-hidden shadow-lg h-[300px] flex flex-col justify-end p-8 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group cursor-pointer text-left" onclick="selectItemAndNavigate(${fIndex})">
-                                        <img src="${fItem.image}" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                        <img src="${fItem.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
                                         <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
                                         <span class="absolute top-4 left-6 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
                                         <div class="relative z-10 w-full pr-36">
@@ -3778,11 +3820,11 @@ const routes = {
                                   </div>
                                   <div class="min-w-0">
                                       <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
-                                      <p class="text-base font-black text-white truncate">${prevLoc.name} <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; ${prevLoc.dist}</span></p>
+                                      <p class="text-base font-black text-white truncate">${prevLoc.name}${prevLoc.dist ? ` <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; ${prevLoc.dist}</span>` : ""}</p>
                                       <p class="text-xs text-violet-200 mt-0.5 truncate">${prevLoc.address}</p>
                                   </div>
                               </div>
-                              <button onclick="selectLocation(${prevLoc.locationId}, '${prevLoc.name.replace(/'/g, "\\'")}', '${prevLoc.address.replace(/'/g, "\\'")}', '${prevLoc.dist}')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
+                              <button onclick="selectLocation(${prevLoc.locationId}, '${prevLoc.name.replace(/'/g, "\\'")}', '${prevLoc.address.replace(/'/g, "\\'")}', '${prevLoc.dist || ""}')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors active:scale-95">Order Here</button>
                           </div>
                           `;
                         })() : ""}
@@ -3808,7 +3850,7 @@ const routes = {
                                       ? "border-violet-600 text-violet-600 border-b-2 font-black"
                                       : "text-gray-400 font-bold hover:text-gray-600";
                                     return `
-                                        <button onclick="${tab.id === "My Locations" && !mockupState.isLoggedIn ? "navigateTo('sign-in')" : `updateMockupState('locationFilter', '${tab.id}');`}" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
+                                        <button onclick="${tab.id === "My Locations" && !mockupState.isLoggedIn ? "navigateTo('sign-in')" : tab.id === "Near Me" ? `requestUserLocation(); updateMockupState('locationFilter', '${tab.id}');` : `updateMockupState('locationFilter', '${tab.id}');`}" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
                                             ${tab.name}
                                         </button>
                                     `;
@@ -3861,10 +3903,10 @@ const routes = {
                               </div>
                               <div class="min-w-0">
                                   <p class="text-[11px] font-black text-violet-200 uppercase tracking-widest" style="font-family: 'Roboto', sans-serif; font-weight: 700;">Previous Order</p>
-                                  <p class="text-base font-black text-white truncate">${prevLoc.name} <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; ${prevLoc.dist}</span></p>
+                                  <p class="text-base font-black text-white truncate">${prevLoc.name}${prevLoc.dist ? ` <span class="text-xs font-normal text-violet-200">&nbsp;·&nbsp; ${prevLoc.dist}</span>` : ""}</p>
                               </div>
                           </div>
-                          <button onclick="selectLocation(${prevLoc.locationId}, '${prevLoc.name.replace(/'/g, "\\'")}', '${prevLoc.address.replace(/'/g, "\\'")}', '${prevLoc.dist}')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm transition-colors active:scale-95">Order Here</button>
+                          <button onclick="selectLocation(${prevLoc.locationId}, '${prevLoc.name.replace(/'/g, "\\'")}', '${prevLoc.address.replace(/'/g, "\\'")}', '${prevLoc.dist || ""}')" class="shrink-0 px-4 py-2 bg-white text-violet-600 hover:bg-violet-50 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm transition-colors active:scale-95">Order Here</button>
                       </div>
                       `;
                     })() : ""}
@@ -3897,7 +3939,7 @@ const routes = {
                                       ? "border-violet-600 text-violet-600 border-b-2 font-black"
                                       : "text-gray-400 font-bold hover:text-gray-600";
                                     return `
-                                        <button onclick="${tab.id === "My Locations" && !mockupState.isLoggedIn ? "navigateTo('sign-in')" : `updateMockupState('locationFilter', '${tab.id}');`}" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
+                                        <button onclick="${tab.id === "My Locations" && !mockupState.isLoggedIn ? "navigateTo('sign-in')" : tab.id === "Near Me" ? `requestUserLocation(); updateMockupState('locationFilter', '${tab.id}');` : `updateMockupState('locationFilter', '${tab.id}');`}" class="pb-2 text-sm uppercase tracking-wide transition-all ${activeClass}" style="font-family: 'Roboto', sans-serif;">
                                             ${tab.name}
                                         </button>
                                     `;
@@ -4097,7 +4139,7 @@ const routes = {
                                         </div>
                                         <div>
                                             <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Phone</span>
-                                            <span class="text-gray-600 font-medium text-sm">(480) 555-0123</span>
+                                            <span class="text-gray-600 font-medium text-sm">${mockupState.selectedLocationPhone || "Phone unavailable"}</span>
                                         </div>
                                     </div>
                                     <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
@@ -4657,7 +4699,7 @@ const routes = {
     const addressText =
       mockupState.selectedAddress ||
       (selectedLoc ? selectedLoc.address : "825 W UNIVERSITY, TEMPE, AZ");
-    const bagFee = mockupState.bagQuantity * 0.1;
+    const bagFee = mockupState.bagQuantity * (mockupState.bagMenuItem?.price ?? 0);
     // Dynamic pricing from cart
     consolidateCartItems();
     const cart = mockupState.cart || [];
@@ -5064,11 +5106,12 @@ const routes = {
                                 const sortedHistoryNames = Object.keys(
                                   itemCounts,
                                 ).sort((a, b) => itemCounts[b] - itemCounts[a]);
+                                const realMenuItems = getActiveMenuItems();
                                 crossSellItems = sortedHistoryNames
                                   .map((name) =>
-                                    MENU_ITEMS.find(
+                                    realMenuItems.find(
                                       (mi) =>
-                                        mi.name.toLowerCase() ===
+                                        (mi.name || "").toLowerCase() ===
                                         name.toLowerCase(),
                                     ),
                                   )
@@ -5086,7 +5129,7 @@ const routes = {
                               );
 
                               if (finalCrossSells.length < 3) {
-                                const popularDefaults = MENU_ITEMS.filter(
+                                const otherRealItems = getActiveMenuItems().filter(
                                   (item) =>
                                     !cartItemNames.includes(
                                       item.name.toLowerCase(),
@@ -5097,7 +5140,7 @@ const routes = {
                                 );
                                 finalCrossSells = [
                                   ...finalCrossSells,
-                                  ...popularDefaults,
+                                  ...otherRealItems,
                                 ].slice(0, 5);
                               }
 
@@ -5501,7 +5544,7 @@ const routes = {
                                 <div>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Current Password</label>
                                     <div class="relative">
-                                        <input type="password" id="pwd-current" class="w-full border-2 border-gray-100 rounded-xl pl-4 pr-12 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <input type="password" id="pwd-current" autocomplete="current-password" class="w-full border-2 border-gray-100 rounded-xl pl-4 pr-12 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                         <button type="button" onclick="togglePasswordVisibility('pwd-current', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600 focus:outline-none">
                                             <i class="fa-regular fa-eye"></i>
                                         </button>
@@ -5510,7 +5553,7 @@ const routes = {
                                 <div>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">New Password</label>
                                     <div class="relative">
-                                        <input type="password" id="pwd-new" class="w-full border-2 border-gray-100 rounded-xl pl-4 pr-12 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <input type="password" id="pwd-new" autocomplete="new-password" class="w-full border-2 border-gray-100 rounded-xl pl-4 pr-12 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                         <button type="button" onclick="togglePasswordVisibility('pwd-new', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600 focus:outline-none">
                                             <i class="fa-regular fa-eye"></i>
                                         </button>
@@ -5519,7 +5562,7 @@ const routes = {
                                 <div>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Confirm New Password</label>
                                     <div class="relative">
-                                        <input type="password" id="pwd-confirm" class="w-full border-2 border-gray-100 rounded-xl pl-4 pr-12 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
+                                        <input type="password" id="pwd-confirm" autocomplete="new-password" class="w-full border-2 border-gray-100 rounded-xl pl-4 pr-12 py-3 font-bold text-gray-800 text-sm focus:outline-none focus:border-violet-400 transition-colors">
                                         <button type="button" onclick="togglePasswordVisibility('pwd-confirm', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600 focus:outline-none">
                                             <i class="fa-regular fa-eye"></i>
                                         </button>
@@ -6191,7 +6234,7 @@ const routes = {
                       isDesktop
                         ? `
                     <div class="pt-4 space-y-3">
-                        <button onclick="alert('Calling store at (602) 555-0123...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
+                        <button onclick="alert('Calling store at ${mockupState.selectedLocationPhone || "our restaurant"}...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
                             <i class="fa-solid fa-phone"></i> Contact Store
                         </button>
                         <button onclick="navigateTo('home')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
@@ -6205,7 +6248,7 @@ const routes = {
                     ? `
                 <div class="bg-white border-t border-gray-100 shrink-0 sticky bottom-0">
                     <div class="p-6 w-full space-y-3">
-                        <button onclick="alert('Calling store at (602) 555-0123...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
+                        <button onclick="alert('Calling store at ${mockupState.selectedLocationPhone || "our restaurant"}...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
                             <i class="fa-solid fa-phone"></i> Contact Store
                         </button>
                         <button onclick="navigateTo('home')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
@@ -6259,7 +6302,7 @@ const routes = {
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Email</label>
                                     <div class="relative">
                                         <i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                        <input type="email" id="reg-email" placeholder="email@example.com" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <input type="email" id="reg-email" autocomplete="email" placeholder="email@example.com" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
                                 </div>
 
@@ -6268,14 +6311,14 @@ const routes = {
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Password</label>
                                         <div class="relative">
                                             <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                            <input type="password" id="reg-password" placeholder="Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                            <input type="password" id="reg-password" autocomplete="new-password" placeholder="Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                         </div>
                                     </div>
                                     <div class="space-y-1.5">
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Confirm Password</label>
                                         <div class="relative">
                                             <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                            <input type="password" id="reg-confirm-password" placeholder="Confirm Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                            <input type="password" id="reg-confirm-password" autocomplete="new-password" placeholder="Confirm Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                         </div>
                                     </div>
                                 </div>
@@ -6288,11 +6331,11 @@ const routes = {
                                 <div class="space-y-4">
                                     <div class="space-y-1.5">
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">First Name</label>
-                                        <input type="text" id="reg-first-name" placeholder="First Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <input type="text" id="reg-first-name" autocomplete="given-name" placeholder="First Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
                                     <div class="space-y-1.5">
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Last Name</label>
-                                        <input type="text" id="reg-last-name" placeholder="Last Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <input type="text" id="reg-last-name" autocomplete="family-name" placeholder="Last Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
                                 </div>
 
@@ -6300,7 +6343,7 @@ const routes = {
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Phone Number</label>
                                     <div class="relative">
                                         <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                        <input type="tel" id="reg-phone" placeholder="(555) 000-0000" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <input type="tel" id="reg-phone" autocomplete="tel" placeholder="(555) 000-0000" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
                                 </div>
 
@@ -6317,22 +6360,22 @@ const routes = {
 
                                 <div class="space-y-1.5">
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Street</label>
-                                    <input type="text" id="reg-street" placeholder="Address" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                    <input type="text" id="reg-street" autocomplete="street-address" placeholder="Address" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-3">
                                     <div class="space-y-1.5 text-sm">
                                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">City</label>
-                                        <input type="text" id="reg-city" placeholder="City" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all">
+                                        <input type="text" id="reg-city" autocomplete="address-level2" placeholder="City" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all">
                                     </div>
                                     <div class="grid grid-cols-2 gap-2 text-sm">
                                         <div class="space-y-1.5">
                                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">State</label>
-                                            <input type="text" id="reg-state" placeholder="AZ" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
+                                            <input type="text" id="reg-state" autocomplete="address-level1" placeholder="AZ" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
                                         </div>
                                         <div class="space-y-1.5">
                                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Zip</label>
-                                            <input type="text" id="reg-zip" placeholder="85281" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
+                                            <input type="text" id="reg-zip" autocomplete="postal-code" placeholder="85281" class="w-full px-2 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-center">
                                         </div>
                                     </div>
                                 </div>
@@ -6773,7 +6816,7 @@ const routes = {
                                                 </div>
                                                 <div>
                                                     <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Phone</span>
-                                                    <span class="text-gray-600 font-medium text-sm">${selectedLoc.phone || "(480) 968-3568"}</span>
+                                                    <span class="text-gray-600 font-medium text-sm">${mockupState.selectedLocationPhone || selectedLoc.phone || "Phone unavailable"}</span>
                                                 </div>
                                             </div>
                                             <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
@@ -6925,7 +6968,7 @@ const routes = {
     );
     const taxRate = mockupState.locationTaxRate || 0.0925;
     const taxes = subtotal * taxRate;
-    const bagFee = mockupState.bagQuantity * 0.1;
+    const bagFee = mockupState.bagQuantity * (mockupState.bagMenuItem?.price ?? 0);
     const convenienceFee = mockupState.locationConvenienceFee || 0;
 
     let tipAmount = 0;
@@ -7195,7 +7238,7 @@ const routes = {
     );
     const taxRate = mockupState.locationTaxRate || 0.0925;
     const taxes = subtotal * taxRate;
-    const bagFee = mockupState.bagQuantity * 0.1;
+    const bagFee = mockupState.bagQuantity * (mockupState.bagMenuItem?.price ?? 0);
     const convenienceFee = mockupState.locationConvenienceFee || 0;
 
     let tipAmount = 0;
@@ -8559,7 +8602,18 @@ function renderPage() {
   const viewport = document.getElementById("app-viewport");
   if (!viewport) return;
 
-  if (currentPage === "locations" || currentPage === "locations-alt" || currentPage === "directions") {
+  // Only prompt for location automatically on the directions page. On the
+  // locations picker, we don't want a permission prompt firing before the
+  // user has asked for anything location-based — that's deferred to the
+  // "Near Me" tab click. If permission was already granted earlier in this
+  // session (we already have coords), keep distances fresh silently.
+  if (currentPage === "directions") {
+    requestUserLocation();
+  } else if (
+    (currentPage === "locations" || currentPage === "locations-alt") &&
+    mockupState.userLat &&
+    mockupState.userLng
+  ) {
     requestUserLocation();
   }
 
@@ -10621,7 +10675,7 @@ window._handlePlaceOrder = async function () {
   );
   const taxRate = mockupState.locationTaxRate || 0.0925;
   const taxes = subtotal * taxRate;
-  const bagFee = (mockupState.bagQuantity || 0) * 0.1;
+  const bagFee = (mockupState.bagQuantity || 0) * (mockupState.bagMenuItem?.price ?? 0);
   const convenienceFee = mockupState.locationConvenienceFee || 0;
   let tipAmount = 0;
   if (mockupState.tipPercentage === "other") {
@@ -10649,20 +10703,36 @@ window._handlePlaceOrder = async function () {
     guestLastName: mockupState.userProfile?.lastName || "User",
     guestPhoneNumber: mockupState.userProfile?.phoneNumber || "0000000000",
     guestEmailAddress: mockupState.userProfile?.email || "guest@farebites.com",
-    items: cart.map((item) => ({
-      menuItemId: item.menuItemId,
-      quantity: item.quantity,
-      specialInstruction: item.specialInstruction || null,
-      subItems: (item.selectedSubItems || [])
-        .filter((sub) => sub.menuSubItemId < 8000 || sub.menuSubItemId > 8300)
-        .map((sub) => ({
-          menuSubItemId: sub.menuSubItemId,
-          itemTypeId: sub.itemTypeId || 2,
-          itemGroupPriceId: sub.itemGroupPriceId || 0,
-          quantity: sub.quantity || 1,
-        })),
-      subMenuChoices: [],
-    })),
+    items: [
+      ...cart.map((item) => ({
+        menuItemId: item.menuItemId,
+        quantity: item.quantity,
+        specialInstruction: item.specialInstruction || null,
+        subItems: (item.selectedSubItems || [])
+          .filter((sub) => sub.menuSubItemId < 8000 || sub.menuSubItemId > 8300)
+          .map((sub) => ({
+            menuSubItemId: sub.menuSubItemId,
+            itemTypeId: sub.itemTypeId || 2,
+            itemGroupPriceId: sub.itemGroupPriceId || 0,
+            quantity: sub.quantity || 1,
+          })),
+        subMenuChoices: [],
+      })),
+      // Bags are a real, orderable menu item on the backend (not a flat fee),
+      // so charging for them means actually including that item in the order
+      // — otherwise the total shown at checkout never matches what's charged.
+      ...(mockupState.bagQuantity > 0 && mockupState.bagMenuItem
+        ? [
+            {
+              menuItemId: mockupState.bagMenuItem.menuItemId,
+              quantity: mockupState.bagQuantity,
+              specialInstruction: null,
+              subItems: [],
+              subMenuChoices: [],
+            },
+          ]
+        : []),
+    ],
   };
 
   console.log("Placing order:", JSON.stringify(orderData, null, 2));
@@ -11658,82 +11728,6 @@ window.viewPastOrder = function (orderId) {
     navigateTo("order-confirm", { replace: true });
   }
 };
-
-function getSamplePastOrders() {
-  const selectedLocId = mockupState.selectedLocationId || 7;
-  return [
-    {
-      orderId: "FB-8842",
-      orderDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      locationId: selectedLocId,
-      total: 19.95,
-      orderMenuItems: [
-        {
-          name: "M7 Crème Brûlée Boba Milk Tea",
-          quantity: 1,
-          unitPrice: 5.75,
-          specialInstruction: "50% Sugar",
-          selectedSubItems: [
-            { name: "Less Ice" },
-            { name: "Double Boba (+ $0.75)", price: 0.75 },
-            { name: "Egg Pudding (+ $0.75)", price: 0.75 },
-          ],
-        },
-        {
-          name: "P1 Super Fruit Tea",
-          quantity: 1,
-          unitPrice: 5.95,
-          specialInstruction: "100% Sugar",
-          selectedSubItems: [
-            { name: "Regular Ice" },
-            { name: "Aloe Vera (+ $0.75)", price: 0.75 },
-          ],
-        },
-        {
-          name: "M8 Taro Boba Purée Latte",
-          quantity: 1,
-          unitPrice: 5.75,
-          specialInstruction: "70% Sugar",
-          selectedSubItems: [
-            { name: "Oat Milk (+ $0.50)", price: 0.50 },
-            { name: "Fresh Taro Boba" },
-          ],
-        },
-        {
-          name: "Side of Guacamole",
-          quantity: 1,
-          unitPrice: 2.5,
-        },
-      ],
-    },
-    {
-      orderId: "FB-7619",
-      orderDate: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-      locationId: selectedLocId,
-      total: 11.5,
-      orderMenuItems: [
-        {
-          name: "P4 Brown Sugar Boba Latte",
-          quantity: 1,
-          unitPrice: 5.75,
-          specialInstruction: "50% Sugar",
-          selectedSubItems: [
-            { name: "Whole Milk" },
-            { name: "Extra Boba (+ $0.75)", price: 0.75 },
-            { name: "Grass Jelly (+ $0.75)", price: 0.75 },
-          ],
-        },
-        {
-          name: "M7 Crème Brûlée Boba Milk Tea",
-          quantity: 1,
-          unitPrice: 5.75,
-          specialInstruction: "30% Sugar",
-          selectedSubItems: [{ name: "No Ice" }, { name: "No Boba" }],
-        },
-      ],
-    },
-  ];
-}
 
 function recordPlacedOrder(orderObj) {
   // Ensure location info is always stamped on the order
@@ -12990,7 +12984,7 @@ function renderSingleLocationCardHtml(s, idx) {
 
   const hoursDisplay = `${statusBadge}<span class="text-gray-400 text-[11px] font-bold uppercase tracking-widest" style="font-family: Roboto, sans-serif;">${hoursText}</span>`;
 
-  const selectLocationCall = `selectLocation(${s.locationId || "null"}, '${s.name.replace(/'/g, "\\'")}', '${s.address.replace(/'/g, "\\'")}', '${s.dist}')`;
+  const selectLocationCall = `selectLocation(${s.locationId || "null"}, '${s.name.replace(/'/g, "\\'")}', '${s.address.replace(/'/g, "\\'")}', '${s.dist || ""}')`;
 
   const orderButton = isHardBlocked
     ? `<button onclick="event.stopPropagation(); showClosedLocationModal('${s.name.replace(/'/g, "\\'")}')" class="bg-gray-200 text-gray-500 text-[10px] px-4 py-2 rounded-full uppercase font-black tracking-widest shadow-sm cursor-pointer transition active:scale-95 hover:bg-gray-300">Closed</button>`
@@ -13017,7 +13011,7 @@ function renderSingleLocationCardHtml(s, idx) {
             </div>
         </div>
         <div class="flex flex-col items-end justify-between h-full gap-2 shrink-0">
-            <div class="text-xs font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>
+            ${s.dist ? `<div class="text-xs font-black text-gray-400 uppercase" style="font-family: Roboto, sans-serif;">${s.dist}</div>` : ""}
             ${orderButton}
             <span class="text-[10px] text-gray-400 underline uppercase font-bold hover:text-violet-600" onclick="event.stopPropagation(); navigateTo('location-favorites')">Edit</span>
         </div>
@@ -13266,7 +13260,7 @@ function initLocationsMap() {
                         <h4 class="font-black text-sm uppercase tracking-tight text-violet-700 mb-1">${s.name}</h4>
                         <p class="text-xs text-gray-500 font-semibold mb-2">${s.address}</p>
                         <p class="text-[10px] font-black text-gray-400 uppercase mb-3"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
-                        <button onclick="selectLocation(${s.locationId || "null"}, '${s.name}', '${s.address}', '${s.dist}')" class="w-full bg-violet-600 text-white text-[10px] font-black uppercase tracking-wider py-2 rounded-full shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
+                        <button onclick="selectLocation(${s.locationId || "null"}, '${s.name}', '${s.address}', '${s.dist || ""}')" class="w-full bg-violet-600 text-white text-[10px] font-black uppercase tracking-wider py-2 rounded-full shadow-sm hover:bg-violet-700 transition active:scale-95">Order Here</button>
                     </div>
                 `;
         marker.bindPopup(popupContent);
@@ -13533,11 +13527,7 @@ window.addEventListener("DOMContentLoaded", () => {
       currentPage === "customize-alt") &&
     !mockupState.selectedLocationId
   ) {
-    const targetLocationsPage =
-      currentPage === "menu" || currentPage === "menu-single" || currentPage === "customize-alt"
-        ? "locations-alt.html"
-        : "locations.html";
-    window.location.href = targetLocationsPage;
+    window.location.href = "locations.html";
     return;
   }
 
@@ -13568,7 +13558,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // Fall back to the locations picker here instead of assuming a store.
   const fallbackMenuTarget = mockupState.selectedLocationId
     ? `menu.html?store=${mockupState.selectedLocationId}`
-    : "locations-alt.html";
+    : "locations.html";
 
   // Empty cart guard for cart, checkout, and checkout-rewards: if landing on cart/checkout with an empty cart after submitting an order
   if ((currentPage === "checkout" || currentPage === "checkout-rewards" || currentPage === "cart") && (!mockupState.cart || mockupState.cart.length === 0)) {
@@ -14281,12 +14271,10 @@ function renderAllModifierSectionsAlt2(detail, sels, modSels, colLayout) {
 
   // Special Instructions
   if (detail && !detail.disableSpecialInstruction) {
-      const hasInstructions = !!mockupState._specialInstruction;
-      const subtitle = hasInstructions ? "Instructions added" : "No special instructions";
       html += `<div class="py-2">
-        ${_alt2ModSectionHeader('SPECIAL INSTRUCTIONS <span class="text-[9px] text-gray-400 ml-2 font-medium normal-case tracking-normal">(Max 250 characters)</span>', subtitle, 'fa-solid fa-pen')}
+        ${_alt2ModSectionHeader('SPECIAL INSTRUCTIONS <span class="text-[9px] text-gray-400 ml-2 font-medium normal-case tracking-normal">(Max 50 characters)</span>', "Please let us know any special instruction(s)", 'fa-solid fa-pen')}
         <div class="ml-16 mb-2">
-            <textarea id="special-instruction-input" maxlength="250" placeholder="Ex. Less ice, no boba, extra sweet..." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ""}</textarea>
+            <textarea id="special-instruction-input" maxlength="50" placeholder="Ex. No Pickles and No Onions, etc." class="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-medium outline-none focus:border-violet-300 resize-none h-20 transition-colors">${mockupState._specialInstruction || ""}</textarea>
         </div>
       </div>`;
   }
