@@ -27,7 +27,6 @@ const PAGE_FILE_MAP = {
   dashboard: "dashboard.html",
   index: "index.html",
   "menu-favorites": "menu-favorites.html",
-  directions: "directions.html",
   registration: "registration.html",
   "registration-success": "registration-success.html",
   sections: "sections.html",
@@ -61,7 +60,6 @@ const PAGE_LABELS = {
   privacy: "Privacy Policy",
   dashboard: "Merchant Dashboard",
   "menu-favorites": "Menu Favorites",
-  directions: "Directions",
   registration: "Registration Form",
   "registration-success": "Registration Success",
   sections: "Retired Sections",
@@ -289,6 +287,33 @@ const REAL_LOCATION_COORDINATES = {
   61: { lat: 38.0129835, lng: -121.8634671 }, // Pittsburg, CA
 };
 
+// Real street addresses for the same known-real stores above, sourced and
+// verified the same way (current live site + independent public listings,
+// cross-checked against each store's real phone number). The public
+// per-location endpoint doesn't include a street address at all — only the
+// login-gated bulk endpoint does, and that gate rejects normal customer
+// accounts (see finding #21) — so this is the real, honest source used
+// when building the store list from public data instead. Same caveat as
+// REAL_LOCATION_COORDINATES: a locationId missing here just doesn't get an
+// address rather than a guess.
+const REAL_LOCATION_ADDRESSES = {
+  7: { full: "20666 Redwood Rd, Castro Valley, CA 94546" },
+  9: { full: "388 9th St, Oakland, CA 94607" },
+  10: { full: "177 Pelton Center Way, San Leandro, CA 94577" },
+  19: { full: "825 W University Dr, Tempe, AZ 85281" },
+  27: { full: "2936 Aborn Square Rd, San Jose, CA 95121" },
+  28: { full: "236 A St, Davis, CA 95616" },
+  29: { full: "34925 Newark Blvd, Newark, CA 94560" },
+  31: { full: "6461 Stockton Blvd, Sacramento, CA 95828" },
+  32: { full: "385 E Shaw Ave, Fresno, CA 93710" },
+  45: { full: "43421 Christy St, Fremont, CA 94538" },
+  46: { full: "915 Main St, Pleasanton, CA 94566" },
+  47: { full: "1626 Park St, Alameda, CA 94501" },
+  57: { full: "760 E Calaveras Blvd, Milpitas, CA 95035" },
+  58: { full: "1460 Moraga Rd, Moraga, CA 94556" },
+  61: { full: "2121A Loveridge Rd, Pittsburg, CA 94565" },
+};
+
 function getCalendarData(monthOffset = 0) {
   const now = new Date();
   const targetDate = new Date(
@@ -383,12 +408,15 @@ function isPastDate(targetYear, targetMonthIdx, dayOfMonth) {
   return current < today;
 }
 
-function getEstimatedPickupTime(offsetMinutes = 20) {
+function getEstimatedPickupTime(fallbackMinutes = 20) {
   const now = new Date();
-  let target = new Date(now.getTime() + offsetMinutes * 60000);
+  let offsetMinutes = fallbackMinutes;
+  let target;
 
   try {
-    const { openTime, isClosed } = getStoreTimesForDay("Today");
+    const { openTime, isClosed, pickUpTimeMinutes } = getStoreTimesForDay("Today");
+    offsetMinutes = pickUpTimeMinutes;
+    target = new Date(now.getTime() + offsetMinutes * 60000);
     if (!isClosed && openTime) {
       const openTimeWithPrep = new Date(openTime.getTime() + offsetMinutes * 60000);
       if (target < openTimeWithPrep) {
@@ -397,6 +425,7 @@ function getEstimatedPickupTime(offsetMinutes = 20) {
     }
   } catch (e) {
     console.warn("Could not adjust estimated pickup time with store hours:", e);
+    target = new Date(now.getTime() + offsetMinutes * 60000);
   }
 
   let h = target.getHours();
@@ -444,6 +473,10 @@ function getStoreTimesForDay(selectedDayLabel = "Today") {
   let openTimeStr = "11:30 AM";
   let closeTimeStr = "9:30 PM";
   let isClosed = false;
+  // Real, per-store, per-day prep/pickup lead time from the API
+  // (businessHours[day].pickUpTime, or the holiday override for that date).
+  // 20 is only ever used before real hours have loaded for any store.
+  let pickUpTimeMinutes = 20;
 
   if (typeof mockupState !== "undefined" && mockupState.apiLocations) {
     const locationTitle = mockupState.selectedLocation || "i-Tea - Tempe";
@@ -464,6 +497,9 @@ function getStoreTimesForDay(selectedDayLabel = "Today") {
         } else if (holiday.schedules && holiday.schedules.length > 0) {
           openTimeStr = holiday.schedules[0].startTime || openTimeStr;
           closeTimeStr = holiday.schedules[0].endTime || closeTimeStr;
+          if (typeof holiday.schedules[0].pickUpTime === "number") {
+            pickUpTimeMinutes = holiday.schedules[0].pickUpTime;
+          }
         } else {
           isClosed = true;
         }
@@ -482,6 +518,9 @@ function getStoreTimesForDay(selectedDayLabel = "Today") {
       } else if (biz.startTime && biz.endTime) {
         openTimeStr = biz.startTime;
         closeTimeStr = biz.endTime;
+      }
+      if (typeof biz.pickUpTime === "number") {
+        pickUpTimeMinutes = biz.pickUpTime;
       }
     }
   }
@@ -502,7 +541,7 @@ function getStoreTimesForDay(selectedDayLabel = "Today") {
   let openTime = parseTime(openTimeStr, targetDate);
   let closeTime = parseTime(closeTimeStr, targetDate);
 
-  return { openTime, closeTime, isClosed, targetDate };
+  return { openTime, closeTime, isClosed, targetDate, pickUpTimeMinutes };
 }
 
 function resolveSelectedPickupDateTime() {
@@ -521,21 +560,22 @@ function resolveSelectedPickupDateTime() {
 }
 
 function getDynamicTimes(selectedDayLabel = "Today") {
-  const { openTime, closeTime, isClosed } = getStoreTimesForDay(selectedDayLabel);
+  const { openTime, closeTime, isClosed, pickUpTimeMinutes } = getStoreTimesForDay(selectedDayLabel);
   if (isClosed) {
     return [];
   }
 
   const now = new Date();
-  let adjustedCloseTime = new Date(closeTime.getTime() - 20 * 60000);
+  const prepMs = pickUpTimeMinutes * 60000;
+  let adjustedCloseTime = new Date(closeTime.getTime() - prepMs);
 
   let current;
   if (selectedDayLabel === "Today") {
-    let asapTime = new Date(now.getTime() + 20 * 60000);
-    let openTimeWithPrep = new Date(openTime.getTime() + 20 * 60000);
+    let asapTime = new Date(now.getTime() + prepMs);
+    let openTimeWithPrep = new Date(openTime.getTime() + prepMs);
     current = asapTime > openTimeWithPrep ? asapTime : openTimeWithPrep;
   } else {
-    current = new Date(openTime.getTime() + 20 * 60000);
+    current = new Date(openTime.getTime() + prepMs);
   }
 
   if (current > adjustedCloseTime) {
@@ -580,12 +620,23 @@ const DEFAULT_STATE = {
   locationFilter: "Near Me",
   locationSearchQuery: "",
   locationSearchFocused: false,
-  locationLabels: {
-    "i-Tea - Tempe": "Home",
-    "i-Tea - ALAMEDA": "Office",
-  },
+  locationLabels: {},
   selectedDay: "Today",
-  selectedTimeSlot: getEstimatedPickupTime(20),
+  // Plain "now + 20 min" placeholder only — no store is selected yet at this
+  // point (mockupState itself doesn't exist yet either, since this object is
+  // what builds it), so there's no real store hours to look up regardless.
+  // getStoreTimesForDay()/getEstimatedPickupTime() correctly recompute this
+  // with the real, per-store pickup lead time the moment a location is
+  // actually selected — see selectLocation() and the app's startup logic.
+  selectedTimeSlot: (() => {
+    const t = new Date(Date.now() + 20 * 60000);
+    let h = t.getHours();
+    let m = t.getMinutes();
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    m = m < 10 ? "0" + m : m;
+    return `${h}:${m} ${ampm}`;
+  })(),
   sugarLevel: "50%",
   itemQuantity: 1,
   cartItemCount: 0,
@@ -748,31 +799,7 @@ function loadMockupState() {
       );
     }
 
-    // Load favorites map and labels from localStorage
-    const favsMap = JSON.parse(
-      localStorage.getItem("farebites_location_favorites") || "{}",
-    );
-    const isFirstLoad =
-      localStorage.getItem("farebites_location_favorites") === null;
-
-    if (isFirstLoad) {
-      // Populate localStorage with initial favorites from LOCATIONS
-      const initialFavs = {};
-      LOCATIONS.forEach((l) => {
-        if (l.fav) initialFavs[l.name] = true;
-      });
-      localStorage.setItem(
-        "farebites_location_favorites",
-        JSON.stringify(initialFavs),
-      );
-    } else {
-      // Apply favorites from localStorage to LOCATIONS
-      LOCATIONS.forEach((l) => {
-        l.fav = !!favsMap[l.name];
-      });
-    }
-
-    // Apply to state.apiLocations if it was loaded from sessionStorage
+    // Apply saved favorites to state.apiLocations if it was loaded from sessionStorage
     if (state.apiLocations && state.apiLocations.length > 0) {
       const currentFavs = JSON.parse(
         localStorage.getItem("farebites_location_favorites") || "{}",
@@ -964,9 +991,6 @@ function persistAllState() {
 
   // Also persist location favorites and labels to localStorage
   const favsMap = {};
-  LOCATIONS.forEach((l) => {
-    if (l.fav) favsMap[l.name] = true;
-  });
   if (mockupState.apiLocations && mockupState.apiLocations.length > 0) {
     mockupState.apiLocations.forEach((l) => {
       if (l.fav) favsMap[l.name] = true;
@@ -1119,6 +1143,409 @@ function getSelectedLocationInfo(locationId = mockupState.selectedLocationId) {
   );
 }
 
+// If we don't already have the customer's most recent order cached, fetch it
+// once from the real order-history endpoint. Shared by every page that shows
+// "your order" (confirmation, status, tracking) so there's one fetch path,
+// not three.
+function ensureLastOrderLoaded() {
+  if (
+    !mockupState.lastOrder &&
+    window.ApiService &&
+    window.ApiService.getToken() &&
+    !window._fetchingLastOrder
+  ) {
+    window._fetchingLastOrder = true;
+    setTimeout(() => {
+      window.ApiService.getOrders(1, 1)
+        .then((res) => {
+          window._fetchingLastOrder = false;
+          if (res && res.length > 0) {
+            mockupState.lastOrder = res[0];
+            persistAllState();
+            renderPage();
+          }
+        })
+        .catch(() => {
+          window._fetchingLastOrder = false;
+        });
+    }, 100);
+  }
+}
+
+// The real, itemized "what you ordered and what you paid" card — real items,
+// real customizations, real fees, real payment. Used by order-confirm,
+// order-status, and track-order so there's exactly one place that knows how
+// to turn a real order object into this card, instead of three copies that
+// can drift (or three copies of made-up data).
+function renderOrderDetailsCard(order, locationName) {
+  const orderItems = order.orderMenuItems || order.orderItems || [];
+  const itemCount = orderItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
+  const orderSubtotal = (order.subTotal || order.subtotal || 0).toFixed(2);
+  const orderTaxes = (order.salesTax || order.taxes || 0).toFixed(2);
+  const orderTip = (order.tipApplied || order.tipAmount || 0).toFixed(2);
+  const convenienceFee = order.convenienceFeeCharged || order.convenienceFee || 0;
+  const orderTotal = (order.total || 0).toFixed(2);
+
+  const pmt = order.pmtInfo;
+  const pmtLabel = pmt
+    ? `${pmt.creditCardType || pmt.pmtType || "Card"}${pmt.truncCreditNum ? ` ending in ${pmt.truncCreditNum}` : ""}`
+    : "Payment on file";
+  const pmtDateStr = pmt?.pmtDate || order.orderDate || order.placedAt;
+  const pmtDate = pmtDateStr
+    ? new Date(pmtDateStr).toLocaleString("en-US", {
+        month: "numeric",
+        day: "numeric",
+        year: "2-digit",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : "";
+
+  return `
+    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
+                <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
+            </div>
+            <div>
+                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${locationName}</h3>
+                <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">${itemCount} item${itemCount !== 1 ? "s" : ""}</p>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            ${orderItems
+              .map((item) => {
+                const subs = item.selectedSubItems || item.orderMenuSubItems || [];
+                const customSummary =
+                  subs
+                    .map((s) => (s.quantity > 1 ? `${s.name} x${s.quantity}` : s.name))
+                    .join(" • ") || "Standard";
+                const qty = item.quantity || 1;
+                const unitPrice = item.unitPrice ?? item.paidPrice ?? 0;
+                const itemTotal = (unitPrice * qty).toFixed(2);
+                return `
+                <div class="flex gap-4">
+                    <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
+                        <img src="${item.image || "images/no-product-pic.png"}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">${qty} × ${item.name}</h4>
+                            <span class="text-sm font-black text-gray-900">$${itemTotal}</span>
+                        </div>
+                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">${customSummary}</p>
+                    </div>
+                </div>`;
+              })
+              .join("")}
+        </div>
+
+        <div class="space-y-2 pt-4 border-t border-gray-100">
+            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
+                <span>Subtotal</span>
+                <span>$${orderSubtotal}</span>
+            </div>
+            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
+                <span>Tax</span>
+                <span>$${orderTaxes}</span>
+            </div>
+            ${
+              convenienceFee > 0
+                ? `<div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
+                <span>Convenience Fee</span>
+                <span>$${convenienceFee.toFixed(2)}</span>
+            </div>`
+                : ""
+            }
+            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
+                <span>Tip</span>
+                <span>$${orderTip}</span>
+            </div>
+            <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
+                <span>Total</span>
+                <span>$${orderTotal}</span>
+            </div>
+        </div>
+
+        <div class="pt-6 border-t border-gray-100">
+            <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Payment</h2>
+            <div class="flex items-start justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-credit-card text-xl text-gray-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-black text-gray-900 uppercase tracking-tight">${pmtLabel}</p>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">${pmtDate}</p>
+                    </div>
+                </div>
+                <span class="text-base font-black text-gray-900">$${orderTotal}</span>
+            </div>
+        </div>
+    </div>
+  `;
+}
+
+// An honest kitchen-status view built only from real timestamps the backend
+// actually gives us. There's no live "it's ready now" signal in this API, so
+// — same as most pickup-only ordering platforms without a live kitchen
+// display feed — the last step is a real estimate, never a claimed fact.
+function formatOrderTime(d) {
+  return new Date(d).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+
+// The one real "when will this be ready" estimate, shared by the status
+// timeline and the quick pick-up-time stat card. Never a live/exact
+// guarantee — this API has no real-time "it's ready" signal — just the best
+// honest estimate from real timestamps, in the same spirit as how pickup
+// orders are shown on major platforms when there's no live kitchen feed.
+function getOrderReadyEstimate(order) {
+  const acceptedAt = order.deliverectOrderAcceptedDate;
+  const prepMinutes = order.deliverectOrderPrepTime;
+
+  if (order.isCustomTime && order.pickupTime) {
+    return { label: `Ready around ${formatOrderTime(order.pickupTime)}`, time: new Date(order.pickupTime) };
+  }
+  if (acceptedAt && prepMinutes) {
+    const estReady = new Date(new Date(acceptedAt).getTime() + prepMinutes * 60000);
+    return { label: `Estimated ready around ${formatOrderTime(estReady)}`, time: estReady };
+  }
+  return { label: "We'll have it ready soon", time: null };
+}
+
+function renderOrderStatusTimeline(order) {
+  if (order.isCanceled) {
+    return `
+      <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 text-center">
+          <div class="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
+              <i class="fa-solid fa-xmark text-xl"></i>
+          </div>
+          <h2 class="text-xl font-black text-gray-900 uppercase tracking-tighter mb-1">Order Canceled</h2>
+          <p class="text-sm font-bold text-gray-500">This order was canceled and won't be prepared.</p>
+      </div>
+    `;
+  }
+
+  const placedAt = order.orderDate || order.placedAt;
+  const acceptedAt = order.deliverectOrderAcceptedDate;
+  const fmt = formatOrderTime;
+  const readyLabel = getOrderReadyEstimate(order).label;
+
+  const steps = [
+    {
+      label: "Order Placed",
+      time: placedAt ? fmt(placedAt) : "",
+      done: !!placedAt,
+      icon: "fa-check",
+    },
+    {
+      label: acceptedAt ? "Confirmed by the Restaurant" : "Waiting for Confirmation",
+      time: acceptedAt ? fmt(acceptedAt) : "The restaurant hasn't confirmed this order yet",
+      done: !!acceptedAt,
+      icon: acceptedAt ? "fa-check" : "fa-fire-burner",
+    },
+    {
+      label: "Ready for Pickup",
+      time: readyLabel,
+      done: false,
+      icon: "fa-bag-shopping",
+    },
+  ];
+
+  const activeIdx = steps.findIndex((s) => !s.done);
+
+  return `
+    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 relative">
+        <div class="absolute left-[39px] top-10 bottom-10 w-0.5 bg-gray-200 z-0"></div>
+        <div class="space-y-8 relative z-10">
+            ${steps
+              .map((s, i) => {
+                const isActive = i === activeIdx;
+                const isPending = activeIdx !== -1 && i > activeIdx;
+                const circleClass = s.done
+                  ? "bg-green-50 text-green-600"
+                  : isActive
+                  ? "bg-red-600 text-white ring-4 ring-red-100"
+                  : "bg-gray-200 text-gray-400 border-2 border-white";
+                return `
+                <div class="flex gap-4 items-center${isPending ? " opacity-40" : s.done ? " opacity-50" : ""}">
+                    <div class="w-10 h-10 rounded-full ${circleClass} flex items-center justify-center shrink-0 shadow-md">
+                        <i class="fa-solid ${s.icon}"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black ${isActive ? "text-red-600" : "text-gray-900"} uppercase tracking-tight text-sm">${s.label}</h3>
+                        <p class="text-xs text-gray-500 font-medium">${s.time}</p>
+                    </div>
+                </div>`;
+              })
+              .join("")}
+        </div>
+    </div>
+  `;
+}
+
+// Honest empty state for order-status / track-order when there's genuinely
+// no order to show yet (fresh visitor, still loading, or fetch failed) —
+// never falls back to a fake sample order.
+function renderNoOrderState(title) {
+  return `
+    <div class="flex flex-col h-full bg-[#f6f6f6]">
+        <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0">
+            <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
+                <i class="fa-solid fa-arrow-left text-xl"></i>
+            </button>
+            <span class="text-lg font-black text-violet-600 flex-1 text-center mr-10">${title}</span>
+        </header>
+        <div class="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <div class="w-16 h-16 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mb-4">
+                <i class="fa-solid fa-receipt text-2xl"></i>
+            </div>
+            <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight mb-2">No Recent Order</h2>
+            <p class="text-sm text-gray-500 mb-6 max-w-xs">Once you place an order, you'll be able to track it here.</p>
+            <button onclick="navigateTo('menu')" class="px-6 py-3 bg-violet-600 text-white rounded-full text-sm font-black uppercase tracking-wider hover:bg-violet-700 transition active:scale-95">Browse Menu</button>
+        </div>
+    </div>
+  `;
+}
+
+// Real per-location hours + open/closed status, from the public (no login
+// required) hours endpoints. Shared by both the bulk-list path and the
+// public-fallback path below, so the two never compute this differently.
+async function fetchLocationHoursInfo(locationId) {
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const todayDay = days[new Date().getDay()];
+  let hoursStr = "Hours unavailable";
+  let hData = null;
+  let holData = null;
+
+  try {
+    const [hRes, holRes] = await Promise.all([
+      fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/hours`),
+      fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/hours-with-holidays`),
+    ]);
+
+    if (hRes.ok) hData = await hRes.json();
+    if (holRes.ok) holData = await holRes.json();
+
+    const todayObj = new Date();
+    const todayStr =
+      todayObj.getFullYear() +
+      "-" +
+      String(todayObj.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(todayObj.getDate()).padStart(2, "0");
+
+    let isHoliday = false;
+    if (holData && holData.holidayHours && Array.isArray(holData.holidayHours)) {
+      const holiday = holData.holidayHours.find((h) => h.date && h.date.startsWith(todayStr));
+      if (holiday) {
+        isHoliday = true;
+        if (holiday.isClosed) {
+          hoursStr = "Closed today";
+        } else if (holiday.schedules && holiday.schedules.length > 0) {
+          const s = holiday.schedules[0];
+          if (s.startTime && s.endTime) {
+            hoursStr = `${s.startTime} to ${s.endTime}`;
+          }
+        } else {
+          hoursStr = "Closed today";
+        }
+      }
+    }
+
+    if (!isHoliday && hData && hData.businessHours && hData.businessHours[todayDay]) {
+      const todayH = hData.businessHours[todayDay];
+      if (todayH.isClosed) {
+        hoursStr = "Closed today";
+      } else if (todayH.startTime && todayH.endTime) {
+        hoursStr = `${todayH.startTime} to ${todayH.endTime}`;
+      }
+    }
+  } catch (e) {
+    console.warn(`Could not fetch hours for loc ${locationId}`);
+  }
+
+  // Compute open status from the actual business hours schedule, ignoring
+  // the API's unreliable isOpen flag.
+  let isOpen = false;
+  let allowOrdering = false;
+  if (hData && hData.businessHours && hData.businessHours[todayDay]) {
+    const todayH = hData.businessHours[todayDay];
+    if (!todayH.isClosed && todayH.startTime && todayH.endTime) {
+      const parseTime = (t) => {
+        const [time, period] = t.split(" ");
+        let [h, m] = time.split(":").map(Number);
+        if (period === "PM" && h !== 12) h += 12;
+        if (period === "AM" && h === 12) h = 0;
+        return h * 60 + m;
+      };
+      const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+      const openMinutes = parseTime(todayH.startTime);
+      const closeMinutes = parseTime(todayH.endTime);
+      isOpen = nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+      allowOrdering = isOpen || hData.allowOrderWhileClosed === true;
+    }
+  } else if (hData) {
+    isOpen = hData.isOpen === true;
+    allowOrdering = isOpen || hData.allowOrderWhileClosed === true;
+  }
+  if (hoursStr === "Closed today") {
+    isOpen = false;
+    allowOrdering = false;
+  }
+
+  return { hoursStr, isOpen, allowOrdering, businessHours: hData ? hData.businessHours : null, holidayHours: holData ? holData.holidayHours : null };
+}
+
+// The bulk store list (GET /api/Locations) requires a login level that a
+// normal customer account doesn't have — confirmed directly against a real,
+// fully authenticated account, not just guests (see finding #21). Rather
+// than gate the whole locations page behind a backend permission that may
+// never open up for customers, build the real list ourselves from the
+// public per-location endpoint (name, phone, open status — no login
+// needed) plus the real addresses already verified for these known real
+// stores (see REAL_LOCATION_ADDRESSES). Same basic idea as how the current
+// live site handles this: a small, stable list of real physical stores
+// doesn't need a live gated lookup to be shown honestly.
+async function fetchLocationsPublicFallback() {
+  const ids = Object.keys(REAL_LOCATION_COORDINATES).map(Number);
+  const results = await Promise.all(
+    ids.map(async (locationId) => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/RestaurantMenu/location/${locationId}`);
+        if (!res.ok) return null;
+        const loc = await res.json();
+        if (loc.isEnabled === false) return null;
+
+        const hoursInfo = await fetchLocationHoursInfo(locationId);
+        const coords = REAL_LOCATION_COORDINATES[locationId];
+        const addr = REAL_LOCATION_ADDRESSES[locationId];
+
+        return {
+          locationId,
+          name: loc.locationName || "Unnamed Location",
+          address: addr ? addr.full : "Address unavailable",
+          phone: loc.phone || null,
+          dist: null,
+          fav: false,
+          hours: hoursInfo.hoursStr,
+          isOpen: hoursInfo.isOpen,
+          allowOrdering: hoursInfo.allowOrdering,
+          businessHours: hoursInfo.businessHours,
+          holidayHours: hoursInfo.holidayHours,
+          lat: coords?.lat ?? null,
+          lng: coords?.lng ?? null,
+        };
+      } catch (e) {
+        console.warn(`Could not fetch public info for loc ${locationId}`, e);
+        return null;
+      }
+    }),
+  );
+  return results.filter(Boolean);
+}
+
 async function fetchLocations() {
   mockupState.locationsLoading = true;
   persistAllState();
@@ -1132,9 +1559,21 @@ async function fetchLocations() {
     }
     const response = await fetch(`${API_BASE_URL}/api/Locations`, { headers });
     if (!response.ok) {
-      // Distinguish "this endpoint requires login" from a genuine failure —
-      // they need different messaging, not a silent fake-data substitute either way.
       if (response.status === 401) {
+        // The bulk list needs a login level a normal customer doesn't have
+        // (see #21) — fall back to the real, public-endpoint-built list
+        // instead of gating the whole page on a permission that may never
+        // open up for customers.
+        const fallbackLocs = await fetchLocationsPublicFallback();
+        if (fallbackLocs.length > 0) {
+          mockupState.apiLocations = fallbackLocs;
+          mockupState.locationsAuthRequired = false;
+          mockupState.locationsLoadError = false;
+          persistAllState();
+          if (currentPage === "locations") renderPage();
+          return;
+        }
+        // Only show the "sign in" gate if even the public fallback failed.
         mockupState.locationsAuthRequired = true;
         mockupState.locationsLoadError = false;
       } else {
@@ -1157,120 +1596,10 @@ async function fetchLocations() {
             loc.locationName.toLowerCase().includes("itea")),
       );
       if (iteaLocations.length > 0) {
-        const days = [
-          "Sunday",
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-        ];
-        const todayDay = days[new Date().getDay()];
-
         const mappedLocs = await Promise.all(
           iteaLocations.map(async (loc) => {
             const realCoords = REAL_LOCATION_COORDINATES[loc.locationId];
-            let hoursStr = "Hours unavailable";
-            let hData = null;
-            let holData = null;
-
-            try {
-              const [hRes, holRes] = await Promise.all([
-                fetch(
-                  `${API_BASE_URL}/api/RestaurantMenu/location/${loc.locationId}/hours`,
-                ),
-                fetch(
-                  `${API_BASE_URL}/api/RestaurantMenu/location/${loc.locationId}/hours-with-holidays`,
-                ),
-              ]);
-
-              if (hRes.ok) hData = await hRes.json();
-              if (holRes.ok) holData = await holRes.json();
-
-              const todayObj = new Date();
-              const todayStr =
-                todayObj.getFullYear() +
-                "-" +
-                String(todayObj.getMonth() + 1).padStart(2, "0") +
-                "-" +
-                String(todayObj.getDate()).padStart(2, "0");
-
-              let isHoliday = false;
-              if (
-                holData &&
-                holData.holidayHours &&
-                Array.isArray(holData.holidayHours)
-              ) {
-                const holiday = holData.holidayHours.find(
-                  (h) => h.date && h.date.startsWith(todayStr),
-                );
-                if (holiday) {
-                  isHoliday = true;
-                  if (holiday.isClosed) {
-                    hoursStr = "Closed today";
-                  } else if (
-                    holiday.schedules &&
-                    holiday.schedules.length > 0
-                  ) {
-                    const s = holiday.schedules[0];
-                    if (s.startTime && s.endTime) {
-                      hoursStr = `${s.startTime} to ${s.endTime}`;
-                    }
-                  } else {
-                    hoursStr = "Closed today";
-                  }
-                }
-              }
-
-              if (
-                !isHoliday &&
-                hData &&
-                hData.businessHours &&
-                hData.businessHours[todayDay]
-              ) {
-                const todayH = hData.businessHours[todayDay];
-                if (todayH.isClosed) {
-                  hoursStr = "Closed today";
-                } else if (todayH.startTime && todayH.endTime) {
-                  hoursStr = `${todayH.startTime} to ${todayH.endTime}`;
-                }
-              }
-            } catch (e) {
-              console.warn(`Could not fetch hours for loc ${loc.locationId}`);
-            }
-
-            // Compute open status from actual business hours schedule,
-            // ignoring the API's unreliable isOpen flag.
-            let isOpen = false;
-            let allowOrdering = false;
-            if (hData && hData.businessHours && hData.businessHours[todayDay]) {
-              const todayH = hData.businessHours[todayDay];
-              if (!todayH.isClosed && todayH.startTime && todayH.endTime) {
-                // Parse times like "11:30 AM" into minutes-since-midnight
-                const parseTime = (t) => {
-                  const [time, period] = t.split(' ');
-                  let [h, m] = time.split(':').map(Number);
-                  if (period === 'PM' && h !== 12) h += 12;
-                  if (period === 'AM' && h === 12) h = 0;
-                  return h * 60 + m;
-                };
-                const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
-                const openMinutes = parseTime(todayH.startTime);
-                const closeMinutes = parseTime(todayH.endTime);
-                isOpen = nowMinutes >= openMinutes && nowMinutes < closeMinutes;
-                allowOrdering = isOpen || (hData.allowOrderWhileClosed === true);
-              }
-            } else if (hData) {
-              // Fallback: trust the API flag if we have no schedule
-              isOpen = hData.isOpen === true;
-              allowOrdering = isOpen || (hData.allowOrderWhileClosed === true);
-            }
-            // Holiday override
-            if (hoursStr === "Closed today") {
-              isOpen = false;
-              allowOrdering = false;
-            }
+            const hoursInfo = await fetchLocationHoursInfo(loc.locationId);
 
             return {
               locationId: loc.locationId,
@@ -1282,11 +1611,11 @@ async function fetchLocations() {
                   .trim(),
               dist: null,
               fav: false,
-              hours: hoursStr,
-              isOpen: isOpen,
-              allowOrdering: allowOrdering,
-              businessHours: hData ? hData.businessHours : null,
-              holidayHours: holData ? holData.holidayHours : null,
+              hours: hoursInfo.hoursStr,
+              isOpen: hoursInfo.isOpen,
+              allowOrdering: hoursInfo.allowOrdering,
+              businessHours: hoursInfo.businessHours,
+              holidayHours: hoursInfo.holidayHours,
               lat: loc.latitude ?? realCoords?.lat ?? null,
               lng: loc.longitude ?? realCoords?.lng ?? null,
             };
@@ -1582,186 +1911,6 @@ function isItemAvailableAtCurrentLocation(item) {
 }
 window.isItemAvailableAtCurrentLocation = isItemAvailableAtCurrentLocation;
 
-const MENU_ITEMS = [
-  // Tea Spresso Series (11 items)
-  {
-    name: "M7 Crème Brûlée Boba Milk Tea",
-    description: "377 calories to 594 calories",
-    price: 5.75,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/M7-Cr%C3%A8me-Br%C3%BBl%C3%A9e-Boba-Milk-Tea.jpg",
-    category: "Tea Spresso Series",
-  },
-  {
-    name: "M9 3G Fresh Taro Boba Latte",
-    description:
-      "Come With Mashed Taro, Grass Jelly, Red Bean, and Fresh Taro Boba",
-    price: 5.75,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/M9_3G-Fresh-Taro-Boba-Latte.jpg",
-    category: "Tea Spresso Series",
-  },
-  {
-    name: "P1 Super Fruit Tea",
-    description: "Comes with Pineapple, Passion Fruit, Apple, Lime, and Orange",
-    price: 5.95,
-    image: "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg",
-    category: "Tea Spresso Series",
-  },
-  {
-    name: "P2 Super Lime Slushium",
-    description: "276 calories",
-    price: 5.25,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/P2-Super-Lime-Sijichun.jpg",
-    category: "Tea Spresso Series",
-  },
-  {
-    name: "P3 Super Grapefruit",
-    description: "239 calories to 339 calories",
-    price: 5.25,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg",
-    category: "Tea Spresso Series",
-  },
-  {
-    name: "P4 Brown Sugar Boba Latte",
-    description: "356 calories to 478 calories",
-    price: 5.75,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/P4-Brown-Sugar-Boba-Latte.jpg",
-    category: "Tea Spresso Series",
-  },
-  {
-    name: "P5 Sun Moon Lake Black Tea Cheema",
-    description: "168 calories to 354 calories",
-    price: 6.5,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/P5-Sun-Moon-Lake-Cheesma.jpg",
-    category: "Tea Spresso Series",
-  },
-  {
-    name: "P7 Fresh Mango Cheema",
-    description: "301 calories to 348 calories",
-    price: 6.5,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/P7-Mango-Fruity-Tea-Cheezma.jpg",
-    category: "Tea Spresso Series",
-  },
-  {
-    name: "P8 Fresh Dragon Fruit Cheema",
-    description: "355 calories to 396 calories",
-    price: 6.5,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/P8-Dragon-Fruity-Cheezma.jpg",
-    category: "Tea Spresso Series",
-  },
-  {
-    name: "P9 Fresh Strawberry Cheema",
-    description: "301 calories to 345 calories",
-    price: 6.5,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/P9-Strawberry-Fruity-Cheezma.jpg",
-    category: "Tea Spresso Series",
-  },
-  // Fruit Tea (4 items)
-  {
-    name: "D1 Jade Lemon Tea",
-    description: "238 calories",
-    price: 4.95,
-    image: "https://olodev.azurewebsites.net/imagesmenu/D1-Jade-Lemon-Tea.jpg",
-    category: "Fruit Tea",
-  },
-  {
-    name: "D2 Peach Fruit Tea",
-    description: "Comes with Peach Popping Boba (190 calories to 250 calories)",
-    price: 4.75,
-    image: "https://olodev.azurewebsites.net/imagesmenu/D2-Peach-Fruit-Tea.jpg",
-    category: "Fruit Tea",
-  },
-  {
-    name: "D3 Pineapple Fruit Tea",
-    description:
-      "Comes with Boba and Pineapple Jelly (170 calories to 229 calories)",
-    price: 4.75,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/M9_3G-Fresh-Taro-Boba-Latte.jpg",
-    category: "Fruit Tea",
-  },
-  {
-    name: "D4 Guava Fruit Tea",
-    description:
-      "Comes with Boba and Litchi Jelly (167 calories to 226 calories)",
-    price: 4.75,
-    image: "https://olodev.azurewebsites.net/imagesmenu/D4-Guava-Fruit-Tea.jpg",
-    category: "Fruit Tea",
-  },
-  {
-    name: "J1 White Peach Oolong",
-    description: "Refreshing white peach flavor with premium oolong tea.",
-    price: 4.95,
-    image: "https://olodev.azurewebsites.net/imagesmenu/D2-Peach-Fruit-Tea.jpg",
-    category: "Fruit Tea",
-  },
-  // Milk Tea (4 items)
-  {
-    name: "B1 Signature Boba Milk Tea",
-    description: "223 calories to 357 calories",
-    price: 4.75,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/B1-Signature-Boba-Milk-Tea.jpg",
-    category: "Milk Tea",
-  },
-  {
-    name: "B2 Milk Tea with Pudding",
-    description: "255 calories to 378 calories",
-    price: 4.75,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/B2-Signature-Milk-Tea-with-Pudding.jpg",
-    category: "Milk Tea",
-  },
-  {
-    name: "B3 Milk Tea with Grass Jelly",
-    description: "208 calories to 331 calories",
-    price: 4.75,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/B3-Signature-Milk-Tea-with-Grass-Jelly.jpg",
-    category: "Milk Tea",
-  },
-  {
-    name: "B4 Milk Tea Tofuhua & Red Bean",
-    description: "223 calories to 314 calories",
-    price: 4.95,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/B4-Tofuhua-Red-Bean-Milk-Tea.jpg",
-    category: "Milk Tea",
-  },
-  // Dessert Drink (3 items)
-  {
-    name: "K4 Fresh Mango Sago Dessert",
-    description: "513 calories",
-    price: 5.95,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/K4-Fresh-Mango-Sago.jpg",
-    category: "Dessert Drink",
-  },
-  {
-    name: "K8 Taro Sago Dessert",
-    description: "513 calories",
-    price: 5.95,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/K8-Taro-Sago-Dessert.jpg",
-    category: "Dessert Drink",
-  },
-  {
-    name: "M6 Durian Sago Dessert",
-    description: "632 calories",
-    price: 6.5,
-    image:
-      "https://olodev.azurewebsites.net/imagesmenu/M6-Durian-Sago-Dessert.jpg",
-    category: "Dessert Drink",
-  },
-];
 
 function toggleMenu(e, menuId) {
   e.stopPropagation();
@@ -2520,7 +2669,6 @@ function renderMenuPage() {
                                                     <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
                                                         <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
                                                             <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">${item.category}</p>
                                                             <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
                                                         </div>
                                                         <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
@@ -5850,6 +5998,21 @@ const routes = {
   },
   "order-status": () => {
     const isDesktop = currentViewport === "desktop";
+
+    ensureLastOrderLoaded();
+    const order = mockupState.lastOrder;
+    if (!order) return renderNoOrderState("Order Status");
+
+    const orderLocationId = order.locationId ?? mockupState.selectedLocationId;
+    const locationName =
+      order.locationName || getSelectedLocationInfo(orderLocationId)?.name || "Location unavailable";
+    const readyEstimate = getOrderReadyEstimate(order);
+    const miniStatusLabel = order.isCanceled
+      ? "Canceled"
+      : order.deliverectOrderAcceptedDate
+      ? "Preparing"
+      : "Confirming";
+
     return `
             <div class="flex flex-col h-full bg-[#f6f6f6] relative">
                 <!-- Subtle top-aligned brand gradient overlay fading down -->
@@ -5887,160 +6050,16 @@ const routes = {
 
                     ${
                       mockupState.orderDetailsExpanded
-                        ? `
-                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
-                                <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
-                            </div>
-                            <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || "i-Tea - Tempe"}</h3>
-                                <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
-                            </div>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba3}" class="w-full h-full object-cover object-top">
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Brown Sugar Pearl</h4>
-                                        <span class="text-sm font-black text-gray-900">$6.50</span>
-                                    </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Large • Less Ice • 75% Sweet</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba4}" class="w-full h-full object-cover object-top">
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Protein Bowl</h4>
-                                        <span class="text-sm font-black text-gray-900">$12.50</span>
-                                    </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Chicken • Quinoa • Avocado</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba1}" class="w-full h-full object-cover object-top">
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × M7 Boba Milk Tea</h4>
-                                        <span class="text-sm font-black text-gray-900">$5.50</span>
-                                    </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Regular • Classic Tea</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-2 pt-4 border-t border-gray-100">
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Subtotal</span>
-                                <span>$24.50</span>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Delivery Fee</span>
-                                <div class="flex gap-2">
-                                    <span class="line-through text-gray-300">$1.99</span>
-                                    <span>$0.00</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <div class="flex items-center gap-1">Service Fee <i class="fa-solid fa-circle-info text-[10px]"></i></div>
-                                <div class="flex gap-2">
-                                    <span class="line-through text-gray-300">$3.00</span>
-                                    <span>$0.99</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <div class="flex items-center gap-1">Estimated Tax <i class="fa-solid fa-circle-info text-[10px]"></i></div>
-                                <span>$2.32</span>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>VIP Delivery Fee</span>
-                                <div class="flex gap-2">
-                                    <span class="line-through text-gray-300">$5.99</span>
-                                    <span>$0.00</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Dasher Tip</span>
-                                <span>$4.00</span>
-                            </div>
-                            <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
-                                <span>Total</span>
-                                <span>$31.81</span>
-                            </div>
-                        </div>
-
-                        <div class="pt-6 border-t border-gray-100">
-                            <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Payment</h2>
-                            <div class="flex items-start justify-between">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center shrink-0">
-                                        <i class="fa-brands fa-apple-pay text-3xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Apple Pay...3580</p>
-                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">3/14/26, 1:14 PM</p>
-                                    </div>
-                                </div>
-                                <span class="text-base font-black text-gray-900">$31.81</span>
-                            </div>
-                            <p class="text-[10px] font-bold text-gray-400 mt-4 leading-relaxed line-clamp-2">You'll be charged at the end of the day for this and other orders.</p>
-                        </div>
-                    </div>
-                    `
+                        ? renderOrderDetailsCard(order, locationName)
                         : `
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 text-center">
-                        <h2 class="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-1">Preparing</h2>
-                        <p class="text-sm font-bold text-gray-500">Estimated pickup at 12:45 PM</p>
+                        <h2 class="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-1">${miniStatusLabel}</h2>
+                        <p class="text-sm font-bold text-gray-500">${readyEstimate.label}</p>
                     </div>
                     `
                     }
 
-                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 relative">
-                        <!-- Vertical line connecting steps -->
-                        <div class="absolute left-[39px] top-10 bottom-10 w-0.5 bg-gray-200 z-0"></div>
-                        
-                        <div class="space-y-8 relative z-10">
-                            <!-- Step 1: Received (Completed) -->
-                            <div class="flex gap-4 items-center opacity-50">
-                                <div class="w-10 h-10 rounded-full bg-green-50 text-white flex items-center justify-center shrink-0 shadow-md">
-                                    <i class="fa-solid fa-check"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm">Order Received</h3>
-                                    <p class="text-xs text-gray-500 font-medium">12:30 PM</p>
-                                </div>
-                            </div>
-                            <!-- Step 2: Preparing (Active) -->
-                            <div class="flex gap-4 items-center">
-                                <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0 shadow-md ring-4 ring-red-100">
-                                    <i class="fa-solid fa-fire-burner"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-black text-red-600 uppercase tracking-tight text-sm">Preparing Food</h3>
-                                    <p class="text-xs text-gray-500 font-medium">Currently in the kitchen</p>
-                                </div>
-                            </div>
-                            <!-- Step 3: Ready (Pending) -->
-                            <div class="flex gap-4 items-center opacity-40">
-                                <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center shrink-0 border-2 border-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                                </div>
-                                <div>
-                                    <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm">Ready for Pickup</h3>
-                                    <p class="text-xs text-gray-500 font-medium">Waiting for completion</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    ${renderOrderStatusTimeline(order)}
                     ${
                       isDesktop
                         ? `
@@ -6070,6 +6089,21 @@ const routes = {
   },
   "track-order": () => {
     const isDesktop = currentViewport === "desktop";
+
+    ensureLastOrderLoaded();
+    const order = mockupState.lastOrder;
+    if (!order) return renderNoOrderState("Track Order");
+
+    const orderLocationId = order.locationId ?? mockupState.selectedLocationId;
+    const locationName =
+      order.locationName || getSelectedLocationInfo(orderLocationId)?.name || "Location unavailable";
+    const readyEstimate = getOrderReadyEstimate(order);
+    const miniStatusLabel = order.isCanceled
+      ? "Canceled"
+      : order.deliverectOrderAcceptedDate
+      ? "Preparing"
+      : "Confirming";
+
     return `
             <div class="flex flex-col h-full ${isDesktop ? "bg-[#f6f6f6]" : "bg-white"} relative">
                 <header class="bg-white px-6 py-4 flex items-center shadow-sm z-50 shrink-0 sticky top-0 justify-center">
@@ -6103,160 +6137,16 @@ const routes = {
 
                     ${
                       mockupState.orderDetailsExpanded
-                        ? `
-                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
-                                <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
-                            </div>
-                            <div>
-                                <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${mockupState.selectedLocation || "i-Tea - Tempe"}</h3>
-                                <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">3 items</p>
-                            </div>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba3}" class="w-full h-full object-cover object-top">
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Brown Sugar Pearl</h4>
-                                        <span class="text-sm font-black text-gray-900">$6.50</span>
-                                    </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Large • Less Ice • 75% Sweet</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba4}" class="w-full h-full object-cover object-top">
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × Protein Bowl</h4>
-                                        <span class="text-sm font-black text-gray-900">$12.50</span>
-                                    </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Chicken • Quinoa • Avocado</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                    <img src="${assets.boba1}" class="w-full h-full object-cover object-top">
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">1 × M7 Boba Milk Tea</h4>
-                                        <span class="text-sm font-black text-gray-900">$5.50</span>
-                                    </div>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Regular • Classic Tea</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-2 pt-4 border-t border-gray-100">
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Subtotal</span>
-                                <span>$24.50</span>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Delivery Fee</span>
-                                <div class="flex gap-2">
-                                    <span class="line-through text-gray-300">$1.99</span>
-                                    <span>$0.00</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <div class="flex items-center gap-1">Service Fee <i class="fa-solid fa-circle-info text-[10px]"></i></div>
-                                <div class="flex gap-2">
-                                    <span class="line-through text-gray-300">$3.00</span>
-                                    <span>$0.99</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <div class="flex items-center gap-1">Estimated Tax <i class="fa-solid fa-circle-info text-[10px]"></i></div>
-                                <span>$2.32</span>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>VIP Delivery Fee</span>
-                                <div class="flex gap-2">
-                                    <span class="line-through text-gray-300">$5.99</span>
-                                    <span>$0.00</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                <span>Dasher Tip</span>
-                                <span>$4.00</span>
-                            </div>
-                            <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
-                                <span>Total</span>
-                                <span>$31.81</span>
-                            </div>
-                        </div>
-
-                        <div class="pt-6 border-t border-gray-100">
-                            <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Payment</h2>
-                            <div class="flex items-start justify-between">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center shrink-0">
-                                        <i class="fa-brands fa-apple-pay text-3xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Apple Pay...3580</p>
-                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">3/14/26, 1:14 PM</p>
-                                    </div>
-                                </div>
-                                <span class="text-base font-black text-gray-900">$31.81</span>
-                            </div>
-                            <p class="text-[10px] font-bold text-gray-400 mt-4 leading-relaxed line-clamp-2">You'll be charged at the end of the day for this and other orders.</p>
-                        </div>
-                    </div>
-                    `
+                        ? renderOrderDetailsCard(order, locationName)
                         : `
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 text-center">
-                        <h2 class="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-1">Preparing</h2>
-                        <p class="text-sm font-bold text-gray-500">Estimated pickup at 12:45 PM</p>
+                        <h2 class="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-1">${miniStatusLabel}</h2>
+                        <p class="text-sm font-bold text-gray-500">${readyEstimate.label}</p>
                     </div>
                     `
                     }
 
-                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 relative">
-                        <!-- Vertical line connecting steps -->
-                        <div class="absolute left-[39px] top-10 bottom-10 w-0.5 bg-gray-200 z-0"></div>
-                        
-                        <div class="space-y-8 relative z-10">
-                            <!-- Step 1: Received (Completed) -->
-                            <div class="flex gap-4 items-center opacity-50">
-                                <div class="w-10 h-10 rounded-full bg-green-50 text-white flex items-center justify-center shrink-0 shadow-md">
-                                    <i class="fa-solid fa-check"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm">Order Received</h3>
-                                    <p class="text-xs text-gray-500 font-medium">12:30 PM</p>
-                                </div>
-                            </div>
-                            <!-- Step 2: Preparing (Active) -->
-                            <div class="flex gap-4 items-center">
-                                <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0 shadow-md ring-4 ring-red-100">
-                                    <i class="fa-solid fa-fire-burner"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-black text-red-600 uppercase tracking-tight text-sm">Preparing Food</h3>
-                                    <p class="text-xs text-gray-500 font-medium">Currently in the kitchen</p>
-                                </div>
-                            </div>
-                            <!-- Step 3: Ready (Pending) -->
-                            <div class="flex gap-4 items-center opacity-40">
-                                <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center shrink-0 border-2 border-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-                                </div>
-                                <div class="flex-1">
-                                    <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm">Ready for Pickup</h3>
-                                    <p class="text-xs text-gray-500 font-medium">Waiting for completion</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    ${renderOrderStatusTimeline(order)}
                     ${
                       isDesktop
                         ? `
@@ -6264,7 +6154,7 @@ const routes = {
                         <button onclick="alert('Calling store at ${mockupState.selectedLocationPhone || "our restaurant"}...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
                             <i class="fa-solid fa-phone"></i> Contact Store
                         </button>
-                        <button onclick="navigateTo('home')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
+                        <button onclick="navigateTo('restaurant-home')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                     </div>
                     `
                         : ""
@@ -6278,7 +6168,7 @@ const routes = {
                         <button onclick="alert('Calling store at ${mockupState.selectedLocationPhone || "our restaurant"}...')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider flex justify-center items-center gap-2 hover:bg-violet-700">
                             <i class="fa-solid fa-phone"></i> Contact Store
                         </button>
-                        <button onclick="navigateTo('home')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
+                        <button onclick="navigateTo('restaurant-home')" class="w-full py-2 text-gray-400 font-extrabold uppercase tracking-widest text-[11px] hover:text-gray-900 transition-colors">Back to Home</button>
                     </div>
                 </div>
                 `
@@ -6465,304 +6355,13 @@ const routes = {
             </div>
         `;
   },
-  directions: () => {
-    const isDesktop = currentViewport === "desktop";
-    
-    const targetLoc = getSelectedLocationInfo();
-
-    // Real distance only if we have real coordinates for both the customer
-    // and the store — never a fabricated "2.4 mi" placeholder.
-    let distMilesStr = null;
-    if (mockupState.userLat && mockupState.userLng && targetLoc?.lat && targetLoc?.lng) {
-      if (typeof calculateDistance === 'function') {
-        distMilesStr = calculateDistance(mockupState.userLat, mockupState.userLng, targetLoc.lat, targetLoc.lng).toFixed(1);
-      }
-    }
-    const etaMins = distMilesStr ? Math.max(1, Math.round(parseFloat(distMilesStr) * 3.7)) : null;
-    const locName = targetLoc?.name || "Location unavailable";
-    const locAddress = targetLoc?.address || "Address unavailable";
-
-    // Map the real selected store, not a hardcoded Tempe embed — the old
-    // embed URL was baked to one specific place ID and never actually
-    // reflected whichever store was selected. Google's simpler ?q= embed
-    // format works for any coordinate/address, so this is now dynamic.
-    const mapSrc =
-      targetLoc?.lat && targetLoc?.lng
-        ? `https://www.google.com/maps?q=${targetLoc.lat},${targetLoc.lng}&output=embed`
-        : targetLoc?.address
-        ? `https://www.google.com/maps?q=${encodeURIComponent(targetLoc.address)}&output=embed`
-        : "https://www.google.com/maps?output=embed";
-
-    if (isDesktop) {
-      return `
-            <div class="flex h-full bg-white overflow-hidden" style="height: calc(100vh - 70px);">
-
-                <!-- ===== LEFT SIDEBAR PANEL ===== -->
-                <div class="w-[400px] shrink-0 flex flex-col bg-white border-r border-gray-100 shadow-[4px_0_24px_rgba(0,0,0,0.06)] z-10 overflow-y-auto scrollbar-hide">
-
-                    <!-- Header -->
-                    <div class="px-7 pt-7 pb-5 border-b border-gray-100">
-                        <div class="flex items-center gap-3 mb-5">
-                            <button onclick="window.history.back()" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 transition-colors shrink-0">
-                                <i class="fa-solid fa-chevron-left text-gray-600 text-sm"></i>
-                            </button>
-                            <span class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Directions</span>
-                        </div>
-
-                        <!-- Location identity -->
-                        <div class="flex items-center gap-4 mb-5">
-                            <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center border-2 border-violet-100 overflow-hidden shadow-sm shrink-0">
-                                <img src="images/itea_logo.png" class="w-10 h-10 object-contain">
-                            </div>
-                            <div class="min-w-0">
-                                <h1 class="text-xl font-black text-gray-900 uppercase tracking-tight leading-tight">${locName}</h1>
-                                <p class="text-[11px] font-bold text-gray-500 mt-0.5 uppercase tracking-wider leading-relaxed truncate">${locAddress}</p>
-                            </div>
-                        </div>
-
-                        <!-- Transport mode tabs -->
-                        <div class="flex gap-2">
-                            <button id="dir-mode-drive" onclick="document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.remove('bg-violet-600','text-white','shadow-md')); document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.add('bg-gray-100','text-gray-600')); this.classList.remove('bg-gray-100','text-gray-600'); this.classList.add('bg-violet-600','text-white','shadow-md');" class="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-violet-600 text-white shadow-md transition-all">
-                                <i class="fa-solid fa-car text-base"></i>
-                                <span class="text-[10px] font-black uppercase tracking-widest">Drive</span>
-                            </button>
-                            <button id="dir-mode-walk" onclick="document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.remove('bg-violet-600','text-white','shadow-md')); document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.add('bg-gray-100','text-gray-600')); this.classList.remove('bg-gray-100','text-gray-600'); this.classList.add('bg-violet-600','text-white','shadow-md');" class="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gray-100 text-gray-600 transition-all">
-                                <i class="fa-solid fa-person-walking text-base"></i>
-                                <span class="text-[10px] font-black uppercase tracking-widest">Walk</span>
-                            </button>
-                            <button id="dir-mode-transit" onclick="document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.remove('bg-violet-600','text-white','shadow-md')); document.querySelectorAll('[id^=dir-mode-]').forEach(b=>b.classList.add('bg-gray-100','text-gray-600')); this.classList.remove('bg-gray-100','text-gray-600'); this.classList.add('bg-violet-600','text-white','shadow-md');" class="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gray-100 text-gray-600 transition-all">
-                                <i class="fa-solid fa-bus text-base"></i>
-                                <span class="text-[10px] font-black uppercase tracking-widest">Transit</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- ETA + Distance stats -->
-                    <div class="px-7 py-5 border-b border-gray-100">
-                        <div class="grid grid-cols-3 gap-3">
-                            <div class="bg-violet-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-violet-100">
-                                <div class="text-violet-600 text-[10px] font-black uppercase tracking-widest mb-1">ETA</div>
-                                <div class="text-2xl font-black text-gray-900">${etaMins ?? "--"}</div>
-                                <div class="text-[10px] font-bold text-gray-500 uppercase">mins</div>
-                            </div>
-                            <div class="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
-                                <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Distance</div>
-                                <div class="text-2xl font-black text-gray-900">${distMilesStr ?? "--"}</div>
-                                <div class="text-[10px] font-bold text-gray-500 uppercase">miles</div>
-                            </div>
-                            <div class="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
-                                <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Traffic</div>
-                                <div class="text-lg font-black text-green-600">Low</div>
-                                <div class="text-[10px] font-bold text-gray-500 uppercase">Normal</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- From / To route summary -->
-                    <div class="px-7 py-5 border-b border-gray-100">
-                        <div class="flex flex-col gap-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-circle-dot text-blue-500 text-sm"></i>
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">From</div>
-                                    <div class="text-sm font-black text-gray-900 truncate">Your Location</div>
-                                </div>
-                            </div>
-                            <div class="ml-4 w-px h-5 bg-gray-200 self-start ml-[15px]"></div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-location-dot text-white text-sm"></i>
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">To</div>
-                                    <div class="text-sm font-black text-gray-900 truncate">${locName} · ${locAddress}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Turn-by-turn directions -->
-                    <div class="px-7 py-5 flex-1">
-                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Step-by-Step</div>
-                        <div class="space-y-1">
-                            ${[
-                              {
-                                icon: "fa-arrow-right",
-                                label: "Head east on E University Dr",
-                                dist: "0.3 mi",
-                              },
-                              {
-                                icon: "fa-turn-right",
-                                label: "Turn right onto S Mill Ave",
-                                dist: "0.1 mi",
-                              },
-                              {
-                                icon: "fa-turn-left",
-                                label: "Turn left onto E 7th St",
-                                dist: "0.5 mi",
-                              },
-                              {
-                                icon: "fa-turn-right",
-                                label: "Turn right onto S Rural Rd",
-                                dist: "0.8 mi",
-                              },
-                              {
-                                icon: "fa-turn-left",
-                                label: "Turn left onto E University Dr",
-                                dist: "0.4 mi",
-                              },
-                              {
-                                icon: "fa-location-dot",
-                                label: "Arrive at i-Tea Tempe",
-                                dist: "Destination",
-                              },
-                            ]
-                              .map(
-                                (step, i) => `
-                                <div class="flex items-start gap-4 p-3.5 rounded-xl hover:bg-gray-50 transition-colors group cursor-default">
-                                    <div class="w-8 h-8 rounded-full ${i === 5 ? "bg-violet-600 text-white" : "bg-gray-100 text-gray-600 group-hover:bg-violet-100 group-hover:text-violet-600"} flex items-center justify-center shrink-0 transition-colors">
-                                        <i class="fa-solid ${step.icon} text-xs"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="text-sm font-bold text-gray-800 leading-snug">${step.label}</div>
-                                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">${step.dist}</div>
-                                    </div>
-                                </div>
-                            `,
-                              )
-                              .join("")}
-                        </div>
-                    </div>
-
-                    <!-- CTA Buttons -->
-                    <div class="px-7 py-6 border-t border-gray-100 space-y-3 shrink-0">
-                        <button class="w-full bg-violet-600 hover:bg-violet-700 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-violet-200 flex items-center justify-center gap-3 active:scale-95 transition-all">
-                            <i class="fa-solid fa-location-arrow"></i> Start Navigation
-                        </button>
-                        <div class="flex gap-3">
-                            <button class="flex-1 bg-white border-2 border-gray-100 text-gray-700 hover:border-violet-200 hover:text-violet-600 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
-                                <i class="fa-solid fa-share-nodes"></i> Share
-                            </button>
-                            <button class="flex-1 bg-white border-2 border-gray-100 text-gray-700 hover:border-violet-200 hover:text-violet-600 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
-                                <i class="fa-solid fa-print"></i> Print
-                            </button>
-                            <button onclick="window.history.back()" class="flex-1 bg-white border-2 border-gray-100 text-gray-700 hover:border-red-200 hover:text-red-500 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
-                                <i class="fa-solid fa-xmark"></i> Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ===== RIGHT MAP PANEL ===== -->
-                <div class="flex-1 relative bg-gray-100 overflow-hidden">
-                    <iframe
-                        src="${mapSrc}"
-                        class="w-full h-full border-0"
-                        allowfullscreen=""
-                        loading="lazy">
-                    </iframe>
-                    <!-- Map overlay badge -->
-                    <div class="absolute top-5 right-5 bg-white rounded-2xl shadow-lg px-4 py-3 flex items-center gap-3 border border-gray-100">
-                        <div class="w-8 h-8 bg-violet-600 rounded-full flex items-center justify-center shrink-0">
-                            <i class="fa-solid fa-location-dot text-white text-sm"></i>
-                        </div>
-                        <div>
-                            <div class="text-xs font-black text-gray-900 uppercase tracking-tight">${locName}</div>
-                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Open Now · ${etaMins != null ? `${etaMins} min away` : "distance unavailable"}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-    }
-
-    // ===== MOBILE / TABLET (original layout preserved) =====
-    return `
-            <div class="flex flex-col h-full bg-white relative">
-
-                <!-- Map Area -->
-                <div class="flex-1 relative bg-gray-100 overflow-hidden">
-                    <iframe 
-                        src="${mapSrc}" 
-                        class="w-full h-full border-0" 
-                        allowfullscreen="" 
-                        loading="lazy">
-                    </iframe>
-
-                    <!-- Search Mockup -->
-                    <div class="absolute top-4 left-4 right-4 z-10">
-                        <div class="bg-white rounded-full shadow-xl flex items-center px-5 py-4 border border-gray-100">
-                            <i class="fa-solid fa-magnifying-glass text-gray-400 mr-4 text-sm"></i>
-                            <span class="text-xs font-black text-gray-900 flex-1 truncate uppercase tracking-widest leading-none">${locAddress}</span>
-                            <i class="fa-solid fa-microphone text-violet-600 ml-4 border-l pl-5 border-gray-100"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bottom Panel -->
-                <div class="bg-white rounded-t-[32px] shadow-[0_-12px_48px_rgba(0,0,0,0.15)] p-8 z-20 -mt-8">
-                    <div class="w-16 h-1.5 bg-gray-100 rounded-full mx-auto mb-8"></div>
-                    
-                    <div class="flex items-start justify-between gap-6 mb-8">
-                        <div class="flex-1">
-                            <h2 class="text-3xl font-black text-gray-900 leading-none uppercase tracking-tighter">${locName}</h2>
-                            <p class="text-xs font-black text-gray-500 mt-3 uppercase tracking-widest leading-relaxed">${locAddress}</p>
-                        </div>
-                        <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center border-2 border-violet-100 overflow-hidden shadow-sm shrink-0">
-                            <img src="images/itea_logo.png" class="w-12 h-12 object-contain">
-                        </div>
-                    </div>
-
-                    <div class="flex gap-4 mb-8">
-                        <button class="flex-[2.5] bg-violet-600 text-white py-5 rounded-2xl font-black text-lg uppercase tracking-[0.2em] shadow-lg shadow-violet-200 flex items-center justify-center gap-3 active:scale-95 transition-all">
-                            <i class="fa-solid fa-location-arrow text-xl"></i> START
-                        </button>
-                        <button class="flex-1 bg-white border-2 border-gray-200 text-gray-900 py-5 rounded-2xl flex items-center justify-center active:scale-95 transition-all shadow-sm">
-                            <i class="fa-solid fa-share-nodes text-2xl text-violet-600"></i>
-                        </button>
-                    </div>
-
-                    <div class="flex items-center gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100 shadow-sm mb-10">
-                        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm shrink-0 text-violet-600">
-                            <i class="fa-solid fa-car text-2xl"></i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Estimated Arrival</div>
-                            <div class="text-lg font-black text-gray-900 uppercase tracking-tight">${etaMins != null ? `${etaMins} mins` : "Distance unavailable"} ${distMilesStr != null ? `<span class="font-bold text-gray-500 lowercase ml-2 text-sm">(${distMilesStr} miles)</span>` : ""}</div>
-                        </div>
-                    </div>
-                    
-                    <button onclick="window.history.back()" class="w-full py-2 text-gray-400 font-extrabold text-xs uppercase tracking-[0.3em] hover:text-gray-900 transition-colors">
-                        <i class="fa-solid fa-xmark mr-1"></i> Close Map
-                    </button>
-                </div>
-            </div>
-        `;
-  },
 
   "order-confirm": () => {
     const isDesktop = currentViewport === "desktop";
-    
-    // Auto-fetch latest order if we don't have one loaded
-    if (!mockupState.lastOrder && window.ApiService && window.ApiService.getToken() && !window._fetchingLastOrder) {
-      window._fetchingLastOrder = true;
-      setTimeout(() => {
-        window.ApiService.getOrders(1, 1).then(res => {
-          window._fetchingLastOrder = false;
-          if (res && res.length > 0) {
-            mockupState.lastOrder = res[0];
-            persistAllState();
-            renderPage();
-          }
-        }).catch(() => {
-          window._fetchingLastOrder = false;
-        });
-      }, 100);
-    }
+
+    ensureLastOrderLoaded();
 
     const order = mockupState.lastOrder || {};
-    const orderItems = order.orderMenuItems || order.orderItems || [];
     let orderNum = order.orderId || order.orderNumber || "Pending";
     if (orderNum !== "Pending" && !String(orderNum).startsWith("FB-")) {
       orderNum = "FB-" + orderNum;
@@ -6776,16 +6375,8 @@ const routes = {
       selectedLoc.address ||
       selectedLoc.streetAddress ||
       "Address unavailable";
-    const now = new Date();
-    const pickupTime = now.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    const orderSubtotal = (order.subTotal || order.subtotal || 0).toFixed(2);
-    const orderTaxes = (order.salesTax || order.taxes || 0).toFixed(2);
-    const orderTip = (order.tipApplied || order.tipAmount || 0).toFixed(2);
-    const orderTotal = (order.total || 0).toFixed(2);
-    const itemCount = orderItems.reduce((sum, i) => sum + (i.quantity || 1), 0);
+    const pickupTime = getOrderReadyEstimate(order).time;
+    const pickupTimeLabel = pickupTime ? formatOrderTime(pickupTime) : "--";
 
     return `
             <div class="flex flex-col h-full bg-white relative">
@@ -6861,7 +6452,7 @@ const routes = {
                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
                                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Pick Up Time</div>
-                                <div class="text-2xl font-black text-violet-600 uppercase">${pickupTime}</div>
+                                <div class="text-2xl font-black text-violet-600 uppercase">${pickupTimeLabel}</div>
                             </div>
                             <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
                                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Location</div>
@@ -6881,85 +6472,7 @@ const routes = {
 
                         ${
                           mockupState.orderDetailsExpanded
-                            ? `
-                        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 animate-[fadeIn_0.3s_ease-out] space-y-8">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-violet-50 overflow-hidden">
-                                    <img src="images/i-tea-logo-new.png" class="w-full h-full object-contain scale-75">
-                                </div>
-                                <div>
-                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${locationName}</h3>
-                                    <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">${itemCount} item${itemCount !== 1 ? "s" : ""}</p>
-                                </div>
-                            </div>
-
-                            <div class="space-y-4">
-                                ${orderItems
-                                  .map((item) => {
-                                    const customSummary =
-                                      (item.selectedSubItems || [])
-                                        .map((s) =>
-                                          s.quantity > 1
-                                            ? `${s.name} x${s.quantity}`
-                                            : s.name,
-                                        )
-                                        .join(" • ") || "Standard";
-                                    const itemTotal = (
-                                      item.unitPrice * item.quantity
-                                    ).toFixed(2);
-                                    return `
-                                    <div class="flex gap-4">
-                                        <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shadow-sm shrink-0 border border-gray-100">
-                                            <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
-                                        </div>
-                                        <div class="flex-1">
-                                            <div class="flex justify-between items-start">
-                                                <h4 class="text-sm font-black text-gray-900 leading-tight uppercase">${item.quantity} × ${item.name}</h4>
-                                                <span class="text-sm font-black text-gray-900">$${itemTotal}</span>
-                                            </div>
-                                            <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">${customSummary}</p>
-                                        </div>
-                                    </div>`;
-                                  })
-                                  .join("")}
-                            </div>
-
-                            <div class="space-y-2 pt-4 border-t border-gray-100">
-                                <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                    <span>Subtotal</span>
-                                    <span>$${orderSubtotal}</span>
-                                </div>
-                                <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                    <span>Tax</span>
-                                    <span>$${orderTaxes}</span>
-                                </div>
-                                <div class="flex justify-between text-sm font-bold text-gray-500 uppercase tracking-widest">
-                                    <span>Tip</span>
-                                    <span>$${orderTip}</span>
-                                </div>
-                                <div class="flex justify-between text-base font-black text-gray-900 uppercase pt-2">
-                                    <span>Total</span>
-                                    <span>$${orderTotal}</span>
-                                </div>
-                            </div>
-
-                            <div class="pt-6 border-t border-gray-100">
-                                <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Payment</h2>
-                                <div class="flex items-start justify-between">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-12 h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center shrink-0">
-                                            <i class="fa-solid fa-credit-card text-xl text-gray-400"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Card Payment</p>
-                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">${now.toLocaleDateString("en-US")}, ${pickupTime}</p>
-                                        </div>
-                                    </div>
-                                    <span class="text-base font-black text-gray-900">$${orderTotal}</span>
-                                </div>
-                            </div>
-                        </div>
-                        `
+                            ? renderOrderDetailsCard(order, locationName)
                             : ""
                         }
 
@@ -7799,8 +7312,7 @@ const routes = {
 window.systemPagesData = [
     { group: "ordering-flow", id: "landing", name: "FareBites Home", file: "index.html", icon: "fa-house", color: "#7c3aed", auth: false, description: "Platform landing page. Entry point for the FareBites online ordering system.", endpoints: [], connects: ["restaurant-home", "sign-in"] },
     { group: "ordering-flow", id: "restaurant-home", name: "i-Tea Home", file: "index.html", icon: "fa-store", color: "#7c3aed", auth: false, description: "Restaurant brand home. Showcases i-Tea with featured items, rewards teaser.", endpoints: [], connects: ["locations", "menu", "sign-in"] },
-    { group: "ordering-flow", id: "locations", name: "Pick a Location", file: "locations.html", icon: "fa-location-dot", color: "#0ea5e9", auth: false, description: "Displays all i-Tea locations with live hours.", endpoints: [ { method: "GET", path: "/api/Locations", note: "Fetch all restaurant locations" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/hours", note: "Standard weekly hours per location" } ], connects: ["menu", "directions"] },
-    { group: "ordering-flow", id: "directions", name: "Directions", file: "directions.html", icon: "fa-map-location-dot", color: "#0ea5e9", auth: false, description: "Map view and directions to a specific location.", endpoints: [], connects: [] },
+    { group: "ordering-flow", id: "locations", name: "Pick a Location", file: "locations.html", icon: "fa-location-dot", color: "#0ea5e9", auth: false, description: "Displays all i-Tea locations with live hours.", endpoints: [ { method: "GET", path: "/api/Locations", note: "Fetch all restaurant locations" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/hours", note: "Standard weekly hours per location" } ], connects: ["menu"] },
     { group: "ordering-flow", id: "menu", name: "Menu", file: "menu.html", icon: "fa-utensils", color: "#0ea5e9", auth: false, description: "Full menu browser with tabs: Menu, Featured, Favorites, and Order History.", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/location/{id}/menu", note: "Fetch categories + tax rate + convenience fee" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/menuitems", note: "Fetch items for a specific category" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/featured", note: "Fetch featured items" } ], connects: ["customize", "cart"] },
     { group: "ordering-flow", id: "menu", name: "Menu Alt", file: "menu.html", icon: "fa-utensils", color: "#0ea5e9", auth: false, description: "Alternative menu layout with distinct category styling.", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/location/{id}/menu", note: "Fetch categories" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/menuitems", note: "Fetch items for a specific category" } ], connects: ["customize", "cart"] },
     { group: "ordering-flow", id: "menu-favorites", name: "Menu Favorites", file: "menu-favorites.html", icon: "fa-heart", color: "#ec4899", auth: true, description: "User's favorited items.", endpoints: [ { method: "GET", path: "/api/User/favorites", note: "Fetch favorited menu items" } ], connects: ["customize"] },
@@ -7850,8 +7362,7 @@ window.systemTreeStructure = {
                   ]
                 }
               ]
-            },
-            { id: "directions" }
+            }
           ]
         },
         {
@@ -8371,9 +7882,7 @@ routes["privacy"] = () => {
 };
 
 routes["sections"] = () => {
-  const grapefruitImg = MENU_ITEMS[5]
-    ? MENU_ITEMS[5].image
-    : "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
+  const grapefruitImg = "https://olodev.azurewebsites.net/imagesmenu/P3-Super-Grapefruit.jpg";
   return `
         <div class="flex flex-col h-full bg-[#f9fafb] relative overflow-y-auto">
             <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shrink-0">
@@ -8626,14 +8135,11 @@ function renderPage() {
   const viewport = document.getElementById("app-viewport");
   if (!viewport) return;
 
-  // Only prompt for location automatically on the directions page. On the
-  // locations picker, we don't want a permission prompt firing before the
-  // user has asked for anything location-based — that's deferred to the
+  // On the locations picker, we don't want a permission prompt firing before
+  // the user has asked for anything location-based — that's deferred to the
   // "Near Me" tab click. If permission was already granted earlier in this
   // session (we already have coords), keep distances fresh silently.
-  if (currentPage === "directions") {
-    requestUserLocation();
-  } else if (
+  if (
     (currentPage === "locations" || currentPage === "locations-alt") &&
     mockupState.userLat &&
     mockupState.userLng
@@ -8708,8 +8214,7 @@ function renderPage() {
                                 <i class="fa-solid fa-chevron-down text-[10px] ml-1 text-gray-400"></i>
                             </button>
                             <div id="user-profile-dropdown" class="dropdown-menu">
-                                <div class="dropdown-column-title">My Profile</div>
-                                <div class="dropdown-item" onclick="navigateTo('account')">Account Details</div>
+                                <div class="dropdown-item" onclick="navigateTo('account')">My Account</div>
 
                                 <div class="h-px bg-violet-100/50 my-2"></div>
                                 <div class="dropdown-item text-gray-900 hover:text-black" onclick="signOutUser()">Sign Out</div>
@@ -11102,6 +10607,12 @@ async function handleLogin() {
     migrateGuestCartToUser(email);
     loadCartFromStorage();
     if (mockupState.isLoggedIn) {
+      // The locations list requires login (see #21) — if a guest hit that
+      // gate before signing in, mockupState.locationsAuthRequired is still
+      // stuck true from that failed attempt. Re-fetch now that we have a
+      // real session, so the locations page shows real stores immediately
+      // instead of still telling an already-signed-in customer to sign in.
+      fetchLocations();
       try {
         const orders = await window.ApiService.getOrders(1, 20);
         console.log("Successfully fetched orders on login:", orders);
@@ -12191,26 +11702,6 @@ function findSubItemNameById(subId) {
     }
   }
 
-  if (typeof MENU_ITEMS !== "undefined" && Array.isArray(MENU_ITEMS)) {
-    for (const mi of MENU_ITEMS) {
-      if (mi.options && Array.isArray(mi.options)) {
-        for (const opt of mi.options) {
-          const choices = Array.isArray(opt.choices)
-            ? opt.choices
-            : Array.isArray(opt.subItems)
-            ? opt.subItems
-            : [];
-          for (const c of choices) {
-            if (!c) continue;
-            const cId = String(c.menuSubItemId || c.id || "");
-            const cName = typeof c === "string" ? c : c.name || c.title || "";
-            if (cId === subStr && cName) return cName.trim();
-          }
-        }
-      }
-    }
-  }
-
   return "";
 }
 
@@ -12240,7 +11731,6 @@ window.reorderPastOrder = function (orderId) {
       new Set([
         ...(mockupState.apiMenuItems || []),
         ...availableMenuItems,
-        ...(typeof MENU_ITEMS !== "undefined" ? MENU_ITEMS : []),
       ])
     );
 
@@ -12432,27 +11922,13 @@ window.reorderAndCloseModal = function (orderId) {
 function getReorderItemImage(item) {
   if (!item) return getFallbackItemImg();
   let img = item.image || item.productImage || item.imgUrl || item.imageUrl || "";
-  if (!img && item.name) {
+  if (!img && item.name && mockupState && Array.isArray(mockupState.apiMenuItems)) {
     const itemName = item.name.trim().toLowerCase();
-    const found = (typeof MENU_ITEMS !== "undefined" ? MENU_ITEMS : []).find(
-      (m) => (m.name || "").trim().toLowerCase() === itemName
+    const foundApi = mockupState.apiMenuItems.find(
+      (m) => (m.name || m.menuItemName || "").trim().toLowerCase() === itemName
     );
-    if (found && found.image) {
-      img = found.image;
-    } else if (
-      mockupState &&
-      mockupState.apiMenuItems &&
-      Array.isArray(mockupState.apiMenuItems)
-    ) {
-      const foundApi = mockupState.apiMenuItems.find(
-        (m) => (m.name || m.menuItemName || "").trim().toLowerCase() === itemName
-      );
-      if (
-        foundApi &&
-        (foundApi.image || foundApi.productImage || foundApi.imgUrl)
-      ) {
-        img = foundApi.image || foundApi.productImage || foundApi.imgUrl;
-      }
+    if (foundApi && (foundApi.image || foundApi.productImage || foundApi.imgUrl)) {
+      img = foundApi.image || foundApi.productImage || foundApi.imgUrl;
     }
   }
   return resolveImageUrl(img, getFallbackItemImg());
@@ -12650,9 +12126,32 @@ function renderReorderModalHTML() {
 
 function openOrderDetailsModal(orderId) {
   mockupState.viewingOrderId = orderId;
+  mockupState.viewingOrderDetails = null;
   mockupState.modalOpen = "order-details-view";
   persistAllState();
   renderPage();
+
+  // Cached list data renders instantly above; this replaces it with a fresh,
+  // real fetch of this one order so the modal reflects its current state
+  // rather than a stale snapshot from whenever the order list last loaded.
+  if (window.ApiService) {
+    window.ApiService.getOrderDetails(orderId)
+      .then((order) => {
+        if (
+          String(mockupState.viewingOrderId) !== String(orderId) ||
+          mockupState.modalOpen !== "order-details-view"
+        ) {
+          return;
+        }
+        mockupState.viewingOrderDetails = order;
+        persistAllState();
+        renderPage();
+      })
+      .catch(() => {
+        // Real fetch failed — keep showing the cached order already on screen
+        // rather than an error state for a modal that already has real data.
+      });
+  }
 }
 window.openOrderDetailsModal = openOrderDetailsModal;
 
@@ -12660,9 +12159,11 @@ function renderOrderDetailsViewModalHTML() {
   if (mockupState.modalOpen !== "order-details-view") return "";
 
   const allOrders = getAllUserOrders();
-  const order = allOrders.find(
-    (o) => String(o.orderId || o.orderNumber) === String(mockupState.viewingOrderId),
-  );
+  const order =
+    mockupState.viewingOrderDetails ||
+    allOrders.find(
+      (o) => String(o.orderId || o.orderNumber) === String(mockupState.viewingOrderId),
+    );
   if (!order) return "";
 
   const orderDate = new Date(
@@ -12762,23 +12263,14 @@ window.isCustomPickupTimeAllowed = function (
 ) {
   const locId = locationId || mockupState.selectedLocationId;
 
-  // Store #7 (Castro Valley) explicitly forbids custom pickup times in API
-  if (locId === 7 || String(locId) === "7") {
-    return false;
-  }
-  if (
-    mockupState.disabledCustomTimeLocations &&
-    mockupState.disabledCustomTimeLocations.includes(locId)
-  ) {
-    return false;
-  }
+  // Real check only: if the API ever returns allowCustomTime on a location,
+  // respect it. Today the live API doesn't return this field on any
+  // location, so this never fires — that's correct, not a bug. Nothing here
+  // singles out a specific store; a false "explicitly forbidden" claim for
+  // Castro Valley was removed since it wasn't backed by any real API data.
   const foundLoc = (mockupState.apiLocations || []).find(
     (l) => l.locationId === locId || l.id === locId,
   );
-  const locName = (foundLoc?.name || foundLoc?.locationName || "").toLowerCase();
-  if (locName.includes("castro valley")) {
-    return false;
-  }
   if (foundLoc && foundLoc.allowCustomTime === false) {
     return false;
   }
@@ -12943,7 +12435,7 @@ function requestUserLocation() {
         }
       });
       
-      if (currentPage === "locations" || currentPage === "locations-alt" || currentPage === "directions") {
+      if (currentPage === "locations" || currentPage === "locations-alt") {
         renderPage();
       }
     },
@@ -13619,6 +13111,15 @@ window.addEventListener("DOMContentLoaded", () => {
   if (token) {
     mockupState.isLoggedIn = true;
 
+    // The locations list requires login (see #21). If a guest hit that gate
+    // before signing in, mockupState.locationsAuthRequired can still be
+    // stuck true from that failed attempt even now that we have a real
+    // session on this page load — re-check it here too, not just at the
+    // moment of submitting the sign-in form.
+    if (mockupState.locationsAuthRequired || !mockupState.apiLocations) {
+      fetchLocations();
+    }
+
     // Fetch profile
     window.ApiService.getProfile()
       .then((profile) => {
@@ -13746,7 +13247,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // Auto-fetch item details if landing on a customize page without detail data.
-  // Searches API items then MENU_ITEMS by name (not by id/index which may be absent).
+  // Searches real API items by name (not by id/index which may be absent).
   if (
     currentPage.startsWith("customize") &&
     mockupState.selectedItem &&
@@ -13763,9 +13264,7 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       // Item is from a different category (e.g. suggested item from cart).
       // Find in all items and fetch detail directly.
-      const allItems = (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0)
-        ? mockupState.apiMenuItems
-        : MENU_ITEMS;
+      const allItems = mockupState.apiMenuItems || [];
       const item = allItems.find((i) => (i.name || "").toLowerCase() === targetName);
       if (item) {
         const isDrink = isDrinkCategory(item.category);
