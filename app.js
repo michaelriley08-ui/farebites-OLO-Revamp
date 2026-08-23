@@ -257,6 +257,38 @@ const LOCATIONS = [
   },
 ];
 
+// The real backend has no latitude/longitude field anywhere (checked every
+// location-related endpoint and schema in its live API) — it only has a real
+// street address. This table is that gap filled in honestly: real addresses,
+// looked up once and geocoded to real coordinates, keyed by the real backend
+// locationId. Unlike LOCATIONS above, this is not invented data — every
+// entry was cross-checked against the location's real phone number from the
+// live API and/or its own current online listings before being included.
+// A locationId that's missing here (a new store, one not yet added) gets no
+// coordinates rather than a guess — see getSelectedLocationInfo() callers.
+//
+// Deliberately excluded: locationId 30 ("i-Tea - Kearny"). The backend still
+// marks it enabled, but its real store (253 Kearny St, San Francisco) shows
+// as closed everywhere it's listed online. Needs a real decision, not a pin
+// on a map for a store that may no longer exist — see finding #23.
+const REAL_LOCATION_COORDINATES = {
+  7: { lat: 37.696307, lng: -122.0738627 }, // Castro Valley, CA
+  9: { lat: 37.8004416, lng: -122.2718372 }, // Oakland, CA
+  10: { lat: 37.7227497, lng: -122.1543745 }, // San Leandro, CA
+  19: { lat: 33.4216665, lng: -111.9511865 }, // Tempe, AZ
+  27: { lat: 37.3123559, lng: -121.809782 }, // San Jose, CA
+  28: { lat: 38.5431904, lng: -121.7468078 }, // Davis, CA (UC Davis)
+  29: { lat: 37.5510888, lng: -122.0501913 }, // Newark, CA
+  31: { lat: 38.508461, lng: -121.4348091 }, // Sacramento, CA (backend calls this "Stockton" — real address is on Stockton Blvd in Sacramento, not the city of Stockton)
+  32: { lat: 36.8070166, lng: -119.7820557 }, // Fresno, CA
+  45: { lat: 37.5049892, lng: -121.9712074 }, // Fremont, CA (#1 — the currently-open Fremont store; #2 is disabled/closed)
+  46: { lat: 37.6659205, lng: -121.8742939 }, // Pleasanton, CA
+  47: { lat: 37.7670827, lng: -122.24024 }, // Alameda, CA
+  57: { lat: 37.4332293, lng: -121.892869 }, // Milpitas, CA
+  58: { lat: 37.8352305, lng: -122.126466 }, // Moraga, CA
+  61: { lat: 38.0129835, lng: -121.8634671 }, // Pittsburg, CA
+};
+
 function getCalendarData(monthOffset = 0) {
   const now = new Date();
   const targetDate = new Date(
@@ -561,6 +593,10 @@ const DEFAULT_STATE = {
   noBagsSelected: false,
   bagMenuItem: null, // { menuItemId, price } for the real "Bag" item at this location, or null if it doesn't sell bags
   selectedLocationPhone: null, // real phone number for the currently selected location, from the API
+  locationsLoading: false, // true while fetchLocations() is in flight
+  locationsAuthRequired: false, // true if the last fetchLocations() attempt failed specifically because it requires login (401)
+  locationsLoadError: false, // true if the last fetchLocations() attempt failed for any other reason (network, 5xx, etc.)
+  menuItemsLoadError: false, // true if the last fetchMenuAndItems() attempt failed to load the current location's menu
   toppings: ["BOBA"],
   modalOpen: null,
   menuTab: "menu",
@@ -633,70 +669,47 @@ let mockupState = loadMockupState();
 mockupState.isLoading = false;
 let isUpdatingMockupState = false;
 
+// Resolves the store for the customer's most recent order, from real API
+// data only. Returns null if there's no previous order, or its store can't
+// be matched against the real locations list yet — callers must handle that
+// honestly (e.g. hide the "Order here again" card), never by substituting a
+// default store.
 function getPreviousOrderLocation() {
   let lastOrder = mockupState.lastOrder;
   if (!lastOrder && mockupState.apiOrders && mockupState.apiOrders.length > 0) {
     lastOrder = mockupState.apiOrders[0];
   }
-  
-  if (lastOrder) {
-    let locId = lastOrder.locationId;
-    const locName = lastOrder.locationName || "";
-    
-    // Map backend database locationNames to mockup location IDs if locationId is missing from API order history
-    if (!locId && locName) {
-      const lowerName = locName.toLowerCase();
-      if (lowerName.includes("tom yum") || lowerName.includes("surprise")) {
-        locId = 5; // Alameda
-      } else if (lowerName.includes("castro valley")) {
-        locId = 7; // Castro Valley
-      } else if (lowerName.includes("oakland")) {
-        locId = 9; // Oakland/Fresno/Newark
-      } else if (lowerName.includes("san leandro")) {
-        locId = 10; // San Leandro/UC Davis/Milpitas
-      }
-    }
-    
-    // First, try to find matching location by ID in LOCATIONS (which maps database ID to our mockup store names/addresses)
-    let found = LOCATIONS.find(l => Number(l.locationId) === Number(locId));
-    
-    // Second, if not found in LOCATIONS, try apiLocations
-    if (!found && mockupState.apiLocations && mockupState.apiLocations.length > 0) {
-      found = mockupState.apiLocations.find(l => Number(l.locationId) === Number(locId));
-    }
-    
-    // Third, try finding by name matching
-    if (!found && lastOrder.locationName) {
-      const cleanName = lastOrder.locationName.toLowerCase().replace(/i-tea/gi, "").trim();
-      found = LOCATIONS.find(l => l.name.toLowerCase().includes(cleanName) || cleanName.includes(l.name.toLowerCase()));
-      if (!found && mockupState.apiLocations) {
-        found = mockupState.apiLocations.find(l => l.name.toLowerCase().includes(cleanName) || cleanName.includes(l.name.toLowerCase()));
-      }
-    }
-    
-    if (found) {
-      return {
-        locationId: found.locationId,
-        name: found.name,
-        address: found.address,
-        dist: found.dist || null
-      };
-    }
+  if (!lastOrder) return null;
 
+  const found = getSelectedLocationInfo(lastOrder.locationId);
+  if (found) {
     return {
-      locationId: lastOrder.locationId || 7,
-      name: lastOrder.locationName || "i-Tea - Tempe",
-      address: lastOrder.locationAddress || "825 W UNIVERSITY, TEMPE, AZ",
-      dist: lastOrder.locationDistance || null
+      locationId: found.locationId,
+      name: found.name,
+      address: found.address,
+      dist: found.dist || null,
     };
   }
 
-  return {
-    locationId: 7,
-    name: "i-Tea - Tempe",
-    address: "825 W UNIVERSITY, TEMPE, AZ",
-    dist: null
-  };
+  // locationId didn't resolve (e.g. real locations haven't loaded yet, or
+  // this is older cached order data without one) — fall back to matching
+  // the order's own store name against the real locations list.
+  if (lastOrder.locationName && mockupState.apiLocations) {
+    const cleanName = lastOrder.locationName.toLowerCase().replace(/i-tea/gi, "").trim();
+    const byName = mockupState.apiLocations.find(
+      (l) => l.name.toLowerCase().includes(cleanName) || cleanName.includes(l.name.toLowerCase()),
+    );
+    if (byName) {
+      return {
+        locationId: byName.locationId,
+        name: byName.name,
+        address: byName.address,
+        dist: byName.dist || null,
+      };
+    }
+  }
+
+  return null;
 }
 window.getPreviousOrderLocation = getPreviousOrderLocation;
 
@@ -1005,16 +1018,110 @@ function getFallbackItemImg() {
 }
 
 function getEnabledLocations() {
-  let list = mockupState.apiLocations && mockupState.apiLocations.length > 0
-    ? mockupState.apiLocations
-    : LOCATIONS;
+  // No more silent fallback to the hardcoded LOCATIONS list — if real data
+  // isn't loaded yet, the UI is responsible for showing why (loading /
+  // sign-in required / error), not for quietly substituting fake stores.
+  // Return ALL real locations — closed ones are shown with a "Closed" badge
+  // instead of being filtered out.
+  return mockupState.apiLocations || [];
+}
 
-  // Return ALL locations — closed ones are shown with a "Closed" badge
-  // instead of being filtered out
-  return list;
+// Renders the reason the location list is empty, when that reason isn't
+// "your search/filter didn't match anything" (which the caller already
+// handles). Returns null if there's no real data yet AND no known reason —
+// callers should fall back to a generic empty message in that case.
+function renderLocationsStatusState() {
+  if (mockupState.locationsLoading) {
+    return `
+      <div class="space-y-3 my-4">
+        ${[1, 2, 3]
+          .map(
+            () => `
+          <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm animate-pulse">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-full bg-gray-200 shrink-0"></div>
+              <div class="flex-1 min-w-0">
+                <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
+                <div class="h-2.5 bg-gray-100 rounded w-1/2"></div>
+              </div>
+            </div>
+            <div class="h-2.5 bg-gray-100 rounded w-full mb-2"></div>
+            <div class="h-2.5 bg-gray-100 rounded w-4/5"></div>
+          </div>
+        `,
+          )
+          .join("")}
+      </div>
+    `;
+  }
+  if (mockupState.locationsAuthRequired) {
+    return `
+      <div class="p-8 text-center bg-white rounded-2xl border border-gray-100 shadow-sm my-4">
+          <div class="w-12 h-12 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mx-auto mb-3">
+              <i class="fa-solid fa-right-to-bracket text-xl"></i>
+          </div>
+          <h3 class="text-sm font-black text-gray-800 uppercase tracking-wide mb-1">Sign In to See Locations</h3>
+          <p class="text-xs text-gray-500 mb-4">Viewing available stores currently requires an account.</p>
+          <button onclick="navigateTo('sign-in')" class="px-5 py-2.5 bg-violet-600 text-white rounded-full text-xs font-black uppercase tracking-wider hover:bg-violet-700 transition active:scale-95">Sign In</button>
+      </div>
+    `;
+  }
+  if (mockupState.locationsLoadError) {
+    return `
+      <div class="p-8 text-center bg-white rounded-2xl border border-gray-100 shadow-sm my-4">
+          <div class="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto mb-3">
+              <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+          </div>
+          <h3 class="text-sm font-black text-gray-800 uppercase tracking-wide mb-1">Couldn't Load Locations</h3>
+          <p class="text-xs text-gray-500 mb-4">Something went wrong on our end. Please try again.</p>
+          <button onclick="fetchLocations().then(() => navigateTo(currentPage))" class="px-5 py-2.5 bg-violet-600 text-white rounded-full text-xs font-black uppercase tracking-wider hover:bg-violet-700 transition active:scale-95">Try Again</button>
+      </div>
+    `;
+  }
+  return null;
+}
+
+// Full-page state for landing on the customize screen with no real item
+// selected (e.g. a direct link, a stale back-button state) — previously
+// silently defaulted to showing a specific fake drink instead.
+function renderNoItemSelectedState() {
+  return `
+    <div class="flex flex-col h-full bg-[#f6f6f6]">
+        <header class="bg-white px-4 py-4 flex items-center shadow-sm z-50 sticky top-0">
+            <button onclick="navigateTo('menu')" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-violet-600 transition-colors mr-4">
+                <i class="fa-solid fa-arrow-left text-xl"></i>
+            </button>
+            <span class="text-lg font-black text-violet-600 flex-1 text-center mr-10">Customize</span>
+        </header>
+        <div class="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <div class="w-16 h-16 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mb-4">
+                <i class="fa-solid fa-circle-question text-2xl"></i>
+            </div>
+            <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight mb-2">No Item Selected</h2>
+            <p class="text-sm text-gray-500 mb-6 max-w-xs">Please choose an item from the menu to customize.</p>
+            <button onclick="navigateTo('menu')" class="px-6 py-3 bg-violet-600 text-white rounded-full text-sm font-black uppercase tracking-wider hover:bg-violet-700 transition active:scale-95">Back to Menu</button>
+        </div>
+    </div>
+  `;
+}
+
+// Resolves a location's real info by ID, from real API data only — no
+// fallback to the hardcoded LOCATIONS list or a default "Tempe" store.
+// Returns null if the real location list hasn't loaded yet, or doesn't
+// contain this location; callers must handle that honestly (e.g. "Store
+// info unavailable"), never by substituting fake data.
+function getSelectedLocationInfo(locationId = mockupState.selectedLocationId) {
+  if (locationId == null || !mockupState.apiLocations) return null;
+  return (
+    mockupState.apiLocations.find(
+      (loc) => Number(loc.locationId) === Number(locationId),
+    ) || null
+  );
 }
 
 async function fetchLocations() {
+  mockupState.locationsLoading = true;
+  persistAllState();
   try {
     const headers = {};
     if (window.ApiService && typeof window.ApiService.getToken === "function") {
@@ -1024,8 +1131,23 @@ async function fetchLocations() {
       }
     }
     const response = await fetch(`${API_BASE_URL}/api/Locations`, { headers });
-    if (!response.ok) throw new Error("Network response was not ok");
+    if (!response.ok) {
+      // Distinguish "this endpoint requires login" from a genuine failure —
+      // they need different messaging, not a silent fake-data substitute either way.
+      if (response.status === 401) {
+        mockupState.locationsAuthRequired = true;
+        mockupState.locationsLoadError = false;
+      } else {
+        mockupState.locationsLoadError = true;
+        mockupState.locationsAuthRequired = false;
+      }
+      throw new Error(`Locations request failed with status ${response.status}`);
+    }
     const data = await response.json();
+    // A real response means the endpoint is reachable and we're authorized —
+    // clear both failure flags regardless of how many locations came back.
+    mockupState.locationsAuthRequired = false;
+    mockupState.locationsLoadError = false;
     if (data && data.length > 0) {
       // Filter to include only i-Tea locations
       const iteaLocations = data.filter(
@@ -1048,10 +1170,7 @@ async function fetchLocations() {
 
         const mappedLocs = await Promise.all(
           iteaLocations.map(async (loc) => {
-            const fallback = LOCATIONS.find(
-              (l) =>
-                l.name.toLowerCase() === (loc.locationName || "").toLowerCase(),
-            );
+            const realCoords = REAL_LOCATION_COORDINATES[loc.locationId];
             let hoursStr = "Hours unavailable";
             let hData = null;
             let holData = null;
@@ -1168,8 +1287,8 @@ async function fetchLocations() {
               allowOrdering: allowOrdering,
               businessHours: hData ? hData.businessHours : null,
               holidayHours: holData ? holData.holidayHours : null,
-              lat: loc.latitude || (fallback ? fallback.lat : 37.7749),
-              lng: loc.longitude || (fallback ? fallback.lng : -122.4194),
+              lat: loc.latitude ?? realCoords?.lat ?? null,
+              lng: loc.longitude ?? realCoords?.lng ?? null,
             };
           }),
         );
@@ -1180,7 +1299,15 @@ async function fetchLocations() {
       }
     }
   } catch (error) {
-    console.error("Failed to fetch locations from API, using fallback:", error);
+    console.error("Failed to fetch locations from API:", error);
+    // A network-level failure (as opposed to an HTTP status we already
+    // handled above) is a genuine error, not an auth gate.
+    if (!mockupState.locationsAuthRequired) {
+      mockupState.locationsLoadError = true;
+    }
+  } finally {
+    mockupState.locationsLoading = false;
+    persistAllState();
   }
 }
 
@@ -1203,9 +1330,7 @@ function computeIsOpenFromSchedule(businessHours) {
 }
 
 async function fetchLocationsOrderingStatus() {
-  const list = mockupState.apiLocations && mockupState.apiLocations.length > 0
-    ? mockupState.apiLocations
-    : LOCATIONS;
+  const list = getEnabledLocations();
   const uniqueIds = [...new Set(list.map(l => l.locationId))];
   const statuses = {};
   await Promise.all(
@@ -1295,6 +1420,9 @@ async function fetchMenuAndItems(locationId) {
     );
     if (!menuResponse.ok) throw new Error("Menu response was not ok");
     const menuData = await menuResponse.json();
+    // A real response means this location's menu is reachable — clear the
+    // error flag regardless of whether it happens to have any categories.
+    mockupState.menuItemsLoadError = false;
 
     if (menuData && menuData.categories) {
       // Store location-specific pricing info
@@ -1380,130 +1508,47 @@ async function fetchMenuAndItems(locationId) {
     }
   } catch (error) {
     console.error("Failed to fetch menu and items from API:", error);
+    mockupState.menuItemsLoadError = true;
   } finally {
     mockupState.isLoading = false;
     persistAllState();
-    // Menu loaded silently in background
     renderPage();
   }
 }
 
 function getActiveCategories() {
-  if (mockupState.apiCategories && mockupState.apiCategories.length > 0) {
-    return mockupState.apiCategories
-      .filter((cat) => {
-        const name = (cat.name || "").toLowerCase().trim();
-        return name !== "bag" && name !== "bags";
-      })
-      .map((cat) => ({
-        name: cat.name,
-        id: `category-section-${cat.categoryId}`,
-        img:
-          cat.imgUrl ||
-          "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg",
-        categoryId: cat.categoryId,
-        categoryKey: cat.name,
-      }));
-  }
-  return [
-    {
-      name: "New Items",
-      id: "new-items-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/New%20Items.jpg",
-      categoryKey: "New Items",
-    },
-    {
-      name: "Teaspresso Series",
-      id: "teaspresso-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Teaspresso.jpg",
-      categoryKey: "Teaspresso Series",
-    },
-    {
-      name: "Milk Tea Specialty",
-      id: "milk-tea-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Milk%20Tea.jpg",
-      categoryKey: "Milk Tea Specialty",
-    },
-    {
-      name: "i-Tea Fruit Tea",
-      id: "fruit-tea-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Fruit%20Tea.jpg",
-      categoryKey: "i-Tea Fruit Tea",
-    },
-    {
-      name: "Sea Salt Kreama",
-      id: "sea-salt-kreama-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Kreama.jpg",
-      categoryKey: "Sea Salt Kreama",
-    },
-    {
-      name: "Summer Frosty",
-      id: "summer-frosty-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Frosty.jpg",
-      categoryKey: "Summer Frosty",
-    },
-    {
-      name: "Signature Iced Milk",
-      id: "signature-iced-milk-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Signature%20Ice%20Milk.jpg",
-      categoryKey: "Signature Iced Milk",
-    },
-    {
-      name: "Dessert Drinks",
-      id: "dessert-drinks-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Dessert%20Drink%20Series.jpg",
-      categoryKey: "Dessert Drinks",
-    },
-    {
-      name: "Hot Drink",
-      id: "hot-drink-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Hot%20Drink.jpg",
-      categoryKey: "Hot Drink",
-    },
-    {
-      name: "Premium Tea Taiwan",
-      id: "premium-tea-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Premium%20Tea.jpg",
-      categoryKey: "Premium Tea Taiwan",
-    },
-    {
-      name: "Cold Brew",
-      id: "cold-brew-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Cold%20Brew%201.jpg",
-      categoryKey: "Cold Brew ",
-    },
-    {
-      name: "Snack Menu",
-      id: "snack-menu-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Snack.jpg",
-      categoryKey: "Snack Menu",
-    },
-    {
-      name: "Okinawa Onigiri Series",
-      id: "onigiri-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Okinawa%20Onigiri.jpg",
-      categoryKey: "Okinawa Onigiri Series",
-    },
-    {
-      name: "Food Menu",
-      id: "food-menu-section",
-      img: "https://olodev.azurewebsites.net/imagescategories/Food.jpg",
-      categoryKey: "Food Menu",
-    },
-  ];
+  // No more silent fallback to a hardcoded 14-category list — same reasoning
+  // as getActiveMenuItems(). This also resolves finding #19, which was this
+  // exact fallback pattern applied to categories specifically.
+  if (!mockupState.apiCategories) return [];
+  return mockupState.apiCategories
+    .filter((cat) => {
+      const name = (cat.name || "").toLowerCase().trim();
+      return name !== "bag" && name !== "bags";
+    })
+    .map((cat) => ({
+      name: cat.name,
+      id: `category-section-${cat.categoryId}`,
+      img:
+        cat.imgUrl ||
+        "https://olodev.azurewebsites.net/imagesmenu/P1-Super-Fruit-Tea.jpg",
+      categoryId: cat.categoryId,
+      categoryKey: cat.name,
+    }));
 }
 
 function getActiveMenuItems() {
-  if (mockupState.apiMenuItems && mockupState.apiMenuItems.length > 0) {
-    return mockupState.apiMenuItems.filter((item) => {
-      const cat = (item.category || "").toLowerCase().trim();
-      const name = (item.name || "").toLowerCase().trim();
-      return (
-        cat !== "bag" && cat !== "bags" && name !== "bag" && name !== "bags"
-      );
-    });
-  }
-  return MENU_ITEMS;
+  // No more silent fallback to the hardcoded MENU_ITEMS list — if the real
+  // menu isn't loaded yet, the UI shows why (loading skeleton / error state),
+  // not a substitute menu that isn't actually this location's.
+  if (!mockupState.apiMenuItems) return [];
+  return mockupState.apiMenuItems.filter((item) => {
+    const cat = (item.category || "").toLowerCase().trim();
+    const name = (item.name || "").toLowerCase().trim();
+    return (
+      cat !== "bag" && cat !== "bags" && name !== "bag" && name !== "bags"
+    );
+  });
 }
 
 function isItemAvailableAtCurrentLocation(item) {
@@ -1934,27 +1979,20 @@ function renderMenuPage() {
       ? `at ${mockupState.selectedTimeSlot}`
       : "ASAP";
 
-  const selectedLoc =
-    mockupState.apiLocations.find(
-      (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
-    ) ||
-    LOCATIONS.find(
-      (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
-    ) ||
-    LOCATIONS[0];
+  const selectedLoc = getSelectedLocationInfo();
   const addressText =
     mockupState.selectedAddress ||
-    (selectedLoc ? selectedLoc.address : "825 W UNIVERSITY, TEMPE, AZ");
+    (selectedLoc ? selectedLoc.address : "Address unavailable");
   const shortAddressText = addressText.split(",")[0].trim();
   const noStateAddressText = addressText
     .replace(/,\s*[A-Z]{2}(\s\d{5})?$/, "")
     .trim();
 
-  const locationTitle = selectedLoc ? selectedLoc.name : "i-Tea - Tempe";
+  const locationTitle = selectedLoc ? selectedLoc.name : "Location unavailable";
   const locationAddress = addressText;
   const locationObj = selectedLoc || {};
-  const hours = locationObj.hours || "11:30 AM to 9:30 PM";
-  const closeTimeStr = hours.split(" to ")[1] || "9:30 PM";
+  const hours = locationObj.hours || "Hours unavailable";
+  const closeTimeStr = hours.split(" to ")[1] || "Hours unavailable";
   const closeTime = closeTimeStr;
   const getOrderCutoffTime = (timeStr, offsetMinutes) => {
     const t = timeStr.trim().toUpperCase();
@@ -2058,7 +2096,7 @@ function renderMenuPage() {
                                     </div>
                                     <div>
                                         <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Hours</span>
-                                        <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
+                                        <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "Hours unavailable"}</span>
                                         <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
                                         <span class="text-red-500 font-medium block text-xs leading-tight mt-1">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
                                     </div>
@@ -2148,7 +2186,7 @@ function renderMenuPage() {
                                     </div>
                                     <div>
                                         <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Hours</span>
-                                        <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
+                                        <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "Hours unavailable"}</span>
                                         <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
                                         <span class="text-red-500 font-medium block text-xs leading-tight mt-1">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
                                     </div>
@@ -2552,7 +2590,19 @@ function renderMenuPage() {
                                             : ""
                                         }
 
-                                        ${getActiveCategories()
+                                        ${
+                                          !mockupState.isLoading && getActiveCategories().length === 0
+                                            ? `
+                                        <div class="p-8 text-center bg-white rounded-2xl border border-gray-100 shadow-sm my-4 max-w-md mx-auto">
+                                            <div class="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto mb-3">
+                                                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                                            </div>
+                                            <h3 class="text-sm font-black text-gray-800 uppercase tracking-wide mb-1">Couldn't Load Menu</h3>
+                                            <p class="text-xs text-gray-500 mb-4">Something went wrong loading this location's menu. Please try again.</p>
+                                            <button onclick="fetchMenuAndItems(mockupState.selectedLocationId).then(() => navigateTo(currentPage))" class="px-5 py-2.5 bg-violet-600 text-white rounded-full text-xs font-black uppercase tracking-wider hover:bg-violet-700 transition active:scale-95">Try Again</button>
+                                        </div>
+                                        `
+                                            : getActiveCategories()
                                           .map((section) => {
                                             const items = getActiveMenuItems();
                                             const sectionItems = section.isFeatured
@@ -2796,12 +2846,8 @@ function renderMenuPage() {
                           order.orderNumber ||
                           "FB-" + Math.floor(1000 + Math.random() * 9000);
 
-                        const foundLoc = LOCATIONS.find(
-                          (l) => l.locationId === order.locationId,
-                        );
-                        const locationName = foundLoc
-                          ? foundLoc.name
-                          : mockupState.selectedLocation || "i-Tea";
+                        const foundLoc = getSelectedLocationInfo(order.locationId);
+                        const locationName = foundLoc?.name || "Location unavailable";
 
                         const MAX_THUMBS = 4;
                         const thumbItems = orderItems.slice(0, MAX_THUMBS);
@@ -3812,6 +3858,7 @@ const routes = {
                         <!-- Default Location Quick-Select -->
                         ${(mockupState.isLoggedIn && (mockupState.lastOrder || (mockupState.apiOrders && mockupState.apiOrders.length > 0))) ? (() => {
                           const prevLoc = getPreviousOrderLocation();
+                          if (!prevLoc) return "";
                           return `
                           <div class="px-[36px] py-5 border-b border-[#1f0b35] bg-gradient-to-r from-violet-600 to-[#1f0b35] flex items-center justify-between gap-3 text-white">
                               <div class="flex items-center gap-2.5 min-w-0">
@@ -3862,6 +3909,10 @@ const routes = {
                             ${(() => {
                               const set = getSet();
                               if (set.length === 0) {
+                                if (!mockupState.apiLocations || mockupState.apiLocations.length === 0) {
+                                  const statusHtml = renderLocationsStatusState();
+                                  if (statusHtml) return statusHtml;
+                                }
                                 return `
                                   <div class="p-8 text-center bg-white rounded-2xl border border-gray-100 shadow-sm my-4">
                                       <div class="w-12 h-12 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mx-auto mb-3">
@@ -3895,6 +3946,7 @@ const routes = {
                     <!-- Previous Order Location Quick-Select -->
                     ${(mockupState.isLoggedIn && (mockupState.lastOrder || (mockupState.apiOrders && mockupState.apiOrders.length > 0))) ? (() => {
                       const prevLoc = getPreviousOrderLocation();
+                      if (!prevLoc) return "";
                       return `
                       <div class="p-5 bg-gradient-to-r from-violet-600 to-[#1f0b35] border-b border-[#1f0b35] flex items-center justify-between gap-3 shrink-0 z-10 text-white">
                           <div class="flex items-center gap-2.5 min-w-0">
@@ -3952,6 +4004,10 @@ const routes = {
                             ${(() => {
                               const set = getSet();
                               if (set.length === 0) {
+                                if (!mockupState.apiLocations || mockupState.apiLocations.length === 0) {
+                                  const statusHtml = renderLocationsStatusState();
+                                  if (statusHtml) return statusHtml;
+                                }
                                 return `
                                   <div class="p-8 text-center bg-white rounded-2xl border border-gray-100 shadow-sm my-4">
                                       <div class="w-12 h-12 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mx-auto mb-3">
@@ -4005,24 +4061,18 @@ const routes = {
       },
     ];
 
-    const locationTitle = mockupState.selectedLocation || "i-Tea";
-    const locList =
-      mockupState.apiLocations && mockupState.apiLocations.length > 0
-        ? mockupState.apiLocations
-        : LOCATIONS;
-    const locationObj =
-      locList.find((l) => l.name === locationTitle) ||
-      locList.find((l) => l.name === "i-Tea - Tempe") ||
-      locList[0];
+    const locationObj = getSelectedLocationInfo();
+    const locationTitle =
+      mockupState.selectedLocation || locationObj?.name || "Location unavailable";
     const rawLocationAddress =
-      locationObj?.address || "825 W UNIVERSITY, TEMPE, AZ";
+      locationObj?.address || "Address unavailable";
     const locationAddress = rawLocationAddress
       .toLowerCase()
       .replace(/\b\w/g, (c) => c.toUpperCase())
       .replace(/,\s*[A-Z]{2}\b/i, (match) => match.toUpperCase());
     const closeTime =
-      (locationObj?.hours || "11:30 AM to 9:30 PM").split("to")[1]?.trim() ||
-      "9:30 PM";
+      (locationObj?.hours || "").split("to")[1]?.trim() ||
+      "Hours unavailable";
     const getOrderCutoffTime = (timeStr, minutes) => {
       const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
       if (!match) return timeStr;
@@ -4128,7 +4178,7 @@ const routes = {
                                         </div>
                                         <div>
                                             <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Hours</span>
-                                            <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "11:30 AM to 9:30 PM"}</span>
+                                            <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "Hours unavailable"}</span>
                                             <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
                                             <span class="text-red-500 font-medium block text-xs leading-tight mt-1">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
                                         </div>
@@ -4266,6 +4316,7 @@ const routes = {
   menu: () => renderMenuPage(),
   "menu-single": () => renderMenuPage(),
   customize: () => {
+    if (!mockupState.selectedItem) return renderNoItemSelectedState();
     const isDesktop = currentViewport === "desktop";
     const mode = mockupState.fulfillmentMode || "In-store";
     let modeText = "IN-STORE PICKUP";
@@ -4283,19 +4334,12 @@ const routes = {
         ? `at ${mockupState.selectedTimeSlot}`
         : "ASAP";
 
-    const selectedLoc =
-      mockupState.apiLocations.find(
-        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
-      ) ||
-      LOCATIONS.find(
-        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
-      ) ||
-      LOCATIONS[0];
+    const selectedLoc = getSelectedLocationInfo();
     const addressText =
       mockupState.selectedAddress ||
-      (selectedLoc ? selectedLoc.address : "825 W UNIVERSITY, TEMPE, AZ");
+      (selectedLoc ? selectedLoc.address : "Address unavailable");
 
-    const item = mockupState.selectedItem || MENU_ITEMS[1];
+    const item = mockupState.selectedItem; // guaranteed real — guarded above
     const basePrice = item.price;
     const detail = mockupState.selectedItemDetail;
     const sels = mockupState._customizeSubItems || {};
@@ -4470,6 +4514,7 @@ const routes = {
             `;
   },
   "customize-alt": () => {
+    if (!mockupState.selectedItem) return renderNoItemSelectedState();
     const isDesktop = currentViewport === "desktop";
     const mode = mockupState.fulfillmentMode || "In-store";
     let modeText = "IN-STORE PICKUP";
@@ -4487,19 +4532,12 @@ const routes = {
         ? `at ${mockupState.selectedTimeSlot}`
         : "ASAP";
 
-    const selectedLoc =
-      mockupState.apiLocations.find(
-        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
-      ) ||
-      LOCATIONS.find(
-        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
-      ) ||
-      LOCATIONS[0];
+    const selectedLoc = getSelectedLocationInfo();
     const addressText =
       mockupState.selectedAddress ||
-      (selectedLoc ? selectedLoc.address : "825 W UNIVERSITY, TEMPE, AZ");
+      (selectedLoc ? selectedLoc.address : "Address unavailable");
 
-    const item = mockupState.selectedItem || MENU_ITEMS[1];
+    const item = mockupState.selectedItem; // guaranteed real — guarded above
     const basePrice = item.price;
     const detail = mockupState.selectedItemDetail;
     const sels = mockupState._customizeSubItems || {};
@@ -4688,17 +4726,10 @@ const routes = {
   },
   cart: () => {
     const isDesktop = currentViewport === "desktop";
-    const selectedLoc =
-      mockupState.apiLocations.find(
-        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
-      ) ||
-      LOCATIONS.find(
-        (loc) => Number(loc.locationId) === Number(mockupState.selectedLocationId),
-      ) ||
-      LOCATIONS[0];
+    const selectedLoc = getSelectedLocationInfo();
     const addressText =
       mockupState.selectedAddress ||
-      (selectedLoc ? selectedLoc.address : "825 W UNIVERSITY, TEMPE, AZ");
+      (selectedLoc ? selectedLoc.address : "Address unavailable");
     const bagFee = mockupState.bagQuantity * (mockupState.bagMenuItem?.price ?? 0);
     // Dynamic pricing from cart
     consolidateCartItems();
@@ -4901,7 +4932,7 @@ const routes = {
                                     <i class="fa-solid fa-location-dot text-xl"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${(mockupState.selectedLocation || "i-Tea - Tempe").replace(/\b\d{5}\b/g, "").trim()}</h3>
+                                    <h3 class="font-black text-gray-900 uppercase tracking-tighter text-lg leading-none">${(mockupState.selectedLocation || "Location unavailable").replace(/\b\d{5}\b/g, "").trim()}</h3>
                                     <p class="text-[10px] font-bold text-gray-400 mt-1 tracking-wide uppercase">${addressText}</p>
                                     <button onclick="navigateTo('locations')" class="text-[10px] font-black text-violet-600 mt-1 tracking-widest uppercase hover:text-violet-700 transition-colors">Change Location</button>
                                 </div>
@@ -5705,12 +5736,8 @@ const routes = {
                                       Math.floor(1000 + Math.random() * 9000);
 
                                   // Look up location name
-                                  const foundLoc = LOCATIONS.find(
-                                    (l) => l.locationId === order.locationId,
-                                  );
-                                  const locationName = foundLoc
-                                    ? foundLoc.name
-                                    : mockupState.selectedLocation || "i-Tea";
+                                  const foundLoc = getSelectedLocationInfo(order.locationId);
+                                  const locationName = foundLoc?.name || "Location unavailable";
 
                                   return `
                                          <div class="px-5 py-4 flex flex-col gap-3">
@@ -6441,26 +6468,30 @@ const routes = {
   directions: () => {
     const isDesktop = currentViewport === "desktop";
     
-    let targetLoc = LOCATIONS[0];
-    if (mockupState.apiLocations && mockupState.apiLocations.length > 0) {
-      targetLoc = mockupState.apiLocations.find(l => l.name === mockupState.selectedLocation) || mockupState.apiLocations[0] || targetLoc;
-    } else {
-      targetLoc = LOCATIONS.find(l => l.name === mockupState.selectedLocation) || targetLoc;
-    }
+    const targetLoc = getSelectedLocationInfo();
 
-    let distMilesStr = targetLoc.dist ? targetLoc.dist.replace(" mi", "") : "2.4";
-    if (mockupState.userLat && mockupState.userLng && targetLoc.lat && targetLoc.lng) {
+    // Real distance only if we have real coordinates for both the customer
+    // and the store — never a fabricated "2.4 mi" placeholder.
+    let distMilesStr = null;
+    if (mockupState.userLat && mockupState.userLng && targetLoc?.lat && targetLoc?.lng) {
       if (typeof calculateDistance === 'function') {
         distMilesStr = calculateDistance(mockupState.userLat, mockupState.userLng, targetLoc.lat, targetLoc.lng).toFixed(1);
       }
     }
-    
-    const etaMins = Math.max(1, Math.round(parseFloat(distMilesStr) * 3.7));
-    const locName = targetLoc.name || "i-Tea Tempe";
-    const locAddress = targetLoc.address || "825 W University Dr, Tempe, AZ 85281";
+    const etaMins = distMilesStr ? Math.max(1, Math.round(parseFloat(distMilesStr) * 3.7)) : null;
+    const locName = targetLoc?.name || "Location unavailable";
+    const locAddress = targetLoc?.address || "Address unavailable";
 
+    // Map the real selected store, not a hardcoded Tempe embed — the old
+    // embed URL was baked to one specific place ID and never actually
+    // reflected whichever store was selected. Google's simpler ?q= embed
+    // format works for any coordinate/address, so this is now dynamic.
     const mapSrc =
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.9880816825!2d-111.95254172421831!3d33.42224097339947!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x872b08da35c246f9%3A0xe21289658ec91e!2si-Tea%20Tempe!5e0!3m2!1sen!2sus!4v1714088000000!5m2!1sen!2sus";
+      targetLoc?.lat && targetLoc?.lng
+        ? `https://www.google.com/maps?q=${targetLoc.lat},${targetLoc.lng}&output=embed`
+        : targetLoc?.address
+        ? `https://www.google.com/maps?q=${encodeURIComponent(targetLoc.address)}&output=embed`
+        : "https://www.google.com/maps?output=embed";
 
     if (isDesktop) {
       return `
@@ -6511,12 +6542,12 @@ const routes = {
                         <div class="grid grid-cols-3 gap-3">
                             <div class="bg-violet-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-violet-100">
                                 <div class="text-violet-600 text-[10px] font-black uppercase tracking-widest mb-1">ETA</div>
-                                <div class="text-2xl font-black text-gray-900">${etaMins}</div>
+                                <div class="text-2xl font-black text-gray-900">${etaMins ?? "--"}</div>
                                 <div class="text-[10px] font-bold text-gray-500 uppercase">mins</div>
                             </div>
                             <div class="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
                                 <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Distance</div>
-                                <div class="text-2xl font-black text-gray-900">${distMilesStr}</div>
+                                <div class="text-2xl font-black text-gray-900">${distMilesStr ?? "--"}</div>
                                 <div class="text-[10px] font-bold text-gray-500 uppercase">miles</div>
                             </div>
                             <div class="bg-gray-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-gray-100">
@@ -6639,7 +6670,7 @@ const routes = {
                         </div>
                         <div>
                             <div class="text-xs font-black text-gray-900 uppercase tracking-tight">${locName}</div>
-                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Open Now · ${etaMins} min away</div>
+                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Open Now · ${etaMins != null ? `${etaMins} min away` : "distance unavailable"}</div>
                         </div>
                     </div>
                 </div>
@@ -6698,7 +6729,7 @@ const routes = {
                         </div>
                         <div class="flex-1">
                             <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Estimated Arrival</div>
-                            <div class="text-lg font-black text-gray-900 uppercase tracking-tight">${etaMins} mins <span class="font-bold text-gray-500 lowercase ml-2 text-sm">(${distMilesStr} miles)</span></div>
+                            <div class="text-lg font-black text-gray-900 uppercase tracking-tight">${etaMins != null ? `${etaMins} mins` : "Distance unavailable"} ${distMilesStr != null ? `<span class="font-bold text-gray-500 lowercase ml-2 text-sm">(${distMilesStr} miles)</span>` : ""}</div>
                         </div>
                     </div>
                     
@@ -6736,22 +6767,15 @@ const routes = {
     if (orderNum !== "Pending" && !String(orderNum).startsWith("FB-")) {
       orderNum = "FB-" + orderNum;
     }
-    const locationName = order.locationName || mockupState.selectedLocation || "i-Tea";
     const orderLocationId = order.locationId ?? mockupState.selectedLocationId;
-    const selectedLoc =
-      (mockupState.apiLocations || []).find(
-        (loc) => Number(loc.locationId) === Number(orderLocationId),
-      ) ||
-      LOCATIONS.find(
-        (loc) => Number(loc.locationId) === Number(orderLocationId),
-      ) ||
-      LOCATIONS.find((loc) => loc.name === locationName) ||
-      {};
+    const selectedLoc = getSelectedLocationInfo(orderLocationId) || {};
+    const locationName =
+      order.locationName || selectedLoc.name || "Location unavailable";
     const locationAddress =
       order.locationAddress ||
       selectedLoc.address ||
       selectedLoc.streetAddress ||
-      "825 W UNIVERSITY, TEMPE, AZ";
+      "Address unavailable";
     const now = new Date();
     const pickupTime = now.toLocaleTimeString("en-US", {
       hour: "numeric",
@@ -6825,7 +6849,7 @@ const routes = {
                                                 </div>
                                                 <div>
                                                     <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Hours</span>
-                                                    <span class="text-gray-600 font-medium block text-sm">${selectedLoc.hours || "11:30 AM to 9:30 PM"}</span>
+                                                    <span class="text-gray-600 font-medium block text-sm">${selectedLoc.hours || "Hours unavailable"}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -10595,6 +10619,16 @@ window._handlePlaceOrder = async function () {
     return;
   }
 
+  // A real order must be filed against a real, explicitly-chosen store — if
+  // that's ever unset (stale session, odd navigation), stop and send the
+  // customer to pick one rather than silently placing the order at whatever
+  // store used to be the default.
+  if (!mockupState.selectedLocationId) {
+    alert("Please choose a location before placing your order.");
+    navigateTo("locations");
+    return;
+  }
+
   // Show loading state early
   const btns = document.querySelectorAll("button");
   btns.forEach((b) => {
@@ -10607,7 +10641,7 @@ window._handlePlaceOrder = async function () {
   // Ensure restaurantId is correct for the selected location to prevent OLO validation errors.
   // This also catches edge cases where the cart was restored from localStorage with items from a different location.
   try {
-    const locId = mockupState.selectedLocationId || 7;
+    const locId = mockupState.selectedLocationId;
     let foundRestId = null;
 
     const validationPromises = cart.map(async (item) => {
@@ -10688,8 +10722,8 @@ window._handlePlaceOrder = async function () {
   // Build PlaceOrderRequest
   const orderData = {
     orderType: mockupState.fulfillmentMode || "In-store",
-    locationId: mockupState.selectedLocationId || 7,
-    restaurantId: mockupState.selectedRestaurantId || 7,
+    locationId: mockupState.selectedLocationId,
+    restaurantId: mockupState.selectedRestaurantId || mockupState.selectedLocationId,
     platformId: 1,
     tipAmount: parseFloat(tipAmount.toFixed(2)),
     pickUpTime:
@@ -10745,9 +10779,9 @@ window._handlePlaceOrder = async function () {
     const newOrderObj = {
       ...(typeof response === "object" ? response : {}),
       orderId: typeof response === "number" || typeof response === "string" ? response : (response?.data?.orderId || response?.orderId || response?.id || ("FB-" + Math.floor(1000 + Math.random() * 9000))),
-      locationId: mockupState.selectedLocationId || 7,
-      locationName: mockupState.selectedLocation || "i-Tea - Tempe",
-      locationAddress: mockupState.selectedAddress || "825 W UNIVERSITY, TEMPE, AZ",
+      locationId: mockupState.selectedLocationId,
+      locationName: mockupState.selectedLocation,
+      locationAddress: mockupState.selectedAddress,
       orderItems: cart.map((i) => ({ ...i })),
       subtotal: response?.data?.subTotal ?? response?.subTotal ?? subtotal,
       taxes: response?.data?.salesTax ?? response?.salesTax ?? taxes,
@@ -10792,9 +10826,9 @@ window._handlePlaceOrder = async function () {
         const retryOrderObj = {
           ...(typeof retryResponse === "object" ? retryResponse : {}),
           orderId: typeof retryResponse === "number" || typeof retryResponse === "string" ? retryResponse : (retryResponse?.data?.orderId || retryResponse?.orderId || retryResponse?.id || ("FB-" + Math.floor(1000 + Math.random() * 9000))),
-          locationId: mockupState.selectedLocationId || 7,
-          locationName: mockupState.selectedLocation || "i-Tea - Tempe",
-          locationAddress: mockupState.selectedAddress || "825 W UNIVERSITY, TEMPE, AZ",
+          locationId: mockupState.selectedLocationId,
+          locationName: mockupState.selectedLocation,
+          locationAddress: mockupState.selectedAddress,
           orderItems: cart.map((i) => ({ ...i })),
           subtotal: retryResponse?.data?.subTotal ?? retryResponse?.subTotal ?? subtotal,
           taxes: retryResponse?.data?.salesTax ?? retryResponse?.salesTax ?? taxes,
@@ -11512,13 +11546,7 @@ window.toggleLocationFavorite = function (name, event) {
     event.stopPropagation();
   }
 
-  // Find in LOCATIONS and toggle
-  const loc = LOCATIONS.find((l) => l.name === name);
   let isFavNow = false;
-  if (loc) {
-    loc.fav = !loc.fav;
-    isFavNow = loc.fav;
-  }
 
   // Find in apiLocations and toggle
   if (mockupState.apiLocations && mockupState.apiLocations.length > 0) {
@@ -11717,7 +11745,7 @@ window.viewPastOrder = function (orderId) {
     };
     if (order.locationId) {
       mockupState.selectedLocationId = Number(order.locationId);
-      const foundLoc = LOCATIONS.find((l) => Number(l.locationId) === Number(order.locationId));
+      const foundLoc = getSelectedLocationInfo(Number(order.locationId));
       if (foundLoc) {
         mockupState.selectedLocation = foundLoc.name;
         mockupState.selectedAddress = foundLoc.address;
@@ -11730,17 +11758,18 @@ window.viewPastOrder = function (orderId) {
 };
 
 function recordPlacedOrder(orderObj) {
-  // Ensure location info is always stamped on the order
+  // Ensure location info is always stamped on the order, from real data only
   if (!orderObj.locationId) {
-    orderObj.locationId = mockupState.selectedLocationId || 7;
+    orderObj.locationId = mockupState.selectedLocationId;
   }
-  if (!orderObj.locationName) {
-    const loc = LOCATIONS.find(l => Number(l.locationId) === Number(orderObj.locationId));
-    orderObj.locationName = loc ? loc.name : (mockupState.selectedLocation || "i-Tea - Tempe");
-  }
-  if (!orderObj.locationAddress) {
-    const loc = LOCATIONS.find(l => Number(l.locationId) === Number(orderObj.locationId));
-    orderObj.locationAddress = loc ? loc.address : (mockupState.selectedAddress || "825 W UNIVERSITY, TEMPE, AZ");
+  if (!orderObj.locationName || !orderObj.locationAddress) {
+    const loc = getSelectedLocationInfo(orderObj.locationId);
+    if (!orderObj.locationName) {
+      orderObj.locationName = loc?.name || mockupState.selectedLocation;
+    }
+    if (!orderObj.locationAddress) {
+      orderObj.locationAddress = loc?.address || mockupState.selectedAddress;
+    }
   }
   mockupState.lastOrder = orderObj;
 
@@ -11842,13 +11871,17 @@ const _preloadedMenuItemIds = new Set();
 function preloadPastOrdersMenuItemDetails(orders) {
   if (!orders) return;
   const list = Array.isArray(orders) ? orders : orders.items || orders.data || [];
-  const locId = mockupState.selectedLocationId || 7;
 
   if (!mockupState.reorderDetailsCache) {
     mockupState.reorderDetailsCache = {};
   }
 
   list.forEach((order) => {
+    // Use the store this specific order was actually placed at, not
+    // whatever store happens to be currently selected — different past
+    // orders can be from different real stores.
+    const locId = order.locationId || mockupState.selectedLocationId;
+    if (!locId) return;
     const items = order.orderMenuItems || order.items || order.orderItems || [];
     items.forEach(async (item) => {
       const rawId = item.menuItemId || item.MenuItemId || item.id || item.Id;
@@ -12501,12 +12534,8 @@ function renderReorderModalHTML() {
           order.orderMenuItems || order.items || order.orderItems || [];
         const orderTotal = (order.total || order.subTotal || 0).toFixed(2);
 
-        const foundLoc = LOCATIONS.find(
-          (l) => l.locationId === order.locationId,
-        );
-        const locationName = foundLoc
-          ? foundLoc.name
-          : mockupState.selectedLocation || "i-Tea";
+        const foundLoc = getSelectedLocationInfo(order.locationId);
+        const locationName = foundLoc?.name || "Location unavailable";
 
         const isExpanded = !!(
           mockupState.expandedReorderOrders &&
@@ -12904,10 +12933,8 @@ function requestUserLocation() {
       mockupState.userLat = latitude;
       mockupState.userLng = longitude;
       
-      const listToUpdate = mockupState.apiLocations && mockupState.apiLocations.length > 0 
-        ? mockupState.apiLocations 
-        : LOCATIONS;
-        
+      const listToUpdate = getEnabledLocations();
+
       listToUpdate.forEach(loc => {
         if (loc.lat && loc.lng) {
           const distMiles = calculateDistance(latitude, longitude, loc.lat, loc.lng);
@@ -12931,7 +12958,7 @@ function requestUserLocation() {
 
 function getNearbyLocationsCount(targetLat, targetLng, radiusMiles = 15) {
   let count = 0;
-  LOCATIONS.forEach((loc) => {
+  getEnabledLocations().forEach((loc) => {
     const distanceMiles = calculateDistance(targetLat, targetLng, loc.lat, loc.lng);
     if (distanceMiles > 0.1 && distanceMiles <= radiusMiles) {
       count++;
@@ -13154,7 +13181,11 @@ function handleLocationSearchInput(val) {
 
     containers.forEach((container) => {
       if (list.length === 0) {
-        container.innerHTML = `
+        let statusHtml = null;
+        if (!mockupState.apiLocations || mockupState.apiLocations.length === 0) {
+          statusHtml = renderLocationsStatusState();
+        }
+        container.innerHTML = statusHtml || `
           <div class="p-8 text-center bg-white rounded-2xl border border-gray-100 shadow-sm my-4">
               <div class="w-12 h-12 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mx-auto mb-3">
                   <i class="fa-solid fa-magnifying-glass text-xl"></i>
@@ -13188,27 +13219,30 @@ function initLocationsMap() {
   const mapElement = document.getElementById("locations-map");
   if (!mapElement) return;
 
-  // Default center at Tempe, AZ or first location
-  const centerLat = 37.7749; // Bay Area general center
-  const centerLng = -122.4194;
-
-  let startLat = centerLat;
-  let startLng = centerLng;
+  // Falls back to a wide regional view, not any specific store, if we don't
+  // have real coordinates to center on yet.
+  let startLat = 37.7749;
+  let startLng = -122.4194;
   let startZoom = 9;
 
   const activeLocations = getEnabledLocations();
   const currentLoc = activeLocations.find(
     (l) => l.name === mockupState.selectedLocation,
   );
-  if (currentLoc) {
+  if (currentLoc?.lat != null && currentLoc?.lng != null) {
     startLat = currentLoc.lat;
     startLng = currentLoc.lng;
     // Auto zoom based on density on initial load
     const nearbyCount = getNearbyLocationsCount(startLat, startLng, 15);
     startZoom = nearbyCount > 0 ? 12 : 15;
-  } else if (activeLocations.length > 0) {
-    startLat = activeLocations[0].lat;
-    startLng = activeLocations[0].lng;
+  } else {
+    const firstWithCoords = activeLocations.find(
+      (l) => l.lat != null && l.lng != null,
+    );
+    if (firstWithCoords) {
+      startLat = firstWithCoords.lat;
+      startLng = firstWithCoords.lng;
+    }
   }
 
   try {
@@ -13228,6 +13262,11 @@ function initLocationsMap() {
 
     mapMarkers = {};
     activeLocations.forEach((s) => {
+      // No real coordinates for this store yet (e.g. a newly added
+      // location not in REAL_LOCATION_COORDINATES) — skip its pin rather
+      // than plotting it at a made-up point. It still shows normally in
+      // the location list/cards, which use its real address text instead.
+      if (s.lat == null || s.lng == null) return;
       const customIcon = L.divIcon({
         html: `
                     <div class="relative flex flex-col items-center group">
@@ -13256,7 +13295,7 @@ function initLocationsMap() {
       if (currentViewport === "desktop") {
         const popupContent = `
                     <div class="p-3 font-sans min-w-[200px]">
-                        ${s.name === getPreviousOrderLocation().name ? '<div class="text-[9px] font-black text-gray-900 uppercase tracking-widest mb-1.5">Previous Order</div>' : ""}
+                        ${s.name === getPreviousOrderLocation()?.name ? '<div class="text-[9px] font-black text-gray-900 uppercase tracking-widest mb-1.5">Previous Order</div>' : ""}
                         <h4 class="font-black text-sm uppercase tracking-tight text-violet-700 mb-1">${s.name}</h4>
                         <p class="text-xs text-gray-500 font-semibold mb-2">${s.address}</p>
                         <p class="text-[10px] font-black text-gray-400 uppercase mb-3"><i class="fa-regular fa-clock mr-1"></i> ${s.hours}</p>
@@ -13302,13 +13341,9 @@ function initLocationsMap() {
 }
 
 function focusLocation(name, openPopup = true) {
-  const list =
-    mockupState.apiLocations && mockupState.apiLocations.length > 0
-      ? mockupState.apiLocations
-      : LOCATIONS;
-  const store =
-    list.find((l) => l.name.toLowerCase() === name.toLowerCase()) ||
-    LOCATIONS.find((l) => l.name.toLowerCase() === name.toLowerCase());
+  const store = getEnabledLocations().find(
+    (l) => l.name.toLowerCase() === name.toLowerCase(),
+  );
 
   if (!store) {
     console.error("Store not found:", name);
@@ -13463,9 +13498,11 @@ function navigateTo(pageId, options = {}) {
 
   const nextFile = PAGE_FILE_MAP[basePageId] || `${basePageId}.html`;
   let targetUrl = hash ? `${nextFile}#${hash}` : nextFile;
-  if (basePageId === "menu" || basePageId === "menu-single") {
-    const storeId = mockupState.selectedLocationId || 7;
-    targetUrl = `${basePageId}.html?store=${storeId}${hash ? `#${hash}` : ""}`;
+  if (
+    (basePageId === "menu" || basePageId === "menu-single") &&
+    mockupState.selectedLocationId
+  ) {
+    targetUrl = `${basePageId}.html?store=${mockupState.selectedLocationId}${hash ? `#${hash}` : ""}`;
   }
   window.isNavigatingAway = true;
   if (options && options.replace) {
@@ -13652,27 +13689,16 @@ window.addEventListener("DOMContentLoaded", () => {
           } catch (e) { /* ignore storage errors */ }
         }
 
-        // If still no lastOrder, use most recent from apiOrders and map name → location
+        // If still no lastOrder, use the most recent order from real order
+        // history. The backend order record only carries a locationId (no
+        // name/address), so we just carry that ID through as-is — display
+        // code resolves the real store name/address from it via
+        // getSelectedLocationInfo()/getPreviousOrderLocation() at render
+        // time, instead of guessing a name here and baking it in.
         if (!mockupState.lastOrder && orders && orders.length > 0) {
           const mostRecent = orders[0];
-          // Translate server locationName to our mockup location
-          const serverName = (mostRecent.locationName || "").toLowerCase();
-          const mappedLoc = LOCATIONS.find(l => {
-            const lName = l.name.toLowerCase();
-            // Strip the "i-tea - " prefix for comparison
-            const lShort = lName.replace(/^i-tea\s*-\s*/i, "");
-            return serverName.includes(lShort) || lShort.includes(serverName.replace(/^i-tea\s*-\s*/i, ""));
-          }) || (
-            // Also handle backend-specific names like "Tom Yum - Surprise" → Alameda
-            serverName.includes("tom yum") || serverName.includes("surprise") ? LOCATIONS.find(l => l.locationId === 5) :
-            serverName.includes("castro valley") ? LOCATIONS.find(l => l.name.toLowerCase().includes("castro valley")) :
-            serverName.includes("i-tea") ? LOCATIONS.find(l => l.locationId === 7) : null
-          );
           mockupState.lastOrder = {
             ...mostRecent,
-            locationId: mappedLoc ? mappedLoc.locationId : (mostRecent.locationId || 7),
-            locationName: mappedLoc ? mappedLoc.name : (mostRecent.locationName || "i-Tea - Tempe"),
-            locationAddress: mappedLoc ? mappedLoc.address : (mostRecent.locationAddress || "825 W UNIVERSITY, TEMPE, AZ"),
             placedAt: mostRecent.orderDate || new Date().toISOString(),
           };
         }
@@ -13901,7 +13927,11 @@ window.addEventListener("pageshow", (event) => {
     persistAllState();
     if ((currentPage === "checkout" || currentPage === "checkout-rewards" || currentPage === "cart") && (!mockupState.cart || mockupState.cart.length === 0)) {
       if (mockupState.lastOrder || currentPage === "checkout" || currentPage === "checkout-rewards") {
-        window.location.replace(`menu.html?store=${mockupState.selectedLocationId || 7}`);
+        window.location.replace(
+          mockupState.selectedLocationId
+            ? `menu.html?store=${mockupState.selectedLocationId}`
+            : "menu.html",
+        );
         return;
       }
     }
