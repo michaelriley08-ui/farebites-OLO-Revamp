@@ -1821,6 +1821,7 @@ async function fetchMenuAndItems(locationId) {
                   ),
                   category: cat.name,
                   categoryId: cat.categoryId,
+                  isAvailable: item.isAvailable !== false,
                 })),
               );
             }
@@ -1880,36 +1881,65 @@ function getActiveMenuItems() {
   });
 }
 
-function isItemAvailableAtCurrentLocation(item) {
+function findItemInCurrentMenu(item) {
   const rawId = item.menuItemId || item.MenuItemId || item.id || item.Id;
   const normalizeStr = (str) => {
     if (!str) return "";
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
   };
   const rawName = normalizeStr(item.name || item.Name || item.menuItemName || item.MenuItemName);
-  
+
+  if (!mockupState.apiMenuItems || mockupState.apiMenuItems.length === 0) {
+    return null;
+  }
+
+  return (
+    mockupState.apiMenuItems.find((mi) => {
+      const miId = mi.id || mi.menuItemId;
+      const miName = normalizeStr(mi.name);
+      if (rawId && miId && String(rawId) === String(miId)) {
+        return true;
+      }
+      if (rawName && miName === rawName) {
+        return true;
+      }
+      if (rawName && miName && (miName.includes(rawName) || rawName.includes(miName))) {
+        return true;
+      }
+      return false;
+    }) || null
+  );
+}
+
+function isItemAvailableAtCurrentLocation(item) {
   if (!mockupState.apiMenuItems || mockupState.apiMenuItems.length === 0) {
     return true;
   }
-  
-  const found = mockupState.apiMenuItems.find((mi) => {
-    const miId = mi.id || mi.menuItemId;
-    const miName = normalizeStr(mi.name);
-    if (rawId && miId && String(rawId) === String(miId)) {
-      return true;
-    }
-    if (rawName && miName === rawName) {
-      return true;
-    }
-    if (rawName && miName && (miName.includes(rawName) || rawName.includes(miName))) {
-      return true;
-    }
-    return false;
-  });
-  
-  return !!found;
+  return !!findItemInCurrentMenu(item);
 }
 window.isItemAvailableAtCurrentLocation = isItemAvailableAtCurrentLocation;
+
+// A flat isAvailable:false from the API means "temporarily out of stock" \u2014
+// the item still belongs on the menu, it just can't be ordered right now.
+// Items rendered straight from apiMenuItems already carry the flag; cart/
+// reorder-modal entries are point-in-time snapshots, so they re-check the
+// live menu instead of trusting a possibly-stale copy.
+function isItemOutOfStock(item) {
+  return !!(item && item.isAvailable === false);
+}
+window.isItemOutOfStock = isItemOutOfStock;
+
+function isItemInStock(item) {
+  const found = findItemInCurrentMenu(item);
+  if (!found) return true;
+  return found.isAvailable !== false;
+}
+window.isItemInStock = isItemInStock;
+
+function renderOutOfStockOverlay() {
+  return `<div class="absolute inset-0 bg-white/55 z-[6] pointer-events-none"></div>`;
+}
+window.renderOutOfStockOverlay = renderOutOfStockOverlay;
 
 
 function toggleMenu(e, menuId) {
@@ -1996,13 +2026,13 @@ function hamburgerDrawerHTML() {
 
   if (isLoggedIn) {
     navItems.push({
-      label: "Log Out",
+      label: "Sign Out",
       icon: "fa-arrow-right-from-bracket",
       page: "logout",
     });
   } else {
     navItems.push({
-      label: "Log In",
+      label: "Sign In",
       icon: "fa-arrow-right-to-bracket",
       page: "sign-in",
     });
@@ -2463,16 +2493,17 @@ function renderMenuPage() {
                                 ];
                                 const styleIdx = index % 3;
                                 const fIndex = allItems.indexOf(fItem);
+                                const outOfStock = isItemOutOfStock(fItem);
                                 return `
-                                <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] group">
-                                    <img src="${fItem.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                <div class="relative shrink-0 w-[calc(50%-7px)] snap-start rounded-3xl overflow-hidden shadow-lg h-[220px] flex flex-col justify-end p-6 transition-all duration-300 ${outOfStock ? "" : "hover:shadow-xl hover:scale-[1.01]"} group">
+                                    <img src="${fItem.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top ${outOfStock ? "" : "group-hover:scale-[1.15]"} transition-transform duration-500">
                                     <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
-                                    <span class="absolute top-4 left-6 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    ${outOfStock ? renderOutOfStockOverlay() : `<span class="absolute top-4 left-6 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>`}
                                     <div class="relative z-10 w-full pr-36">
                                         <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-[0.95] mb-2 font-branding line-clamp-2">${fItem.name}</h2>
                                         <p class="text-gray-200 font-medium text-sm leading-snug max-w-[220px] line-clamp-2">${fItem.description || "A delicious new addition to our menu."}</p>
                                     </div>
-                                    <button onclick="selectItemAndNavigate(${fIndex})" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 ${textColors[styleIdx]} px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>
+                                    ${outOfStock ? "" : `<button onclick="selectItemAndNavigate(${fIndex})" class="absolute right-6 bottom-6 opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-violet-50 ${textColors[styleIdx]} px-8 py-3.5 rounded-full font-black uppercase text-sm shadow-lg active:scale-95 tracking-wide z-20">Add to Order</button>`}
                                 </div>
                                 `;
                               })
@@ -2499,11 +2530,12 @@ function renderMenuPage() {
                                 ];
                                 const styleIdx = index % 5;
                                 const fIndex = allItems.indexOf(fItem);
+                                const outOfStock = isItemOutOfStock(fItem);
                                 return `
-                                <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${fIndex})">
-                                    <img src="${fItem.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                <div class="relative shrink-0 w-[82vw] max-w-[320px] snap-center rounded-3xl overflow-hidden shadow-lg h-[186px] flex flex-col justify-end p-5 group ${outOfStock ? "" : "cursor-pointer"}" ${outOfStock ? "" : `onclick="selectItemAndNavigate(${fIndex})"`}>
+                                    <img src="${fItem.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top ${outOfStock ? "" : "group-hover:scale-[1.15]"} transition-transform duration-500">
                                     <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
-                                    <span class="absolute top-4 left-5 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    ${outOfStock ? renderOutOfStockOverlay() : `<span class="absolute top-4 left-5 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>`}
                                     <div class="relative z-10">
                                         <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-tight font-branding line-clamp-2">${fItem.name}</h2>
                                     </div>
@@ -2658,20 +2690,22 @@ function renderMenuPage() {
                                               getActiveMenuItems().indexOf(
                                                 item,
                                               );
+                                            const outOfStock = isItemOutOfStock(item);
                                             return `
                                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
-                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative ${outOfStock ? "cursor-default" : "cursor-pointer"} shrink-0" ${outOfStock ? "" : `onclick='selectItemAndNavigate(${actualIndex})'`}>
+                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top ${outOfStock ? "" : "hover:scale-125"} transition-transform duration-500">
+                                                        ${outOfStock ? renderOutOfStockOverlay() : ""}
                                                         <button onclick="event.stopPropagation(); toggleMenuFavorite(getActiveMenuItems()[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
                                                             <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
                                                         </button>
                                                     </div>
                                                     <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
-                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <div class="${outOfStock ? "" : "cursor-pointer"}" ${outOfStock ? "" : `onclick='selectItemAndNavigate(${actualIndex})'`}>
                                                             <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                            <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
+                                                            ${outOfStock ? `<div class="font-black text-red-600 ${isDesktop ? "text-sm mb-2" : "text-xs mb-3"} uppercase tracking-wide">Temporarily Out of Stock</div>` : `<div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>`}
                                                         </div>
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                        <button ${outOfStock ? "disabled" : `onclick='selectItemAndNavigate(${actualIndex})'`} class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] ${outOfStock ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-violet-200 text-violet-600 hover:bg-violet-50 hover:border-violet-300 active:scale-95"} font-black uppercase transition-colors tracking-wide shadow-sm shrink-0 mt-auto">${outOfStock ? "Sold Out" : "+ Add to Order"}</button>
                                                     </div>
                                                 </div>
                                             `;
@@ -2774,21 +2808,23 @@ function renderMenuPage() {
                                                           .map((item) => {
                                                             const actualIndex =
                                                               items.indexOf(item);
+                                                            const outOfStock = isItemOutOfStock(item);
                                                             return `
                                                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
-                                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative ${outOfStock ? "cursor-default" : "cursor-pointer"} shrink-0" ${outOfStock ? "" : `onclick='selectItemAndNavigate(${actualIndex})'`}>
+                                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top ${outOfStock ? "" : "hover:scale-125"} transition-transform duration-500">
+                                                                        ${outOfStock ? renderOutOfStockOverlay() : ""}
                                                                         <button onclick="event.stopPropagation(); toggleMenuFavorite(getActiveMenuItems()[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
                                                                             <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
                                                                         </button>
                                                                     </div>
                                                                     <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
-                                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                                        <div class="${outOfStock ? "" : "cursor-pointer"}" ${outOfStock ? "" : `onclick='selectItemAndNavigate(${actualIndex})'`}>
                                                                             <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                                            <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>
+                                                                            ${outOfStock ? `<div class="font-black text-red-600 ${isDesktop ? "text-sm mb-2" : "text-xs mb-3"} uppercase tracking-wide">Temporarily Out of Stock</div>` : `<div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${item.price.toFixed(2)}</div>`}
                                                                         </div>
                                                                         ${isDesktop ? `<p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description}</p>` : ""}
-                                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                                        <button ${outOfStock ? "disabled" : `onclick='selectItemAndNavigate(${actualIndex})'`} class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] ${outOfStock ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-violet-200 text-violet-600 hover:bg-violet-50 hover:border-violet-300 active:scale-95"} font-black uppercase transition-colors tracking-wide shadow-sm shrink-0 mt-auto">${outOfStock ? "Sold Out" : "+ Add to Order"}</button>
                                                                     </div>
                                                                 </div>
                                                             `;
@@ -2824,6 +2860,7 @@ function renderMenuPage() {
                                           .map((item, index) => {
                                             const actualIndex =
                                               allItems.indexOf(item);
+                                            const outOfStock = isItemOutOfStock(item);
                                             const isP1 = index === 0;
                                             const badgeStyle = isP1
                                               ? 'style="background:linear-gradient(135deg,#f97316,#f59e0b);"'
@@ -2833,20 +2870,20 @@ function renderMenuPage() {
                                               : "absolute top-3 left-3 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm";
                                             return `
                                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
-                                                    <div class="w-full h-60 overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
-                                                        <div class="${badgeClass}" ${badgeStyle}>Featured</div>
+                                                    <div class="w-full h-60 overflow-hidden relative ${outOfStock ? "cursor-default" : "cursor-pointer"} shrink-0" ${outOfStock ? "" : `onclick='selectItemAndNavigate(${actualIndex})'`}>
+                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top ${outOfStock ? "" : "hover:scale-125"} transition-transform duration-500">
+                                                        ${outOfStock ? renderOutOfStockOverlay() : `<div class="${badgeClass}" ${badgeStyle}>Featured</div>`}
                                                         <button onclick="event.stopPropagation(); toggleMenuFavorite(allItems[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
                                                             <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
                                                         </button>
                                                     </div>
                                                     <div class="flex flex-col flex-1 px-2.5 pb-5 pt-5">
-                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <div class="${outOfStock ? "" : "cursor-pointer"}" ${outOfStock ? "" : `onclick='selectItemAndNavigate(${actualIndex})'`}>
                                                             <h4 class="font-black text-gray-900 text-lg leading-tight tracking-tight uppercase mb-1 line-clamp-2">${item.name}</h4>
-                                                            <div class="font-black text-violet-600 text-base mb-2">$${item.price.toFixed(2)}</div>
+                                                            ${outOfStock ? `<div class="font-black text-red-600 text-sm mb-2 uppercase tracking-wide">Temporarily Out of Stock</div>` : `<div class="font-black text-violet-600 text-base mb-2">$${item.price.toFixed(2)}</div>`}
                                                         </div>
                                                         <p class="text-gray-500 text-xs font-medium mb-6 flex-1 leading-relaxed line-clamp-2">${item.description || "A delicious addition to our menu."}</p>
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-3 text-sm rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                        <button ${outOfStock ? "disabled" : `onclick='selectItemAndNavigate(${actualIndex})'`} class="w-full py-3 text-sm rounded-full border-[1.5px] ${outOfStock ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-violet-200 text-violet-600 hover:bg-violet-50 hover:border-violet-300 active:scale-95"} font-black uppercase transition-colors tracking-wide shadow-sm shrink-0 mt-auto">${outOfStock ? "Sold Out" : "+ Add to Order"}</button>
                                                     </div>
                                                 </div>
                                             `;
@@ -2860,20 +2897,22 @@ function renderMenuPage() {
                                           .map((item) => {
                                             const actualIndex =
                                               allItems.indexOf(item);
+                                            const outOfStock = isItemOutOfStock(item);
                                             return `
                                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
-                                                    <div class="w-full ${currentPage === "menu-single" ? "h-64" : "h-56"} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                                    <div class="w-full ${currentPage === "menu-single" ? "h-64" : "h-56"} overflow-hidden relative ${outOfStock ? "cursor-default" : "cursor-pointer"} shrink-0" ${outOfStock ? "" : `onclick='selectItemAndNavigate(${actualIndex})'`}>
+                                                        <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top ${outOfStock ? "" : "hover:scale-125"} transition-transform duration-500">
+                                                        ${outOfStock ? renderOutOfStockOverlay() : ""}
                                                         <button onclick="event.stopPropagation(); toggleMenuFavorite(allItems[${actualIndex}], event)" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
                                                             <i class="${isMenuItemFavorite(item) ? "fa-solid fa-heart text-violet-600 text-lg" : "fa-regular fa-heart text-gray-400 hover:text-violet-600 text-lg"}"></i>
                                                         </button>
                                                     </div>
                                                     <div class="flex flex-col flex-1 px-1.5 pb-3 pt-3">
-                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <div class="${outOfStock ? "" : "cursor-pointer"}" ${outOfStock ? "" : `onclick='selectItemAndNavigate(${actualIndex})'`}>
                                                             <h4 class="font-black text-gray-900 text-[15px] leading-tight tracking-tight uppercase mb-1">${item.name}</h4>
-                                                            <div class="font-black text-violet-600 text-sm mb-3">$${item.price.toFixed(2)}</div>
+                                                            ${outOfStock ? `<div class="font-black text-red-600 text-xs mb-3 uppercase tracking-wide">Temporarily Out of Stock</div>` : `<div class="font-black text-violet-600 text-sm mb-3">$${item.price.toFixed(2)}</div>`}
                                                         </div>
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full py-2.5 text-[11px] rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors active:scale-95 tracking-wide shadow-sm shrink-0 mt-auto">+ Add to Order</button>
+                                                        <button ${outOfStock ? "disabled" : `onclick='selectItemAndNavigate(${actualIndex})'`} class="w-full py-2.5 text-[11px] rounded-full border-[1.5px] ${outOfStock ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-violet-200 text-violet-600 hover:bg-violet-50 hover:border-violet-300 active:scale-95"} font-black uppercase transition-colors tracking-wide shadow-sm shrink-0 mt-auto">${outOfStock ? "Sold Out" : "+ Add to Order"}</button>
                                                     </div>
                                                 </div>
                                             `;
@@ -2912,20 +2951,22 @@ function renderMenuPage() {
                                           .map(({ fav, actualIndex }) => {
                                             const realFavItem = getActiveMenuItems()[actualIndex];
                                             const favImage = (realFavItem && realFavItem.image) || fav.image;
+                                            const outOfStock = isItemOutOfStock(realFavItem);
                                             return `
                                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow group/card overflow-hidden">
-                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative cursor-pointer shrink-0" onclick='selectItemAndNavigate(${actualIndex})'>
-                                                        <img src="${favImage}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top group-hover/card:scale-105 transition-transform duration-500">
+                                                    <div class="w-full ${isDesktop ? "h-60" : (currentPage === "menu-single" ? "h-64" : "h-56")} overflow-hidden relative ${outOfStock ? "cursor-default" : "cursor-pointer"} shrink-0" ${outOfStock ? "" : `onclick='selectItemAndNavigate(${actualIndex})'`}>
+                                                        <img src="${favImage}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top ${outOfStock ? "" : "group-hover/card:scale-105"} transition-transform duration-500">
+                                                        ${outOfStock ? renderOutOfStockOverlay() : ""}
                                                         <button onclick="event.stopPropagation(); removeFavorite(${fav.id})" class="heart-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-10" title="Toggle Favorite">
                                                             <i class="fa-solid fa-heart text-violet-600 text-lg"></i>
                                                         </button>
                                                     </div>
                                                     <div class="flex flex-col flex-1 ${isDesktop ? "px-2.5 pb-5 pt-5" : "px-1.5 pb-3 pt-3"}">
-                                                        <div class="cursor-pointer" onclick='selectItemAndNavigate(${actualIndex})'>
+                                                        <div class="${outOfStock ? "" : "cursor-pointer"}" ${outOfStock ? "" : `onclick='selectItemAndNavigate(${actualIndex})'`}>
                                                             <h4 class="font-black text-gray-900 ${isDesktop ? "text-lg" : "text-[15px]"} leading-tight tracking-tight uppercase mb-1">${fav.name}</h4>
-                                                            <div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${fav.price.toFixed(2)}</div>
+                                                            ${outOfStock ? `<div class="font-black text-red-600 ${isDesktop ? "text-sm mb-2" : "text-xs mb-3"} uppercase tracking-wide">Temporarily Out of Stock</div>` : `<div class="font-black text-violet-600 ${isDesktop ? "text-base mb-2" : "text-sm mb-3"}">$${fav.price.toFixed(2)}</div>`}
                                                         </div>
-                                                        <button onclick='selectItemAndNavigate(${actualIndex})' class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] border-violet-200 text-violet-600 font-black uppercase hover:bg-violet-50 hover:border-violet-300 transition-colors tracking-wide mt-auto">+ Reorder</button>
+                                                        <button ${outOfStock ? "disabled" : `onclick='selectItemAndNavigate(${actualIndex})'`} class="w-full ${isDesktop ? "py-3 text-sm" : "py-2.5 text-[11px]"} rounded-full border-[1.5px] ${outOfStock ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-violet-200 text-violet-600 hover:bg-violet-50 hover:border-violet-300"} font-black uppercase transition-colors tracking-wide mt-auto">${outOfStock ? "Sold Out" : "+ Reorder"}</button>
                                                     </div>
                                                 </div>
                                             `;
@@ -3396,7 +3437,10 @@ const routes = {
     const signInReason = new URLSearchParams(window.location.search).get("reason");
     const signInHeadline =
       signInReason === "reorder" ? "Sign in to see your past orders" :
-      signInReason === "checkout" ? "Sign in to complete your order" : "Sign In";
+      signInReason === "checkout" ? "Sign in to complete your order" :
+      signInReason === "expired" ? "Your session expired" : "Sign In";
+    const signInSubtext =
+      signInReason === "expired" ? "Please sign in again to continue." : "";
     return `
             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${assets.restaurantHero}')"></div>
             <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px]"></div>
@@ -3406,7 +3450,8 @@ const routes = {
                     <div class="w-full ${isDesktop ? "max-h-[36px] mb-2 mt-2" : "max-h-[52px] mb-1 mt-4"} flex items-center justify-center">
                          <img src="images/i-tea-logo-new.png" class="h-full ${isDesktop ? "max-h-[36px]" : "max-h-[52px]"} w-auto object-contain">
                     </div>
-                    <h2 class="text-xl lg:text-2xl font-black text-center ${isDesktop ? "mb-2" : "mb-4"} uppercase tracking-tight text-gray-900 leading-tight">${signInHeadline}</h2>
+                    <h2 class="text-xl lg:text-2xl font-black text-center ${signInSubtext ? "mb-1" : isDesktop ? "mb-2" : "mb-4"} uppercase tracking-tight text-gray-900 leading-tight">${signInHeadline}</h2>
+                    ${signInSubtext ? `<p class="text-center text-sm font-bold text-gray-500 ${isDesktop ? "mb-2" : "mb-4"}">${signInSubtext}</p>` : ""}
                     <div class="space-y-3">
                         <div class="relative group">
                             <input type="email" id="auth-email-input" autocomplete="username" placeholder="Email Address" value="${savedEmail}" class="w-full bg-white px-8 ${isDesktop ? "py-3" : "py-4"} rounded-full border-2 border-violet-50 focus:border-violet-600 focus:bg-white outline-none font-bold text-lg text-gray-900 shadow-xl shadow-violet-100/50 transition-all placeholder-gray-300">
@@ -3764,15 +3809,16 @@ const routes = {
                                 ];
                                 const styleIdx = index % 5;
                                 const fIndex = items.indexOf(fItem);
+                                const outOfStock = isItemOutOfStock(fItem);
                                 return `
-                                <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden border-4 border-white shadow-xl h-[225px] flex flex-col justify-end p-5 group cursor-pointer" onclick="selectItemAndNavigate(${fIndex})">
-                                    <img src="${fItem.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-[1.15] transition-transform duration-500">
+                                <div class="${cardWidthClass} relative shrink-0 snap-center rounded-3xl overflow-hidden border-4 border-white shadow-xl h-[225px] flex flex-col justify-end p-5 group ${outOfStock ? "" : "cursor-pointer"}" ${outOfStock ? "" : `onclick="selectItemAndNavigate(${fIndex})"`}>
+                                    <img src="${fItem.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="absolute inset-0 w-full h-full object-cover object-top ${outOfStock ? "" : "group-hover:scale-[1.15]"} transition-transform duration-500">
                                     <div class="absolute inset-0 bg-gradient-to-r ${gradients[styleIdx]} to-transparent"></div>
-                                    <span class="absolute top-4 left-5 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>
+                                    ${outOfStock ? renderOutOfStockOverlay() : `<span class="absolute top-4 left-5 ${badgeColors[styleIdx]} text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm z-20">Featured</span>`}
                                     <div class="relative z-10 text-left w-full pr-12">
                                         <h2 class="text-xl font-black text-white uppercase tracking-tighter leading-tight font-branding mb-1 line-clamp-2">${fItem.name}</h2>
                                         <p class="text-white font-medium text-xs leading-tight mb-3 line-clamp-2">${fItem.description || "A delicious new addition to our menu."}</p>
-                                        <button onclick="event.stopPropagation(); selectItemAndNavigate(${fIndex})" class="bg-white ${textColors[styleIdx]} px-5 py-2 rounded-full font-black uppercase text-[10px] shadow-md hover:scale-105 active:scale-95 tracking-wider z-20 transition-transform">Add to Order</button>
+                                        ${outOfStock ? `<span class="inline-block bg-white/90 text-red-600 px-5 py-2 rounded-full font-black uppercase text-[10px] shadow-md tracking-wider">Sold Out</span>` : `<button onclick="event.stopPropagation(); selectItemAndNavigate(${fIndex})" class="bg-white ${textColors[styleIdx]} px-5 py-2 rounded-full font-black uppercase text-[10px] shadow-md hover:scale-105 active:scale-95 tracking-wider z-20 transition-transform">Add to Order</button>`}
                                     </div>
                                 </div>
                                 `;
@@ -4488,6 +4534,7 @@ const routes = {
       (selectedLoc ? selectedLoc.address : "Address unavailable");
 
     const item = mockupState.selectedItem; // guaranteed real — guarded above
+    const outOfStock = isItemOutOfStock(item);
     const basePrice = item.price;
     const detail = mockupState.selectedItemDetail;
     const sels = mockupState._customizeSubItems || {};
@@ -4523,13 +4570,14 @@ const routes = {
                             <!-- Item Image + Info Card -->
                             <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex gap-0">
                                 <div class="w-64 shrink-0 p-3">
-                                    <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+                                    <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative">
                                         <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
+                                        ${outOfStock ? renderOutOfStockOverlay() : ""}
                                     </div>
                                 </div>
                                 <div class="flex-1 px-8 py-6 flex flex-col justify-center gap-4">
                                     <div>
-                                        <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
+                                        ${outOfStock ? `<div class="text-xs font-black text-red-600 uppercase tracking-widest mb-1 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Temporarily Out of Stock</div>` : `<div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>`}
                                         <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-2">${item.name}</h3>
                                         <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || detail?.description || ""}</p>
                                     </div>
@@ -4560,7 +4608,7 @@ const routes = {
                                 <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Options Total</span>
                                 <span class="text-lg font-black text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                             </div>
-                            <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} — $${totalPrice}</button>
+                            <button ${outOfStock ? "disabled" : `onclick="window._addToCart()"`} class="flex-1 ${outOfStock ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-violet-600 text-white hover:bg-violet-700 active:scale-95"} py-4 rounded-full font-black text-lg shadow-lg transition-all uppercase tracking-wider text-center">${outOfStock ? "Currently Unavailable" : `${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} — $${totalPrice}`}</button>
                             <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
                         </div>
                     </div>
@@ -4620,12 +4668,13 @@ const routes = {
                         <div class="px-3 pt-3">
                             <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative">
                                 <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
+                                ${outOfStock ? renderOutOfStockOverlay() : ""}
                             </div>
                         </div>
 
                         <!-- Info & Price -->
                         <div class="px-6 pt-5 pb-4 text-center border-b border-gray-100">
-                            <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
+                            ${outOfStock ? `<div class="text-xs font-black text-red-600 uppercase tracking-widest mb-1 flex items-center justify-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Temporarily Out of Stock</div>` : `<div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>`}
                             <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-1">${item.name}</h3>
                             <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || detail?.description || ""}</p>
                         </div>
@@ -4656,7 +4705,7 @@ const routes = {
                             <span>Options Total</span>
                             <span class="text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                         </div>
-                        <button onclick="window._addToCart()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} - $${totalPrice}</button>
+                        <button ${outOfStock ? "disabled" : `onclick="window._addToCart()"`} class="w-full ${outOfStock ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-violet-600 text-white active:scale-95"} py-4 rounded-full font-black text-lg shadow-lg transition-all uppercase tracking-wider">${outOfStock ? "Currently Unavailable" : `${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} - $${totalPrice}`}</button>
                     </div>
                 </div>
             `;
@@ -4686,6 +4735,7 @@ const routes = {
       (selectedLoc ? selectedLoc.address : "Address unavailable");
 
     const item = mockupState.selectedItem; // guaranteed real — guarded above
+    const outOfStock = isItemOutOfStock(item);
     const basePrice = item.price;
     const detail = mockupState.selectedItemDetail;
     const sels = mockupState._customizeSubItems || {};
@@ -4720,13 +4770,14 @@ const routes = {
                         <!-- Item Image + Info Card -->
                         <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex gap-0">
                             <div class="w-64 shrink-0 p-3">
-                                <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+                                <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative">
                                     <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
+                                    ${outOfStock ? renderOutOfStockOverlay() : ""}
                                 </div>
                             </div>
                             <div class="flex-1 px-8 py-6 flex flex-col justify-center gap-4">
                                 <div>
-                                    <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
+                                    ${outOfStock ? `<div class="text-xs font-black text-red-600 uppercase tracking-widest mb-1 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Temporarily Out of Stock</div>` : `<div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>`}
                                     <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-2">${item.name}</h3>
                                     <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || detail?.description || ""}</p>
                                 </div>
@@ -4761,7 +4812,7 @@ const routes = {
                                 <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Options Total</span>
                                 <span class="text-lg font-black text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                             </div>
-                            <button onclick="window._addToCart()" class="flex-1 bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg hover:bg-violet-700 active:scale-95 transition-all uppercase tracking-wider text-center">${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} — $${totalPrice}</button>
+                            <button ${outOfStock ? "disabled" : `onclick="window._addToCart()"`} class="flex-1 ${outOfStock ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-violet-600 text-white hover:bg-violet-700 active:scale-95"} py-4 rounded-full font-black text-lg shadow-lg transition-all uppercase tracking-wider text-center">${outOfStock ? "Currently Unavailable" : `${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} — $${totalPrice}`}</button>
                             <button onclick="navigateTo(mockupState.lastMenuPage || 'menu')" class="text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-gray-900 transition-colors whitespace-nowrap">← Back to Menu</button>
                         </div>
 
@@ -4822,12 +4873,13 @@ const routes = {
                         <div class="px-3 pt-3">
                             <div class="w-full aspect-square rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative">
                                 <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
+                                ${outOfStock ? renderOutOfStockOverlay() : ""}
                             </div>
                         </div>
 
                         <!-- Info & Price -->
                         <div class="px-6 pt-5 pb-4 text-center border-b border-gray-100">
-                            <div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>
+                            ${outOfStock ? `<div class="text-xs font-black text-red-600 uppercase tracking-widest mb-1 flex items-center justify-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Temporarily Out of Stock</div>` : `<div class="text-2xl font-black text-gray-900 tracking-tight mb-1">$${basePrice.toFixed(2)}</div>`}
                             <h3 class="text-xl font-black text-violet-600 uppercase tracking-tighter leading-tight mb-1">${item.name}</h3>
                             <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">${item.description || detail?.description || ""}</p>
                         </div>
@@ -4867,7 +4919,7 @@ const routes = {
                             <span>Options Total</span>
                             <span class="text-gray-700">+$${extrasTotal.toFixed(2)}</span>
                         </div>
-                        <button onclick="window._addToCart()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-all uppercase tracking-wider">${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} - $${totalPrice}</button>
+                        <button ${outOfStock ? "disabled" : `onclick="window._addToCart()"`} class="w-full ${outOfStock ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-violet-600 text-white active:scale-95"} py-4 rounded-full font-black text-lg shadow-lg transition-all uppercase tracking-wider">${outOfStock ? "Currently Unavailable" : `${typeof mockupState.editingCartIndex === "number" && mockupState.editingCartIndex >= 0 ? "Update Item" : "Add to Cart"} - $${totalPrice}`}</button>
                     </div>
                 </div>
             `;
@@ -4931,11 +4983,11 @@ const routes = {
       mockupState.selectedTimeSlot.includes("8:") ||
       mockupState.selectedTimeSlot.includes("9:");
 
-    const hasUnavailableItems = cart.some(item => !isItemAvailableAtCurrentLocation(item));
+    const hasUnavailableItems = cart.some(item => !isItemAvailableAtCurrentLocation(item) || !isItemInStock(item));
     const selectionNotMade =
       mockupState.bagQuantity === 0 && !mockupState.noBagsSelected;
     const paymentAction = hasUnavailableItems
-      ? `alert('Please remove unavailable items from your cart before checking out.')`
+      ? `alert('Please remove unavailable or out-of-stock items from your cart before checking out.')`
       : selectionNotMade
       ? `updateMockupState('modalOpen', 'bag-alert')`
       : `navigateTo('checkout')`;
@@ -4988,7 +5040,12 @@ const routes = {
                       customSummary = "No customizations";
                     }
 
-                    const isAvailable = isItemAvailableAtCurrentLocation(item);
+                    const atLocation = isItemAvailableAtCurrentLocation(item);
+                    const inStock = isItemInStock(item);
+                    const isAvailable = atLocation && inStock;
+                    const unavailableReason = !atLocation
+                      ? "Not available at this location"
+                      : "Temporarily out of stock";
                     const itemTotal = (item.unitPrice * item.quantity).toFixed(
                       2,
                     );
@@ -4996,14 +5053,15 @@ const routes = {
                     return `
                     <div class="flex justify-between items-start p-5 cursor-pointer hover:bg-gray-50 transition-colors group ${isAvailable ? "" : "bg-red-50/10"}" onclick="${isAvailable ? `window.editCartItemAndNavigate(${idx})` : ""}">
                         <div class="flex gap-4 items-start">
-                            <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 ${isAvailable ? "" : "opacity-60"}">
+                            <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 relative">
                                 <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top">
+                                ${isAvailable ? "" : renderOutOfStockOverlay()}
                             </div>
                             <div>
                                 <h3 class="font-black text-gray-900 uppercase tracking-tight text-sm leading-tight ${isAvailable ? "group-hover:text-violet-600" : "line-through opacity-60"}">${item.name}</h3>
                                 ${isAvailable ? "" : `
                                 <div class="text-[10px] font-black text-red-600 uppercase mt-1 mb-2 flex items-center gap-1">
-                                    <i class="fa-solid fa-triangle-exclamation text-[9px]"></i> Not available at this location
+                                    <i class="fa-solid fa-triangle-exclamation text-[9px]"></i> ${unavailableReason}
                                 </div>
                                 `}
                                 <div class="flex items-start gap-2 mb-3">
@@ -5939,7 +5997,7 @@ const routes = {
 
                     <!-- Logout -->
                     <button onclick="signOutUser()" class="w-full py-4 rounded-full border-2 border-gray-200 text-gray-700 font-black uppercase tracking-widest text-sm hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
                     </button>
 
                     <!-- Danger Zone — Delete Account -->
@@ -7259,30 +7317,34 @@ const routes = {
                         : `
                     <div class="grid grid-cols-1 md:grid-cols-2 ${isDesktop ? "gap-6" : "gap-[10px]"}">
                         ${favorites
-                          .map(
-                            (item) => `
+                          .map((item) => {
+                            const outOfStock = !isItemInStock(item);
+                            return `
                             <div class="bg-white rounded-2xl ${isDesktop ? "p-2.5" : "p-2"} shadow-sm border border-gray-100 flex ${isDesktop ? "gap-5 items-stretch" : "flex-col gap-4"} hover:shadow-md transition-shadow relative group">
-                                <div class="${isDesktop ? "w-32 min-h-[128px]" : "w-full h-64"} rounded-xl overflow-hidden shrink-0 border border-gray-50">
-                                    <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top hover:scale-125 transition-transform duration-500">
+                                <div class="${isDesktop ? "w-32 min-h-[128px]" : "w-full h-64"} rounded-xl overflow-hidden relative shrink-0 border border-gray-50">
+                                    <img src="${item.image}" onerror="this.onerror=null; this.src='images/no-product-pic.png';" class="w-full h-full object-cover object-top ${outOfStock ? "" : "hover:scale-125"} transition-transform duration-500">
+                                    ${outOfStock ? renderOutOfStockOverlay() : ""}
                                 </div>
                                 <div class="flex-1 flex flex-col justify-between py-1 min-w-0">
                                     <div class="cursor-pointer">
                                         <div class="text-violet-600 text-[9px] font-black tracking-widest uppercase mb-1">${item.category}</div>
                                         <h4 class="font-black text-gray-900 ${isDesktop ? "text-base" : "text-lg"} leading-tight tracking-tight mb-1 pr-12">${item.name}</h4>
-                                        <div class="font-black text-violet-600 text-sm">$${item.price.toFixed(2)}</div>
+                                        ${outOfStock ? `<div class="font-black text-red-600 text-sm uppercase tracking-wide">Temporarily Out of Stock</div>` : `<div class="font-black text-violet-600 text-sm">$${item.price.toFixed(2)}</div>`}
                                     </div>
                                     <div class="flex gap-2 mt-4">
+                                        ${outOfStock ? `<span class="text-gray-400 font-black text-[10px] uppercase tracking-widest">Currently Unavailable</span>` : `
                                         <button onclick="navigateTo('customize')" class="text-violet-600 font-black text-[10px] uppercase tracking-widest hover:underline">Customize</button>
                                         <span class="text-gray-300">•</span>
                                         <button onclick="navigateTo('cart')" class="text-violet-600 font-black text-[10px] uppercase tracking-widest hover:underline">Add to Order</button>
+                                        `}
                                     </div>
                                 </div>
                                 <button onclick="removeFavorite(${item.id})" class="absolute ${isDesktop ? "top-4 right-4" : "top-4 right-4"} w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors shadow-sm" title="Remove from favorites">
                                     <i class="fa-solid fa-heart text-sm"></i>
                                 </button>
                             </div>
-                        `,
-                          )
+                        `;
+                          })
                           .join("")}
                     </div>
                     `
@@ -8201,7 +8263,7 @@ function renderPage() {
                 </div>
                 <div class="flex items-center gap-4 lg:gap-8 text-[14px] lg:text-[16px] font-black uppercase tracking-tight text-[#1f0b35]">
                     <div class="flex items-center gap-2 cursor-pointer hover:text-violet-600 transition-colors whitespace-nowrap font-black uppercase tracking-tight text-[14px] lg:text-[16px] text-[#1f0b35]" onclick="navigateTo('locations')">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="${mockupState.selectedLocationId ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 lg:w-7 lg:h-7 ${mockupState.selectedLocationId ? "text-violet-600" : ""}"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" fill="${mockupState.selectedLocationId ? "#ffffff" : "none"}"/></svg>
                         <span class="nav-link-animated">Locations</span>
                     </div>
                     ${
@@ -8214,10 +8276,10 @@ function renderPage() {
                                 <i class="fa-solid fa-chevron-down text-[10px] ml-1 text-gray-400"></i>
                             </button>
                             <div id="user-profile-dropdown" class="dropdown-menu">
-                                <div class="dropdown-item" onclick="navigateTo('account')">My Account</div>
+                                <div class="dropdown-item" onclick="navigateTo('account')"><i class="fa-solid fa-user w-4 text-center"></i> My Account</div>
 
                                 <div class="h-px bg-violet-100/50 my-2"></div>
-                                <div class="dropdown-item text-gray-900 hover:text-black" onclick="signOutUser()">Sign Out</div>
+                                <div class="dropdown-item text-gray-900 hover:text-black" onclick="signOutUser()"><i class="fa-solid fa-arrow-right-from-bracket w-4 text-center"></i> Sign Out</div>
                             </div>
                         </div>
                     `
@@ -9840,6 +9902,7 @@ window._selectModifyType = function (menuSubItemId, modifyType, price) {
 window._addToCart = function () {
   const item = mockupState.selectedItem;
   if (!item) return;
+  if (isItemOutOfStock(item)) return;
 
   // --- Required-group validation ---
   const detail = mockupState.selectedItemDetail;
@@ -10991,14 +11054,22 @@ async function handleDeleteAccount() {
   }
 }
 
-async function signOutUser() {
+async function signOutUser(options = {}) {
+  // notifyServer: skip the /Account/logout call when the token is already
+  // known-dead (e.g. a 401 told us it expired) — nothing to invalidate.
+  // reason: appended as sign-in.html?reason=<reason> so the sign-in page can
+  // show a friendly explanation instead of silently dropping the user there.
+  const { notifyServer = true, reason = null } = options;
+
   // Save current cart before logging out
   if (mockupState.isLoggedIn) {
     syncCartToStorage();
   }
 
-  if (window.ApiService) {
+  if (notifyServer && window.ApiService) {
     await window.ApiService.logout();
+  } else if (window.ApiService) {
+    window.ApiService.setToken(null);
   }
 
   // Capture email and last order BEFORE clearing state
@@ -11049,7 +11120,12 @@ async function signOutUser() {
   sessionStorage.setItem(STORAGE_KEYS.state, stateJson);
   localStorage.setItem(STORAGE_KEYS.state, stateJson);
 
-  navigateTo("sign-in");
+  if (reason) {
+    window.isNavigatingAway = true;
+    window.location.href = `${PAGE_FILE_MAP["sign-in"] || "sign-in.html"}?reason=${reason}`;
+  } else {
+    navigateTo("sign-in");
+  }
 }
 
 window.toggleLocationFavorite = function (name, event) {
@@ -11284,17 +11360,9 @@ function recordPlacedOrder(orderObj) {
   }
   mockupState.lastOrder = orderObj;
 
-  // The ordering session is over once an order is placed. Clear the live
-  // location/fulfillment selection so the next visit to Menu requires an
-  // active re-choice instead of silently reusing this store. (The order
-  // object above already carries its own locationId/Name/Address for the
-  // confirmation screen and order history, independent of this.)
-  mockupState.selectedLocationId = null;
-  mockupState.selectedLocation = null;
-  mockupState.selectedAddress = null;
-  mockupState.selectedDistance = null;
-  mockupState.selectedRestaurantId = null;
-  mockupState.fulfillmentMode = null;
+  // Keep the selected store sticky after an order, matching how Starbucks/
+  // Chipotle/Dunkin' etc. default straight back to your last-used store
+  // instead of re-prompting every time. Only the per-order timing resets.
   mockupState.orderTime = "ASAP";
 
   if (!mockupState.userOrders) {
@@ -11738,7 +11806,7 @@ window.reorderPastOrder = function (orderId) {
     const unavailableItemNames = [];
 
     orderItems.forEach((item) => {
-      const isAvailable = isItemAvailableAtCurrentLocation(item);
+      const isAvailable = isItemAvailableAtCurrentLocation(item) && isItemInStock(item);
       const rawName = (
         item.name ||
         item.Name ||
@@ -12040,7 +12108,12 @@ function renderReorderModalHTML() {
           <div class="bg-violet-50/60 p-3 rounded-xl flex flex-col gap-2.5">
             ${orderItems
               .map((item, idx) => {
-                const isAvailable = isItemAvailableAtCurrentLocation(item);
+                const atLocation = isItemAvailableAtCurrentLocation(item);
+                const inStock = isItemInStock(item);
+                const isAvailable = atLocation && inStock;
+                const unavailableReason = !atLocation
+                  ? "Not available at this location"
+                  : "Temporarily out of stock";
                 const normSubs = getItemNormalizedSubItems(item);
                 const opts = normSubs.map((s) => s.name);
                 const inst = (
@@ -12067,7 +12140,7 @@ function renderReorderModalHTML() {
                       <span class="font-black text-gray-900 text-xs truncate ${isAvailable ? "" : "line-through"}">${idx + 1}. ${itemName}</span>
                       ${isAvailable 
                         ? `<span class="font-bold text-violet-600 text-[11px] shrink-0">Qty: ${itemQty}</span>`
-                        : `<span class="font-black text-red-600 text-[10px] uppercase shrink-0">Not available at this location</span>`
+                        : `<span class="font-black text-red-600 text-[10px] uppercase shrink-0">${unavailableReason}</span>`
                       }
                     </div>
                     <div class="mt-1 flex flex-wrap gap-1">
@@ -13155,9 +13228,9 @@ window.addEventListener("DOMContentLoaded", () => {
       })
       .catch((err) => {
         console.error("Failed to auto-fetch profile on start:", err);
-        if (err.status === 401) {
-          signOutUser();
-        }
+        // A 401 here also fires the global "auth-expired" listener (api.js
+        // dispatches it on every 401), which handles the sign-out/redirect —
+        // nothing to do here beyond logging.
       });
 
     // Fetch orders
@@ -13299,6 +13372,19 @@ window.addEventListener("DOMContentLoaded", () => {
   renderPage();
 });
 
+// api.js dispatches this on any request that comes back 401, from any page —
+// this is the single place that reacts, so every expiry path (idle timeout,
+// a stale token, a request the server rejected) ends up at the same
+// sign-in.html?reason=expired redirect instead of each caller handling it
+// (or not) on its own.
+let sessionExpiredHandled = false;
+window.addEventListener("auth-expired", () => {
+  if (sessionExpiredHandled || !mockupState.isLoggedIn) return;
+  sessionExpiredHandled = true;
+  // notifyServer: false — the token that just 401'd is already dead server-side.
+  signOutUser({ notifyServer: false, reason: "expired" });
+});
+
 // --- Session Timeout Manager ---
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 const WARNING_TIME_MS = 13 * 60 * 1000; // 13 minutes (2 minute warning)
@@ -13333,12 +13419,9 @@ function executeAutoLogout() {
   persistAllState();
   removeTimeoutWarningModal();
   if (mockupState.isLoggedIn) {
-    signOutUser(); // This handles logout and redirect
-
-    // Optional: show a quick alert or toast that they were logged out
-    setTimeout(() => {
-      alert("You have been automatically logged out due to inactivity.");
-    }, 500);
+    // notifyServer: true — the token is still valid at this point, this is a
+    // deliberate idle logout, so tell the server to invalidate it for real.
+    signOutUser({ notifyServer: true, reason: "expired" });
   }
 }
 

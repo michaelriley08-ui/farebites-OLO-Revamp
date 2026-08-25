@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FareBites</title>
+    <script>
+      // Seed state BEFORE app.js runs its own init, so it never redirects
+      // to the location picker or overwrites our fake menu with a live fetch.
+      var seedState = {
+        selectedLocationId: 1,
+        selectedLocation: "Long Wong's AZ - Thomas",
+        selectedAddress: "2318 E Thomas Rd, Phoenix, AZ",
+        selectedDistance: "0.0 mi",
+        fulfillmentMode: "In-store",
+        orderTime: "ASAP",
+        isLoading: false,
+        menuItemsLoadError: false,
+        menuTab: "menu",
+        cart: [],
+        cartItemCount: 0,
+        bagQuantity: 0,
+        noBagsSelected: false,
+        apiCategories: [
+          { categoryId: 1, name: "Appetizers", imgUrl: "images/no-product-pic.png" }
+        ],
+        apiMenuItems: [
+          { id: 4, name: "Cantina Platter", description: "Sample platter of mozzarella sticks, poppers, cactus sticks, mushrooms, onion rings & ranch", price: 17.99, image: "images/no-product-pic.png", category: "Appetizers", categoryId: 1, isAvailable: true },
+          { id: 11, name: "Long Wong's Poppers", description: "5 of the original cream cheese stuffed jalapeno poppers", price: 7.25, image: "images/no-product-pic.png", category: "Appetizers", categoryId: 1, isAvailable: false },
+          { id: 8, name: "Chili Cheese Fries", description: "Big stack of fries covered in chili & nacho cheese", price: 8.50, image: "images/no-product-pic.png", category: "Appetizers", categoryId: 1, isAvailable: false },
+          { id: 6, name: "Mozza Sticks", description: "5 golden brown mozzarella cheese sticks", price: 8.99, image: "images/no-product-pic.png", category: "Appetizers", categoryId: 1, isAvailable: false }
+        ]
+      };
+      sessionStorage.setItem("farebitesMockupState", JSON.stringify(seedState));
+      localStorage.setItem("farebitesMockupState", JSON.stringify(seedState));
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css?v=39">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="shortcut icon" href="favicon.ico">
+</head>
+<body data-page="menu">
+<div id="app-viewport" class="app-content">
+                    <!-- App logic renders views here -->
+                </div>
+    <script src="api.js?v=39"></script>
+    <script src="app.js?v=47"></script>
+</body>
+</html>
