@@ -2185,7 +2185,7 @@ function renderMenuPage() {
   };
   const orderCutoffTime = getOrderCutoffTime(closeTime, 20);
   return `
-        <div id="menu-scroller" class="flex flex-col ${isDesktop ? "min-h-screen" : "h-full"} bg-[#f9fafb] relative ${!isDesktop && mockupState.modalOpen ? "overflow-hidden" : ""} scrollbar-hide">
+        <div id="menu-scroller" class="flex flex-col ${isDesktop ? "min-h-dvh" : "h-full"} bg-[#f9fafb] relative ${!isDesktop && mockupState.modalOpen ? "overflow-hidden" : ""} scrollbar-hide">
             <!-- Compact Sticky Header: ≡ | 🔍 | i-Tea logo | ⭐ | 🛍 -->
             <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shrink-0">
                 <div class="px-3 py-2 flex items-center gap-2 w-full max-w-[1080px] mx-auto">
@@ -3560,7 +3560,7 @@ const routes = {
   rewards: () => {
     const isDesktop = currentViewport === "desktop";
     return `
-            <div class="flex flex-col min-h-screen bg-slate-50 relative overflow-x-hidden animate-[fadeIn_0.3s_ease-out]">
+            <div class="flex flex-col min-h-dvh bg-slate-50 relative overflow-x-hidden animate-[fadeIn_0.3s_ease-out]">
                 <!-- Compact Header -->
                 <header class="bg-white border-b border-gray-100 sticky top-0 z-50 px-6 py-4 flex justify-between items-center shrink-0 shadow-sm">
                     <button onclick="navigateTo(mockupState.lastMenuPage || 'restaurant-home')" class="w-10 h-10 flex items-center justify-start text-[#1f0b35] hover:text-violet-600 transition-colors">
@@ -3686,7 +3686,7 @@ const routes = {
     }
 
     return `
-            <div class="flex flex-col min-h-screen relative overflow-hidden bg-slate-50">
+            <div class="flex flex-col min-h-dvh relative overflow-hidden bg-slate-50">
                 <!-- Hero Banner / Background Section -->
                 <div class="${isDesktop ? "relative h-[480px] mx-1.5 mt-1.5 rounded-2xl shrink-0 overflow-hidden flex items-center bg-gradient-to-r from-violet-600 to-[#1f0b35] shadow-md" : "absolute inset-0 z-0"}">
                     ${
@@ -3983,7 +3983,7 @@ const routes = {
                   !isDesktop
                     ? `
                 <!-- Order Now Button (Fixed above bottom nav on mobile/tablet) -->
-                <div class="px-6 pb-6 pt-2 relative z-20 shrink-0">
+                <div class="px-6 pb-bottom-safe pt-2 relative z-20 shrink-0">
                     <button onclick="navigateTo('locations')" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-lg active:scale-95 transition-transform uppercase tracking-wider">Order Now</button>
                 </div>`
                     : ""
@@ -5801,17 +5801,10 @@ const routes = {
                             </div>
                             <span class="font-black uppercase tracking-tight text-gray-900 text-sm">Account Settings</span>
                         </div>
-                        <button onclick="mockupState.modalOpen = 'change-password'; navigateTo(currentPage);" class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors active:scale-[0.99] border-b border-gray-50">
+                        <button onclick="mockupState.modalOpen = 'change-password'; navigateTo(currentPage);" class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors active:scale-[0.99]">
                             <div class="flex items-center gap-3">
                                 <i class="fa-solid fa-lock text-gray-400 w-5 text-center"></i>
                                 <span class="font-bold text-gray-800 text-sm">Change Password</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
-                        </button>
-                        <button class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors active:scale-[0.99]">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-bell text-gray-400 w-5 text-center"></i>
-                                <span class="font-bold text-gray-800 text-sm">Notification Preferences</span>
                             </div>
                             <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
                         </button>
@@ -6552,7 +6545,7 @@ const routes = {
           navigateTo("menu", { replace: true });
         }
       }, 0);
-      return `<div class="flex items-center justify-center min-h-screen bg-[#f6f6f6] p-8 text-center"><p class="text-gray-500 font-bold">Redirecting...</p></div>`;
+      return `<div class="flex items-center justify-center min-h-dvh bg-[#f6f6f6] p-8 text-center"><p class="text-gray-500 font-bold">Redirecting...</p></div>`;
     }
     const subtotal = cart.reduce(
       (sum, item) => sum + item.unitPrice * item.quantity,
@@ -6822,7 +6815,7 @@ const routes = {
           navigateTo("menu", { replace: true });
         }
       }, 0);
-      return `<div class="flex items-center justify-center min-h-screen bg-[#f6f6f6] p-8 text-center"><p class="text-gray-500 font-bold">Redirecting...</p></div>`;
+      return `<div class="flex items-center justify-center min-h-dvh bg-[#f6f6f6] p-8 text-center"><p class="text-gray-500 font-bold">Redirecting...</p></div>`;
     }
     const subtotal = cart.reduce(
       (sum, item) => sum + item.unitPrice * item.quantity,
@@ -7847,7 +7840,7 @@ routes["dev"] = () => {
       .dev-tree li:first-child::after { border-radius: 8px 0 0 0; }
       .dev-tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px dashed #cbd5e1; width: 0; height: 24px; }
     </style>
-    <div class="dev-scale bg-[#f8f9fa] min-h-screen relative font-sans text-gray-900 pb-24 selection:bg-violet-200 selection:text-violet-900">
+    <div class="dev-scale bg-[#f8f9fa] min-h-dvh relative font-sans text-gray-900 pb-24 selection:bg-violet-200 selection:text-violet-900">
       <header class="bg-white/90 backdrop-blur-md px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 border-b border-gray-100">
         <div class="w-full max-w-[1400px] mx-auto flex items-center justify-between gap-4">
           <div class="flex items-center gap-3">
@@ -8215,7 +8208,7 @@ routes["dev"] = () => {
 routes["privacy"] = () => {
   const isDesktop = currentViewport === "desktop";
   return `
-        <div class="flex flex-col ${isDesktop ? "min-h-screen" : "h-full"} bg-[#f9fafb] relative ${isDesktop ? "" : "overflow-y-auto scrollbar-hide"} privacy-override">
+        <div class="flex flex-col ${isDesktop ? "min-h-dvh" : "h-full"} bg-[#f9fafb] relative ${isDesktop ? "" : "overflow-y-auto scrollbar-hide"} privacy-override">
             <!-- Subtle top-aligned brand gradient overlay fading down -->
             <div class="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-violet-600/10 to-transparent pointer-events-none z-0"></div>
 

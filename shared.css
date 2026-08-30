@@ -74,7 +74,11 @@
         }
 
         .app-content {
+            /* 100vh is the *large* viewport on iOS: it assumes Safari's toolbars
+               are hidden, so the page runs taller than what's actually visible.
+               100dvh tracks the real visible height. vh stays as a fallback. */
             min-height: 100vh;
+            min-height: 100dvh;
             background: #fff;
             display: flex;
             flex-direction: column;
