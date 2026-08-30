@@ -3,14 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FareBites</title>
+    <title>FareBites – Out-of-Stock Preview (Internal)</title>
+    <!--
+      INTERNAL QA HARNESS — excluded from the live deployment via .vercelignore.
+
+      Renders the real menu page against seeded data so the out-of-stock
+      treatment can be reviewed without waiting for the live API to actually
+      return an unavailable item. Three items below are flagged
+      isAvailable:false; the first is left in stock for comparison.
+
+      The data is real i-Tea content (location 9, Oakland — Milk Tea Specialty,
+      category 1236), so what you see matches the production brand. Item IDs and
+      prices were taken from the live dev API on 2026-08-30.
+
+      HEADS-UP: seeding writes to "farebitesMockupState", the same key the real
+      app uses, so loading this page replaces your current cart and selected
+      store. Use clear-token.html afterwards to reset.
+    -->
     <script>
       // Seed state BEFORE app.js runs its own init, so it never redirects
-      // to the location picker or overwrites our fake menu with a live fetch.
+      // to the location picker or overwrites our seeded menu with a live fetch.
       var seedState = {
-        selectedLocationId: 1,
-        selectedLocation: "Long Wong's AZ - Thomas",
-        selectedAddress: "2318 E Thomas Rd, Phoenix, AZ",
+        selectedLocationId: 9,
+        selectedLocation: "i-Tea - Oakland",
+        selectedAddress: "388 9th St, Oakland, CA 94607",
         selectedDistance: "0.0 mi",
         fulfillmentMode: "In-store",
         orderTime: "ASAP",
@@ -22,13 +38,13 @@
         bagQuantity: 0,
         noBagsSelected: false,
         apiCategories: [
-          { categoryId: 1, name: "Appetizers", imgUrl: "images/no-product-pic.png" }
+          { categoryId: 1236, name: "Milk Tea Specialty", imgUrl: "images/no-product-pic.png" }
         ],
         apiMenuItems: [
-          { id: 4, name: "Cantina Platter", description: "Sample platter of mozzarella sticks, poppers, cactus sticks, mushrooms, onion rings & ranch", price: 17.99, image: "images/no-product-pic.png", category: "Appetizers", categoryId: 1, isAvailable: true },
-          { id: 11, name: "Long Wong's Poppers", description: "5 of the original cream cheese stuffed jalapeno poppers", price: 7.25, image: "images/no-product-pic.png", category: "Appetizers", categoryId: 1, isAvailable: false },
-          { id: 8, name: "Chili Cheese Fries", description: "Big stack of fries covered in chili & nacho cheese", price: 8.50, image: "images/no-product-pic.png", category: "Appetizers", categoryId: 1, isAvailable: false },
-          { id: 6, name: "Mozza Sticks", description: "5 golden brown mozzarella cheese sticks", price: 8.99, image: "images/no-product-pic.png", category: "Appetizers", categoryId: 1, isAvailable: false }
+          { id: 14331, name: "B1 Signature Boba Milk Tea", description: "23 calories to 357 calories", price: 4.95, image: "images/no-product-pic.png", category: "Milk Tea Specialty", categoryId: 1236, isAvailable: true },
+          { id: 14332, name: "B2 Milk Tea with Pudding", description: "255 calories to 378 calories", price: 4.95, image: "images/no-product-pic.png", category: "Milk Tea Specialty", categoryId: 1236, isAvailable: false },
+          { id: 14335, name: "B5 3G Milk Tea", description: "Comes with Boba, Pudding, and Grass Jelly (226 calories to 349 calories)", price: 5.75, image: "images/no-product-pic.png", category: "Milk Tea Specialty", categoryId: 1236, isAvailable: false },
+          { id: 14336, name: "B6 Matcha Milk Tea", description: "Comes with Matcha Pudding and Red Bean (306 calories to 383 calories)", price: 5.25, image: "images/no-product-pic.png", category: "Milk Tea Specialty", categoryId: 1236, isAvailable: false }
         ]
       };
       sessionStorage.setItem("farebitesMockupState", JSON.stringify(seedState));
@@ -43,10 +59,14 @@
     <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body data-page="menu">
+<div style="position:sticky;top:0;z-index:999999;display:flex;align-items:center;gap:10px;justify-content:center;background:#292524;color:#fde68a;font:600 12.5px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;padding:10px 16px;text-align:center;border-bottom:2px solid #78350f;">
+    <i class="fa-solid fa-flask"></i>
+    <span>Out-of-stock QA preview &mdash; seeded data, excluded from the live deployment (see <code style="background:#44403c;padding:1px 5px;border-radius:4px;">.vercelignore</code>). This overwrites your cart and selected store; run <code style="background:#44403c;padding:1px 5px;border-radius:4px;">clear-token.html</code> to reset.</span>
+</div>
 <div id="app-viewport" class="app-content">
                     <!-- App logic renders views here -->
                 </div>
     <script src="api.js?v=39"></script>
-    <script src="app.js?v=54"></script>
+    <script src="app.js?v=62"></script>
 </body>
 </html>

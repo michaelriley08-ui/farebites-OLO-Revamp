@@ -1,5 +1,4 @@
 const PAGE_FILE_MAP = {
-  landing: "landing.html",
   home: "index.html",
   "sign-in": "sign-in.html",
   "forgot-password": "forgot-password.html",
@@ -20,8 +19,6 @@ const PAGE_FILE_MAP = {
   locations: "locations.html",
   "locations-alt": "locations.html",
   "location-favorites": "location-favorites.html",
-  login: "login.html",
-  "sign-up": "sign-up.html",
   account: "profile.html",
   privacy: "privacy.html",
   dashboard: "dashboard.html",
@@ -33,7 +30,6 @@ const PAGE_FILE_MAP = {
   accessibility: "accessibility.html",
 };
 const PAGE_LABELS = {
-  landing: "FareBites Landing Page",
   home: "FareBites Homepage (Logged In)",
   "sign-in": "Sign In / Sign Up",
   "forgot-password": "Forgot Password",
@@ -54,8 +50,6 @@ const PAGE_LABELS = {
   locations: "Pick a Location",
   "locations-alt": "Pick a Location (Alternative)",
   "location-favorites": "Saved Locations",
-  login: "Login (Phone)",
-  "sign-up": "Sign Up",
   account: "My Account",
   privacy: "Privacy Policy",
   dashboard: "Merchant Dashboard",
@@ -3248,22 +3242,6 @@ const routes = {
         </div>
     </div>
   `,
-  landing: () => `
-            <div class="flex flex-col h-full relative overflow-hidden bg-black">
-                <div class="absolute inset-0 z-0">
-                    <img src="${assets.featured}" class="w-full h-full object-cover opacity-80">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/60"></div>
-                </div>
-                
-                <div class="relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center mt-12">
-                    <h1 class="text-6xl font-black text-red-600 tracking-tighter uppercase drop-shadow-2xl">FAREBITES</h1>
-                    <p class="text-white font-bold tracking-widest uppercase mt-4 text-sm drop-shadow-md">Food you love, delivered.</p>
-                </div>
-
-                <div class="relative z-10 px-6 pb-12 w-full shrink-0">
-                    <button onclick="navigateTo('sign-in')" class="w-full bg-red-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(220,38,38,0.5)] active:scale-95 transition-transform uppercase tracking-wider">Log In</button>
-                </div>
-            </div>`,
   dashboard: () => `
             <div class="flex flex-col h-full bg-[#f0f2f5] relative">
                 <header class="bg-[#1a1a1a] px-6 py-4 flex justify-between items-center z-50 shrink-0 shadow-md">
@@ -6265,6 +6243,7 @@ const routes = {
                     <div class="text-center mb-2">
                         <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter">Register</h1>
                         <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mt-2">Create a new account</p>
+                        <p class="text-[10px] font-bold text-gray-400 tracking-widest mt-3"><span class="text-red-500">*</span> Required field</p>
                     </div>
 
                     <div class="${isDesktop ? "bg-white rounded-2xl p-8 shadow-sm border border-gray-100" : ""} flex flex-col gap-8">
@@ -6272,29 +6251,45 @@ const routes = {
                             <!-- Account Info Section -->
                             <div class="space-y-4">
                                 <h3 class="text-sm font-black text-violet-600 uppercase tracking-widest border-b border-violet-50 pb-2">Account Info</h3>
-                                
+
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Email</label>
+                                    <label for="reg-email" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Email <span class="text-red-500" aria-hidden="true">*</span></label>
                                     <div class="relative">
                                         <i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                        <input type="email" id="reg-email" autocomplete="email" placeholder="email@example.com" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <input type="email" id="reg-email" autocomplete="email" required aria-required="true" aria-describedby="reg-email-error" placeholder="email@example.com" oninput="clearRegFieldError('reg-email')" onblur="validateRegField('reg-email')" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
+                                    <p id="reg-email-error" role="alert" class="hidden text-[11px] font-bold text-red-500 px-1 pt-1 normal-case tracking-normal"></p>
                                 </div>
 
                                 <div class="space-y-4">
                                     <div class="space-y-1.5">
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Password</label>
+                                        <label for="reg-password" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Password <span class="text-red-500" aria-hidden="true">*</span></label>
                                         <div class="relative">
                                             <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                            <input type="password" id="reg-password" autocomplete="new-password" placeholder="Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                            <input type="password" id="reg-password" autocomplete="new-password" required aria-required="true" aria-describedby="reg-password-error reg-password-requirements" placeholder="Password" oninput="handleRegPasswordInput()" onblur="validateRegField('reg-password')" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        </div>
+                                        <p id="reg-password-error" role="alert" class="hidden text-[11px] font-bold text-red-500 px-1 pt-1 normal-case tracking-normal"></p>
+                                        <div id="reg-password-requirements" class="hidden px-1 pt-2 space-y-2">
+                                            <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                <div id="reg-password-bar" class="h-full w-0 rounded-full bg-gray-300 transition-all duration-300"></div>
+                                            </div>
+                                            <p id="reg-password-strength" class="text-[10px] font-black uppercase tracking-widest text-gray-400"></p>
+                                            <ul class="space-y-1 pt-0.5 normal-case tracking-normal">
+                                                <li id="reg-pw-length" class="flex items-center gap-2 text-[11px] font-bold text-gray-400"><i class="fa-solid fa-circle-xmark w-3.5 text-center"></i><span>At least 6 characters</span></li>
+                                                <li id="reg-pw-upper" class="flex items-center gap-2 text-[11px] font-bold text-gray-400"><i class="fa-solid fa-circle-xmark w-3.5 text-center"></i><span>One uppercase letter</span></li>
+                                                <li id="reg-pw-lower" class="flex items-center gap-2 text-[11px] font-bold text-gray-400"><i class="fa-solid fa-circle-xmark w-3.5 text-center"></i><span>One lowercase letter</span></li>
+                                                <li id="reg-pw-number" class="flex items-center gap-2 text-[11px] font-bold text-gray-400"><i class="fa-solid fa-circle-xmark w-3.5 text-center"></i><span>One number</span></li>
+                                                <li id="reg-pw-special" class="flex items-center gap-2 text-[11px] font-bold text-gray-400"><i class="fa-solid fa-circle-xmark w-3.5 text-center"></i><span>One special character <span class="text-gray-300">(recommended)</span></span></li>
+                                            </ul>
                                         </div>
                                     </div>
                                     <div class="space-y-1.5">
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Confirm Password</label>
+                                        <label for="reg-confirm-password" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Confirm Password <span class="text-red-500" aria-hidden="true">*</span></label>
                                         <div class="relative">
                                             <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                            <input type="password" id="reg-confirm-password" autocomplete="new-password" placeholder="Confirm Password" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                            <input type="password" id="reg-confirm-password" autocomplete="new-password" required aria-required="true" aria-describedby="reg-confirm-password-error" placeholder="Confirm Password" oninput="clearRegFieldError('reg-confirm-password')" onblur="validateRegField('reg-confirm-password')" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                         </div>
+                                        <p id="reg-confirm-password-error" role="alert" class="hidden text-[11px] font-bold text-red-500 px-1 pt-1 normal-case tracking-normal"></p>
                                     </div>
                                 </div>
                             </div>
@@ -6302,26 +6297,28 @@ const routes = {
                             <!-- Customer Info Section -->
                             <div class="space-y-4">
                                 <h3 class="text-sm font-black text-violet-600 uppercase tracking-widest border-b border-violet-50 pb-2">Customer Info</h3>
-                                
+
                                 <div class="space-y-4">
                                     <div class="space-y-1.5">
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">First Name</label>
-                                        <input type="text" id="reg-first-name" autocomplete="given-name" placeholder="First Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <label for="reg-first-name" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">First Name <span class="text-red-500" aria-hidden="true">*</span></label>
+                                        <input type="text" id="reg-first-name" autocomplete="given-name" required aria-required="true" aria-describedby="reg-first-name-error" placeholder="First Name" oninput="clearRegFieldError('reg-first-name')" onblur="validateRegField('reg-first-name')" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <p id="reg-first-name-error" role="alert" class="hidden text-[11px] font-bold text-red-500 px-1 pt-1 normal-case tracking-normal"></p>
                                     </div>
                                     <div class="space-y-1.5">
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Last Name</label>
-                                        <input type="text" id="reg-last-name" autocomplete="family-name" placeholder="Last Name" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <label for="reg-last-name" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Last Name <span class="text-red-500" aria-hidden="true">*</span></label>
+                                        <input type="text" id="reg-last-name" autocomplete="family-name" required aria-required="true" aria-describedby="reg-last-name-error" placeholder="Last Name" oninput="clearRegFieldError('reg-last-name')" onblur="validateRegField('reg-last-name')" class="w-full px-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <p id="reg-last-name-error" role="alert" class="hidden text-[11px] font-bold text-red-500 px-1 pt-1 normal-case tracking-normal"></p>
                                     </div>
                                 </div>
 
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Phone Number</label>
+                                    <label for="reg-phone" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Phone Number <span class="text-red-500" aria-hidden="true">*</span></label>
                                     <div class="relative">
                                         <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                        <input type="tel" id="reg-phone" autocomplete="tel" placeholder="(555) 000-0000" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <input type="tel" id="reg-phone" autocomplete="tel" required aria-required="true" aria-describedby="reg-phone-error" placeholder="(555) 000-0000" oninput="clearRegFieldError('reg-phone')" onblur="validateRegField('reg-phone')" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
+                                    <p id="reg-phone-error" role="alert" class="hidden text-[11px] font-bold text-red-500 px-1 pt-1 normal-case tracking-normal"></p>
                                 </div>
-
                                 <!-- Disclosure Checkbox -->
                                 <div class="flex items-start gap-4 px-1 py-1">
                                     <div class="relative flex items-center shrink-0 mt-1">
@@ -6358,8 +6355,8 @@ const routes = {
                         </div>
 
                         <div class="mt-4">
-                            <div id="reg-error" class="text-xs font-bold text-red-500 mb-2 text-center h-4 opacity-0 transition-all"></div>
-                            <button onclick="handleRegistration()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase tracking-widest font-black">Create Account</button>
+                            <div id="reg-error" role="alert" class="hidden mb-3 rounded-2xl bg-red-50 border border-red-100 px-4 py-3 text-xs font-bold text-red-600 text-center leading-relaxed"></div>
+                            <button id="reg-submit" onclick="handleRegistration()" class="w-full bg-violet-600 text-white py-4 rounded-full font-black text-lg shadow-[0_12px_40px_-5px_rgba(124,58,237,0.5)] hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all uppercase tracking-widest font-black disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0">Create Account</button>
                         </div>
 
                         <div class="text-center">
@@ -7372,51 +7369,326 @@ const routes = {
 
 
 window.systemPagesData = [
-    { group: "ordering-flow", id: "landing", name: "FareBites Home", file: "index.html", icon: "fa-house", color: "#7c3aed", auth: false, description: "Platform landing page. Entry point for the FareBites online ordering system.", endpoints: [], connects: ["restaurant-home", "sign-in"] },
-    { group: "ordering-flow", id: "restaurant-home", name: "i-Tea Home", file: "index.html", icon: "fa-store", color: "#7c3aed", auth: false, description: "Restaurant brand home. Showcases i-Tea with featured items, rewards teaser.", endpoints: [], connects: ["locations", "menu", "sign-in"] },
-    { group: "ordering-flow", id: "locations", name: "Pick a Location", file: "locations.html", icon: "fa-location-dot", color: "#0ea5e9", auth: false, description: "Displays all i-Tea locations with live hours.", endpoints: [ { method: "GET", path: "/api/Locations", note: "Fetch all restaurant locations" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/hours", note: "Standard weekly hours per location" } ], connects: ["menu"] },
-    { group: "ordering-flow", id: "menu", name: "Menu", file: "menu.html", icon: "fa-utensils", color: "#0ea5e9", auth: false, description: "Full menu browser with tabs: Menu, Featured, Favorites, and Order History.", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/location/{id}/menu", note: "Fetch categories + tax rate + convenience fee" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/menuitems", note: "Fetch items for a specific category" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/featured", note: "Fetch featured items" } ], connects: ["customize", "cart"] },
-    { group: "ordering-flow", id: "menu", name: "Menu Alt", file: "menu.html", icon: "fa-utensils", color: "#0ea5e9", auth: false, description: "Alternative menu layout with distinct category styling.", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/location/{id}/menu", note: "Fetch categories" }, { method: "GET", path: "/api/RestaurantMenu/location/{id}/menuitems", note: "Fetch items for a specific category" } ], connects: ["customize", "cart"] },
-    { group: "ordering-flow", id: "menu-favorites", name: "Menu Favorites", file: "menu-favorites.html", icon: "fa-heart", color: "#ec4899", auth: true, description: "User's favorited items.", endpoints: [ { method: "GET", path: "/api/User/favorites", note: "Fetch favorited menu items" } ], connects: ["customize"] },
-    { group: "ordering-flow", id: "menu-scan", name: "Menu Scan", file: "menu-scan.html", icon: "fa-qrcode", color: "#0ea5e9", auth: false, description: "Scan QR code to access menu.", endpoints: [], connects: ["menu"] },
-    { group: "ordering-flow", id: "customize", name: "Customize Item", file: "customize.html", icon: "fa-sliders", color: "#0ea5e9", auth: false, description: "Deep customization of a menu item (size, ice, sugar, toppings).", endpoints: [ { method: "GET", path: "/api/RestaurantMenu/item/{id}/modifiers", note: "Fetch all modifier groups and options for item" } ], connects: ["cart"] },
-    { group: "ordering-flow", id: "cart", name: "Cart & Checkout", file: "cart.html", icon: "fa-cart-shopping", color: "#0ea5e9", auth: false, description: "Review selected items, update quantities, apply promos.", endpoints: [ { method: "POST", path: "/api/Order/validate-promo", note: "Validate promo code against cart items" } ], connects: ["checkout", "menu"] },
-    { group: "ordering-flow", id: "checkout", name: "Checkout", file: "checkout.html", icon: "fa-credit-card", color: "#059669", auth: true, description: "Finalize order details, select tip, enter payment info.", endpoints: [ { method: "POST", path: "/api/Payment/intent", note: "Create Stripe payment intent" }, { method: "POST", path: "/api/Order/submit", note: "Submit final order details and payment token" } ], connects: ["order-confirm"] },
-    { group: "ordering-flow", id: "order-confirm", name: "Confirmation", file: "order-confirm.html", icon: "fa-check-circle", color: "#059669", auth: false, description: "Order success page showing order number and estimated time.", endpoints: [ { method: "GET", path: "/api/Order/{id}/status", note: "Fetch initial order status and ETA" } ], connects: ["track-order", "restaurant-home"] },
-    { group: "ordering-flow", id: "track-order", name: "Track Order", file: "track-order.html", icon: "fa-motorcycle", color: "#059669", auth: false, description: "Live tracking of order progress.", endpoints: [ { method: "GET", path: "/api/Order/{id}/tracking", note: "Fetch live order tracking status" } ], connects: [] },
-    { group: "account", id: "profile", name: "Profile", file: "profile.html", icon: "fa-id-badge", color: "#6b7280", auth: true, description: "User profile, order history, and saved addresses.", endpoints: [ { method: "GET", path: "/api/User/profile", note: "Fetch user profile details" }, { method: "GET", path: "/api/Order/history", note: "Fetch past orders" } ], connects: ["order-details"] },
-    { group: "account", id: "order-details", name: "Order Details", file: "order-details.html", icon: "fa-receipt", color: "#6b7280", auth: true, description: "Detailed view of a past order.", endpoints: [ { method: "GET", path: "/api/Order/{id}", note: "Fetch full details of an order" } ], connects: [] },
-    { group: "account", id: "sign-in", name: "Sign In", file: "sign-in.html", icon: "fa-right-to-bracket", color: "#6b7280", auth: false, description: "Login to existing account.", endpoints: [ { method: "POST", path: "/api/Auth/login", note: "Authenticate user and return JWT" } ], connects: ["restaurant-home", "registration"] },
-    { group: "account", id: "registration", name: "Registration", file: "registration.html", icon: "fa-user-plus", color: "#6b7280", auth: false, description: "Create a new account.", endpoints: [ { method: "POST", path: "/api/Auth/register", note: "Register new user account" } ], connects: ["restaurant-home"] },
-    { group: "supporting", id: "privacy", name: "Privacy & Terms", file: "privacy.html", icon: "fa-shield-halved", color: "#9ca3af", auth: false, description: "Privacy policy and terms of service.", endpoints: [], connects: [] },
-    { group: "supporting", id: "accessibility", name: "Accessibility", file: "accessibility.html", icon: "fa-universal-access", color: "#9ca3af", auth: false, description: "Accessibility statement and WCAG compliance.", endpoints: [], connects: [] },
-    { group: "supporting", id: "sections", name: "Sections (Demos)", file: "sections.html", icon: "fa-cubes", color: "#9ca3af", auth: false, description: "Component and UI pattern playground.", endpoints: [], connects: [] }
+    // ─────────────────────────────────────────────────────────────────────
+    // ENTRY & DISCOVERY — how a customer arrives and picks a store
+    // ─────────────────────────────────────────────────────────────────────
+    { group: "entry", id: "restaurant-home", name: "i-Tea Home", file: "index.html", icon: "fa-store", color: "#7c3aed", auth: false,
+      description: "The i-Tea brand homepage and the real entry point for ordering. Shows featured drinks, the rewards teaser and the current store banner. It does not fetch anything itself — the menu and location data it displays were already loaded by the app's boot sequence, so this page reads from that shared in-memory state.",
+      endpoints: [], connects: ["locations", "menu", "sign-in", "rewards"] },
+
+    { group: "entry", id: "locations", name: "Pick a Location", file: "locations.html", icon: "fa-location-dot", color: "#0ea5e9", auth: false,
+      description: "The store picker. This is the most fragile data path on the site: it first tries the bulk /api/Locations list, which the backend gates behind an elevated login and returns 401 for ordinary guests. When that fails it silently falls back to fetching each store one at a time from the public RestaurantMenu endpoints, then layers weekly hours on top of each card to show open/closed state.",
+      endpoints: [
+        { method: "GET", path: "/api/Locations", note: "Bulk store list — auth-gated, 401s for guests and normal customers" },
+        { method: "GET", path: "/api/RestaurantMenu/location/{locationId}", note: "Public per-store fallback used when the bulk list is refused" },
+        { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/hours", note: "Weekly opening hours, drives the open/closed pill on each card" }
+      ], connects: ["menu", "location-favorites"] },
+
+    { group: "entry", id: "location-favorites", name: "Saved Locations", file: "location-favorites.html", icon: "fa-map-pin", color: "#0ea5e9", auth: true,
+      description: "A customer's starred stores. The favorites themselves live in browser storage rather than on the server — there is no location-favorites API — so this page reconciles those saved IDs against whatever the live location list returned. If a saved store no longer exists in the API response it is dropped from the list.",
+      endpoints: [
+        { method: "GET", path: "/api/Locations", note: "Reconciles locally-saved store IDs against the live list" }
+      ], connects: ["locations", "menu"] },
+
+    { group: "entry", id: "menu-scan", name: "QR Scan", file: "menu-scan.html", icon: "fa-qrcode", color: "#0ea5e9", auth: false,
+      description: "In-store QR landing. A customer scans a table or counter code and lands here, which resolves the encoded store ID and forwards straight into that store's menu. No API call of its own — it just sets the active location and hands off.",
+      endpoints: [], connects: ["menu"] },
+
+    // ─────────────────────────────────────────────────────────────────────
+    // ORDERING — browse, customize, pay
+    // ─────────────────────────────────────────────────────────────────────
+    { group: "ordering", id: "menu", name: "Menu", file: "menu.html", icon: "fa-utensils", color: "#0ea5e9", auth: false,
+      description: "The main menu browser with Menu / Featured / Favorites / Order History tabs. Loading a menu is a two-step conversation with the backend: one call returns the category list plus the store's tax rate and convenience fee, then a separate call fires per category to pull its items. That fan-out is why a cold menu load is the heaviest moment on the site.",
+      endpoints: [
+        { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/menu", note: "Category list plus tax rate and convenience fee for the store" },
+        { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/category/{categoryId}/items", note: "Items inside one category — fires once per category, not once per menu" }
+      ], connects: ["customize", "cart", "menu-favorites"] },
+
+    { group: "ordering", id: "menu-single", name: "Menu (Single Column)", file: "menu-single.html", icon: "fa-list", color: "#0ea5e9", auth: false,
+      description: "An alternate single-column layout of the same menu. It shares the identical render function and the identical data as the main menu — the only difference is presentation, so it costs no extra API traffic.",
+      endpoints: [
+        { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/menu", note: "Same category payload as the main menu" },
+        { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/category/{categoryId}/items", note: "Same per-category item fetch" }
+      ], connects: ["customize", "cart"] },
+
+    { group: "ordering", id: "customize", name: "Customize Item", file: "customize.html", icon: "fa-sliders", color: "#0ea5e9", auth: false,
+      description: "The item detail and modifier builder — size, ice, sugar, toppings. The menu list payload deliberately does not include modifiers, so opening this screen triggers a fresh per-item call that returns the full modifier groups, their min/max selection rules and any upcharges. This is also where out-of-stock options get flagged.",
+      endpoints: [
+        { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/menu-item/{menuItemId}", note: "Full item record including every modifier group, option and upcharge" }
+      ], connects: ["cart"] },
+
+    { group: "ordering", id: "customize-alt", name: "Customize (Alternative)", file: "customize-alt.html", icon: "fa-sliders", color: "#0ea5e9", auth: false,
+      description: "A second design treatment of the modifier builder, kept alongside the primary one for comparison. It calls the same item-detail endpoint and applies the same selection rules; only the layout and control styling differ.",
+      endpoints: [
+        { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/menu-item/{menuItemId}", note: "Same item and modifier payload as the primary customize screen" }
+      ], connects: ["cart"] },
+
+    { group: "ordering", id: "cart", name: "Cart / Review", file: "cart.html", icon: "fa-cart-shopping", color: "#0ea5e9", auth: false,
+      description: "Review the bag, change quantities, edit a previously customized drink. Worth knowing: the cart is entirely client-side. There is no cart API and no server-held basket — line items, quantities and the running total live in browser state until checkout submits them in one payload. Tax and the convenience fee are calculated locally from the rates the menu call returned.",
+      endpoints: [], connects: ["checkout", "menu", "customize"] },
+
+    { group: "ordering", id: "checkout", name: "Checkout", file: "checkout.html", icon: "fa-credit-card", color: "#059669", auth: false,
+      description: "Pickup time, tip and payment. This is the single most important call on the site: the entire order — every line item, every modifier, the customer or guest identity, the tip and the totals — is posted in one request. The endpoint used depends on whether the customer is signed in, and a guest order goes to a separate route entirely.",
+      endpoints: [
+        { method: "POST", path: "/api/CustomerOrder", note: "Submit the complete order for a signed-in customer" },
+        { method: "POST", path: "/api/CustomerOrder/guest", note: "Submit the same order shape for a guest — no token required" },
+        { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/hours-with-holidays", note: "Real store hours including holiday overrides, used to build the pickup time slots" }
+      ], connects: ["order-confirm"] },
+
+    { group: "ordering", id: "checkout-rewards", name: "Checkout (Gift & Rewards)", file: "checkout-rewards.html", icon: "fa-gift", color: "#059669", auth: true,
+      description: "A checkout variant that layers gifting and points redemption onto the standard flow. The rewards balance shown is presentation-only for now — no points API exists yet — but the order submission underneath is the same real endpoint as standard checkout.",
+      endpoints: [
+        { method: "POST", path: "/api/CustomerOrder", note: "Submits through the same order endpoint as standard checkout" }
+      ], connects: ["order-confirm"] },
+
+    // ─────────────────────────────────────────────────────────────────────
+    // POST-ORDER — confirmation and tracking
+    // ─────────────────────────────────────────────────────────────────────
+    { group: "post-order", id: "order-confirm", name: "Order Confirmation", file: "order-confirm.html", icon: "fa-circle-check", color: "#059669", auth: false,
+      description: "The success screen shown immediately after a successful submit. It renders from the response the order POST just returned rather than making a fresh request, which is why it appears instantly with no loading state.",
+      endpoints: [], connects: ["order-status", "track-order", "restaurant-home"] },
+
+    { group: "post-order", id: "order-status", name: "Order Status", file: "order-status.html", icon: "fa-clock", color: "#059669", auth: true,
+      description: "The status view for the customer's most recent order. It re-reads the order from the server rather than trusting cached state, so the status reflects what the store has actually done. When no order exists it shows a genuine empty state instead of inventing one.",
+      endpoints: [
+        { method: "GET", path: "/api/CustomerOrder/{orderId}", note: "Re-reads one order's full record and current status" }
+      ], connects: ["track-order", "order-details"] },
+
+    { group: "post-order", id: "track-order", name: "Track Order", file: "track-order.html", icon: "fa-motorcycle", color: "#059669", auth: true,
+      description: "The progress-stepper view of an in-flight order. The backend exposes no dedicated tracking or push endpoint, so progress is derived by re-reading the order record and mapping its status field onto the visual steps. There is no live feed behind this screen.",
+      endpoints: [
+        { method: "GET", path: "/api/CustomerOrder/{orderId}", note: "Order status is polled from the standard order record — there is no tracking-specific endpoint" }
+      ], connects: ["restaurant-home"] },
+
+    // ─────────────────────────────────────────────────────────────────────
+    // IDENTITY — sign in, sign up, password recovery
+    // ─────────────────────────────────────────────────────────────────────
+    { group: "identity", id: "sign-in", name: "Sign In", file: "sign-in.html", icon: "fa-right-to-bracket", color: "#6b7280", auth: false,
+      description: "Email and password login. The response carries a JWT, which the app stores in localStorage when Remember Me is ticked and sessionStorage otherwise — that single choice is what decides whether a customer is still signed in tomorrow. Every authenticated call afterwards attaches that token, and a 401 anywhere in the app forces a return to this screen.",
+      endpoints: [
+        { method: "POST", path: "/api/Account/login", note: "Exchanges email and password for the JWT that authorises every later call" }
+      ], connects: ["restaurant-home", "registration", "forgot-password"] },
+
+    { group: "identity", id: "registration", name: "Create Account", file: "registration.html", icon: "fa-user-plus", color: "#6b7280", auth: false,
+      description: "New account signup. Registration does not return a usable session — the customer is created server-side, then handed to the success screen and asked to sign in, which is why account creation costs two round trips rather than one.",
+      endpoints: [
+        { method: "POST", path: "/api/Account/register", note: "Creates the customer record; does not return a session token" }
+      ], connects: ["registration-success"] },
+
+    { group: "identity", id: "registration-success", name: "Registration Success", file: "registration-success.html", icon: "fa-envelope-circle-check", color: "#6b7280", auth: false,
+      description: "The post-signup confirmation screen. Static — it only tells the customer the account exists and points them at sign-in.",
+      endpoints: [], connects: ["sign-in"] },
+
+    { group: "identity", id: "forgot-password", name: "Forgot Password", file: "forgot-password.html", icon: "fa-key", color: "#6b7280", auth: false,
+      description: "Requests a reset email. The frontend supplies the return URL that gets embedded in the email link, so the reset flow only works from a real http(s) origin. Note that this call has a deliberate fallback: if the backend answers 404 or 405, the UI fakes a success message rather than showing an error, so a green confirmation here does not prove an email was actually sent.",
+      endpoints: [
+        { method: "POST", path: "/api/Account/forgot-password", note: "Sends the reset email — falls back to a simulated success if the backend has not implemented it" }
+      ], connects: ["reset-password"] },
+
+    { group: "identity", id: "reset-password", name: "Reset Password", file: "reset-password.html", icon: "fa-lock-open", color: "#6b7280", auth: false,
+      description: "The destination of the emailed reset link. It reads the one-time code out of the URL and submits it with the new password. Landing here without a valid code in the query string cannot succeed.",
+      endpoints: [
+        { method: "POST", path: "/api/Account/reset-password", note: "Consumes the emailed one-time code and sets the new password" }
+      ], connects: ["sign-in"] },
+
+    { group: "identity", id: "account-deleted", name: "Account Deleted", file: "index.html", icon: "fa-user-slash", color: "#6b7280", auth: false,
+      description: "The terminal screen after a customer deletes their account. Purely a confirmation — the deletion itself already happened from My Account, and the local session was cleared on the way here.",
+      endpoints: [], connects: ["restaurant-home"] },
+
+    // ─────────────────────────────────────────────────────────────────────
+    // ACCOUNT — profile, history, saved things
+    // ─────────────────────────────────────────────────────────────────────
+    { group: "account", id: "account", name: "My Account", file: "profile.html", icon: "fa-id-badge", color: "#8b5cf6", auth: true,
+      description: "The account hub, and the busiest page in the app for API traffic. It reads the profile, lists past orders with pagination, and is also where a customer changes their password or deletes the account outright. Four distinct Account endpoints are reachable from this one screen, which is why it is the first place to look when auth breaks.",
+      endpoints: [
+        { method: "GET", path: "/api/Account/profile", note: "Loads name, email and contact details" },
+        { method: "PUT", path: "/api/Account/profile", note: "Saves edits back to the customer record" },
+        { method: "GET", path: "/api/Account/orders", note: "Paginated order history — takes page and pageSize" },
+        { method: "POST", path: "/api/Account/change-password", note: "Changes the password for the signed-in customer" },
+        { method: "DELETE", path: "/api/Account/account/{customerId}", note: "Permanently deletes the account" },
+        { method: "POST", path: "/api/Account/logout", note: "Ends the server session before the local token is cleared" }
+      ], connects: ["order-details", "menu-favorites", "location-favorites", "rewards"] },
+
+    { group: "account", id: "order-details", name: "Order Details", file: "order-details.html", icon: "fa-receipt", color: "#8b5cf6", auth: true,
+      description: "The full receipt for one past order. The history list only carries summary rows, so opening a receipt fetches the complete order — every line item, every modifier and the final totals — from the order endpoint rather than reusing the cached summary.",
+      endpoints: [
+        { method: "GET", path: "/api/CustomerOrder/{orderId}", note: "Full order record — the history list alone does not contain line-item detail" }
+      ], connects: ["menu"] },
+
+    { group: "account", id: "menu-favorites", name: "Favorite Items", file: "menu-favorites.html", icon: "fa-heart", color: "#ec4899", auth: true,
+      description: "Saved drinks. Unlike saved locations, item favorites are genuinely server-side and support the full set of operations — list, add, remove and re-rate. A favorite is identified by its own userFavoriteId, not by the menu item ID, which matters when wiring up the remove and rating controls.",
+      endpoints: [
+        { method: "GET", path: "/api/Account/favorites", note: "Lists the customer's saved items" },
+        { method: "POST", path: "/api/Account/favorites", note: "Saves an item, optionally with a star rating" },
+        { method: "PUT", path: "/api/Account/favorites/{userFavoriteId}", note: "Updates the star rating on an existing favorite" },
+        { method: "DELETE", path: "/api/Account/favorites/{userFavoriteId}", note: "Removes a favorite by its favorite ID, not the menu item ID" }
+      ], connects: ["customize", "menu"] },
+
+    { group: "account", id: "rewards", name: "Rewards", file: "rewards.html", icon: "fa-award", color: "#8b5cf6", auth: true,
+      description: "The points and rewards screen. Be aware this is currently a design surface only — no rewards, points or loyalty endpoint exists on the backend yet, so every balance, tier and offer shown here is local placeholder data awaiting a real API.",
+      endpoints: [], connects: ["menu", "checkout-rewards"] },
+
+    { group: "account", id: "dashboard", name: "Dashboard", file: "dashboard.html", icon: "fa-gauge", color: "#8b5cf6", auth: true,
+      description: "A signed-in overview combining recent activity, quick reorder and rewards status. It composes data other screens already loaded rather than fetching its own, so it has no endpoints of its own.",
+      endpoints: [], connects: ["account", "menu", "order-status"] },
+
+    // ─────────────────────────────────────────────────────────────────────
+    // SUPPORTING — legal and informational
+    // ─────────────────────────────────────────────────────────────────────
+    { group: "supporting", id: "privacy", name: "Privacy & Terms", file: "privacy.html", icon: "fa-shield-halved", color: "#9ca3af", auth: false,
+      description: "Privacy policy and terms of service. Static legal copy, no data access.",
+      endpoints: [], connects: [] },
+
+    { group: "supporting", id: "accessibility", name: "Accessibility", file: "accessibility.html", icon: "fa-universal-access", color: "#9ca3af", auth: false,
+      description: "The accessibility statement and WCAG conformance notes. Static copy, no data access.",
+      endpoints: [], connects: [] },
+
+    // ─────────────────────────────────────────────────────────────────────
+    // INTERNAL — excluded from the live deployment via .vercelignore
+    // ─────────────────────────────────────────────────────────────────────
+    { group: "internal", id: "dev", name: "Dev Dashboard", file: "dev.html", icon: "fa-code", color: "#78350f", auth: false,
+      description: "This page. The architecture and API reference snapshot. Excluded from the live Vercel deployment via .vercelignore, so it exists in the repo and runs locally but is never served to customers.",
+      endpoints: [], connects: ["sections"] },
+
+
+
+    { group: "internal", id: "sections", name: "Retired Sections", file: "sections.html", icon: "fa-cubes", color: "#78350f", auth: false,
+      description: "A parking lot for components and layouts that were cut from live pages but worth keeping for reference. Internal only — excluded from the live deployment.",
+      endpoints: [], connects: ["dev"] }
+];
+
+// ─────────────────────────────────────────────────────────────────────────
+// API CATALOG — grouped the way the backend is actually organised.
+// Each group is one backend controller; the notes explain what it owns,
+// what it costs, and where the traps are.
+// ─────────────────────────────────────────────────────────────────────────
+window.apiCatalog = [
+  {
+    id: "restaurantmenu",
+    controller: "RestaurantMenu",
+    icon: "fa-utensils",
+    color: "#0ea5e9",
+    auth: "Public — no token required",
+    summary: "Everything about a store and what it sells. This is the only controller that works for a signed-out visitor, which is why the whole browse-and-build-a-drink flow is usable before anyone logs in.",
+    gotcha: "Menu data is deliberately split across three calls — categories, then items per category, then modifiers per item. Nothing returns a whole menu in one payload, so a cold load fans out into many requests.",
+    endpoints: [
+      { method: "GET", path: "/api/RestaurantMenu/location/{locationId}", what: "Returns one store's record: name, address, phone and ordering flags. Used as the public stand-in when the bulk Locations list is refused, and to source the phone number shown in the header.", where: ["Pick a Location", "Saved Locations"] },
+      { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/menu", what: "Returns the store's category list along with its tax rate and convenience fee. The rates matter as much as the categories — every total the cart displays is computed locally from these two numbers.", where: ["Menu", "Menu (Single Column)"] },
+      { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/category/{categoryId}/items", what: "Returns the items inside one category, with base price and thumbnail but no modifiers. Fires once per category, so a ten-category menu means ten of these.", where: ["Menu", "Menu (Single Column)"] },
+      { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/menu-item/{menuItemId}", what: "The full record for a single item, and the only place modifier groups exist — sizes, ice, sugar, toppings, their min/max rules, upcharges and out-of-stock flags. Nothing in the list payloads contains this.", where: ["Customize Item", "Customize (Alternative)"] },
+      { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/hours", what: "The standard weekly opening hours. Drives the open/closed pill on every location card.", where: ["Pick a Location"] },
+      { method: "GET", path: "/api/RestaurantMenu/location/{locationId}/hours-with-holidays", what: "The same weekly hours with holiday closures and special hours layered on. This is the one that backs the real pickup time slots at checkout.", where: ["Checkout"] }
+    ]
+  },
+  {
+    id: "locations",
+    controller: "Locations",
+    icon: "fa-location-dot",
+    color: "#f59e0b",
+    auth: "Requires an elevated login — 401s for guests and ordinary customers",
+    summary: "The bulk store directory. One endpoint, and the single biggest structural problem in the frontend.",
+    gotcha: "This returns 401 for a normal customer, not just a guest — being signed in is not enough. Every screen that needs a store list has to survive that refusal, which is why the public per-store RestaurantMenu calls exist as a fallback path.",
+    endpoints: [
+      { method: "GET", path: "/api/Locations", what: "Returns all restaurant locations in one response. When it is refused, the app fetches each known store individually from the public RestaurantMenu endpoint and reassembles the list itself.", where: ["Pick a Location", "Saved Locations"] }
+    ]
+  },
+  {
+    id: "account-identity",
+    controller: "Account · Identity",
+    icon: "fa-fingerprint",
+    color: "#6b7280",
+    auth: "Public in, token out",
+    summary: "Getting a customer signed in and recovering them when they are locked out. These are the calls that mint and destroy the JWT everything else depends on.",
+    gotcha: "Register does not return a session — a new customer has to log in as a separate step. And forgot-password quietly fakes success on 404/405, so a confirmation message is not proof an email went out.",
+    endpoints: [
+      { method: "POST", path: "/api/Account/login", what: "Exchanges email and password for a JWT. Remember Me decides whether it is written to localStorage (survives closing the browser) or sessionStorage (dies with the tab).", where: ["Sign In"] },
+      { method: "POST", path: "/api/Account/register", what: "Creates the customer record. Returns no token, so the app routes to a success screen and asks the customer to sign in.", where: ["Create Account"] },
+      { method: "POST", path: "/api/Account/logout", what: "Ends the session server-side. The frontend clears its stored token afterwards regardless of whether this call succeeds.", where: ["My Account"] },
+      { method: "POST", path: "/api/Account/forgot-password", what: "Triggers the reset email. The frontend passes the return URL that gets embedded in the link, which is why the flow only works from a real http(s) origin.", where: ["Forgot Password"] },
+      { method: "POST", path: "/api/Account/reset-password", what: "Consumes the one-time code from the emailed link and sets the new password.", where: ["Reset Password"] }
+    ]
+  },
+  {
+    id: "account-profile",
+    controller: "Account · Profile",
+    icon: "fa-id-card",
+    color: "#8b5cf6",
+    auth: "Bearer token required",
+    summary: "Reading and changing who the customer is. All of these hang off the single My Account screen.",
+    gotcha: "Delete takes a customerId in the path while every other call infers the customer from the token — an inconsistency worth remembering when reading the backend.",
+    endpoints: [
+      { method: "GET", path: "/api/Account/profile", what: "Loads name, email and contact details for the signed-in customer.", where: ["My Account"] },
+      { method: "PUT", path: "/api/Account/profile", what: "Saves profile edits back to the customer record.", where: ["My Account"] },
+      { method: "POST", path: "/api/Account/change-password", what: "Changes the password for an already signed-in customer — distinct from the emailed reset flow.", where: ["My Account"] },
+      { method: "DELETE", path: "/api/Account/account/{customerId}", what: "Permanently deletes the account. The only Account call that takes an explicit customer ID rather than reading it from the token.", where: ["My Account"] }
+    ]
+  },
+  {
+    id: "account-data",
+    controller: "Account · History & Favorites",
+    icon: "fa-heart",
+    color: "#ec4899",
+    auth: "Bearer token required",
+    summary: "The customer's saved and past activity. Note this lives under Account rather than under Order — order history is an account concern to the backend, not an order one.",
+    gotcha: "Item favorites are real server records with their own userFavoriteId. Saved locations are not — those are browser-only, which is why they can silently disappear.",
+    endpoints: [
+      { method: "GET", path: "/api/Account/orders", what: "Paginated order history taking page and pageSize. Returns summary rows only — no line-item detail, which is why opening a receipt costs another call.", where: ["My Account"] },
+      { method: "GET", path: "/api/Account/favorites", what: "Lists the customer's saved menu items.", where: ["Favorite Items"] },
+      { method: "POST", path: "/api/Account/favorites", what: "Saves an item as a favorite, optionally with a star rating attached.", where: ["Favorite Items"] },
+      { method: "PUT", path: "/api/Account/favorites/{userFavoriteId}", what: "Updates the star rating on an existing favorite.", where: ["Favorite Items"] },
+      { method: "DELETE", path: "/api/Account/favorites/{userFavoriteId}", what: "Removes a favorite. Keyed by the favorite's own ID, not the menu item ID.", where: ["Favorite Items"] }
+    ]
+  },
+  {
+    id: "customerorder",
+    controller: "CustomerOrder",
+    icon: "fa-receipt",
+    color: "#059669",
+    auth: "Token for members, open for guests",
+    summary: "Placing and reading orders. Only three endpoints, and they carry the commercial weight of the entire site.",
+    gotcha: "There is no cart API. The basket lives in the browser until the moment of submit, then the whole order goes up in one POST — so an interrupted checkout leaves nothing server-side to recover.",
+    endpoints: [
+      { method: "POST", path: "/api/CustomerOrder", what: "Submits a complete order for a signed-in customer — every line item, modifier, tip and total in a single payload.", where: ["Checkout", "Checkout (Gift & Rewards)"] },
+      { method: "POST", path: "/api/CustomerOrder/guest", what: "The same order shape for a customer who never signed in. A separate route rather than a flag on the main one.", where: ["Checkout"] },
+      { method: "GET", path: "/api/CustomerOrder/{orderId}", what: "Reads one order back in full. This single endpoint backs the receipt, the status screen and order tracking — there is no dedicated tracking or live-status endpoint, so progress is derived from this record's status field.", where: ["Order Details", "Order Status", "Track Order"] }
+    ]
+  }
 ];
 
 window.systemTreeStructure = {
-  id: "landing",
+  id: "restaurant-home",
   children: [
-    {
-      id: "restaurant-home",
-      children: [
         {
           id: "locations",
           children: [
+            { id: "location-favorites" },
             {
               id: "menu",
               children: [
                 { id: "menu-scan" },
-                { id: "customize" },
+                { id: "menu-single" },
+                {
+                  id: "customize",
+                  children: [
+                    { id: "customize-alt" }
+                  ]
+                },
                 {
                   id: "cart",
                   children: [
                     {
                       id: "checkout",
                       children: [
+                        { id: "checkout-rewards" },
                         {
                           id: "order-confirm",
                           children: [
-                            { id: "track-order" }
+                            {
+                              id: "order-status",
+                              children: [
+                                { id: "track-order" }
+                              ]
+                            }
                           ]
                         }
                       ]
@@ -7430,21 +7702,32 @@ window.systemTreeStructure = {
         {
           id: "sign-in",
           children: [
-            { id: "registration" },
             {
-              id: "profile",
+              id: "registration",
               children: [
+                { id: "registration-success" }
+              ]
+            },
+            {
+              id: "forgot-password",
+              children: [
+                { id: "reset-password" }
+              ]
+            },
+            {
+              id: "account",
+              children: [
+                { id: "dashboard" },
                 { id: "menu-favorites" },
-                { id: "order-details" }
+                { id: "rewards" },
+                { id: "order-details" },
+                { id: "account-deleted" }
               ]
             }
           ]
         },
-        { id: "privacy" },
-        { id: "accessibility" },
-        { id: "sections" }
-      ]
-    }
+    { id: "privacy" },
+    { id: "accessibility" }
   ]
 };
 
@@ -7485,33 +7768,86 @@ window.buildTreeHtmlGlobal = (node) => {
 
 
 routes["dev"] = () => {
-  if (!mockupState.sitemapAuthenticated) {
-    return `
-      <div class="fixed inset-0 bg-[#f5f4ff] flex flex-col items-center justify-center z-[999999] px-4">
-        <div class="bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full border border-violet-100 text-center">
-          <div class="w-16 h-16 bg-violet-100 text-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <i class="fa-solid fa-lock text-2xl"></i>
-          </div>
-          <h2 class="text-xl font-black text-gray-900 uppercase tracking-tight mb-2">Restricted Access</h2>
-          <p class="text-sm text-gray-500 font-medium mb-8">Please enter the password to view the development dashboard.</p>
-          <form onsubmit="event.preventDefault(); const p = document.getElementById('sitemap-pwd').value; if(p==='4949') { mockupState.sitemapAuthenticated = true; persistAllState(); renderPage(); } else { alert('Incorrect Password'); }">
-            <input type="password" id="sitemap-pwd" class="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-center text-lg tracking-widest font-mono font-black text-gray-900 focus:outline-none focus:border-violet-500 transition-colors mb-4" placeholder="••••" autofocus>
-            <button type="submit" class="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-3.5 font-black uppercase text-sm tracking-widest transition-colors active:scale-95 shadow-md">Unlock Dashboard</button>
-          </form>
-        </div>
-      </div>
-    `;
-  }
 
   const pages = window.systemPagesData;
+  const catalog = window.apiCatalog || [];
   const methodColors = { GET: { bg: "bg-blue-100", text: "text-blue-700" }, POST: { bg: "bg-emerald-100", text: "text-emerald-700" }, PUT: { bg: "bg-amber-100", text: "text-amber-700" }, DELETE: { bg: "bg-red-100", text: "text-red-700" } };
-  
-  const totalEndpoints = pages.reduce((sum, p) => sum + p.endpoints.length, 0);
-  const protectedPages = pages.filter(p => p.auth).length;
-  const totalPages = pages.length;
+
+  // Endpoint totals come from the catalog, which mirrors what api.js / app.js
+  // genuinely call — not from the per-page lists, which repeat shared endpoints.
+  const totalEndpoints = catalog.reduce((sum, g) => sum + g.endpoints.length, 0);
+  const totalControllers = catalog.length;
+  const customerPages = pages.filter(p => p.group !== "internal");
+  const totalPages = customerPages.length;
+  const protectedPages = customerPages.filter(p => p.auth).length;
+
+  const groupMeta = {
+    entry:        { label: "Entry & Discovery", blurb: "How a customer arrives and chooses a store", icon: "fa-door-open", color: "#7c3aed" },
+    ordering:     { label: "Ordering", blurb: "Browse the menu, build a drink, pay", icon: "fa-utensils", color: "#0ea5e9" },
+    "post-order": { label: "After the Order", blurb: "Confirmation, status and tracking", icon: "fa-circle-check", color: "#059669" },
+    identity:     { label: "Identity", blurb: "Signing in, signing up and password recovery", icon: "fa-fingerprint", color: "#6b7280" },
+    account:      { label: "Account", blurb: "Profile, order history and saved items", icon: "fa-id-badge", color: "#8b5cf6" },
+    supporting:   { label: "Supporting", blurb: "Legal and informational pages", icon: "fa-circle-info", color: "#9ca3af" },
+    internal:     { label: "Internal Tools", blurb: "In the repo, excluded from the live deployment via .vercelignore", icon: "fa-screwdriver-wrench", color: "#78350f" }
+  };
+  const groupOrder = ["entry", "ordering", "post-order", "identity", "account", "supporting", "internal"];
+
+  const methodPill = (m, size = "sm") => {
+    const c = methodColors[m] || methodColors.GET;
+    const cls = size === "sm"
+      ? "text-[9px] px-1.5 py-0.5 rounded"
+      : "text-[10px] px-2 py-1 rounded-md w-[52px] text-center";
+    return `<span class="font-black uppercase tracking-widest ${cls} ${c.bg} ${c.text} shrink-0">${m}</span>`;
+  };
 
   return `
-    <div class="bg-[#f8f9fa] min-h-screen relative font-sans text-gray-900 pb-24 selection:bg-violet-200 selection:text-violet-900">
+    <style>
+      /* ── Dev dashboard type scale ──────────────────────────────────────
+         Everything on this page reads one third (1.333x) larger than the
+         customer-facing app. Scoped to .dev-scale so it never leaks into
+         the shared components this page borrows.
+         The decorative text-[200px] hero watermark is deliberately left
+         alone; scaling that would overflow the card. ─────────────────── */
+      .dev-scale .text-xs      { font-size: 16px;   line-height: 21.3px; }
+      .dev-scale .text-sm      { font-size: 18.7px; line-height: 26.7px; }
+      .dev-scale .text-base    { font-size: 21.3px; line-height: 32px; }
+      .dev-scale .text-lg      { font-size: 24px;   line-height: 37.3px; }
+      .dev-scale .text-xl      { font-size: 26.7px; line-height: 37.3px; }
+      .dev-scale .text-2xl     { font-size: 32px;   line-height: 42.7px; }
+      .dev-scale .text-4xl     { font-size: 48px;   line-height: 53.3px; }
+      .dev-scale .text-\\[8px\\]  { font-size: 10.7px; }
+      .dev-scale .text-\\[9px\\]  { font-size: 12px; }
+      .dev-scale .text-\\[10px\\] { font-size: 13.3px; }
+      .dev-scale .text-\\[11px\\] { font-size: 14.7px; }
+      .dev-scale .text-\\[12px\\] { font-size: 16px; }
+      .dev-scale code          { font-size: 1em; }
+
+      /* Quick-launch rows */
+      .dev-scale .launch-card {
+        display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+        background: #fff; border: 1.5px solid #ede9fe; border-radius: 14px;
+        text-decoration: none; color: #1f0b35; transition: all .18s ease;
+      }
+      .dev-scale .launch-card:hover {
+        border-color: #7c3aed; background: #fdfcff;
+        box-shadow: 0 4px 16px rgba(124,58,237,.10); transform: translateY(-1px);
+      }
+      .dev-scale .launch-card .arrow { margin-left: auto; color: #c4b5fd; transition: transform .15s ease; }
+      .dev-scale .launch-card:hover .arrow { transform: translateX(3px); color: #7c3aed; }
+
+      /* Flowchart tree connectors */
+      .dev-tree ul { padding-top: 24px; position: relative; display: flex; justify-content: center; }
+      .dev-tree li { float: left; text-align: center; list-style-type: none; position: relative; padding: 24px 12px 0 12px; }
+      .dev-tree li::before, .dev-tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 2px dashed #cbd5e1; width: 50%; height: 24px; }
+      .dev-tree li::after { right: auto; left: 50%; border-left: 2px dashed #cbd5e1; }
+      .dev-tree li:only-child::after, .dev-tree li:only-child::before { display: none; }
+      .dev-tree li:only-child { padding-top: 0; }
+      .dev-tree li:first-child::before, .dev-tree li:last-child::after { border: 0 none; }
+      .dev-tree li:last-child::before { border-right: 2px dashed #cbd5e1; border-radius: 0 8px 0 0; }
+      .dev-tree li:first-child::after { border-radius: 8px 0 0 0; }
+      .dev-tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px dashed #cbd5e1; width: 0; height: 24px; }
+    </style>
+    <div class="dev-scale bg-[#f8f9fa] min-h-screen relative font-sans text-gray-900 pb-24 selection:bg-violet-200 selection:text-violet-900">
       <header class="bg-white/90 backdrop-blur-md px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 border-b border-gray-100">
         <div class="w-full max-w-[1400px] mx-auto flex items-center justify-between gap-4">
           <div class="flex items-center gap-3">
@@ -7520,223 +7856,356 @@ routes["dev"] = () => {
             </button>
             <div>
               <h1 class="text-base font-black text-gray-900 uppercase tracking-tight leading-tight">Dev Environment</h1>
-              <p class="text-[11px] font-medium text-gray-400 leading-tight">Platform Architecture & API Reference</p>
+              <p class="text-[11px] font-medium text-gray-400 leading-tight">Platform Architecture &amp; API Reference</p>
             </div>
           </div>
         </div>
       </header>
 
       <div class="w-full max-w-[1400px] mx-auto px-4 lg:px-8 mt-12 space-y-12">
-        
+
         <div class="bg-violet-600 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden shadow-sm">
           <i class="fa-solid fa-code absolute -right-10 -bottom-10 text-[200px] text-white/5 rotate-12"></i>
           <div class="relative z-10 max-w-2xl mb-8">
             <h1 class="text-4xl font-black uppercase tracking-tight mb-4">FareBites Platform Architecture</h1>
-            <p class="text-violet-100 text-lg font-medium leading-relaxed">Comprehensive overview of the frontend application structure, user flows, and API integrations.</p>
+            <p class="text-violet-100 text-lg font-medium leading-relaxed">Every screen in the app, what data each one needs, and which part of the backend it asks for it.</p>
           </div>
-          
+
           <div class="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center gap-4">
               <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0"><i class="fa-solid fa-file-code"></i></div>
-              <div><div class="text-2xl font-black leading-tight">${totalPages}</div><div class="text-[10px] uppercase tracking-widest text-violet-200 font-bold">Total Pages</div></div>
+              <div><div class="text-2xl font-black leading-tight">${totalPages}</div><div class="text-[10px] uppercase tracking-widest text-violet-200 font-bold">Customer Pages</div></div>
             </div>
             <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center gap-4">
               <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0"><i class="fa-solid fa-lock"></i></div>
-              <div><div class="text-2xl font-black leading-tight">${protectedPages}</div><div class="text-[10px] uppercase tracking-widest text-violet-200 font-bold">Private Pages</div></div>
+              <div><div class="text-2xl font-black leading-tight">${protectedPages}</div><div class="text-[10px] uppercase tracking-widest text-violet-200 font-bold">Require Sign-In</div></div>
             </div>
             <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center gap-4">
               <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0"><i class="fa-solid fa-plug"></i></div>
-              <div><div class="text-2xl font-black leading-tight">${totalEndpoints}</div><div class="text-[10px] uppercase tracking-widest text-violet-200 font-bold">API Endpoints</div></div>
+              <div><div class="text-2xl font-black leading-tight">${totalEndpoints}</div><div class="text-[10px] uppercase tracking-widest text-violet-200 font-bold">Live Endpoints</div></div>
             </div>
             <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center gap-4">
-              <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0"><i class="fa-solid fa-mobile-screen"></i></div>
-              <div><div class="text-2xl font-black leading-tight">100%</div><div class="text-[10px] uppercase tracking-widest text-violet-200 font-bold">Responsive</div></div>
+              <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0"><i class="fa-solid fa-server"></i></div>
+              <div><div class="text-2xl font-black leading-tight">${totalControllers}</div><div class="text-[10px] uppercase tracking-widest text-violet-200 font-bold">Backend Groups</div></div>
             </div>
           </div>
         </div>
 
         <!-- QUICK NAVIGATION -->
-        <div class="flex flex-wrap items-center gap-2 mb-8 bg-white/50 backdrop-blur-sm p-3 rounded-2xl border border-gray-100 shadow-sm">
+        <div class="flex flex-wrap items-center gap-2 bg-white/50 backdrop-blur-sm p-3 rounded-2xl border border-gray-100 shadow-sm">
           <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest mx-2">Jump to:</span>
-          <button onclick="document.getElementById('section-flow').scrollIntoView({behavior:'smooth'})" class="px-3 py-1.5 bg-white border border-gray-100 hover:border-violet-300 hover:text-violet-700 text-gray-600 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm">Primary Flow</button>
+          <button onclick="document.getElementById('section-primer').scrollIntoView({behavior:'smooth'})" class="px-3 py-1.5 bg-white border border-gray-100 hover:border-violet-300 hover:text-violet-700 text-gray-600 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm">How It Works</button>
+          <button onclick="document.getElementById('section-flow').scrollIntoView({behavior:'smooth'})" class="px-3 py-1.5 bg-white border border-gray-100 hover:border-violet-300 hover:text-violet-700 text-gray-600 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm">Pages</button>
           <button onclick="document.getElementById('section-api').scrollIntoView({behavior:'smooth'})" class="px-3 py-1.5 bg-white border border-gray-100 hover:border-gray-400 hover:text-gray-900 text-gray-600 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm">API Reference</button>
+          <button onclick="document.getElementById('section-gaps').scrollIntoView({behavior:'smooth'})" class="px-3 py-1.5 bg-white border border-gray-100 hover:border-amber-400 hover:text-amber-700 text-gray-600 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm">Gaps</button>
+          <button onclick="document.getElementById('section-launch').scrollIntoView({behavior:'smooth'})" class="px-3 py-1.5 bg-white border border-gray-100 hover:border-violet-300 hover:text-violet-700 text-gray-600 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm">Quick Launch</button>
+          <button onclick="document.getElementById('section-tree').scrollIntoView({behavior:'smooth'})" class="px-3 py-1.5 bg-white border border-gray-100 hover:border-violet-300 hover:text-violet-700 text-gray-600 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm">Flowchart</button>
           <div class="ml-auto flex items-center">
-            <button onclick="navigateTo('sitemap')" class="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-2"><i class="fa-solid fa-diagram-project"></i> Visual Flowchart</button>
+            <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'})" class="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-2"><i class="fa-solid fa-arrow-down"></i> Jump to Bottom</button>
           </div>
         </div>
 
-        <div id="section-flow" class="scroll-mt-32">
+        <!-- ══════════ HOW THE BACKEND IS SHAPED ══════════ -->
+        <div id="section-primer" class="scroll-mt-36">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-2xl bg-violet-600 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-lightbulb text-white text-sm"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">How This Site Talks To The Backend</h2>
+              <p class="text-xs text-gray-500 font-medium">The five things worth knowing before reading anything else on this page</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+              <div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center mb-4"><i class="fa-solid fa-layer-group text-sm"></i></div>
+              <h3 class="text-sm font-black text-gray-900 mb-2">A menu is not one request</h3>
+              <p class="text-xs text-gray-600 font-medium leading-relaxed">Loading a store's menu takes three tiers of calls: one for the category list, then one <em>per category</em> for its items, then one <em>per item</em> when someone opens it to pick a size or topping. Nothing returns the whole menu at once, so a cold menu load is the heaviest moment on the site and the place where perceived slowness comes from.</p>
+            </div>
+
+            <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+              <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4"><i class="fa-solid fa-cart-shopping text-sm"></i></div>
+              <h3 class="text-sm font-black text-gray-900 mb-2">There is no cart on the server</h3>
+              <p class="text-xs text-gray-600 font-medium leading-relaxed">The bag lives entirely in the browser. No API call happens when someone adds a drink, changes a quantity or edits a modifier — the whole order is assembled locally and posted in a single request at checkout. That keeps browsing fast, but it also means an abandoned cart leaves nothing behind to recover or analyse.</p>
+            </div>
+
+            <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+              <div class="w-9 h-9 rounded-xl bg-gray-100 text-gray-700 flex items-center justify-center mb-4"><i class="fa-solid fa-key text-sm"></i></div>
+              <h3 class="text-sm font-black text-gray-900 mb-2">One token gates everything</h3>
+              <p class="text-xs text-gray-600 font-medium leading-relaxed">Signing in returns a JWT that every later authenticated call carries. "Remember Me" decides whether it is kept in localStorage (survives closing the browser) or sessionStorage (dies with the tab). If any call comes back 401, the app clears the token and sends the customer back to sign-in — which is why an expired session shows up as a sudden bounce to login.</p>
+            </div>
+
+            <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+              <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4"><i class="fa-solid fa-triangle-exclamation text-sm"></i></div>
+              <h3 class="text-sm font-black text-gray-900 mb-2">The store list is the weak point</h3>
+              <p class="text-xs text-gray-600 font-medium leading-relaxed">The bulk <code class="bg-gray-100 px-1 rounded text-[10px]">/api/Locations</code> endpoint is gated behind an elevated login and returns 401 even for ordinary signed-in customers. Every screen that needs a store list has to survive that refusal by falling back to fetching stores one at a time from the public menu endpoints. Most location bugs trace back to this.</p>
+            </div>
+
+            <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+              <div class="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center mb-4"><i class="fa-solid fa-rocket text-sm"></i></div>
+              <h3 class="text-sm font-black text-gray-900 mb-2">Much of it loads before you see a page</h3>
+              <p class="text-xs text-gray-600 font-medium leading-relaxed">Locations, store hours and the active store's menu are fetched once when the app boots, not when you navigate to a screen. That is why the homepage and menu appear instantly with no spinner — they are reading state that was already filled in — and why a failure at boot shows up as broken content several screens later.</p>
+            </div>
+
+            <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+              <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4"><i class="fa-solid fa-code-branch text-sm"></i></div>
+              <h3 class="text-sm font-black text-gray-900 mb-2">Guests and members take different routes</h3>
+              <p class="text-xs text-gray-600 font-medium leading-relaxed">A guest checkout and a signed-in checkout post to two genuinely separate endpoints rather than one endpoint with a flag. The payload shape is the same; the route and the auth requirement differ. Anything that changes about ordering has to be verified twice, once down each path.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════ SYSTEM PAGES ══════════ -->
+        <div id="section-flow" class="scroll-mt-36">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 rounded-2xl bg-violet-600 flex items-center justify-center shrink-0">
               <i class="fa-solid fa-layer-group text-white text-sm"></i>
             </div>
             <div>
               <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">System Pages</h2>
-              <p class="text-xs text-gray-500 font-medium">All components and their corresponding API endpoints</p>
+              <p class="text-xs text-gray-500 font-medium">Every screen, grouped by its job in the customer journey</p>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            ${pages.map(page => `
-              <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative group">
-                <div class="flex items-start gap-4 mb-4">
-                  <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style="background-color: ${page.color}15; color: ${page.color};">
-                    <i class="fa-solid ${page.icon} text-xl"></i>
+          <div class="space-y-10">
+            ${groupOrder.map(gid => {
+              const meta = groupMeta[gid];
+              const inGroup = pages.filter(p => p.group === gid);
+              if (!meta || inGroup.length === 0) return "";
+              return `
+                <div>
+                  <div class="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background-color: ${meta.color}18; color: ${meta.color};">
+                      <i class="fa-solid ${meta.icon} text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="text-sm font-black text-gray-900 uppercase tracking-tight leading-tight">${meta.label}</h3>
+                      <p class="text-[11px] text-gray-500 font-medium leading-tight">${meta.blurb}</p>
+                    </div>
+                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">${inGroup.length} ${inGroup.length === 1 ? "page" : "pages"}</span>
                   </div>
-                  <div class="flex-1">
-                    <h3 class="text-sm font-black text-gray-900 leading-tight flex items-center justify-between">
-                       <span>${page.name}</span>
-                       ${page.auth ? '<i class="fa-solid fa-lock text-[10px] text-gray-400" title="Auth Required"></i>' : ''}
-                    </h3>
-                    <a href="${page.file}" target="_blank" class="text-[10px] font-mono text-gray-500 hover:text-violet-600 mt-1 flex items-center gap-1 transition-colors">
-                      ${page.file} <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
-                    </a>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    ${inGroup.map(page => `
+                      <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative group flex flex-col">
+                        <div class="flex items-start gap-4 mb-4">
+                          <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style="background-color: ${page.color}15; color: ${page.color};">
+                            <i class="fa-solid ${page.icon} text-xl"></i>
+                          </div>
+                          <div class="flex-1 min-w-0">
+                            <h3 class="text-sm font-black text-gray-900 leading-tight flex items-center justify-between gap-2">
+                               <span>${page.name}</span>
+                               ${page.auth ? '<i class="fa-solid fa-lock text-[10px] text-gray-400 shrink-0" title="Requires sign-in"></i>' : ''}
+                            </h3>
+                            <a href="${page.file}" target="_blank" class="text-[10px] font-mono text-gray-500 hover:text-violet-600 mt-1 flex items-center gap-1 transition-colors">
+                              ${page.file} <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
+                            </a>
+                          </div>
+                        </div>
+                        <p class="text-xs text-gray-600 font-medium leading-relaxed mb-4 flex-1">${page.description}</p>
+                        ${page.endpoints.length > 0 ? `
+                          <div class="mt-auto pt-4 border-t border-gray-100">
+                            <div class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2.5">Calls ${page.endpoints.length} endpoint${page.endpoints.length === 1 ? "" : "s"}</div>
+                            <div class="space-y-2.5">
+                              ${page.endpoints.map(ep => `
+                                <div>
+                                  <div class="flex items-start gap-2">
+                                    ${methodPill(ep.method)}
+                                    <code class="text-[10px] font-mono text-gray-700 break-all leading-relaxed">${ep.path}</code>
+                                  </div>
+                                  <p class="text-[10px] text-gray-500 font-medium leading-relaxed mt-1 ml-[34px]">${ep.note}</p>
+                                </div>
+                              `).join("")}
+                            </div>
+                          </div>
+                        ` : `
+                          <div class="mt-auto pt-4 border-t border-gray-100">
+                            <div class="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                              <i class="fa-solid fa-minus"></i> No API calls of its own
+                            </div>
+                          </div>
+                        `}
+                      </div>
+                    `).join("")}
                   </div>
                 </div>
-                <p class="text-xs text-gray-600 font-medium leading-relaxed mb-4 min-h-[40px]">${page.description}</p>
-                ${page.endpoints.length > 0 ? `
-                  <div class="space-y-2 mt-4 pt-4 border-t border-gray-50">
-                    ${page.endpoints.map(ep => {
-                      const c = methodColors[ep.method] || methodColors.GET;
-                      return `
-                        <div class="flex items-start gap-2">
-                          <span class="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest ${c.bg} ${c.text} shrink-0 mt-0.5">${ep.method}</span>
-                          <code class="text-[10px] font-mono text-gray-600 break-all">${ep.path}</code>
-                        </div>
-                      `;
-                    }).join("")}
-                  </div>
-                ` : ``}
-              </div>
-            `).join("")}
+              `;
+            }).join("")}
           </div>
         </div>
 
-        <div id="section-api" class="scroll-mt-32">
+        <!-- ══════════ API REFERENCE, GROUPED BY BACKEND CONTROLLER ══════════ -->
+        <div id="section-api" class="scroll-mt-36">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 rounded-2xl bg-gray-800 flex items-center justify-center shrink-0">
               <i class="fa-solid fa-table-list text-white text-sm"></i>
             </div>
             <div>
               <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">API Endpoint Reference</h2>
-              <p class="text-xs text-gray-500 font-medium">All ${totalEndpoints} endpoints used across the platform</p>
+              <p class="text-xs text-gray-500 font-medium">All ${totalEndpoints} live endpoints, grouped into the ${totalControllers} controllers the backend actually organises them by</p>
             </div>
           </div>
-          <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead>
-                  <tr class="bg-gray-50 border-b border-gray-100">
-                    <th class="text-left text-[11px] font-black text-gray-400 uppercase tracking-widest px-5 py-3.5 w-16">Method</th>
-                    <th class="text-left text-[11px] font-black text-gray-400 uppercase tracking-widest px-5 py-3.5">Endpoint</th>
-                    <th class="text-left text-[11px] font-black text-gray-400 uppercase tracking-widest px-5 py-3.5 hidden md:table-cell">Description</th>
-                    <th class="text-left text-[11px] font-black text-gray-400 uppercase tracking-widest px-5 py-3.5 hidden lg:table-cell">Used On</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${(() => {
-                    const allEndpoints = [];
-                    pages.forEach(page => {
-                      page.endpoints.forEach(ep => {
-                        const existing = allEndpoints.find(e => e.method === ep.method && e.path === ep.path);
-                        if (existing) {
-                          if (!existing.pages.includes(page.name)) existing.pages.push(page.name);
-                        } else {
-                          allEndpoints.push({ ...ep, pages: [page.name] });
-                        }
-                      });
-                    });
-                    const methodOrder = { GET: 0, POST: 1, PUT: 2, DELETE: 3 };
-                    allEndpoints.sort((a, b) => (methodOrder[a.method] || 99) - (methodOrder[b.method] || 99));
-                    return allEndpoints.map((ep, i) => {
-                      const c = methodColors[ep.method] || methodColors.GET;
-                      return `
-                        <tr class="border-b border-gray-50 hover:bg-gray-50/60 transition-colors ${i % 2 === 0 ? "" : "bg-gray-50/30"}">
-                          <td class="px-5 py-3.5">
-                            <span class="text-[11px] font-black px-2.5 py-1 rounded-full ${c.bg} ${c.text}">${ep.method}</span>
-                          </td>
-                          <td class="px-5 py-3.5">
-                            <code class="text-[11px] font-mono text-gray-700 break-all">${ep.path}</code>
-                          </td>
-                          <td class="px-5 py-3.5 hidden md:table-cell">
-                            <span class="text-[11px] text-gray-500 font-medium">${ep.note}</span>
-                          </td>
-                          <td class="px-5 py-3.5 hidden lg:table-cell">
-                            <div class="flex flex-wrap gap-1">
-                              ${ep.pages.map(pn => `<span class="text-[10px] font-bold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">${pn}</span>`).join("")}
-                            </div>
-                          </td>
-                        </tr>`;
-                    }).join("");
-                  })()}
-                </tbody>
-              </table>
-            </div>
+
+          <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm mb-8 flex items-start gap-4">
+            <div class="w-8 h-8 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-circle-info text-xs"></i></div>
+            <p class="text-xs text-gray-600 font-medium leading-relaxed">Each block below is one controller on the backend — a single file on the server owning a related set of operations. Reading them in this order is the fastest way to understand the division of labour: <strong class="text-gray-900">RestaurantMenu</strong> and <strong class="text-gray-900">Locations</strong> serve anyone, <strong class="text-gray-900">Account</strong> covers everything tied to a person, and <strong class="text-gray-900">CustomerOrder</strong> handles the transaction itself. Each block calls out its own trap in the amber note.</p>
+          </div>
+
+          <div class="space-y-8">
+            ${catalog.map(grp => `
+              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-100" style="background: linear-gradient(to right, ${grp.color}0a, transparent);">
+                  <div class="flex items-start gap-4 flex-wrap">
+                    <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style="background-color: ${grp.color}1a; color: ${grp.color};">
+                      <i class="fa-solid ${grp.icon} text-base"></i>
+                    </div>
+                    <div class="flex-1 min-w-[240px]">
+                      <div class="flex items-center gap-3 flex-wrap mb-1.5">
+                        <h3 class="text-base font-black text-gray-900 tracking-tight">${grp.controller}</h3>
+                        <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">${grp.endpoints.length} endpoint${grp.endpoints.length === 1 ? "" : "s"}</span>
+                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5" style="background-color: ${grp.color}14; color: ${grp.color};">
+                          <i class="fa-solid ${grp.auth.toLowerCase().includes("public") ? "fa-globe" : "fa-lock"} text-[8px]"></i>${grp.auth}
+                        </span>
+                      </div>
+                      <p class="text-xs text-gray-600 font-medium leading-relaxed max-w-3xl">${grp.summary}</p>
+                    </div>
+                  </div>
+                  <div class="mt-4 flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500 text-xs mt-0.5 shrink-0"></i>
+                    <p class="text-[11px] text-amber-900 font-medium leading-relaxed"><strong class="font-black">Worth knowing:</strong> ${grp.gotcha}</p>
+                  </div>
+                </div>
+
+                <div class="divide-y divide-gray-50">
+                  ${grp.endpoints.map(ep => `
+                    <div class="p-5 hover:bg-gray-50/60 transition-colors">
+                      <div class="flex items-start gap-3 mb-2 flex-wrap">
+                        ${methodPill(ep.method, "lg")}
+                        <code class="text-[12px] font-mono text-gray-900 font-semibold break-all leading-relaxed flex-1 min-w-[200px]">${ep.path}</code>
+                        <div class="flex flex-wrap gap-1.5 shrink-0">
+                          ${ep.where.map(pn => `<span class="text-[10px] font-bold text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full whitespace-nowrap">${pn}</span>`).join("")}
+                        </div>
+                      </div>
+                      <p class="text-xs text-gray-600 font-medium leading-relaxed ml-0 md:ml-[64px] max-w-4xl">${ep.what}</p>
+                    </div>
+                  `).join("")}
+                </div>
+              </div>
+            `).join("")}
           </div>
         </div>
 
-      </div>
-    </div>
-  `;
-};
-
-routes["sitemap"] = () => {
-  return `
-    <div class="bg-[#f8f9fa] min-h-screen relative font-sans text-gray-900 pb-24 selection:bg-violet-200 selection:text-violet-900">
-      <header class="bg-white/90 backdrop-blur-md px-4 py-4 flex items-center shadow-sm z-50 sticky top-0 border-b border-gray-100">
-        <div class="w-full max-w-[1400px] mx-auto flex items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors shrink-0">
-              <i class="fa-solid fa-chevron-left text-gray-600 text-sm"></i>
-            </button>
+        <!-- ══════════ WHAT THE BACKEND DOES NOT DO YET ══════════ -->
+        <div id="section-gaps" class="scroll-mt-36">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-2xl bg-amber-500 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-circle-half-stroke text-white text-sm"></i>
+            </div>
             <div>
-              <h1 class="text-base font-black text-gray-900 uppercase tracking-tight leading-tight">Visual Flowchart</h1>
-              <p class="text-[11px] font-medium text-gray-400 leading-tight">FareBites × i-Tea Online Ordering</p>
+              <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">Designed But Not Wired</h2>
+              <p class="text-xs text-gray-500 font-medium">Screens that look complete but have no backend behind them yet</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="divide-y divide-gray-50">
+              ${[
+                { title: "Rewards, points and loyalty tiers", detail: "No rewards endpoint exists anywhere in the API. Every balance, tier and offer on the Rewards screen and in Checkout (Gift &amp; Rewards) is local placeholder data. Any real launch needs a new controller.", pages: ["Rewards", "Checkout (Gift & Rewards)"] },
+                { title: "Promo and discount codes", detail: "There is no validate-promo endpoint. A promo field can be designed, but nothing can currently check a code or apply a discount server-side, and totals are computed in the browser.", pages: ["Cart / Review", "Checkout"] },
+                { title: "Live order tracking", detail: "No tracking or push endpoint exists. The Track Order stepper works by re-reading the standard order record and mapping its status field onto the visual steps, so progress only updates when the page asks again.", pages: ["Track Order"] },
+                { title: "Saved locations", detail: "Item favorites are real server records, but saved <em>locations</em> are stored only in the browser. They do not follow a customer to another device and are dropped if the store disappears from the API response.", pages: ["Saved Locations"] },
+                { title: "Payment capture", detail: "No payment-intent or card-tokenisation endpoint is called anywhere in the frontend. Checkout collects payment details visually and submits the order, but there is no integrated processor behind it yet.", pages: ["Checkout"] },
+                { title: "Server-side cart", detail: "No cart endpoints of any kind. The basket cannot be resumed on another device, and an abandoned order leaves no server-side trace to follow up on.", pages: ["Cart / Review"] }
+              ].map(gap => `
+                <div class="p-5 hover:bg-gray-50/60 transition-colors">
+                  <div class="flex items-start gap-3 mb-2 flex-wrap">
+                    <span class="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-amber-100 text-amber-700 shrink-0 w-[52px] text-center">Gap</span>
+                    <h4 class="text-sm font-black text-gray-900 flex-1 min-w-[200px] leading-snug">${gap.title}</h4>
+                    <div class="flex flex-wrap gap-1.5 shrink-0">
+                      ${gap.pages.map(pn => `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full whitespace-nowrap">${pn}</span>`).join("")}
+                    </div>
+                  </div>
+                  <p class="text-xs text-gray-600 font-medium leading-relaxed md:ml-[64px] max-w-4xl">${gap.detail}</p>
+                </div>
+              `).join("")}
             </div>
           </div>
         </div>
-      </header>
 
-      <div class="relative z-10 w-full max-w-full mx-auto p-4 md:p-8 h-[calc(100vh-70px)]">
-        <div id="section-tree" class="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 md:p-12 overflow-hidden w-full h-full relative">
-          
-          <div class="absolute top-6 right-6 flex flex-col gap-1 z-20 bg-white shadow-md border border-gray-100 rounded-xl p-1">
-            <button onclick="window.sitemapZoomLevel = Math.min(2, (window.sitemapZoomLevel||0.5) + 0.1); document.getElementById('sitemap-tree-content').style.transform = 'scale(' + window.sitemapZoomLevel + ')'" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600"><i class="fa-solid fa-plus"></i></button>
-            <div class="w-full h-px bg-gray-100"></div>
-            <button onclick="window.sitemapZoomLevel = Math.max(0.1, (window.sitemapZoomLevel||0.5) - 0.1); document.getElementById('sitemap-tree-content').style.transform = 'scale(' + window.sitemapZoomLevel + ')'" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600"><i class="fa-solid fa-minus"></i></button>
-            <div class="w-full h-px bg-gray-100"></div>
-            <button onclick="window.sitemapZoomLevel = 0.5; document.getElementById('sitemap-tree-content').style.transform = 'scale(0.5)'" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600 text-[10px] font-bold">FIT</button>
-            <button onclick="window.sitemapZoomLevel = 1; document.getElementById('sitemap-tree-content').style.transform = 'scale(1)'" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600 text-[10px] font-bold">1x</button>
+        <!-- ══════════ QUICK LAUNCH (absorbed from the retired pages.html) ══════════ -->
+        <div id="section-launch" class="scroll-mt-36">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-2xl bg-violet-600 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-table-cells text-white text-sm"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">Quick Launch</h2>
+              <p class="text-xs text-gray-500 font-medium">Every page as a compact one-click list — for jumping straight to a screen</p>
+            </div>
           </div>
 
-          <div class="w-full h-full overflow-auto flex justify-center items-start pt-8 pb-32" id="sitemap-scroll-container">
-            <style>
-              .sitemap-tree ul { padding-top: 24px; position: relative; display: flex; justify-content: center; }
-              .sitemap-tree li { float: left; text-align: center; list-style-type: none; position: relative; padding: 24px 12px 0 12px; }
-              .sitemap-tree li::before, .sitemap-tree li::after{ content: ''; position: absolute; top: 0; right: 50%; border-top: 2px dashed #cbd5e1; width: 50%; height: 24px; }
-              .sitemap-tree li::after{ right: auto; left: 50%; border-left: 2px dashed #cbd5e1; }
-              .sitemap-tree li:only-child::after, .sitemap-tree li:only-child::before { display: none; }
-              .sitemap-tree li:only-child{ padding-top: 0;}
-              .sitemap-tree li:first-child::before, .sitemap-tree li:last-child::after{ border: 0 none; }
-              .sitemap-tree li:last-child::before{ border-right: 2px dashed #cbd5e1; border-radius: 0 8px 0 0; }
-              .sitemap-tree li:first-child::after{ border-radius: 8px 0 0 0; }
-              .sitemap-tree ul ul::before{ content: ''; position: absolute; top: 0; left: 50%; border-left: 2px dashed #cbd5e1; width: 0; height: 24px; }
-            </style>
-            <!-- transform-origin top keeps it pinned to top so it doesn't crop -->
-            <div id="sitemap-tree-content" class="sitemap-tree inline-block min-w-max transition-transform origin-top" style="transform: scale(0.5)">
-              <script>
-                window.sitemapZoomLevel = 0.5;
-                setTimeout(() => {
-                   let sc = document.getElementById('sitemap-scroll-container');
-                   if (sc) sc.scrollTop = 0;
-                }, 100);
-              </script>
-              <ul>
-                ${window.buildTreeHtmlGlobal(window.systemTreeStructure)}
-              </ul>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-8">
+            ${groupOrder.map(gid => {
+              const meta = groupMeta[gid];
+              const inGroup = pages.filter(p => p.group === gid);
+              if (!meta || inGroup.length === 0) return "";
+              return `
+                <div>
+                  <div class="text-[11px] font-black uppercase tracking-widest mb-3 pl-1 flex items-center gap-2" style="color: ${meta.color};">
+                    <i class="fa-solid ${meta.icon}"></i>${meta.label}
+                  </div>
+                  <div class="flex flex-col gap-3">
+                    ${inGroup.map(page => `
+                      <a href="${page.file}" target="_blank" class="launch-card">
+                        <div class="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0" style="background-color: ${page.color}18; color: ${page.color};">
+                          <i class="fa-solid ${page.icon}"></i>
+                        </div>
+                        <div class="min-w-0">
+                          <div class="text-[13px] font-black leading-tight text-gray-900">${page.name}</div>
+                          <div class="text-[11px] font-semibold text-gray-400 font-mono mt-0.5">${page.file}</div>
+                          ${page.auth ? '<span class="text-[9px] font-black uppercase tracking-wider bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-md inline-block mt-1">Auth Required</span>' : ''}
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-xs arrow shrink-0"></i>
+                      </a>
+                    `).join("")}
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+
+        <!-- ══════════ VISUAL FLOWCHART (absorbed from the retired sitemap.html) ══════════ -->
+        <div id="section-tree" class="scroll-mt-36">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-2xl bg-violet-600 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-diagram-project text-white text-sm"></i>
+            </div>
+            <div class="flex-1">
+              <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">Visual Flowchart</h2>
+              <p class="text-xs text-gray-500 font-medium">How the screens connect — hover any node for its description, click to open it</p>
+            </div>
+            <div class="flex items-center gap-1 bg-white shadow-sm border border-gray-100 rounded-xl p-1 shrink-0">
+              <button onclick="window.devZoom = Math.max(0.1, (window.devZoom || 0.55) - 0.1); document.getElementById('dev-tree-content').style.transform = 'scale(' + window.devZoom + ')'" class="w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600" title="Zoom out"><i class="fa-solid fa-minus"></i></button>
+              <button onclick="window.devZoom = Math.min(2, (window.devZoom || 0.55) + 0.1); document.getElementById('dev-tree-content').style.transform = 'scale(' + window.devZoom + ')'" class="w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600" title="Zoom in"><i class="fa-solid fa-plus"></i></button>
+              <div class="w-px h-5 bg-gray-100"></div>
+              <button onclick="window.devZoom = 0.55; document.getElementById('dev-tree-content').style.transform = 'scale(0.55)'" class="px-3 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600 text-[11px] font-black">FIT</button>
+              <button onclick="window.devZoom = 1; document.getElementById('dev-tree-content').style.transform = 'scale(1)'" class="px-3 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600 text-[11px] font-black">1x</button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 md:p-8 overflow-hidden">
+            <div class="w-full overflow-auto flex justify-center items-start pt-8 pb-8 h-[680px]" id="dev-tree-scroll">
+              <div id="dev-tree-content" class="dev-tree inline-block min-w-max transition-transform origin-top" style="transform: scale(0.55)">
+                <ul>
+                  ${window.buildTreeHtmlGlobal(window.systemTreeStructure)}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   `;
@@ -8232,7 +8701,6 @@ function renderPage() {
   }
 
   const isRestaurantPage = ![
-    "landing",
     "home",
     "sign-in",
     "dashboard",
@@ -8369,7 +8837,6 @@ function renderPage() {
 
   // Inject hamburger drawer for all restaurant pages
   const nonRestaurantPages = [
-    "landing",
     "home",
     "sign-in",
     "dashboard",
@@ -10285,51 +10752,350 @@ function updateMockupState(key, value) {
   });
 }
 
-async function handleRegistration() {
-  const email = document.getElementById("reg-email")?.value;
-  const password = document.getElementById("reg-password")?.value;
-  const confirmPassword = document.getElementById(
-    "reg-confirm-password",
-  )?.value;
-  const firstName = document.getElementById("reg-first-name")?.value;
-  const lastName = document.getElementById("reg-last-name")?.value;
-  const phoneNumber = document.getElementById("reg-phone")?.value;
-  
-  const street = document.getElementById("reg-street")?.value;
-  const city = document.getElementById("reg-city")?.value;
-  const state = document.getElementById("reg-state")?.value;
-  const zipCode = document.getElementById("reg-zip")?.value;
+// --- Registration form validation ------------------------------------------
+// These rules mirror what POST /api/Account/register actually enforces:
+// password is 6-100 characters with an uppercase, a lowercase and a number;
+// email, first name, last name and phone are required. Street/City/State/Zip
+// are optional server-side, so they are not marked required here either.
+const REG_PHONE_PATTERN = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+const REG_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const errorEl = document.getElementById("reg-error");
+// Maps the field names the API reports back onto our input ids.
+const REG_SERVER_FIELDS = {
+  email: "reg-email",
+  password: "reg-password",
+  confirmpassword: "reg-confirm-password",
+  firstname: "reg-first-name",
+  lastname: "reg-last-name",
+  phonenumber: "reg-phone",
+  street: "reg-street",
+  city: "reg-city",
+  state: "reg-state",
+  zipcode: "reg-zip",
+};
 
+const REG_REQUIRED_FIELDS = [
+  "reg-email",
+  "reg-password",
+  "reg-confirm-password",
+  "reg-first-name",
+  "reg-last-name",
+  "reg-phone",
+];
+
+function setRegFieldError(id, message) {
+  const input = document.getElementById(id);
+  const errorEl = document.getElementById(id + "-error");
+  if (input) {
+    input.classList.add("border-red-400");
+    input.classList.remove("border-transparent");
+    input.setAttribute("aria-invalid", "true");
+  }
   if (errorEl) {
-    errorEl.style.opacity = "0";
+    errorEl.textContent = message;
+    errorEl.classList.remove("hidden");
+  }
+}
+
+function clearRegFieldError(id) {
+  const input = document.getElementById(id);
+  const errorEl = document.getElementById(id + "-error");
+  if (input) {
+    input.classList.remove("border-red-400");
+    input.classList.add("border-transparent");
+    input.removeAttribute("aria-invalid");
+  }
+  if (errorEl) {
     errorEl.textContent = "";
+    errorEl.classList.add("hidden");
+  }
+}
+
+function clearAllRegErrors() {
+  Object.values(REG_SERVER_FIELDS).forEach(clearRegFieldError);
+  const summary = document.getElementById("reg-error");
+  if (summary) {
+    summary.textContent = "";
+    summary.classList.add("hidden");
+  }
+}
+
+function showRegSummary(message) {
+  const summary = document.getElementById("reg-error");
+  if (summary) {
+    summary.textContent = message;
+    summary.classList.remove("hidden");
+  }
+}
+
+function getRegPasswordChecks(password) {
+  return {
+    length: password.length >= 6 && password.length <= 100,
+    upper: /[A-Z]/.test(password),
+    lower: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+  };
+}
+
+// Live requirements checklist + strength meter, shown as soon as they type.
+function handleRegPasswordInput() {
+  clearRegFieldError("reg-password");
+
+  const password = document.getElementById("reg-password")?.value || "";
+  const panel = document.getElementById("reg-password-requirements");
+  if (!panel) return;
+
+  if (!password) {
+    panel.classList.add("hidden");
+    return;
+  }
+  panel.classList.remove("hidden");
+
+  const checks = getRegPasswordChecks(password);
+  const rows = {
+    "reg-pw-length": checks.length,
+    "reg-pw-upper": checks.upper,
+    "reg-pw-lower": checks.lower,
+    "reg-pw-number": checks.number,
+    "reg-pw-special": checks.special,
+  };
+
+  Object.entries(rows).forEach(([rowId, passed]) => {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    const icon = row.querySelector("i");
+    row.classList.toggle("text-green-600", passed);
+    row.classList.toggle("text-gray-400", !passed);
+    if (icon) {
+      icon.classList.toggle("fa-circle-check", passed);
+      icon.classList.toggle("fa-circle-xmark", !passed);
+    }
+  });
+
+  const score = Object.values(checks).filter(Boolean).length;
+  const levels = [
+    { width: "20%", color: "bg-red-500", text: "Very Weak", label: "text-red-500" },
+    { width: "40%", color: "bg-orange-400", text: "Weak", label: "text-orange-500" },
+    { width: "60%", color: "bg-amber-400", text: "Fair", label: "text-amber-500" },
+    { width: "80%", color: "bg-sky-400", text: "Strong", label: "text-sky-500" },
+    { width: "100%", color: "bg-green-500", text: "Very Strong", label: "text-green-600" },
+  ];
+  const level = levels[Math.max(0, score - 1)];
+
+  const bar = document.getElementById("reg-password-bar");
+  if (bar) {
+    bar.className =
+      "h-full rounded-full transition-all duration-300 " + level.color;
+    bar.style.width = level.width;
+  }
+  const strengthLabel = document.getElementById("reg-password-strength");
+  if (strengthLabel) {
+    strengthLabel.className =
+      "text-[10px] font-black uppercase tracking-widest " + level.label;
+    strengthLabel.textContent = level.text;
   }
 
-  if (!email || !password || !firstName || !lastName || !phoneNumber) {
-    if (errorEl) {
-      errorEl.textContent = "Please fill out all required fields.";
-      errorEl.style.opacity = "1";
+  // If they already typed a confirmation, keep the match error honest.
+  const confirm = document.getElementById("reg-confirm-password")?.value;
+  if (confirm) validateRegField("reg-confirm-password");
+}
+
+// Validates one field and paints its inline message. Returns true if valid.
+function validateRegField(id) {
+  const value = (document.getElementById(id)?.value || "").trim();
+  let message = "";
+
+  if (id === "reg-email") {
+    if (!value) message = "Please enter your email address.";
+    else if (!REG_EMAIL_PATTERN.test(value))
+      message = "Please enter a valid email address, like name@example.com.";
+    else if (/['"]/.test(value))
+      message = "Your email address can't contain quotes or apostrophes.";
+  } else if (id === "reg-password") {
+    const password = document.getElementById("reg-password")?.value || "";
+    if (!password) {
+      message = "Please create a password.";
+    } else if (password.length > 100) {
+      message = "Your password can't be longer than 100 characters.";
+    } else {
+      const checks = getRegPasswordChecks(password);
+      const missing = [];
+      if (!checks.length) missing.push("6 characters");
+      if (!checks.upper) missing.push("one uppercase letter");
+      if (!checks.lower) missing.push("one lowercase letter");
+      if (!checks.number) missing.push("one number");
+      if (missing.length) {
+        const list =
+          missing.length === 1
+            ? missing[0]
+            : missing.slice(0, -1).join(", ") + " and " + missing[missing.length - 1];
+        message = "Your password still needs at least " + list + ".";
+      }
     }
+  } else if (id === "reg-confirm-password") {
+    const password = document.getElementById("reg-password")?.value || "";
+    const confirm = document.getElementById("reg-confirm-password")?.value || "";
+    if (!confirm) message = "Please confirm your password.";
+    else if (password !== confirm) message = "These passwords don't match.";
+  } else if (id === "reg-first-name") {
+    if (!value) message = "Please enter your first name.";
+  } else if (id === "reg-last-name") {
+    if (!value) message = "Please enter your last name.";
+  } else if (id === "reg-phone") {
+    if (!value) message = "Please enter your phone number.";
+    else if (!REG_PHONE_PATTERN.test(value))
+      message = "Please enter a valid 10-digit phone number, like (555) 000-0000.";
+  }
+
+  if (message) {
+    setRegFieldError(id, message);
+    return false;
+  }
+  clearRegFieldError(id);
+  return true;
+}
+
+// Validates everything and moves focus to the first problem.
+function validateRegistrationForm() {
+  const invalid = REG_REQUIRED_FIELDS.filter((id) => !validateRegField(id));
+  if (invalid.length) {
+    const first = document.getElementById(invalid[0]);
+    if (first) {
+      first.focus();
+      first.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    return false;
+  }
+  return true;
+}
+
+// Rewrites the API's raw validation text into something a customer can act on.
+function friendlyRegMessage(raw) {
+  const text = String(raw || "");
+  const lower = text.toLowerCase();
+
+  if (lower.includes("email already registered"))
+    return "This email is already registered. Please sign in instead.";
+  if (lower.includes("can only contain letters or digits"))
+    return "Please use an email address without special characters like apostrophes or spaces.";
+  if (lower.includes("not a valid e-mail"))
+    return "Please enter a valid email address, like name@example.com.";
+  if (lower.includes("minimum length of '6'") || lower.includes("at least 6 characters"))
+    return "Your password must be at least 6 characters.";
+
+  // ASP.NET Identity returns password rules as one comma-joined sentence.
+  if (lower.includes("passwords must have")) {
+    const needs = [];
+    if (lower.includes("one digit")) needs.push("one number");
+    if (lower.includes("one uppercase")) needs.push("one uppercase letter");
+    if (lower.includes("one lowercase")) needs.push("one lowercase letter");
+    if (lower.includes("one non alphanumeric")) needs.push("one special character");
+    if (needs.length) {
+      const list =
+        needs.length === 1
+          ? needs[0]
+          : needs.slice(0, -1).join(", ") + " and " + needs[needs.length - 1];
+      return "Your password needs at least " + list + ".";
+    }
+  }
+
+  if (lower.includes("field is required")) {
+    const field = text.split(" ")[1];
+    return "Please enter your " + (field ? field.replace(/([A-Z])/g, " $1").trim().toLowerCase() : "details") + ".";
+  }
+
+  return text;
+}
+
+// The API reports failures two different ways, and both need to reach the user:
+//   { success: false, message: "..." }                  <- business rules
+//   { title, errors: { Password: ["..."] } }            <- model validation
+// Returns a summary string, after attaching anything field-specific inline.
+function applyRegServerErrors(err) {
+  const data = err?.data;
+
+  // Model validation: route each message to the field it belongs to.
+  if (data?.errors && typeof data.errors === "object") {
+    let firstInvalidId = null;
+    let firstMessage = "";
+    Object.entries(data.errors).forEach(([field, messages]) => {
+      const message = friendlyRegMessage(
+        Array.isArray(messages) ? messages[0] : messages,
+      );
+      const id = REG_SERVER_FIELDS[field.toLowerCase().replace(/[^a-z]/g, "")];
+      if (id && document.getElementById(id)) {
+        setRegFieldError(id, message);
+        if (!firstInvalidId) {
+          firstInvalidId = id;
+          firstMessage = message;
+        }
+      } else if (!firstMessage) {
+        firstMessage = message;
+      }
+    });
+    if (firstInvalidId) {
+      const el = document.getElementById(firstInvalidId);
+      el?.focus();
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return "Please fix the highlighted field and try again.";
+    }
+    return firstMessage || "Please check your details and try again.";
+  }
+
+  // Business rules: one message, which we can usually pin to a field.
+  const raw = data?.message || data?.title || "";
+  if (raw) {
+    const message = friendlyRegMessage(raw);
+    const lower = String(raw).toLowerCase();
+    let id = null;
+    if (lower.includes("email") || lower.includes("username")) id = "reg-email";
+    else if (lower.includes("password")) id = "reg-password";
+    if (id && document.getElementById(id)) {
+      setRegFieldError(id, message);
+      const el = document.getElementById(id);
+      el?.focus();
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    return message;
+  }
+
+  // No body to read: fall back to what the status code tells us.
+  const status = err?.status;
+  if (!status)
+    return "We couldn't reach the server. Check your connection and try again.";
+  if (status >= 500)
+    return "Something went wrong on our end. Please try again in a moment.";
+  if (status === 429)
+    return "Too many attempts. Please wait a moment and try again.";
+  return "We couldn't create your account (error " + status + "). Please try again.";
+}
+
+async function handleRegistration() {
+  clearAllRegErrors();
+
+  // Catch everything we can before bothering the server.
+  if (!validateRegistrationForm()) {
+    showRegSummary("Please fix the highlighted fields above.");
     return;
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    if (errorEl) {
-      errorEl.textContent = "Please enter a valid email address.";
-      errorEl.style.opacity = "1";
-    }
-    return;
-  }
+  const email = document.getElementById("reg-email").value.trim();
+  const password = document.getElementById("reg-password").value;
+  const firstName = document.getElementById("reg-first-name").value.trim();
+  const lastName = document.getElementById("reg-last-name").value.trim();
+  const phoneNumber = document.getElementById("reg-phone").value.trim();
 
-  if (password !== confirmPassword) {
-    if (errorEl) {
-      errorEl.textContent = "Passwords do not match.";
-      errorEl.style.opacity = "1";
-    }
-    return;
+  const street = document.getElementById("reg-street")?.value.trim();
+  const city = document.getElementById("reg-city")?.value.trim();
+  const state = document.getElementById("reg-state")?.value.trim();
+  const zipCode = document.getElementById("reg-zip")?.value.trim();
+
+  const submitBtn = document.getElementById("reg-submit");
+  const originalLabel = submitBtn?.textContent;
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Creating Account...";
   }
 
   try {
@@ -10364,24 +11130,11 @@ async function handleRegistration() {
     navigateTo("registration-success");
   } catch (err) {
     console.error("Registration Error details:", err);
-    if (errorEl) {
-      let friendlyMessage = "Registration failed. Please try again.";
-
-      if (err.data && err.data.message) {
-        if (
-          err.data.message.toLowerCase().includes("email already registered")
-        ) {
-          friendlyMessage =
-            "This email is already registered. Please try signing in instead.";
-        } else {
-          friendlyMessage = err.data.message;
-        }
-      } else if (err.message) {
-        friendlyMessage = err.message;
-      }
-
-      errorEl.textContent = friendlyMessage;
-      errorEl.style.opacity = "1";
+    showRegSummary(applyRegServerErrors(err));
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel || "Create Account";
     }
   }
 }
