@@ -107,7 +107,15 @@ const ApiService = {
     },
 
     async getProfile() {
-        return await this.request('/api/Account/profile', 'GET');
+        const profile = await this.request('/api/Account/profile', 'GET');
+        // The API is asymmetric about the street line: GET returns it as
+        // `street`, but PUT expects `address`. Expose both so the UI can keep
+        // reading `address` everywhere.
+        if (profile && typeof profile === 'object') {
+            if (profile.address == null && profile.street != null) profile.address = profile.street;
+            if (profile.street == null && profile.address != null) profile.street = profile.address;
+        }
+        return profile;
     },
 
     async updateProfile(profileData) {
