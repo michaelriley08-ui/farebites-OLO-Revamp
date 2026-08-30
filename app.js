@@ -695,7 +695,7 @@ const DEFAULT_STATE = {
   lastOrder: null, // Stores last successful order API response
   locationTaxRate: 0.0925, // Tax rate from location menu response
   locationConvenienceFee: 0, // Convenience fee from location menu response
-  _customizeModifyTypes: {}, // { [menuSubItemId]: { modifyType: 'add'|'extra'|'less'|'no', addPrice, extraPrice, lessPrice, noPrice } }
+  _customizeModifyTypes: {}, // { [defaultMenuSubItemId]: { removed: bool, sub: { menuSubItemId, name, price } | null } } — one independent slot per default/included ingredient
   locationsOrderingStatus: null,
 };
 
@@ -8659,11 +8659,10 @@ function adjustBagQuantity(delta) {
 /**
  * Section header with optional required badge and icon.
  */
-function _modSectionHeader(label, required, icon, isFallback = false) {
-  const textColor = isFallback ? "text-pink-500" : "text-violet-600";
+function _modSectionHeader(label, required, icon) {
   return `
         <div class="flex justify-between items-center pb-2 border-b border-gray-100 mb-3">
-            <span class="text-base font-black ${textColor} uppercase tracking-widest flex items-center gap-1.5">
+            <span class="text-base font-black text-violet-600 uppercase tracking-widest flex items-center gap-1.5">
                 ${label}
             </span>
             ${required ? '<span class="text-[9px] font-bold text-red-400 uppercase tracking-widest">Required</span>' : ""}
@@ -8761,29 +8760,26 @@ function _getDefaultItemList(modifyPrices) {
  */
 function _calculateModifyPricesTotal(detail, modSels) {
   if (!detail || !modSels) return 0;
+  const modifyPrices = detail.menuSubItemModifyPrices || [];
   const freeAllowance = detail.includedSubItemsBeforeCharges ?? 0;
   let remFree = freeAllowance;
   let total = 0;
 
-  const removeId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "no",
-  );
-  const subId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "sub",
-  );
-
-  if (removeId && modSels[removeId]) {
-    total += modSels[removeId].price || 0;
-  }
-
-  if (subId && modSels[subId]) {
-    const subObj = modSels[subId];
-    if (remFree > 0) {
-      remFree--;
-    } else {
-      total += subObj.price || 0;
+  Object.keys(modSels).forEach((defaultId) => {
+    const slot = modSels[defaultId];
+    if (!slot?.removed) return;
+    const mp = modifyPrices.find(
+      (m) => String(m.menuSubItemId) === String(defaultId),
+    );
+    total += mp?.noPrice || 0;
+    if (slot.sub) {
+      if (remFree > 0) {
+        remFree--;
+      } else {
+        total += slot.sub.price || 0;
+      }
     }
-  }
+  });
 
   return total;
 }
@@ -8795,28 +8791,28 @@ function _getModifySummaryHTML(detail, modSels) {
   const modifyPrices = detail?.menuSubItemModifyPrices || [];
   const defaultText = _getDefaultItemList(modifyPrices);
 
-  const removeId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "no",
-  );
-  const subId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "sub",
-  );
+  const removedIds = Object.keys(modSels).filter((id) => modSels[id]?.removed);
 
-  if (!removeId) {
+  if (removedIds.length === 0) {
     return `<span class="text-gray-700 font-bold text-sm leading-relaxed">${defaultText}</span>`;
   }
 
-  const removeObj = modSels[removeId];
-  const subObj = subId ? modSels[subId] : null;
-
-  let modTag = `<span class="text-rose-600 font-black">${removeObj.name}</span>`;
-  if (subObj) {
-    modTag += `, <span class="text-violet-600 font-black">${subObj.name}</span>`;
-  }
+  const tags = removedIds.map((defaultId) => {
+    const mp = modifyPrices.find(
+      (m) => String(m.menuSubItemId) === String(defaultId),
+    );
+    const name = mp?.menuSubItem?.name || mp?.name || `Item ${defaultId}`;
+    const sub = modSels[defaultId].sub;
+    let tag = `<span class="text-rose-600 font-black">No ${name}</span>`;
+    if (sub) {
+      tag += `, <span class="text-violet-600 font-black">Sub ${sub.name}</span>`;
+    }
+    return tag;
+  });
 
   return `<div class="flex flex-col gap-0.5">
     <span class="text-gray-400 text-xs line-through font-semibold">${defaultText}</span>
-    <span class="text-sm font-bold">${modTag}</span>
+    <span class="text-sm font-bold">${tags.join(" &middot; ")}</span>
   </div>`;
 }
 
@@ -8845,66 +8841,33 @@ window._toggleModifyRemove = function (menuSubItemId) {
     mockupState._customizeModifyTypes = {};
   const modSels = mockupState._customizeModifyTypes;
 
-  const currentRemoveId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "no",
-  );
-
-  if (String(currentRemoveId) === String(menuSubItemId)) {
+  const existing = modSels[menuSubItemId];
+  if (existing?.removed) {
     delete modSels[menuSubItemId];
-    const currentSubId = Object.keys(modSels).find(
-      (id) => modSels[id]?.modifyType === "sub",
-    );
-    if (currentSubId) delete modSels[currentSubId];
   } else {
-    if (currentRemoveId) delete modSels[currentRemoveId];
-    const currentSubId = Object.keys(modSels).find(
-      (id) => modSels[id]?.modifyType === "sub",
-    );
-    if (currentSubId) delete modSels[currentSubId];
-
-    const detail = mockupState.selectedItemDetail;
-    const mp = (detail?.menuSubItemModifyPrices || []).find(
-      (m) => String(m.menuSubItemId) === String(menuSubItemId),
-    );
-    const name = mp?.menuSubItem?.name || mp?.name || `Item ${menuSubItemId}`;
-    modSels[menuSubItemId] = {
-      modifyType: "no",
-      price: mp?.noPrice || 0,
-      name: `No ${name}`,
-    };
+    modSels[menuSubItemId] = { removed: true, sub: null };
   }
 
   _updateModifyModalDOM();
 };
 
-window._toggleModifySub = function (menuSubItemId) {
-  if (!mockupState._customizeModifyTypes)
-    mockupState._customizeModifyTypes = {};
+window._toggleModifySub = function (defaultMenuSubItemId, candidateMenuSubItemId) {
   const modSels = mockupState._customizeModifyTypes;
+  const slot = modSels?.[defaultMenuSubItemId];
+  if (!slot?.removed) return;
 
-  const currentRemoveId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "no",
-  );
-  if (!currentRemoveId) return;
-
-  const currentSubId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "sub",
-  );
-
-  if (String(currentSubId) === String(menuSubItemId)) {
-    delete modSels[menuSubItemId];
+  if (String(slot.sub?.menuSubItemId) === String(candidateMenuSubItemId)) {
+    slot.sub = null;
   } else {
-    if (currentSubId) delete modSels[currentSubId];
-
     const detail = mockupState.selectedItemDetail;
     const mp = (detail?.menuSubItemModifyPrices || []).find(
-      (m) => String(m.menuSubItemId) === String(menuSubItemId),
+      (m) => String(m.menuSubItemId) === String(candidateMenuSubItemId),
     );
-    const name = mp?.menuSubItem?.name || mp?.name || `Item ${menuSubItemId}`;
-    modSels[menuSubItemId] = {
-      modifyType: "sub",
+    const name = mp?.menuSubItem?.name || mp?.name || `Item ${candidateMenuSubItemId}`;
+    slot.sub = {
+      menuSubItemId: candidateMenuSubItemId,
+      name,
       price: mp?.addPrice || 0,
-      name: `Sub ${name}`,
     };
   }
 
@@ -8915,70 +8878,59 @@ function _updateModifyModalDOM() {
   const detail = mockupState.selectedItemDetail;
   if (!detail || !detail.menuSubItemModifyPrices) return;
   const modSels = mockupState._customizeModifyTypes || {};
+  const modifyPrices = detail.menuSubItemModifyPrices || [];
+  const defaultItems = modifyPrices.filter((m) => m.isDefaultItem);
 
-  const removeId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "no",
-  );
-  const subId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "sub",
-  );
+  defaultItems.forEach((mp) => {
+    const defaultId = mp.menuSubItemId;
+    const slot = modSels[defaultId];
+    const isRemoved = !!slot?.removed;
 
-  (detail.menuSubItemModifyPrices || []).forEach((mp) => {
-    if (!mp.isDefaultItem) return;
-    const isChecked = String(mp.menuSubItemId) === String(removeId);
-    const el = document.getElementById(
-      `modify-remove-chk-${mp.menuSubItemId}`,
-    );
-    const box = document.getElementById(
-      `modify-remove-box-${mp.menuSubItemId}`,
-    );
-    if (el) el.checked = isChecked;
+    const chk = document.getElementById(`modify-remove-chk-${defaultId}`);
+    const box = document.getElementById(`modify-remove-box-${defaultId}`);
+    if (chk) chk.checked = isRemoved;
     if (box) {
-      if (isChecked) {
-        box.classList.add("border-violet-600", "bg-violet-50/50");
-        box.classList.remove("border-gray-200", "bg-white");
-      } else {
-        box.classList.remove("border-violet-600", "bg-violet-50/50");
-        box.classList.add("border-gray-200", "bg-white");
-      }
+      box.classList.toggle("border-violet-600", isRemoved);
+      box.classList.toggle("bg-violet-50/50", isRemoved);
+      box.classList.toggle("border-gray-200", !isRemoved);
+      box.classList.toggle("bg-white", !isRemoved);
     }
-  });
 
-  const subDiv = document.getElementById("modifySubDiv");
-  if (subDiv) {
-    if (removeId) {
-      subDiv.style.display = "block";
-      subDiv.setAttribute("data-maxselect", "1");
-    } else {
-      subDiv.style.display = "none";
-      subDiv.setAttribute("data-maxselect", "0");
+    const subDiv = document.getElementById(`modifySubDiv-${defaultId}`);
+    if (subDiv) {
+      subDiv.style.display = isRemoved ? "block" : "none";
+      subDiv.setAttribute("data-maxselect", isRemoved ? "1" : "0");
     }
-  }
 
-  (detail.menuSubItemModifyPrices || []).forEach((mp) => {
-    const isChecked = String(mp.menuSubItemId) === String(subId);
-    const el = document.getElementById(`modify-sub-chk-${mp.menuSubItemId}`);
-    const box = document.getElementById(`modify-sub-box-${mp.menuSubItemId}`);
-    if (el) el.checked = isChecked;
-    if (box) {
-      if (isChecked) {
-        box.classList.add("border-violet-600", "bg-violet-50/50");
-        box.classList.remove("border-gray-200", "bg-white");
-      } else {
-        box.classList.remove("border-violet-600", "bg-violet-50/50");
-        box.classList.add("border-gray-200", "bg-white");
+    modifyPrices.forEach((cand) => {
+      const isChecked =
+        isRemoved &&
+        String(cand.menuSubItemId) === String(slot?.sub?.menuSubItemId);
+      const cChk = document.getElementById(
+        `modify-sub-chk-${defaultId}-${cand.menuSubItemId}`,
+      );
+      const cBox = document.getElementById(
+        `modify-sub-box-${defaultId}-${cand.menuSubItemId}`,
+      );
+      if (cChk) cChk.checked = isChecked;
+      if (cBox) {
+        cBox.classList.toggle("border-violet-600", isChecked);
+        cBox.classList.toggle("bg-violet-50/50", isChecked);
+        cBox.classList.toggle("border-gray-200", !isChecked);
+        cBox.classList.toggle("bg-white", !isChecked);
       }
-    }
+    });
   });
 
   const freeAllowance = detail.includedSubItemsBeforeCharges ?? 0;
   let remFree = freeAllowance;
   let chargeCount = 0;
-
-  if (subId) {
-    if (remFree > 0) remFree--;
-    else chargeCount++;
-  }
+  Object.values(modSels).forEach((slot) => {
+    if (slot?.removed && slot.sub) {
+      if (remFree > 0) remFree--;
+      else chargeCount++;
+    }
+  });
 
   const hdfNoChrge = document.querySelector('input[name="hdfNoChrge"]');
   const hdfRemNoChrge = document.querySelector('input[name="hdfRemNoChrge"]');
@@ -9002,26 +8954,25 @@ function _renderModifyTypeSection(modifyPrices, modSels, detail) {
   if (!modifyPrices || modifyPrices.length === 0) return "";
 
   const removeList = modifyPrices.filter((m) => m.isDefaultItem);
-  const subList = [...modifyPrices].sort((a, b) => {
+  const subCandidates = [...modifyPrices].sort((a, b) => {
     const nameA = (a.menuSubItem?.name || a.name || "").toLowerCase();
     const nameB = (b.menuSubItem?.name || b.name || "").toLowerCase();
     return nameA.localeCompare(nameB);
   });
 
-  const removeId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "no",
-  );
-  const subId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "sub",
-  );
-
   const freeAllowance = detail?.includedSubItemsBeforeCharges ?? 0;
   let remFree = freeAllowance;
   let chargeCount = 0;
-  if (subId) {
-    if (remFree > 0) remFree--;
-    else chargeCount++;
-  }
+  let removedCount = 0;
+  removeList.forEach((mp) => {
+    const slot = modSels[mp.menuSubItemId];
+    if (!slot?.removed) return;
+    removedCount++;
+    if (slot.sub) {
+      if (remFree > 0) remFree--;
+      else chargeCount++;
+    }
+  });
 
   const summaryHTML = _getModifySummaryHTML(detail, modSels);
 
@@ -9045,11 +8996,13 @@ function _renderModifyTypeSection(modifyPrices, modSels, detail) {
 
   const removeItemsHTML = removeList
     .map((mp, idx) => {
+      const defaultId = mp.menuSubItemId;
       const sub = mp.menuSubItem || {};
-      const name = sub.name || mp.name || `Item ${mp.menuSubItemId}`;
+      const name = sub.name || mp.name || `Item ${defaultId}`;
       const itemName = `No ${name}`;
       const price = mp.noPrice || 0;
-      const isChecked = String(mp.menuSubItemId) === String(removeId);
+      const slot = modSels[defaultId];
+      const isChecked = !!slot?.removed;
       const priceTag =
         price > 0
           ? ` (+$${price.toFixed(2)})`
@@ -9057,50 +9010,63 @@ function _renderModifyTypeSection(modifyPrices, modSels, detail) {
             ? ` (-$${Math.abs(price).toFixed(2)})`
             : "";
 
+      const subItemsHTML = subCandidates
+        .map((cand) => {
+          const candSub = cand.menuSubItem || {};
+          const candName =
+            candSub.name || cand.name || `Item ${cand.menuSubItemId}`;
+          const candLabel = `Sub ${candName}`;
+          const candPrice = cand.addPrice || 0;
+          const isCandChecked =
+            String(cand.menuSubItemId) === String(slot?.sub?.menuSubItemId);
+          const candPriceTag =
+            candPrice > 0 ? ` (+$${candPrice.toFixed(2)})` : " (Free)";
+
+          return `
+          <label id="modify-sub-box-${defaultId}-${cand.menuSubItemId}"
+                 class="modifyItem modifySub flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isCandChecked ? "border-violet-600 bg-violet-50/50 shadow-sm" : "border-gray-200 bg-white hover:border-violet-300"}"
+                 data-name="${candLabel}" data-price="${candPrice}" data-modify="Sub">
+              <div class="flex items-center gap-3">
+                  <input type="checkbox" id="modify-sub-chk-${defaultId}-${cand.menuSubItemId}"
+                         class="w-4 h-4 text-violet-600 rounded border-gray-300 focus:ring-violet-500"
+                         ${isCandChecked ? "checked" : ""}
+                         onchange="window._toggleModifySub(${defaultId}, ${cand.menuSubItemId})">
+                  <span class="text-sm font-bold text-gray-800">${candLabel}${candPriceTag}</span>
+              </div>
+              <span class="text-[10px] font-extrabold uppercase ${cand.isDefaultItem ? "text-gray-400" : "text-violet-500"}">${cand.isDefaultItem ? "Default" : "Option"}</span>
+          </label>
+        `;
+        })
+        .join("");
+
       return `
-      <label id="modify-remove-box-${mp.menuSubItemId}" 
-             class="modifyItem modifyRemove flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? "border-violet-600 bg-violet-50/50 shadow-sm" : "border-gray-200 bg-white hover:border-violet-300"}"
-             data-name="${itemName}" data-price="${price}" data-modify="No" data-index="${idx}">
-          <div class="flex items-center gap-3">
-              <input type="checkbox" id="modify-remove-chk-${mp.menuSubItemId}" 
-                     class="w-4 h-4 text-violet-600 rounded border-gray-300 focus:ring-violet-500" 
-                     ${isChecked ? "checked" : ""} 
-                     onchange="window._toggleModifyRemove(${mp.menuSubItemId})">
-              <span class="text-sm font-bold text-gray-800">${itemName}${priceTag}</span>
+      <div>
+          <label id="modify-remove-box-${defaultId}"
+                 class="modifyItem modifyRemove flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? "border-violet-600 bg-violet-50/50 shadow-sm" : "border-gray-200 bg-white hover:border-violet-300"}"
+                 data-name="${itemName}" data-price="${price}" data-modify="No" data-index="${idx}">
+              <div class="flex items-center gap-3">
+                  <input type="checkbox" id="modify-remove-chk-${defaultId}"
+                         class="w-4 h-4 text-violet-600 rounded border-gray-300 focus:ring-violet-500"
+                         ${isChecked ? "checked" : ""}
+                         onchange="window._toggleModifyRemove(${defaultId})">
+                  <span class="text-sm font-bold text-gray-800">${itemName}${priceTag}</span>
+              </div>
+              <span class="text-[10px] font-extrabold uppercase text-gray-400">Default Ingredient</span>
+          </label>
+          <div id="modifySubDiv-${defaultId}" data-maxselect="${isChecked ? 1 : 0}" style="display: ${isChecked ? "block" : "none"};" class="mt-2.5 ml-4 pl-4 border-l-2 border-violet-100">
+              <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-black text-violet-600 uppercase tracking-widest">Substitute for ${name}</span>
+                  <span class="text-[9px] font-bold text-violet-500 uppercase">1 Substitute Allowed</span>
+              </div>
+              <div class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                  ${subItemsHTML}
+              </div>
           </div>
-          <span class="text-[10px] font-extrabold uppercase text-gray-400">Default Ingredient</span>
-      </label>
+      </div>
     `;
     })
     .join("");
 
-  const subItemsHTML = subList
-    .map((mp) => {
-      const sub = mp.menuSubItem || {};
-      const name = sub.name || mp.name || `Item ${mp.menuSubItemId}`;
-      const itemName = `Sub ${name}`;
-      const price = mp.addPrice || 0;
-      const isChecked = String(mp.menuSubItemId) === String(subId);
-      const priceTag = price > 0 ? ` (+$${price.toFixed(2)})` : " (Free)";
-
-      return `
-      <label id="modify-sub-box-${mp.menuSubItemId}" 
-             class="modifyItem modifySub flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? "border-violet-600 bg-violet-50/50 shadow-sm" : "border-gray-200 bg-white hover:border-violet-300"}"
-             data-name="${itemName}" data-price="${price}" data-modify="Sub">
-          <div class="flex items-center gap-3">
-              <input type="checkbox" id="modify-sub-chk-${mp.menuSubItemId}" 
-                     class="w-4 h-4 text-violet-600 rounded border-gray-300 focus:ring-violet-500" 
-                     ${isChecked ? "checked" : ""} 
-                     onchange="window._toggleModifySub(${mp.menuSubItemId})">
-              <span class="text-sm font-bold text-gray-800">${itemName}${priceTag}</span>
-          </div>
-          <span class="text-[10px] font-extrabold uppercase ${mp.isDefaultItem ? "text-gray-400" : "text-violet-500"}">${mp.isDefaultItem ? "Default" : "Option"}</span>
-      </label>
-    `;
-    })
-    .join("");
-
-  const hasRemove = !!removeId;
   const isModalOpen = !!mockupState._isModifyModalOpen;
 
   const modalHTML = `
@@ -9111,7 +9077,7 @@ function _renderModifyTypeSection(modifyPrices, modSels, detail) {
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
                 <div>
                     <h3 class="text-lg font-black text-gray-900 uppercase tracking-tight">Modify Options</h3>
-                    <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mt-0.5">Remove default ingredients or select substitutes</p>
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mt-0.5">Remove any default ingredients and choose a substitute for each</p>
                 </div>
                 <button type="button" onclick="window._closeModifyModal()" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900 flex items-center justify-center transition-all active:scale-95">
                     <i class="fa-solid fa-xmark text-lg"></i>
@@ -9120,26 +9086,15 @@ function _renderModifyTypeSection(modifyPrices, modSels, detail) {
 
             <!-- Modal Content (Scrollable) -->
             <div class="p-6 overflow-y-auto flex-1 space-y-6">
-                
-                <!-- Section 1: Remove (Always Visible) -->
+
+                <!-- Default ingredients: each removable independently; removing one reveals its own substitute list right below it -->
                 <div>
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Section 1 — Remove Ingredients</span>
-                        <span class="text-[10px] font-bold text-gray-400 uppercase">Max 1 Removal</span>
+                        <span class="text-xs font-black text-gray-400 uppercase tracking-widest">Included Ingredients</span>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">${removeList.length} Total — Remove Any</span>
                     </div>
                     <div class="space-y-2.5">
                         ${removeItemsHTML || '<div class="text-xs text-gray-400 italic p-3">No default items to remove</div>'}
-                    </div>
-                </div>
-
-                <!-- Section 2: Substitute (Hidden by default) -->
-                <div id="modifySubDiv" data-maxselect="${hasRemove ? 1 : 0}" style="display: ${hasRemove ? "block" : "none"};" class="border-t border-gray-100 pt-5">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-black text-violet-600 uppercase tracking-widest">Section 2 — Choose Substitute</span>
-                        <span class="text-[10px] font-bold text-violet-500 uppercase">1 Substitute Allowed</span>
-                    </div>
-                    <div class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                        ${subItemsHTML}
                     </div>
                 </div>
 
@@ -9153,7 +9108,7 @@ function _renderModifyTypeSection(modifyPrices, modSels, detail) {
 
                 <div class="flex flex-col">
                     <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Selected Modifications</span>
-                    <span class="text-xs font-bold text-gray-700">${hasRemove ? "Substitution Active" : "No changes"}</span>
+                    <span class="text-xs font-bold text-gray-700">${removedCount > 0 ? `${removedCount} of ${removeList.length} Modified` : "No changes"}</span>
                 </div>
 
                 <button type="button" data-dismiss="modal" onclick="window._closeModifyModal()" 
@@ -9262,22 +9217,18 @@ function renderAllModifierSections(detail, sels, modSels, colLayout) {
       (detail.menuSubItems && detail.menuSubItems.length > 0));
 
   if (!hasAny) {
-    return `<div class="text-center py-8 text-gray-400 text-sm font-bold uppercase tracking-widest flex flex-col items-center gap-3">
-            ${
-              mockupState.isLoading
-                ? '<i class="fa-solid fa-spinner fa-spin text-violet-400 text-2xl mb-2"></i><span>Loading customizations…</span>'
-                : '<i class="fa-solid fa-sliders text-gray-300 text-2xl mb-2"></i><span>No customization options available</span>'
-            }
+    // Genuinely nothing to customize (or still loading it) — no placeholder
+    // box, just the spinner while loading. Once resolved empty, the item's
+    // customize screen shows only Special Instructions, nothing else.
+    if (mockupState.isLoading) {
+      return `<div class="text-center py-8 text-gray-400 text-sm font-bold uppercase tracking-widest flex flex-col items-center gap-3">
+            <i class="fa-solid fa-spinner fa-spin text-violet-400 text-2xl mb-2"></i><span>Loading customizations…</span>
         </div>`;
+    }
+    return "";
   }
 
   let html = "";
-
-  if (detail._isFallback) {
-    html += `<div class="bg-pink-50 border border-pink-200 text-pink-500 text-[11px] font-black uppercase tracking-widest p-3 rounded-xl mb-4 text-center shadow-sm">
-            ⚠️ Generic Options Displayed
-        </div>`;
-  }
 
   // 1. SubMenuChoices (size / base drink) — always first
   const choiceHtml = _renderSubMenuChoiceSection(
@@ -9305,7 +9256,7 @@ function renderAllModifierSections(detail, sels, modSels, colLayout) {
       isRequired &&
       Object.keys(sels[g.menuSubItemGroupId]?.items || {}).length === 0;
     html += `<div id="mod-group-${g.menuSubItemGroupId}" class="${hasValidation ? "validation-error" : ""}">
-            ${_modSectionHeader(g.displayName || g.groupName || "Options", isRequired, icon, detail._isFallback)}
+            ${_modSectionHeader(g.displayName || g.groupName || "Options", isRequired, icon)}
             ${hasValidation ? '<p class="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-2">Please select one</p>' : ""}
             ${_renderPillGroup(g, sels)}
         </div>`;
@@ -9318,7 +9269,7 @@ function renderAllModifierSections(detail, sels, modSels, colLayout) {
     for (const g of stepperGroups) {
       const icon = _groupIcon(g.displayName || g.groupName || "");
       html += `<div id="mod-group-${g.menuSubItemGroupId}">
-                ${_modSectionHeader(g.displayName || g.groupName || "Options", false, icon, detail._isFallback)}
+                ${_modSectionHeader(g.displayName || g.groupName || "Options", false, icon)}
                 <div>${_renderStepperGroup(g, sels)}</div>
             </div>`;
     }
@@ -9424,180 +9375,6 @@ function _groupIcon(name) {
   );
 }
 
-function getDefaultModifyPrices() {
-  return [
-    {
-      menuSubItemModifyPriceId: 101,
-      menuSubItemId: 7001,
-      isDefaultItem: true,
-      addPrice: 0,
-      extraPrice: 0.5,
-      lessPrice: 0,
-      noPrice: 0,
-      isActive: true,
-      menuSubItem: { menuSubItemId: 7001, name: "Boba" },
-    },
-    {
-      menuSubItemModifyPriceId: 102,
-      menuSubItemId: 7002,
-      isDefaultItem: true,
-      addPrice: 0,
-      extraPrice: 0.5,
-      lessPrice: 0,
-      noPrice: 0,
-      isActive: true,
-      menuSubItem: { menuSubItemId: 7002, name: "Pudding" },
-    },
-    {
-      menuSubItemModifyPriceId: 103,
-      menuSubItemId: 7003,
-      isDefaultItem: false,
-      addPrice: 0.5,
-      extraPrice: 0.75,
-      lessPrice: 0,
-      noPrice: 0,
-      isActive: true,
-      menuSubItem: { menuSubItemId: 7003, name: "Lychee Jelly" },
-    },
-    {
-      menuSubItemModifyPriceId: 104,
-      menuSubItemId: 7004,
-      isDefaultItem: false,
-      addPrice: 0.5,
-      extraPrice: 0.75,
-      lessPrice: 0,
-      noPrice: 0,
-      isActive: true,
-      menuSubItem: { menuSubItemId: 7004, name: "Grass Jelly" },
-    },
-  ];
-}
-
-function getDefaultCustomizeGroups() {
-  return [
-    {
-      menuSubItemGroupId: 9001,
-      groupName: "Sweetness Level",
-      displayName: "Sweetness Level",
-      minSelect: 1,
-      maxSelect: 1,
-      groupPrices: [
-        {
-          menuSubItemId: 8001,
-          price: 0,
-          isDefault: true,
-          menuSubItem: { name: "Regular Sweet (100%)", itemTypeId: 2 },
-        },
-        {
-          menuSubItemId: 8002,
-          price: 0,
-          isDefault: false,
-          menuSubItem: { name: "Less Sweet (70%)", itemTypeId: 2 },
-        },
-        {
-          menuSubItemId: 8003,
-          price: 0,
-          isDefault: false,
-          menuSubItem: { name: "Half Sweet (50%)", itemTypeId: 2 },
-        },
-        {
-          menuSubItemId: 8004,
-          price: 0,
-          isDefault: false,
-          menuSubItem: { name: "Light Sweet (30%)", itemTypeId: 2 },
-        },
-        {
-          menuSubItemId: 8005,
-          price: 0,
-          isDefault: false,
-          menuSubItem: { name: "Unsweetened (0%)", itemTypeId: 2 },
-        },
-      ],
-    },
-    {
-      menuSubItemGroupId: 9002,
-      groupName: "Ice Level",
-      displayName: "Ice Level",
-      minSelect: 1,
-      maxSelect: 1,
-      groupPrices: [
-        {
-          menuSubItemId: 8101,
-          price: 0,
-          isDefault: true,
-          menuSubItem: { name: "Regular Ice", itemTypeId: 2 },
-        },
-        {
-          menuSubItemId: 8102,
-          price: 0,
-          isDefault: false,
-          menuSubItem: { name: "Less Ice", itemTypeId: 2 },
-        },
-        {
-          menuSubItemId: 8103,
-          price: 0,
-          isDefault: false,
-          menuSubItem: { name: "No Ice", itemTypeId: 2 },
-        },
-      ],
-    },
-    {
-      menuSubItemGroupId: 9003,
-      groupName: "Add Toppings",
-      displayName: "Add Toppings",
-      minSelect: 0,
-      maxSelect: 5,
-      groupPrices: [
-        {
-          menuSubItemId: 8201,
-          price: 0.75,
-          isDefault: false,
-          menuSubItem: { name: "Boba", itemTypeId: 2 },
-        },
-        {
-          menuSubItemId: 8202,
-          price: 0.75,
-          isDefault: false,
-          menuSubItem: { name: "Pudding", itemTypeId: 2 },
-        },
-        {
-          menuSubItemId: 8203,
-          price: 0.75,
-          isDefault: false,
-          menuSubItem: { name: "Grass Jelly", itemTypeId: 2 },
-        },
-        {
-          menuSubItemId: 8204,
-          price: 0.75,
-          isDefault: false,
-          menuSubItem: { name: "Red Bean", itemTypeId: 2 },
-        },
-        {
-          menuSubItemId: 8205,
-          price: 0.75,
-          isDefault: false,
-          menuSubItem: { name: "Aloe Vera", itemTypeId: 2 },
-        },
-      ],
-    },
-  ];
-}
-
-function isDrinkCategory(categoryName) {
-  if (!categoryName) return true; // Assume drink if category is unknown
-  const cat = categoryName.toLowerCase();
-  if (
-    cat.includes("food") ||
-    cat.includes("snack") ||
-    cat.includes("bento") ||
-    cat.includes("onigiri") ||
-    cat.includes("ramen")
-  ) {
-    return false;
-  }
-  return true;
-}
-
 const applyDefaultSelections = (detail) => {
   if (detail.menuSubItemGroups) {
     const selections = {};
@@ -9685,21 +9462,20 @@ function selectItemAndNavigate(index) {
     // Menu item details load silently in background
     window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
       .then((detail) => {
-        // If the detail is empty or has no customization groups, use default mock groups
+        // If the detail is empty or has no customization groups, the item
+        // genuinely has none — never invent options the real menu doesn't have.
         if (
           !detail ||
           !detail.menuSubItemGroups ||
           detail.menuSubItemGroups.length === 0
         ) {
-          const isDrink = isDrinkCategory(item.category);
           detail = {
             menuItemId: item.id,
             name: item.name,
             price: item.price,
-            menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
-            menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [],
+            menuSubItemGroups: [],
+            menuSubItemModifyPrices: [],
             includedSubItemsBeforeCharges: 1,
-            _isFallback: isDrink,
           };
         } else {
           // Remove inactive modifiers so they aren't displayed or ordered
@@ -9731,16 +9507,14 @@ function selectItemAndNavigate(index) {
         persistAllState();
       })
       .catch((err) => {
-        console.error("Failed to fetch item detail, using fallback:", err);
-        const isDrink = isDrinkCategory(item.category);
+        console.error("Failed to fetch item detail:", err);
         const fallbackDetail = {
           menuItemId: item.id,
           name: item.name,
           price: item.price,
-          menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
-          menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [],
+          menuSubItemGroups: [],
+          menuSubItemModifyPrices: [],
           includedSubItemsBeforeCharges: 1,
-          _isFallback: isDrink,
         };
         mockupState.selectedItemDetail = fallbackDetail;
         applyDefaultSelections(fallbackDetail);
@@ -9752,15 +9526,13 @@ function selectItemAndNavigate(index) {
         window._targetCustomizePage = null;
       });
   } else {
-    const isDrink = isDrinkCategory(item.category);
     const fallbackDetail = {
       menuItemId: item.id || 0,
       name: item.name,
       price: item.price,
-      menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [],
-      menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [],
+      menuSubItemGroups: [],
+      menuSubItemModifyPrices: [],
       includedSubItemsBeforeCharges: 1,
-      _isFallback: isDrink,
     };
     mockupState.selectedItemDetail = fallbackDetail;
     applyDefaultSelections(fallbackDetail);
@@ -9960,43 +9732,46 @@ window._addToCart = function () {
     }
   }
 
-  // --- Collect modify-type items (Remove/Substitute options) ---
-  const removeId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "no",
-  );
-  const subId = Object.keys(modSels).find(
-    (id) => modSels[id]?.modifyType === "sub",
-  );
+  // --- Collect modify-type items (Remove/Substitute options), one pair per default slot ---
+  const modifyPricesForCart = detail?.menuSubItemModifyPrices || [];
+  const freeAllowance = detail?.includedSubItemsBeforeCharges ?? 0;
+  let remFreeForCart = freeAllowance;
 
-  if (removeId && modSels[removeId]) {
-    const mNo = modSels[removeId];
+  Object.keys(modSels).forEach((defaultId) => {
+    const slot = modSels[defaultId];
+    if (!slot?.removed) return;
+
+    const mp = modifyPricesForCart.find(
+      (m) => String(m.menuSubItemId) === String(defaultId),
+    );
+    const removedName = mp?.menuSubItem?.name || mp?.name || `Item ${defaultId}`;
     selectedSubItems.push({
-      menuSubItemId: parseInt(removeId),
+      menuSubItemId: parseInt(defaultId),
       itemTypeId: 2,
       itemGroupPriceId: 0,
       quantity: 1,
-      name: mNo.name,
-      price: mNo.price || 0,
+      name: `No ${removedName}`,
+      price: mp?.noPrice || 0,
       groupName: "Modify Options",
       modifyType: "no",
     });
-  }
 
-  if (subId && modSels[subId]) {
-    const mSub = modSels[subId];
-    const freeAllowance = detail?.includedSubItemsBeforeCharges ?? 0;
-    const effectivePrice = freeAllowance > 0 ? 0 : mSub.price || 0;
-    selectedSubItems.push({
-      menuSubItemId: parseInt(subId),
-      itemTypeId: 2,
-      itemGroupPriceId: 0,
-      quantity: 1,
-      name: mSub.name,
-      price: effectivePrice,
-      groupName: "Modify Options",
-      modifyType: "add",
-    });
-  }
+    if (slot.sub) {
+      const effectivePrice = remFreeForCart > 0 ? 0 : slot.sub.price || 0;
+      if (remFreeForCart > 0) remFreeForCart--;
+      selectedSubItems.push({
+        menuSubItemId: parseInt(slot.sub.menuSubItemId),
+        itemTypeId: 2,
+        itemGroupPriceId: 0,
+        quantity: 1,
+        name: `Sub ${slot.sub.name}`,
+        price: effectivePrice,
+        groupName: "Modify Options",
+        modifyType: "add",
+        replacesMenuSubItemId: parseInt(defaultId),
+      });
+    }
+  });
 
   // Get special instruction from textarea
   const instructionEl = document.getElementById("special-instruction-input");
@@ -10073,32 +9848,18 @@ window.editCartItemAndNavigate = function (index) {
   mockupState._specialInstruction = cartItem.specialInstruction || "";
   mockupState.lastMenuPage = currentPage;
 
-  // Convert selectedSubItems back into _customizeSubItems and _customizeModifyTypes
+  // Convert selectedSubItems back into _customizeSubItems and _customizeModifyTypes.
+  // Each removed default gets its own slot; "sub" entries reattach to their default
+  // via replacesMenuSubItemId (older cart items predating multi-substitute support
+  // won't have that field — fall back to the first still-unpaired removed slot).
   const sels = {};
   const modSels = {};
+  const subEntries = [];
   for (const s of cartItem.selectedSubItems || []) {
     if (s.modifyType === "no") {
-      modSels[s.menuSubItemId] = {
-        modifyType: "no",
-        price: s.price,
-        name: s.name,
-      };
-    } else if (
-      s.modifyType === "add" &&
-      (s.groupName === "Modify Options" ||
-        String(s.name).startsWith("Sub "))
-    ) {
-      modSels[s.menuSubItemId] = {
-        modifyType: "sub",
-        price: s.price,
-        name: s.name,
-      };
+      modSels[s.menuSubItemId] = { removed: true, sub: null };
     } else if (s.modifyType) {
-      modSels[s.menuSubItemId] = {
-        modifyType: s.modifyType,
-        price: s.price,
-        name: s.name,
-      };
+      subEntries.push(s);
     } else {
       const groupId = s.itemGroupPriceId;
       if (!sels[groupId]) {
@@ -10113,6 +9874,20 @@ window.editCartItemAndNavigate = function (index) {
         price: s.price,
       };
     }
+  }
+  for (const s of subEntries) {
+    const targetId =
+      s.replacesMenuSubItemId != null
+        ? s.replacesMenuSubItemId
+        : Object.keys(modSels).find(
+            (id) => modSels[id].removed && !modSels[id].sub,
+          );
+    if (targetId == null || !modSels[targetId]) continue;
+    modSels[targetId].sub = {
+      menuSubItemId: s.menuSubItemId,
+      name: String(s.name || "").replace(/^Sub /, ""),
+      price: s.price,
+    };
   }
 
   mockupState._customizeSubItems = sels;
@@ -10130,7 +9905,6 @@ window.editCartItemAndNavigate = function (index) {
             name: item.name,
             price: item.price,
             menuSubItemGroups: [],
-            _isFallback: true,
           };
         } else {
           detail.menuSubItemGroups.forEach((g) => {
@@ -10536,6 +10310,15 @@ async function handleRegistration() {
   if (!email || !password || !firstName || !lastName || !phoneNumber) {
     if (errorEl) {
       errorEl.textContent = "Please fill out all required fields.";
+      errorEl.style.opacity = "1";
+    }
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    if (errorEl) {
+      errorEl.textContent = "Please enter a valid email address.";
       errorEl.style.opacity = "1";
     }
     return;
@@ -12816,9 +12599,11 @@ function initLocationsMap() {
     }
 
     leafletMap = L.map("locations-map", {
-      zoomControl: true,
+      zoomControl: false,
       scrollWheelZoom: true,
     }).setView([startLat, startLng], startZoom);
+
+    L.control.zoom({ position: "bottomright" }).addTo(leafletMap);
 
     L.tileLayer("https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
       subdomains: ["mt0", "mt1", "mt2", "mt3"],
@@ -13340,12 +13125,11 @@ window.addEventListener("DOMContentLoaded", () => {
       const allItems = mockupState.apiMenuItems || [];
       const item = allItems.find((i) => (i.name || "").toLowerCase() === targetName);
       if (item) {
-        const isDrink = isDrinkCategory(item.category);
         if (item.id && mockupState.selectedLocationId && window.ApiService) {
           window.ApiService.getMenuItemDetail(mockupState.selectedLocationId, item.id)
             .then((detail) => {
               if (!detail || !detail.menuSubItemGroups || detail.menuSubItemGroups.length === 0) {
-                detail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+                detail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: [], menuSubItemModifyPrices: [], includedSubItemsBeforeCharges: 1 };
               } else {
                 detail.menuSubItemGroups.forEach(g => { if (g.groupPrices) g.groupPrices = g.groupPrices.filter(p => !p.menuSubItem || p.menuSubItem.isActive !== false); });
               }
@@ -13354,14 +13138,14 @@ window.addEventListener("DOMContentLoaded", () => {
               persistAllState();
             })
             .catch(() => {
-              mockupState.selectedItemDetail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+              mockupState.selectedItemDetail = { menuItemId: item.id, name: item.name, price: item.price, menuSubItemGroups: [], menuSubItemModifyPrices: [], includedSubItemsBeforeCharges: 1 };
               applyDefaultSelections(mockupState.selectedItemDetail);
               persistAllState();
             })
             .finally(() => { renderPage(); });
         } else {
-          // No API id — use defaults and re-render
-          mockupState.selectedItemDetail = { menuItemId: 0, name: item.name, price: item.price, menuSubItemGroups: isDrink ? getDefaultCustomizeGroups() : [], menuSubItemModifyPrices: isDrink ? getDefaultModifyPrices() : [], includedSubItemsBeforeCharges: 1, _isFallback: isDrink };
+          // No API id — use empty customization and re-render
+          mockupState.selectedItemDetail = { menuItemId: 0, name: item.name, price: item.price, menuSubItemGroups: [], menuSubItemModifyPrices: [], includedSubItemsBeforeCharges: 1 };
           applyDefaultSelections(mockupState.selectedItemDetail);
           persistAllState();
         }
@@ -13634,18 +13418,16 @@ function _alt2RenderSegmentedControl(group, sels) {
 function _alt2RenderIncluded(modifyPrices, stepperGroups, sels, modSels, detail) {
   const defaultItems = (modifyPrices || []).filter((m) => m.isDefaultItem);
 
-  const removeId = Object.keys(modSels).find((id) => modSels[id]?.modifyType === "no");
-  const subId = Object.keys(modSels).find((id) => modSels[id]?.modifyType === "sub");
-  const isRemoved = !!removeId;
-
   const includedRowsHTML = defaultItems
     .map((mp) => {
-      const name = mp.menuSubItem?.name || mp.name || `Item ${mp.menuSubItemId}`;
-      const thisIsRemoved = String(mp.menuSubItemId) === String(removeId);
+      const defaultId = mp.menuSubItemId;
+      const name = mp.menuSubItem?.name || mp.name || `Item ${defaultId}`;
+      const slot = modSels[defaultId];
+      const thisIsRemoved = !!slot?.removed;
       const keepOnclick = thisIsRemoved
-        ? `window._toggleModifyRemove(${mp.menuSubItemId}); window.updateMockupState('_lastUpdated', Date.now());`
+        ? `window._toggleModifyRemove(${defaultId}); window.updateMockupState('_lastUpdated', Date.now());`
         : "";
-      return `
+      const keepRemoveRow = `
       <div class="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0 gap-4">
           <div class="flex items-center gap-2">
               <span class="text-sm font-black text-gray-800 uppercase tracking-tight ${thisIsRemoved ? "line-through text-gray-400" : ""}">${name}</span>
@@ -13659,13 +13441,48 @@ function _alt2RenderIncluded(modifyPrices, stepperGroups, sels, modSels, detail)
                          ${!thisIsRemoved ? "bg-[#623696] text-white" : "bg-white text-gray-400 hover:text-gray-600"}">
                   Keep
               </button>
-              <button type="button" onclick="window._toggleModifyRemove(${mp.menuSubItemId}); window.updateMockupState('_lastUpdated', Date.now());"
+              <button type="button" onclick="window._toggleModifyRemove(${defaultId}); window.updateMockupState('_lastUpdated', Date.now());"
                   class="px-5 py-1.5 text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 border-l border-gray-200
                          ${thisIsRemoved ? "bg-rose-500 text-white" : "bg-white text-gray-400 hover:text-gray-600"}">
                   Remove
               </button>
           </div>
       </div>`;
+
+      let subRow = "";
+      if (thisIsRemoved) {
+        const subItems = (modifyPrices || []).filter(
+          (m) => !m.isDefaultItem && (!m.menuSubItem || m.menuSubItem.isActive !== false),
+        );
+        if (subItems.length > 0) {
+          const subPills = subItems
+            .map((sMp) => {
+              const sName = sMp.menuSubItem?.name || sMp.name || `Item ${sMp.menuSubItemId}`;
+              const sPrice = sMp.addPrice || 0;
+              const isSelected = String(sMp.menuSubItemId) === String(slot?.sub?.menuSubItemId);
+              const priceTag = sPrice > 0 ? ` +$${sPrice.toFixed(2)}` : " Free";
+              return `<button type="button" onclick="window._toggleModifySub(${defaultId}, ${sMp.menuSubItemId}); window.updateMockupState('_lastUpdated', Date.now());"
+                    class="shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wide transition-all active:scale-95 whitespace-nowrap
+                           ${
+                             isSelected
+                               ? "bg-[#623696] text-white shadow-[0_4px_12px_rgba(98,54,150,0.35)]"
+                               : "bg-violet-50 border border-violet-200 text-violet-600 hover:border-violet-400 hover:bg-violet-100"
+                           }">
+                    ${sName}${priceTag}
+                    ${isSelected ? '<span class="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0"><i class="fa-solid fa-check text-[10px] text-emerald-600"></i></span>' : ""}
+                </button>`;
+            })
+            .join("");
+          subRow = `
+          <div class="ml-4 mb-3 mt-2 pl-4 border-l-2 border-violet-100">
+              <span class="text-xs font-black text-[#623696] uppercase tracking-widest block">Substitute for ${name}</span>
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">Choose 1 substitute</p>
+              <div class="flex flex-wrap gap-2">${subPills}</div>
+          </div>`;
+        }
+      }
+
+      return keepRemoveRow + subRow;
     })
     .join("");
 
@@ -13720,42 +13537,6 @@ function _alt2RenderIncluded(modifyPrices, stepperGroups, sels, modSels, detail)
       .join("");
   }
 
-  // Substitute pool — once removed, rendered as a pill row (same visual style as
-  // Extra Toppings) above the toppings row. Both rows stay visible together.
-  let substituteHTML = "";
-
-  if (isRemoved) {
-    const subItems = (modifyPrices || []).filter(
-      (m) => !m.isDefaultItem && (!m.menuSubItem || m.menuSubItem.isActive !== false),
-    );
-    if (subItems.length > 0) {
-      const subPills = subItems
-        .map((mp) => {
-          const name = mp.menuSubItem?.name || mp.name || `Item ${mp.menuSubItemId}`;
-          const price = mp.addPrice || 0;
-          const isSelected = String(mp.menuSubItemId) === String(subId);
-          const priceTag = price > 0 ? ` +$${price.toFixed(2)}` : " Free";
-          return `<button type="button" onclick="window._toggleModifySub(${mp.menuSubItemId}); window.updateMockupState('_lastUpdated', Date.now());"
-                class="shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wide transition-all active:scale-95 whitespace-nowrap
-                       ${
-                         isSelected
-                           ? "bg-[#623696] text-white shadow-[0_4px_12px_rgba(98,54,150,0.35)]"
-                           : "bg-violet-50 border border-violet-200 text-violet-600 hover:border-violet-400 hover:bg-violet-100"
-                       }">
-                ${name}${priceTag}
-                ${isSelected ? '<span class="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0"><i class="fa-solid fa-check text-[10px] text-emerald-600"></i></span>' : ""}
-            </button>`;
-        })
-        .join("");
-      substituteHTML = `
-      <div class="ml-16 mb-3">
-          <span class="text-xs font-black text-[#623696] uppercase tracking-widest block">Substitute With</span>
-          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">Choose 1 substitute</p>
-          <div class="flex flex-wrap gap-2">${subPills}</div>
-      </div>`;
-    }
-  }
-
   if (defaultItems.length === 0) {
     // No removable default ingredient on this item — give the toppings row its own
     // icon header instead of nesting it under "What's Included".
@@ -13774,14 +13555,13 @@ function _alt2RenderIncluded(modifyPrices, stepperGroups, sels, modSels, detail)
         </div>`
     : "";
 
-  const dividerHTML = substituteHTML && toppingsHTML
+  const dividerHTML = toppingsHTML
     ? `<div class="ml-16 mb-3 border-t border-violet-100"></div>`
     : "";
 
   return `
     ${_alt2ModSectionHeader("WHAT'S INCLUDED", "", "fa-solid fa-list-check")}
     <div class="ml-16 mb-3">${includedRowsHTML}</div>
-    ${substituteHTML}
     ${dividerHTML}
     ${toppingsHTML}
   `;
@@ -13790,12 +13570,6 @@ function _alt2RenderIncluded(modifyPrices, stepperGroups, sels, modSels, detail)
 function renderAllModifierSectionsAlt2(detail, sels, modSels, colLayout) {
   if (!detail) return "";
   let html = '<div class="space-y-0 divide-y divide-gray-100/50">';
-
-  if (detail._isFallback) {
-    html += `<div class="bg-pink-50 border border-pink-200 text-pink-500 text-[11px] font-black uppercase tracking-widest p-3 rounded-xl mb-4 text-center shadow-sm">
-            ⚠️ Generic Options Displayed
-        </div>`;
-  }
 
   // Stepper Groups (real Extra Toppings pricing data — needed by the Included section below)
   const groups = (detail?.menuSubItemGroups || []).filter(g => g.isActive !== false);
