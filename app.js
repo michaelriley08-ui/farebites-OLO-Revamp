@@ -538,6 +538,39 @@ function getStoreTimesForDay(selectedDayLabel = "Today") {
   return { openTime, closeTime, isClosed, targetDate, pickUpTimeMinutes };
 }
 
+// The store's real prep lead time for a day, straight from the hours API
+// (businessHours[day].pickUpTime, holiday overrides included). Everything that
+// needs "how long before close is the last order" reads it from here so the
+// number can't drift between screens. 20 is only the pre-load fallback.
+function getStorePickupLeadMinutes(dayLabel = "Today") {
+  try {
+    const { pickUpTimeMinutes } = getStoreTimesForDay(dayLabel);
+    if (typeof pickUpTimeMinutes === "number") return pickUpTimeMinutes;
+  } catch (e) {
+    console.warn("Could not read store pickup lead time:", e);
+  }
+  return 20;
+}
+
+// "8:00 PM" minus that lead time -> "7:30 PM". Anything that isn't a parseable
+// clock time ("Closed today", "Hours unavailable") comes back untouched so the
+// caller can print it as-is.
+function getOrderCutoffTime(timeStr, leadMinutes) {
+  const t = String(timeStr || "").trim().toUpperCase();
+  const match = t.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/);
+  if (!match) return timeStr;
+  const h = parseInt(match[1]);
+  const m = parseInt(match[2] || "0");
+  const p = match[3] || "PM";
+  let totalMins = (h % 12) * 60 + m + (p === "PM" ? 12 * 60 : 0) - leadMinutes;
+  if (totalMins < 0) totalMins += 24 * 60;
+  const nh = Math.floor(totalMins / 60);
+  const nm = totalMins % 60;
+  const np = nh >= 12 ? "PM" : "AM";
+  const dh = nh % 12 || 12;
+  return `${dh}:${nm.toString().padStart(2, "0")} ${np}`;
+}
+
 function resolveSelectedPickupDateTime() {
   const { targetDate, isClosed } = getStoreTimesForDay(mockupState.selectedDay || "Today");
   if (isClosed || !mockupState.selectedTimeSlot) return null;
@@ -1329,13 +1362,7 @@ function getOrderReadyEstimate(order) {
   const placedAt = order.orderDate || order.placedAt;
   const placedDate = placedAt ? new Date(placedAt) : null;
   if (placedDate && !isNaN(placedDate.getTime())) {
-    let prepLeadMinutes = 20;
-    try {
-      prepLeadMinutes = getStoreTimesForDay("Today").pickUpTimeMinutes;
-    } catch (e) {
-      console.warn("Could not read store prep time for ready estimate:", e);
-    }
-    const estReady = new Date(placedDate.getTime() + prepLeadMinutes * 60000);
+    const estReady = new Date(placedDate.getTime() + getStorePickupLeadMinutes() * 60000);
     return { label: `Estimated ready around ${formatOrderTime(estReady)}`, time: estReady, kind: "estimate" };
   }
   return { label: "We'll have it ready soon", time: null, kind: "unknown" };
@@ -2316,23 +2343,7 @@ function renderMenuPage() {
   const hours = locationObj.hours || "Hours unavailable";
   const closeTimeStr = hours.split(" to ")[1] || "Hours unavailable";
   const closeTime = closeTimeStr;
-  const getOrderCutoffTime = (timeStr, offsetMinutes) => {
-    const t = timeStr.trim().toUpperCase();
-    let match = t.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/);
-    if (!match) return timeStr;
-    let h = parseInt(match[1]);
-    let m = parseInt(match[2] || "0");
-    let p = match[3] || "PM";
-    let totalMins = (h % 12) * 60 + m + (p === "PM" ? 12 * 60 : 0);
-    totalMins -= offsetMinutes;
-    if (totalMins < 0) totalMins += 24 * 60;
-    let nh = Math.floor(totalMins / 60);
-    let nm = totalMins % 60;
-    let np = nh >= 12 ? "PM" : "AM";
-    let dh = nh % 12 || 12;
-    return `${dh}:${nm.toString().padStart(2, "0")} ${np}`;
-  };
-  const orderCutoffTime = getOrderCutoffTime(closeTime, 20);
+  const orderCutoffTime = getOrderCutoffTime(closeTime, getStorePickupLeadMinutes());
   return `
         <div id="menu-scroller" class="flex flex-col ${isDesktop ? "min-h-dvh" : "h-full"} bg-[#f9fafb] relative ${!isDesktop && mockupState.modalOpen ? "overflow-hidden" : ""} scrollbar-hide">
             <!-- Compact Sticky Header: ≡ | 🔍 | i-Tea logo | ⭐ | 🛍 -->
@@ -4394,23 +4405,7 @@ const routes = {
     const closeTime =
       (locationObj?.hours || "").split("to")[1]?.trim() ||
       "Hours unavailable";
-    const getOrderCutoffTime = (timeStr, minutes) => {
-      const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
-      if (!match) return timeStr;
-      let h = parseInt(match[1]),
-        m = parseInt(match[2]),
-        p = match[3].toUpperCase();
-      if (p === "PM" && h !== 12) h += 12;
-      if (p === "AM" && h === 12) h = 0;
-      let total = h * 60 + m - minutes;
-      if (total < 0) total += 24 * 60;
-      let nh = Math.floor(total / 60),
-        nm = total % 60;
-      let np = nh >= 12 ? "PM" : "AM";
-      let dh = nh % 12 || 12;
-      return `${dh}:${nm.toString().padStart(2, "0")} ${np}`;
-    };
-    const orderCutoffTime = getOrderCutoffTime(closeTime, 20);
+    const orderCutoffTime = getOrderCutoffTime(closeTime, getStorePickupLeadMinutes());
 
     const renderOptionCard = (opt) => {
       const isActive = mockupState.fulfillmentMode === opt.id;
