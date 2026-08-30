@@ -778,6 +778,8 @@ function loadMockupState() {
       state.selectedDistance = null;
       state.fulfillmentMode = DEFAULT_STATE.fulfillmentMode;
       state.orderTime = DEFAULT_STATE.orderTime;
+      state.menuSearchQuery = "";
+      state.menuSearchOpen = false;
     }
 
     // Load menu favorites from localStorage
@@ -1289,6 +1291,17 @@ function formatOrderTime(d) {
   return new Date(d).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }
 
+// Same clock time, but with the day spelled out when the pickup isn't today —
+// a bare "9:15" on a scheduled-for-tomorrow order reads as a mistake.
+function formatPickupStamp(d) {
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return "";
+  const sameDay = date.toDateString() === new Date().toDateString();
+  return sameDay
+    ? formatOrderTime(date)
+    : `${date.toLocaleDateString("en-US", { weekday: "short" })} ${formatOrderTime(date)}`;
+}
+
 // The one real "when will this be ready" estimate, shared by the status
 // timeline and the quick pick-up-time stat card. Never a live/exact
 // guarantee — this API has no real-time "it's ready" signal — just the best
@@ -1299,13 +1312,33 @@ function getOrderReadyEstimate(order) {
   const prepMinutes = order.deliverectOrderPrepTime;
 
   if (order.isCustomTime && order.pickupTime) {
-    return { label: `Ready around ${formatOrderTime(order.pickupTime)}`, time: new Date(order.pickupTime) };
+    return { label: `Ready around ${formatOrderTime(order.pickupTime)}`, time: new Date(order.pickupTime), kind: "scheduled" };
   }
   if (acceptedAt && prepMinutes) {
     const estReady = new Date(new Date(acceptedAt).getTime() + prepMinutes * 60000);
-    return { label: `Estimated ready around ${formatOrderTime(estReady)}`, time: estReady };
+    return { label: `Estimated ready around ${formatOrderTime(estReady)}`, time: estReady, kind: "estimate" };
   }
-  return { label: "We'll have it ready soon", time: null };
+
+  // Straight off the confirmation screen the kitchen hasn't accepted yet, so
+  // there's no accepted-at timestamp to work from — which is why this used to
+  // fall through to nothing. The store's own prep lead time is real though,
+  // and it's the exact number the customer was already quoted at checkout
+  // ("ASAP (4:28 PM)"). Anchor it to when the order was actually placed rather
+  // than to now, so the estimate doesn't slide forward every time this screen
+  // is reopened.
+  const placedAt = order.orderDate || order.placedAt;
+  const placedDate = placedAt ? new Date(placedAt) : null;
+  if (placedDate && !isNaN(placedDate.getTime())) {
+    let prepLeadMinutes = 20;
+    try {
+      prepLeadMinutes = getStoreTimesForDay("Today").pickUpTimeMinutes;
+    } catch (e) {
+      console.warn("Could not read store prep time for ready estimate:", e);
+    }
+    const estReady = new Date(placedDate.getTime() + prepLeadMinutes * 60000);
+    return { label: `Estimated ready around ${formatOrderTime(estReady)}`, time: estReady, kind: "estimate" };
+  }
+  return { label: "We'll have it ready soon", time: null, kind: "unknown" };
 }
 
 function renderOrderStatusTimeline(order) {
@@ -6542,8 +6575,16 @@ const routes = {
       selectedLoc.address ||
       selectedLoc.streetAddress ||
       "Address unavailable";
-    const pickupTime = getOrderReadyEstimate(order).time;
-    const pickupTimeLabel = pickupTime ? formatOrderTime(pickupTime) : "--";
+    const readyEstimate = getOrderReadyEstimate(order);
+    const pickupTimeLabel = readyEstimate.time
+      ? formatPickupStamp(readyEstimate.time)
+      : "Soon";
+    const pickupTimeNote =
+      readyEstimate.kind === "scheduled"
+        ? "Scheduled pickup"
+        : readyEstimate.kind === "estimate"
+          ? "Estimated \u00b7 updates once the store confirms"
+          : "The store will confirm your time shortly";
 
     return `
             <div class="flex flex-col h-full bg-white relative">
@@ -6616,16 +6657,10 @@ const routes = {
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
-                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Pick Up Time</div>
-                                <div class="text-2xl font-black text-violet-600 uppercase">${pickupTimeLabel}</div>
-                            </div>
-                            <div class="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100 flex flex-col justify-center">
-                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 leading-none">Location</div>
-                                <div class="text-base font-black text-violet-600 uppercase truncate mb-1">${locationName}</div>
-                                <div class="text-[10px] font-bold text-gray-500 uppercase leading-snug truncate">${locationAddress}</div>
-                            </div>
+                        <div class="bg-gray-50 rounded-2xl px-6 py-5 border border-gray-100 text-center">
+                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 leading-none">Pick Up Time</div>
+                            <div class="text-3xl font-black text-violet-600 uppercase tracking-tight">${pickupTimeLabel}</div>
+                            <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2 leading-snug">${pickupTimeNote}</div>
                         </div>
                     </div>
 
@@ -12151,6 +12186,19 @@ function recordPlacedOrder(orderObj) {
       orderObj.locationAddress = loc?.address || mockupState.selectedAddress;
     }
   }
+  // The pickup time the customer actually agreed to lives only in the request
+  // payload, so stamp it on the order we keep. Without this a scheduled order
+  // lands on the confirmation screen with nothing to show. Read before the
+  // orderTime reset below, and note the ASAP-retry path resets orderTime to
+  // "ASAP" before calling in, so this follows what was really sent.
+  orderObj.isCustomTime = mockupState.orderTime === "Later";
+  if (orderObj.isCustomTime && !orderObj.pickupTime) {
+    const scheduledFor = resolveSelectedPickupDateTime();
+    if (scheduledFor) {
+      orderObj.pickupTime = scheduledFor.toISOString();
+    }
+  }
+
   mockupState.lastOrder = orderObj;
 
   // Keep the selected store sticky after an order, matching how Starbucks/
@@ -13769,6 +13817,27 @@ function navigateTo(pageId, options = {}) {
   mockupState.locationSearchQuery = "";
   mockupState.locationSearchFocused = false;
   let [basePageId, hash] = pageId.split("#");
+
+  // The menu search box is transient UI, not a saved preference. Drilling into
+  // an item and coming back keeps it (same as menuScrollPosition), but arriving
+  // at the menu from anywhere else — "Order Again", the nav, a fresh visit —
+  // must land on the full menu, not on somebody's half-typed query.
+  const MENU_BROWSE_PAGES = [
+    "menu",
+    "menu-single",
+    "menu-favorites",
+    "customize",
+    "customize-alt",
+  ];
+  if (
+    !(
+      MENU_BROWSE_PAGES.includes(currentPage) &&
+      MENU_BROWSE_PAGES.includes(basePageId)
+    )
+  ) {
+    mockupState.menuSearchQuery = "";
+    mockupState.menuSearchOpen = false;
+  }
 
   persistAllState();
 
