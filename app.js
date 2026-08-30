@@ -6315,7 +6315,7 @@ const routes = {
                                     <label for="reg-phone" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Phone Number <span class="text-red-500" aria-hidden="true">*</span></label>
                                     <div class="relative">
                                         <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                        <input type="tel" id="reg-phone" autocomplete="tel" required aria-required="true" aria-describedby="reg-phone-error" placeholder="(555) 000-0000" oninput="clearRegFieldError('reg-phone')" onblur="validateRegField('reg-phone')" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
+                                        <input type="tel" id="reg-phone" autocomplete="tel" required aria-required="true" aria-describedby="reg-phone-error" placeholder="(555) 000-0000" inputmode="tel" maxlength="14" oninput="handleRegPhoneInput(event)" onblur="validateRegField('reg-phone')" class="w-full pl-11 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-violet-600 rounded-2xl outline-none font-bold text-gray-900 transition-all text-sm">
                                     </div>
                                     <p id="reg-phone-error" role="alert" class="hidden text-[11px] font-bold text-red-500 px-1 pt-1 normal-case tracking-normal"></p>
                                 </div>
@@ -10901,6 +10901,71 @@ function handleRegPasswordInput() {
   if (confirm) validateRegField("reg-confirm-password");
 }
 
+// Formats 10 digits as (555) 000-0000, building up as the customer types.
+function formatUsPhone(digits) {
+  const d = digits.slice(0, 10);
+  if (!d) return "";
+  if (d.length < 4) return "(" + d;
+  if (d.length < 7) return "(" + d.slice(0, 3) + ") " + d.slice(3);
+  return "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6);
+}
+
+// Where the caret belongs after n digits of the formatted string.
+function caretAfterDigits(formatted, n) {
+  if (n <= 0) return 0;
+  let seen = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (/[0-9]/.test(formatted[i])) {
+      seen++;
+      if (seen === n) return i + 1;
+    }
+  }
+  return formatted.length;
+}
+
+// Live phone mask. Keeps the caret where the customer expects it, so editing
+// the middle of a number (or backspacing over a dash) still behaves.
+function handleRegPhoneInput(event) {
+  const input = document.getElementById("reg-phone");
+  if (!input) return;
+  clearRegFieldError("reg-phone");
+
+  const caret = input.selectionStart ?? input.value.length;
+  let digitsBefore = input.value.slice(0, caret).replace(/[^0-9]/g, "").length;
+
+  let digits = input.value.replace(/[^0-9]/g, "");
+  // US area codes never start with 1, so a leading 1 is always a country code
+  // — whether it was pasted in or typed by hand. Drop it rather than letting it
+  // shunt every other digit one place to the right.
+  if (digits.startsWith("1")) {
+    digits = digits.slice(1);
+    if (digitsBefore > 0) digitsBefore--;
+  }
+
+  // Backspacing onto a separator removed only formatting, which would leave
+  // the field looking stuck — take the digit in front of it instead.
+  if (
+    event?.inputType === "deleteContentBackward" &&
+    digits === (input.dataset.phoneDigits || "") &&
+    digitsBefore > 0
+  ) {
+    digits = digits.slice(0, digitsBefore - 1) + digits.slice(digitsBefore);
+    digitsBefore--;
+  }
+
+  digits = digits.slice(0, 10);
+  const formatted = formatUsPhone(digits);
+  input.value = formatted;
+  input.dataset.phoneDigits = digits;
+
+  const nextCaret = caretAfterDigits(formatted, digitsBefore);
+  try {
+    input.setSelectionRange(nextCaret, nextCaret);
+  } catch (e) {
+    // Some browsers refuse setSelectionRange on certain input types; harmless.
+  }
+}
+
 // Validates one field and paints its inline message. Returns true if valid.
 function validateRegField(id) {
   const value = (document.getElementById(id)?.value || "").trim();
@@ -11177,26 +11242,9 @@ async function handleLogin() {
       const profile = await window.ApiService.getProfile();
       console.log("Successfully fetched profile on login:", profile);
 
-      // Merge local address details if they exist in localStorage (since API drops them in GET schema)
-      const emailKey =
-        profile.email || profile.emailAddress || email || mockupState.userEmail;
-      let mergedProfile = { ...profile };
-      if (emailKey) {
-        const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
-        const savedAddress = localStorage.getItem(localAddressKey);
-        if (savedAddress) {
-          try {
-            const parsedAddress = JSON.parse(savedAddress);
-            mergedProfile = { ...mergedProfile, ...parsedAddress };
-          } catch (e) {
-            console.error("Error parsing local profile address:", e);
-          }
-        }
-      }
-
       mockupState.userName =
-        mergedProfile.firstName || mergedProfile.email?.split("@")[0] || "User";
-      mockupState.userProfile = mergedProfile;
+        profile.firstName || profile.email?.split("@")[0] || "User";
+      mockupState.userProfile = profile;
     } catch (e) {
       console.error("Failed to fetch profile on login:", e);
       mockupState.userName = "User";
@@ -11440,21 +11488,13 @@ async function handleUpdateProfile() {
     };
     await window.ApiService.updateProfile(payload);
 
-    // Save address fields to localStorage so they persist across page refreshes
-    const emailKey =
-      email || mockupState.userEmail || mockupState.userProfile?.email;
-    if (emailKey) {
-      const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
-      localStorage.setItem(
-        localAddressKey,
-        JSON.stringify({ address, city, state, zipCode }),
-      );
-    }
-
-    // Update local state by merging to preserve email
+    // Update local state by merging to preserve email. The API takes the street
+    // line as `address` on PUT but returns it as `street` on GET, so keep both
+    // in sync here until the next fetch normalises it again.
     mockupState.userProfile = {
       ...mockupState.userProfile,
       ...payload,
+      street: address,
     };
     mockupState.userName = firstName;
     mockupState.modalOpen = null;
@@ -11641,7 +11681,8 @@ async function signOutUser(options = {}) {
   mockupState.bagQuantity = 0;
   mockupState.noBagsSelected = false;
 
-  // Remove any locally stored profile addresses
+  // Clear leftovers from the old local address cache (no longer written —
+  // the profile API returns the address, and persistAllState already keeps it)
   const keysToRemove = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
@@ -13736,29 +13777,10 @@ window.addEventListener("DOMContentLoaded", () => {
       .then((profile) => {
         console.log("Successfully fetched profile on page load:", profile);
 
-        // Merge local address details if they exist in localStorage (since API drops them in GET schema)
-        const emailKey =
-          profile.email || profile.emailAddress || mockupState.userEmail;
-        let mergedProfile = { ...profile };
-        if (emailKey) {
-          const localAddressKey = `farebites_profile_address_${emailKey.toLowerCase()}`;
-          const savedAddress = localStorage.getItem(localAddressKey);
-          if (savedAddress) {
-            try {
-              const parsedAddress = JSON.parse(savedAddress);
-              mergedProfile = { ...mergedProfile, ...parsedAddress };
-            } catch (e) {
-              console.error("Error parsing local profile address:", e);
-            }
-          }
-        }
-
         mockupState.userName =
-          mergedProfile.firstName ||
-          mergedProfile.email?.split("@")[0] ||
-          "User";
-        mockupState.userProfile = mergedProfile;
-        mockupState.userEmail = mergedProfile.email || mergedProfile.emailAddress || mockupState.userEmail || "";
+          profile.firstName || profile.email?.split("@")[0] || "User";
+        mockupState.userProfile = profile;
+        mockupState.userEmail = profile.email || profile.emailAddress || mockupState.userEmail || "";
         loadCartFromStorage();
         persistAllState();
         if (typeof resetInactivityTimer === "function") resetInactivityTimer();
