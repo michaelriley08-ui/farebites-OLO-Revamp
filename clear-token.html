@@ -1,6 +1,92 @@
-<script>
-localStorage.clear();
-sessionStorage.clear();
-alert("Cleared!");
-window.location.href="index.html";
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FareBites – Clear Session (Internal)</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="shortcut icon" href="favicon.ico">
+    <style>
+        :root { color-scheme: light; }
+        body {
+            margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: #f5f4ff; padding: 24px;
+            font: 400 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1f2937;
+        }
+        .card {
+            background: #fff; border: 1px solid #ede9fe; border-radius: 24px; padding: 36px 32px;
+            max-width: 400px; width: 100%; text-align: center; box-shadow: 0 18px 50px -20px rgba(76,29,149,.28);
+        }
+        .icon {
+            width: 60px; height: 60px; border-radius: 18px; background: #f5f3ff; color: #7c3aed;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 22px; font-size: 26px;
+        }
+        h1 { margin: 0 0 10px; font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
+        p { margin: 0 0 8px; font-size: 13px; color: #6b7280; }
+        ul { text-align: left; margin: 18px 0 26px; padding-left: 20px; font-size: 12.5px; color: #6b7280; }
+        li { margin-bottom: 5px; }
+        button {
+            width: 100%; border: 0; border-radius: 13px; padding: 14px;
+            font: 800 13px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+            text-transform: uppercase; letter-spacing: .09em; cursor: pointer;
+            transition: background-color .15s, transform .1s;
+        }
+        button:active { transform: scale(.97); }
+        .danger { background: #dc2626; color: #fff; margin-bottom: 10px; }
+        .danger:hover { background: #b91c1c; }
+        .ghost { background: #f3f4f6; color: #4b5563; }
+        .ghost:hover { background: #e5e7eb; }
+        .note {
+            margin-top: 24px; padding-top: 18px; border-top: 1px solid #f3f4f6;
+            font-size: 11px; color: #9ca3af; line-height: 1.5;
+        }
+        .done { display: none; }
+        .done .icon { background: #ecfdf5; color: #059669; }
+    </style>
+</head>
+<body>
+
+    <!--
+      INTERNAL DEV TOOL — excluded from the live deployment via .vercelignore.
+
+      Wipes all locally stored app state: the JWT from sign-in, the cart, the
+      selected store, and every saved preference. Used to re-test the app as a
+      brand-new visitor, or to drop a stale/expired token that is causing 401s.
+
+      This used to run on page load with no confirmation, which meant simply
+      opening the URL destroyed your session. It now requires an explicit click.
+    -->
+
+    <div class="card" id="prompt">
+        <div class="icon">&#9888;</div>
+        <h1>Clear all local session data?</h1>
+        <p>This is an internal tool. It cannot be undone.</p>
+        <ul>
+            <li>Signs you out (clears the stored JWT)</li>
+            <li>Empties the cart and clears the selected store</li>
+            <li>Resets saved preferences and favorites held locally</li>
+        </ul>
+        <button class="danger" onclick="wipe()">Yes, clear everything</button>
+        <button class="ghost" onclick="location.href='index.html'">Cancel</button>
+        <div class="note">Server-side data — your account, order history and saved items — is not affected.</div>
+    </div>
+
+    <div class="card done" id="done">
+        <div class="icon">&#10003;</div>
+        <h1>Cleared</h1>
+        <p>Local session data has been wiped. Returning to the home page&hellip;</p>
+    </div>
+
+    <script>
+        function wipe() {
+            try { localStorage.clear(); } catch (e) { console.warn("localStorage clear failed:", e); }
+            try { sessionStorage.clear(); } catch (e) { console.warn("sessionStorage clear failed:", e); }
+            document.getElementById("prompt").style.display = "none";
+            document.getElementById("done").style.display = "block";
+            setTimeout(function () { window.location.href = "index.html"; }, 1200);
+        }
+    </script>
+
+</body>
+</html>
