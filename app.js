@@ -1794,40 +1794,68 @@ async function fetchMenuAndItems(locationId) {
         }
       }
 
-      let allItems = [];
-      for (const cat of filteredCategories) {
-        try {
-          const itemsResponse = await fetch(
-            `${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/category/${cat.categoryId}/items`,
-          );
-          if (itemsResponse.ok) {
-            const itemsData = await itemsResponse.json();
-            if (itemsData) {
-              allItems = allItems.concat(
-                itemsData.map((item) => ({
-                  id: item.menuItemId,
-                  name: item.name,
-                  description: item.description || "",
-                  price: item.price,
-                  image: resolveImageUrl(
-                    item.productImage || item.image,
-                    getFallbackItemImg(),
-                  ),
-                  category: cat.name,
-                  categoryId: cat.categoryId,
-                  isAvailable: item.isAvailable !== false,
-                })),
-              );
+      // The menu arrives one category at a time, so a single failed request used
+      // to punch a silent hole in it — that category's drinks simply weren't on
+      // the menu, with nothing logged to the customer and no way to tell a store
+      // that doesn't sell smoothies from one whose smoothie request timed out.
+      // Retry each category once, and treat a category that still won't load as
+      // a failed menu load rather than quietly serving an incomplete one.
+      const fetchCategoryItems = async (cat) => {
+        const url = `${API_BASE_URL}/api/RestaurantMenu/location/${locationId}/category/${cat.categoryId}/items`;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            const res = await fetch(url);
+            if (res.ok) return (await res.json()) || [];
+          } catch (catError) {
+            if (attempt === 1) {
+              console.error(`Failed to fetch items for category ${cat.name}:`, catError);
             }
           }
-        } catch (catError) {
-          console.error(
-            `Failed to fetch items for category ${cat.name}:`,
-            catError,
-          );
         }
+        return null; // exhausted retries — distinct from a genuinely empty category
+      };
+
+      const results = await Promise.all(filteredCategories.map(fetchCategoryItems));
+      const failedCategories = filteredCategories.filter((_, i) => results[i] === null);
+      if (failedCategories.length > 0) {
+        console.error(
+          "Menu loaded incompletely; these categories failed:",
+          failedCategories.map((c) => c.name),
+        );
+        mockupState.menuItemsLoadError = true;
       }
+
+      let allItems = [];
+      filteredCategories.forEach((cat, i) => {
+        for (const item of results[i] || []) {
+          allItems.push({
+            id: item.menuItemId,
+            name: item.name,
+            description: item.description || "",
+            price: item.price,
+            image: resolveImageUrl(
+              item.productImage || item.image,
+              getFallbackItemImg(),
+            ),
+            category: cat.name,
+            categoryId: cat.categoryId,
+            isAvailable: item.isAvailable !== false,
+          });
+        }
+      });
       mockupState.apiMenuItems = allItems;
+      // Stamp the snapshot so it can expire. The menu lives in localStorage and
+      // the store edits it on their side — prices, new drinks, items taken off —
+      // and without a stamp there is nothing to tell a cached copy from a fresh
+      // one, so a stale menu would persist for the life of the browser profile.
+      // An incomplete menu is deliberately left unstamped so the next page load
+      // retries it instead of serving the gap for the life of the cache window.
+      if (failedCategories.length === 0) {
+        mockupState.menuFetchedAt = Date.now();
+        mockupState.menuFetchedLocationId = locationId;
+      } else {
+        mockupState.menuFetchedAt = 0;
+      }
       persistAllState();
     }
   } catch (error) {
@@ -1935,19 +1963,115 @@ function renderOutOfStockOverlay() {
 }
 window.renderOutOfStockOverlay = renderOutOfStockOverlay;
 
+// A menu-item detail payload lists every modifier that item has ever had, each
+// tagged isActive — switched-off ones come back alongside live ones rather than
+// being omitted. Submitting a switched-off id gets the whole order rejected
+// ("Sub-Item 1281 not found"), so any surface that renders or sends a modifier
+// has to consult this set instead of trusting the raw payload.
+function collectActiveSubItemIds(detail) {
+  const active = new Set();
+  const add = (id, sub) => {
+    if (id == null) return;
+    if (sub && sub.isActive === false) return;
+    active.add(String(id));
+  };
+  for (const g of detail?.menuSubItemGroups || []) {
+    for (const p of g.groupPrices || []) add(p.menuSubItemId, p.menuSubItem);
+  }
+  for (const m of detail?.menuSubItemModifyPrices || [])
+    add(m.menuSubItemId, m.menuSubItem);
+  for (const s of detail?.menuSubItems || []) add(s.menuSubItemId, s);
+  for (const c of detail?.subMenuChoices || []) {
+    for (const s of c.subItems || []) add(s.menuSubItemId, s);
+  }
+  return active;
+}
+window.collectActiveSubItemIds = collectActiveSubItemIds;
+
+// Modifiers a cart line still carries that its store would now refuse. Carts
+// are point-in-time snapshots kept in localStorage, so a line can outlive the
+// menu it was built from. Returns display names, never bare ids — the customer
+// needs to recognise the option they picked.
+function findStaleSubItems(cartItem, detail) {
+  const chosen = cartItem?.selectedSubItems || [];
+  if (chosen.length === 0) return [];
+  const active = collectActiveSubItemIds(detail);
+  // An empty set means the payload carried no modifier lists at all. That looks
+  // identical to a detail fetch that came back thin, and wrongly condemning a
+  // good line blocks a real order — so decline to judge and let the backend
+  // have the last word.
+  if (active.size === 0) return [];
+  const seen = new Set();
+  const stale = [];
+  for (const sub of chosen) {
+    const id = String(sub.menuSubItemId);
+    if (active.has(id) || seen.has(id)) continue;
+    seen.add(id);
+    stale.push({ menuSubItemId: sub.menuSubItemId, name: sub.name || `Option ${id}` });
+  }
+  return stale;
+}
+window.findStaleSubItems = findStaleSubItems;
+
+// Re-checks every cart line against the live menu and tags the offenders, so the
+// cart can say "Boba is no longer available" instead of letting the customer
+// reach the payment button and get a raw backend id thrown at them.
+async function validateCartAgainstMenu(locationId) {
+  const cart = mockupState.cart || [];
+  if (cart.length === 0 || !locationId || !window.ApiService) return [];
+  const details = await Promise.all(
+    cart.map((item) =>
+      item.menuItemId
+        ? window.ApiService.getMenuItemDetail(locationId, item.menuItemId).catch(
+            () => null,
+          )
+        : Promise.resolve(null),
+    ),
+  );
+  const flagged = [];
+  cart.forEach((item, idx) => {
+    const stale = details[idx] ? findStaleSubItems(item, details[idx]) : [];
+    if (stale.length > 0) {
+      item._staleSubItems = stale;
+      flagged.push({ index: idx, name: item.name, stale });
+    } else {
+      delete item._staleSubItems;
+    }
+  });
+  persistAllState();
+  return flagged;
+}
+window.validateCartAgainstMenu = validateCartAgainstMenu;
+
+// One-line summary of what's wrong with a cart line, for the inline warning.
+function describeStaleSubItems(stale) {
+  const names = (stale || []).map((s) => `"${s.name}"`);
+  if (names.length === 0) return "";
+  if (names.length === 1) return `${names[0]} is no longer available`;
+  if (names.length === 2) return `${names[0]} and ${names[1]} are no longer available`;
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]} are no longer available`;
+}
+window.describeStaleSubItems = describeStaleSubItems;
+
+
+// Every dropdown toggled through toggleMenu(). Any id passed to toggleMenu()
+// must live here, otherwise the toggle silently does nothing.
+const DROPDOWN_MENU_IDS = [
+  "dropdown-menu-fb",
+  "dropdown-menu-rb",
+  "all-pages-dropdown",
+  "user-profile-dropdown",
+  "location-dropdown-order-details-alt",
+  "location-dropdown-menu",
+  "location-dropdown-order-confirm",
+  "pickup-mode-dropdown-menu",
+];
 
 function toggleMenu(e, menuId) {
   e.stopPropagation();
-  const allMenus = [
-    "dropdown-menu-fb",
-    "dropdown-menu-rb",
-    "all-pages-dropdown",
-    "user-profile-dropdown",
-    "location-dropdown-order-details",
-    "location-dropdown-menu",
-    "location-dropdown-order-confirm",
-    "pickup-mode-dropdown-menu",
-  ];
+  const allMenus = DROPDOWN_MENU_IDS.includes(menuId)
+    ? DROPDOWN_MENU_IDS
+    : [...DROPDOWN_MENU_IDS, menuId];
   allMenus.forEach((id) => {
     const menu = document.getElementById(id);
     if (!menu) return;
@@ -1968,15 +2092,7 @@ function toggleMenu(e, menuId) {
 }
 
 document.addEventListener("click", () => {
-  [
-    "dropdown-menu-fb",
-    "dropdown-menu-rb",
-    "all-pages-dropdown",
-    "user-profile-dropdown",
-    "location-dropdown-order-details",
-    "location-dropdown-menu",
-    "location-dropdown-order-confirm",
-  ].forEach((id) => {
+  DROPDOWN_MENU_IDS.forEach((id) => {
     const menu = document.getElementById(id);
     if (menu) {
       menu.classList.remove("show");
@@ -4343,14 +4459,17 @@ const routes = {
                             <div class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-5 text-left">
                                 <h4 class="font-black text-gray-900 text-base mb-1 uppercase tracking-tight">${locationTitle}</h4>
                                 <p class="text-sm text-gray-500 mb-4 font-medium">${locationAddress}</p>
-                                <div class="space-y-3 text-sm">
+                                <div class="mb-4">
+                                    <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
+                                </div>
+                                <div class="space-y-3 text-sm pt-4 border-t border-gray-100">
                                     <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
                                         <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                                             <i class="fa-regular fa-clock text-violet-600 text-sm"></i>
                                         </div>
                                         <div>
                                             <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Hours</span>
-                                            <span class="text-gray-600 font-medium block text-sm">${locationObj.hours || "Hours unavailable"}</span>
+                                            <span class="text-gray-600 font-medium block text-sm">${locationObj?.hours || "Hours unavailable"}</span>
                                             <span class="text-gray-800 font-bold block text-sm mt-1">Closes at ${closeTime}</span>
                                             <span class="text-red-500 font-medium block text-xs leading-tight mt-1">All orders must be placed by ${orderCutoffTime} and picked up before close at ${closeTime}.</span>
                                         </div>
@@ -4361,21 +4480,9 @@ const routes = {
                                         </div>
                                         <div>
                                             <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Phone</span>
-                                            <span class="text-gray-600 font-medium text-sm">${mockupState.selectedLocationPhone || "Phone unavailable"}</span>
+                                            <span class="text-gray-600 font-medium text-sm">${mockupState.selectedLocationPhone || locationObj?.phone || "Phone unavailable"}</span>
                                         </div>
                                     </div>
-                                    <div class="flex gap-3 items-start bg-gray-50 border border-gray-100 rounded-xl p-3 shadow-sm">
-                                        <div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
-                                            <i class="fa-solid fa-car text-violet-600 text-sm"></i>
-                                        </div>
-                                        <div>
-                                            <span class="font-black text-gray-700 block uppercase tracking-wider text-[11px] mb-0.5">Drive-Thru / Curbside</span>
-                                            <span class="text-gray-600 font-medium text-xs leading-relaxed block">Available during regular business hours. Pull up to the front for curbside.</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mt-5 pt-4 border-t border-gray-100">
-                                    <button onclick="navigateTo('locations')" class="w-full text-center text-sm font-black text-violet-600 uppercase tracking-widest hover:text-violet-700 transition-colors py-2">Change Location</button>
                                 </div>
                             </div>
                         </div>
@@ -5024,6 +5131,10 @@ const routes = {
                     const unavailableReason = !atLocation
                       ? "Not available at this location"
                       : "Temporarily out of stock";
+                    // A line can be perfectly orderable while one of its chosen
+                    // modifiers no longer is — flagged here so it gets fixed at
+                    // the cart rather than blowing up at the payment button.
+                    const staleSubs = item._staleSubItems || [];
                     const itemTotal = (item.unitPrice * item.quantity).toFixed(
                       2,
                     );
@@ -5042,6 +5153,14 @@ const routes = {
                                     <i class="fa-solid fa-triangle-exclamation text-[9px]"></i> ${unavailableReason}
                                 </div>
                                 `}
+                                ${isAvailable && staleSubs.length > 0 ? `
+                                <div class="mt-1.5 mb-2 rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-2">
+                                    <div class="text-[10px] font-black text-amber-700 uppercase flex items-center gap-1.5">
+                                        <i class="fa-solid fa-triangle-exclamation text-[9px]"></i> ${describeStaleSubItems(staleSubs)}
+                                    </div>
+                                    <div class="text-[10px] font-medium text-amber-600 mt-0.5">Tap this item to choose something else.</div>
+                                </div>
+                                `: ""}
                                 <div class="flex items-start gap-2 mb-3">
                                     <p class="text-[11px] text-gray-500 font-medium line-clamp-2 hover:text-gray-700 transition-colors leading-relaxed flex-1" id="desc-${idx}">${customSummary}</p>
                                 </div>
@@ -9413,12 +9532,23 @@ function _updateModifyModalDOM() {
 function _renderModifyTypeSection(modifyPrices, modSels, detail) {
   if (!modifyPrices || modifyPrices.length === 0) return "";
 
+  // modifyPrices carries switched-off modifiers alongside live ones, and this
+  // panel used to render whatever it was handed — which is how a dead option
+  // reached the order payload and got the whole purchase rejected.
+  // Substitutes are dropped outright: a list of unpickable jellies is noise.
+  // Default ingredients stay visible but disabled, because they describe what
+  // the drink is actually made of — hiding the only row would leave the panel
+  // looking empty rather than explaining itself.
+  const isModifierOrderable = (m) =>
+    !m.menuSubItem || m.menuSubItem.isActive !== false;
   const removeList = modifyPrices.filter((m) => m.isDefaultItem);
-  const subCandidates = [...modifyPrices].sort((a, b) => {
-    const nameA = (a.menuSubItem?.name || a.name || "").toLowerCase();
-    const nameB = (b.menuSubItem?.name || b.name || "").toLowerCase();
-    return nameA.localeCompare(nameB);
-  });
+  const subCandidates = [...modifyPrices]
+    .filter(isModifierOrderable)
+    .sort((a, b) => {
+      const nameA = (a.menuSubItem?.name || a.name || "").toLowerCase();
+      const nameB = (b.menuSubItem?.name || b.name || "").toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
 
   const freeAllowance = detail?.includedSubItemsBeforeCharges ?? 0;
   let remFree = freeAllowance;
@@ -9427,6 +9557,9 @@ function _renderModifyTypeSection(modifyPrices, modSels, detail) {
   removeList.forEach((mp) => {
     const slot = modSels[mp.menuSubItemId];
     if (!slot?.removed) return;
+    // A selection persisted from an earlier session can outlive the modifier
+    // being switched off — don't price or count what can no longer be ordered.
+    if (!isModifierOrderable(mp)) return;
     removedCount++;
     if (slot.sub) {
       if (remFree > 0) remFree--;
@@ -9462,7 +9595,8 @@ function _renderModifyTypeSection(modifyPrices, modSels, detail) {
       const itemName = `No ${name}`;
       const price = mp.noPrice || 0;
       const slot = modSels[defaultId];
-      const isChecked = !!slot?.removed;
+      const orderable = isModifierOrderable(mp);
+      const isChecked = orderable && !!slot?.removed;
       const priceTag =
         price > 0
           ? ` (+$${price.toFixed(2)})`
@@ -9498,6 +9632,25 @@ function _renderModifyTypeSection(modifyPrices, modSels, detail) {
         `;
         })
         .join("");
+
+      if (!orderable) {
+        return `
+      <div>
+          <div id="modify-remove-box-${defaultId}"
+               class="modifyItem modifyRemove flex items-center justify-between p-3.5 rounded-xl border border-gray-200 bg-gray-50 cursor-not-allowed select-none opacity-70"
+               data-name="${itemName}" data-price="${price}" data-modify="No" data-index="${idx}" aria-disabled="true">
+              <div class="flex items-center gap-3">
+                  <input type="checkbox" id="modify-remove-chk-${defaultId}"
+                         class="w-4 h-4 rounded border-gray-300 cursor-not-allowed"
+                         disabled>
+                  <span class="text-sm font-bold text-gray-400 line-through">${itemName}</span>
+              </div>
+              <span class="text-[10px] font-extrabold uppercase text-gray-400">Unavailable</span>
+          </div>
+          <p class="text-[10px] font-medium text-gray-400 mt-1.5 ml-4 pl-4">${name} can't be changed on this item right now.</p>
+      </div>
+    `;
+      }
 
       return `
       <div>
@@ -10204,6 +10357,10 @@ window._addToCart = function () {
     const mp = modifyPricesForCart.find(
       (m) => String(m.menuSubItemId) === String(defaultId),
     );
+    // Last gate before an id enters the cart: a selection restored from an
+    // earlier session can name a modifier the store has since switched off, and
+    // the backend rejects the entire order over one such id.
+    if (!mp || mp.menuSubItem?.isActive === false) return;
     const removedName = mp?.menuSubItem?.name || mp?.name || `Item ${defaultId}`;
     selectedSubItems.push({
       menuSubItemId: parseInt(defaultId),
@@ -10442,11 +10599,16 @@ window._handlePlaceOrder = async function () {
 
   // Ensure restaurantId is correct for the selected location to prevent OLO validation errors.
   // This also catches edge cases where the cart was restored from localStorage with items from a different location.
+  // The same pass doubles as the last modifier check: this loop already pulls
+  // every cart line's detail, so it costs nothing to note which modifiers the
+  // store still accepts and stop before payment if a line names one it doesn't.
+  const activeSubIdsByCartIndex = new Map();
+  const staleCartLines = [];
   try {
     const locId = mockupState.selectedLocationId;
     let foundRestId = null;
 
-    const validationPromises = cart.map(async (item) => {
+    const validationPromises = cart.map(async (item, cartIdx) => {
       if (!item.menuItemId) {
         throw new Error(`Item "${item.name}" is not available at this location. Please remove it and try again.`);
       }
@@ -10455,7 +10617,16 @@ window._handlePlaceOrder = async function () {
         if (!detail) {
           throw new Error();
         }
-        
+
+        activeSubIdsByCartIndex.set(cartIdx, collectActiveSubItemIds(detail));
+        const stale = findStaleSubItems(item, detail);
+        if (stale.length > 0) {
+          item._staleSubItems = stale;
+          staleCartLines.push({ index: cartIdx, name: item.name, stale });
+        } else {
+          delete item._staleSubItems;
+        }
+
         // Extract restaurantId if not already set
         if (!foundRestId) {
           if (detail.menuSubItemGroups) {
@@ -10488,8 +10659,30 @@ window._handlePlaceOrder = async function () {
 
     if (foundRestId) {
       mockupState.selectedRestaurantId = foundRestId;
-      persistAllState();
     }
+
+    // Stop here rather than letting the backend refuse the whole order over one
+    // modifier and reporting it as a bare id. The lines are already tagged, so
+    // the cart can point at exactly what needs changing.
+    if (staleCartLines.length > 0) {
+      persistAllState();
+      const detailLines = staleCartLines
+        .map((l) => `• ${l.name} — ${describeStaleSubItems(l.stale)}`)
+        .join("\n");
+      alert(
+        `Some options in your order aren't available at this store anymore:\n\n${detailLines}\n\nTap the item in your cart to pick something else.`,
+      );
+      btns.forEach((b) => {
+        if (b.textContent.includes("Placing")) {
+          b.textContent = "Purchase Order";
+          b.disabled = false;
+        }
+      });
+      navigateTo("cart");
+      return;
+    }
+
+    persistAllState();
   } catch (validationError) {
     console.error("Cart item validation failed:", validationError);
     alert(validationError.message || "Some items in your cart are not available at this location. Please clear your cart and try again.");
@@ -10540,12 +10733,21 @@ window._handlePlaceOrder = async function () {
     guestPhoneNumber: mockupState.userProfile?.phoneNumber || "0000000000",
     guestEmailAddress: mockupState.userProfile?.email || "guest@farebites.com",
     items: [
-      ...cart.map((item) => ({
+      ...cart.map((item, cartIdx) => ({
         menuItemId: item.menuItemId,
         quantity: item.quantity,
         specialInstruction: item.specialInstruction || null,
         subItems: (item.selectedSubItems || [])
+          // The 8000–8300 exclusion is an older fix for a specific bad id range
+          // whose origin isn't recorded; it stays until someone can confirm what
+          // it was guarding. The check that matters now is the one beside it —
+          // whether this store still lists the modifier as active. A missing
+          // entry means the detail fetch came back thin, so nothing is dropped.
           .filter((sub) => sub.menuSubItemId < 8000 || sub.menuSubItemId > 8300)
+          .filter((sub) => {
+            const active = activeSubIdsByCartIndex.get(cartIdx);
+            return !active || active.has(String(sub.menuSubItemId));
+          })
           .map((sub) => ({
             menuSubItemId: sub.menuSubItemId,
             itemTypeId: sub.itemTypeId || 2,
@@ -10655,6 +10857,27 @@ window._handlePlaceOrder = async function () {
           "Failed to place order. Please try again.";
         alert(retryErrorMsg);
       }
+    } else if (/sub[- ]?item\s+(\d+)\s+not\s+found/i.test(errorMsg)) {
+      // The backend names the offending modifier by raw id, which means nothing
+      // to a customer. Map it back to the option and drink it came from so the
+      // message points at something they can actually recognise and change.
+      const badId = errorMsg.match(/sub[- ]?item\s+(\d+)\s+not\s+found/i)[1];
+      let culprit = null;
+      for (const ci of cart) {
+        const hit = (ci.selectedSubItems || []).find(
+          (s) => String(s.menuSubItemId) === badId,
+        );
+        if (hit) {
+          culprit = { option: hit.name, item: ci.name };
+          break;
+        }
+      }
+      alert(
+        culprit
+          ? `"${culprit.option}" is no longer available on ${culprit.item}. Tap that item in your cart to pick something else.`
+          : "One of the options in your order is no longer available at this store. Please review your cart and try again.",
+      );
+      navigateTo("cart");
     } else if (errorMsg.toLowerCase().includes("custom pickup time") || errorMsg.toLowerCase().includes("pickup time is not available")) {
       console.log("Custom pickup time not available for this location according to backend API. Retrying as ASAP order...");
       mockupState.orderTime = "ASAP";
@@ -13868,8 +14091,34 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  if (mockupState.selectedLocationId && mockupState.apiMenuItems.length === 0) {
-    fetchMenuAndItems(mockupState.selectedLocationId);
+  // Refetch when the cached menu is empty, belongs to a different store, or has
+  // simply gone stale. Previously this only fired on an empty list, so the first
+  // snapshot a browser took was the menu it kept forever — a drink added or
+  // pulled by the store never showed up, and the customer had no way to force it.
+  const MENU_CACHE_MS = 5 * 60 * 1000;
+  if (mockupState.selectedLocationId) {
+    const snapshotAge = Date.now() - (mockupState.menuFetchedAt || 0);
+    const staleSnapshot =
+      mockupState.apiMenuItems.length === 0 ||
+      mockupState.menuFetchedLocationId !== mockupState.selectedLocationId ||
+      snapshotAge > MENU_CACHE_MS;
+    if (staleSnapshot) fetchMenuAndItems(mockupState.selectedLocationId);
+  }
+
+  // Carts persist across sessions and stores, so a saved line can name a
+  // modifier the menu has since switched off. Re-check on the way to payment —
+  // the customer gets a plain warning on the item instead of a backend id
+  // after they've already committed.
+  if (
+    (currentPage === "cart" || currentPage === "checkout") &&
+    (mockupState.cart || []).length > 0 &&
+    mockupState.selectedLocationId
+  ) {
+    validateCartAgainstMenu(mockupState.selectedLocationId)
+      .then((flagged) => {
+        if (flagged.length > 0) renderPage();
+      })
+      .catch((err) => console.error("Cart modifier re-check failed:", err));
   }
 
   // Auto-fetch item details if landing on a customize page without detail data.
