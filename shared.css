@@ -10,6 +10,28 @@
             margin: 0;
         }
 
+        /* iOS Safari zooms the entire page in whenever a focused form control
+           has a computed font-size below 16px — and it never zooms back out on
+           blur. That reads as the page abruptly getting too wide with content
+           clipped off both sides, and scrolling overshooting, because the
+           visual viewport is now narrower than the layout. html{overflow-x}
+           can't fix it: zoom isn't overflow.
+
+           Holding every control at 16px on touch devices removes the trigger.
+           The alternative (maximum-scale=1 / user-scalable=no on the viewport
+           meta) also stops the zoom, but by disabling pinch-to-zoom entirely,
+           which fails WCAG 1.4.4 — so it's not an option here.
+
+           !important because Tailwind's play CDN injects text-sm/text-xs into
+           <head> after this file, and would otherwise win on document order. */
+        @media (pointer: coarse) {
+            input:not([type="checkbox"]):not([type="radio"]),
+            textarea,
+            select {
+                font-size: 16px !important;
+            }
+        }
+
         .font-branding {
             font-family: 'Outfit', sans-serif !important;
         }
